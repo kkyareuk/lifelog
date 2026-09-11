@@ -104,8 +104,9 @@ function loadImage(source){
   return new Promise((resolve,reject)=>{
     const image=new Image();
     if(/^https?:/i.test(source))image.crossOrigin="anonymous";
-    image.onload=()=>resolve(image);
-    image.onerror=reject;
+    const timer=setTimeout(()=>{image.onload=image.onerror=null;image.src='';reject(new Error('notification-image-timeout'))},2000);
+    image.onload=()=>{clearTimeout(timer);resolve(image)};
+    image.onerror=error=>{clearTimeout(timer);reject(error)};
     image.src=source;
   });
 }

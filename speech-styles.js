@@ -17,9 +17,9 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "능글맞고 여유로운 말투",
   "냉소적인 말투",
   "걸걸한 아저씨 말투",
-  "거칠고 상스러운 말투 · 순화",
+  "거칠고 상스러운 말투",
   "중2병 말투",
-  "귀여니체 · 2000년대 인터넷소설체",
+  "초성 쓰는 반말",
   "하드보일드 누아르체",
   "고풍스러운 말투",
   "사극 선비 말투",
@@ -53,17 +53,18 @@ function questionSubject(kind,target,language){
 
 export function characterQuestionPrompt(character,{kind="everyday",target="",language="ko",base=""}={}){
   const style=effectiveSpeechStyle(character),subject=questionSubject(kind,target,language);
-  if(style==="과묵한 직설체")return language==="en"?`${subject}. Choose what works. No need to dress it up.`:language==="ja"?`${subject}か。役に立つほうを選べ。飾った言葉はいらない。`:`${subject} 말인가. 필요한 쪽을 골라. 돌려 말할 것 없어.`;
+  if(style==="초성 쓰는 반말")return language==="en"?`${subject}, u in? lol`:language==="ja"?`${subject}どうする？ 行く？w`:`야 ${subject} 뭐 할래? ㄱ?`;
+  if(style==="과묵한 직설체")return language==="en"?`${subject}. Choose what works. No need to dress it up.`:language==="ja"?`${subject}か。役に立つほうを選べ。飾った言葉はいらない。`:`${subject}, 어느 쪽으로 할래.`;
   if(style==="냉정한 격식체")return language==="en"?`Regarding ${subject}, which option serves the purpose? I would like a clear reason.`:language==="ja"?`${subject}について、目的に合うのはどちらですか。理由も明確にしてください。`:`${subject}에 관해 묻겠습니다. 목적에 맞는 쪽은 무엇입니까? 이유도 명확히 해 주십시오.`;
   if(language==="en"){
     const lines={
-      "무뚝뚝한 단답":`${subject}. Pick one.`,"기계적인 말투":`INPUT REQUIRED: select ${subject}.`,"사무적인 말투 · 직장 메일체":`Please reply with your preferred option regarding ${subject}.`,"판교어 · 스타트업 업무체":`Could we align on the action item for ${subject}?`,"소심하고 머뭇거리는 말투":`Um… if it's okay, could you choose ${subject}?`,"열정적인 말투":`Let's make ${subject} amazing! What should we pick?`,"중2병 말투":`The seal is weakening. Choose the destiny of ${subject}.`,"하드보일드 누아르체":`${subject}. In this town, a choice always leaves a mark.`,"마왕의 말투":`Mortal, choose the fate of ${subject}.`,"군주의 말투":`Declare your decision regarding ${subject}.`,"신탁을 내리는 신의 말투":`Choose, and the path of ${subject} shall be revealed.`,"옛날 번역기체":`It is necessary that you select the action of ${subject}.`,"귀엽고 애교 있는 말투":`Can you pick ${subject} for me, pretty please?`
+      "무뚝뚝한 단답":`${subject}. Pick one.`,"기계적인 말투":`INPUT REQUIRED: select ${subject}.`,"사무적인 말투 · 직장 메일체":`Please reply with your preferred option regarding ${subject}.`,"판교어 · 스타트업 업무체":`Could we align on the action item for ${subject}?`,"소심하고 머뭇거리는 말투":`Um… if it's okay, could you choose ${subject}?`,"열정적인 말투":`Let's make ${subject} amazing! What should we pick?`,"중2병 말투":`The seal is weakening. Choose the destiny of ${subject}.`,"하드보일드 누아르체":`${subject}. In this town, a choice always leaves a mark.`,"마왕의 말투":`Mortal, choose the fate of ${subject}.`,"군주의 말투":`Declare your decision regarding ${subject}.`,"신탁을 내리는 신의 말투":`Choose, and the path of ${subject} shall be revealed.`,"옛날 번역기체":`It is necessary that you select the action of ${subject}.`,"귀엽고 애교 있는 말투":`Pick ${subject} with me, pretty please? (｡•̀ᴗ-)✧`
     };
     return lines[style]||base;
   }
   if(language==="ja"){
     const lines={
-      "무뚝뚝한 단답":`${subject}。選んで。`,"기계적인 말투":`入力待機中。${subject}を選択してください。`,"사무적인 말투 · 직장 메일체":`${subject}につきまして、ご希望をご回答ください。`,"판교어 · 스타트업 업무체":`${subject}のアクションについて認識を合わせさせてください。`,"소심하고 머뭇거리는 말투":`あの……よければ、${subject}を選んでもらえますか？`,"열정적인 말투":`${subject}、最高の選択にしよう！ 何がいい？`,"중2병 말투":`封印が弱まっている……${subject}の運命を選べ。`,"하드보일드 누아르체":`${subject}か。この街では、選択にはいつも跡が残る。`,"마왕의 말투":`人の子よ、${subject}の運命を選ぶがよい。`,"군주의 말투":`${subject}について、そなたの決断を申せ。`,"신탁을 내리는 신의 말투":`選びなさい。さすれば${subject}の道は開かれる。`,"옛날 번역기체":`あなたは${subject}の行動を選択することが必要です。`,"귀엽고 애교 있는 말투":`${subject}、選んでほしいな～。だめ？`
+      "무뚝뚝한 단답":`${subject}。選んで。`,"기계적인 말투":`入力待機中。${subject}を選択してください。`,"사무적인 말투 · 직장 메일체":`${subject}につきまして、ご希望をご回答ください。`,"판교어 · 스타트업 업무체":`${subject}のアクションについて認識を合わせさせてください。`,"소심하고 머뭇거리는 말투":`あの……よければ、${subject}を選んでもらえますか？`,"열정적인 말투":`${subject}、最高の選択にしよう！ 何がいい？`,"중2병 말투":`封印が弱まっている……${subject}の運命を選べ。`,"하드보일드 누아르체":`${subject}か。この街では、選択にはいつも跡が残る。`,"마왕의 말투":`人の子よ、${subject}の運命を選ぶがよい。`,"군주의 말투":`${subject}について、そなたの決断を申せ。`,"신탁을 내리는 신의 말투":`選びなさい。さすれば${subject}の道は開かれる。`,"옛날 번역기체":`あなたは${subject}の行動を選択することが必要です。`,"귀엽고 애교 있는 말투":`${subject}、一緒に選んでほしいな (｡•̀ᴗ-)✧`
     };
     return lines[style]||base;
   }
@@ -84,18 +85,18 @@ export function characterQuestionPrompt(character,{kind="everyday",target="",lan
     "능글맞고 여유로운 말투":`${subject} 말이지? 당신이라면 재밌는 걸 고를 것 같은데.`,
     "냉소적인 말투":`${subject}이라. 뭘 고르든 세상은 굴러가겠지만, 일단 골라 봐.`,
     "걸걸한 아저씨 말투":`${subject} 말이야, 뭐가 좋겠어? 시원하게 하나 골라 보자고.`,
-    "거칠고 상스러운 말투 · 순화":`${subject}, 답답하게 굴지 말고 확 골라 보자고.`,
+    "거칠고 상스러운 말투":`${subject}, 씨발 뭐가 이렇게 많아. 너는 뭐 할래?`,
     "중2병 말투":`봉인이 느슨해지고 있다… ${subject}의 운명을 네 손으로 선택하라.`,
     "귀여니체 · 2000년대 인터넷소설체":`${subject} 머할까아…? 나 진짜 못 고르겠눈뎅 ㅠ_ㅠ`,
     "하드보일드 누아르체":`${subject}이라… 이 도시에서는 선택 하나에도 흔적이 남지.`,
     "고풍스러운 말투":`${subject}을 어찌 정하면 좋겠는가? 그대의 뜻을 들려주게.`,
     "사극 선비 말투":`${subject}에 관한 그대의 고견을 청해도 되겠소?`,
-    "군인식 말투":`${subject} 결정을 요청합니다. 지시해 주십시오.`,
+    "군인식 말투":`${subject}, 정했습니까? 확인하고 진행하겠습니다.`,
     "마왕의 말투":`필멸자여, ${subject}의 향방을 정하라.`,
     "군주의 말투":`${subject}에 관한 그대의 뜻을 고하라.`,
     "신탁을 내리는 신의 말투":`선택하라. 그러면 ${subject}의 길이 열릴지니.`,
-    "옛날 번역기체":`당신은 ${subject}의 행동을 선택하는 것이 필요합니다.`,
-    "귀엽고 애교 있는 말투":`${subject}, 나 대신 골라 주면 안 돼요오?`,
+    "옛날 번역기체":`당신은 필요하다. ${subject} 행동 선택이.`,
+    "귀엽고 애교 있는 말투":`${subject}, 같이 골라 주라아 (｡•̀ᴗ-)✧`,
     "수다스럽고 말이 많은 말투":`${subject}을 정해야 하는데 이것도 좋고 저것도 좋아 보여서 말이죠, 당신은 어떤 게 제일 좋다고 생각해요?`
   };
   return lines[style]||base;
@@ -143,19 +144,20 @@ function koreanSovereign(value){
 
 const CONTACT_TITLES={
   ko:{
-    "반말":"잠깐 얘기할래?","했다체 · 건조한 서술":"전언이 도착했다","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"전해 드릴 말씀이 있습니다","극존칭":"삼가 말씀을 올리옵니다","무뚝뚝한 단답":"할 말.","기계적인 말투":"상태 메시지 수신","사무적인 말투 · 직장 메일체":"간단 공유드립니다","판교어 · 스타트업 업무체":"빠른 체크인","다정하고 부드러운 말투":"조용히 전하고 싶은 말","상냥하고 배려하는 말투":"천천히 읽어도 괜찮아요","소심하고 머뭇거리는 말투":"저기… 잠깐 괜찮을까요?","열정적인 말투":"지금 꼭 전하고 싶어요!","능글맞고 여유로운 말투":"뭐, 잠깐 들어 봐","냉소적인 말투":"별수 없이 전하는 말","걸걸한 아저씨 말투":"어이, 잠깐 보자고","거칠고 상스러운 말투 · 순화":"야, 잠깐 들어 봐","중2병 말투":"봉인 너머의 전언","귀여니체 · 2000년대 인터넷소설체":"갑자기 니 생각나쏘…","하드보일드 누아르체":"도시에 남은 짧은 전언","고풍스러운 말투":"그대에게 띄우는 말","사극 선비 말투":"그대에게 청할 말이 있소","군인식 말투":"연락 사항 보고","마왕의 말투":"필멸자에게 내리는 전언","군주의 말투":"그대에게 고하는 말","신탁을 내리는 신의 말투":"오늘의 신탁","옛날 번역기체":"연락의 메시지가 도착했습니다","귀엽고 애교 있는 말투":"나한테 잠깐만 와 주라아","수다스럽고 말이 많은 말투":"별일은 아니고 잠깐 할 말이 있어요"
+    "반말":"잠깐 얘기할래?","했다체 · 건조한 서술":"전언이 도착했다","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"전해 드릴 말씀이 있습니다","극존칭":"삼가 말씀을 올리옵니다","무뚝뚝한 단답":"할 말.","기계적인 말투":"상태 메시지 수신","사무적인 말투 · 직장 메일체":"간단 공유드립니다","판교어 · 스타트업 업무체":"빠른 체크인","다정하고 부드러운 말투":"조용히 전하고 싶은 말","상냥하고 배려하는 말투":"천천히 읽어도 괜찮아요","소심하고 머뭇거리는 말투":"저기… 잠깐 괜찮을까요?","열정적인 말투":"지금 꼭 전하고 싶어요!","능글맞고 여유로운 말투":"뭐, 잠깐 들어 봐","냉소적인 말투":"별수 없이 전하는 말","걸걸한 아저씨 말투":"어이, 잠깐 보자고","거칠고 상스러운 말투":"야, 잠깐 들어 봐","중2병 말투":"봉인 너머의 전언","귀여니체 · 2000년대 인터넷소설체":"갑자기 니 생각나쏘…","하드보일드 누아르체":"도시에 남은 짧은 전언","고풍스러운 말투":"그대에게 띄우는 말","사극 선비 말투":"그대에게 청할 말이 있소","군인식 말투":"연락 사항 보고","마왕의 말투":"필멸자에게 내리는 전언","군주의 말투":"그대에게 고하는 말","신탁을 내리는 신의 말투":"오늘의 신탁","옛날 번역기체":"연락의 메시지가 도착했습니다","귀엽고 애교 있는 말투":"나한테 잠깐만 와 주라아","수다스럽고 말이 많은 말투":"별일은 아니고 잠깐 할 말이 있어요"
   },
   en:{
-    "반말":"Hey, got a minute?","했다체 · 건조한 서술":"A message arrived","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"A message for your attention","극존칭":"A humble message","무뚝뚝한 단답":"Listen.","기계적인 말투":"STATUS MESSAGE","사무적인 말투 · 직장 메일체":"Quick update","판교어 · 스타트업 업무체":"Quick check-in","다정하고 부드러운 말투":"A gentle note","상냥하고 배려하는 말투":"Read this when you're ready","소심하고 머뭇거리는 말투":"Um… may I say something?","열정적인 말투":"I have to tell you this!","능글맞고 여유로운 말투":"Well, hear me out","냉소적인 말투":"A message, for what it's worth","걸걸한 아저씨 말투":"Hey, listen up","거칠고 상스러운 말투 · 순화":"Hey. Listen.","중2병 말투":"A message beyond the seal","귀여니체 · 2000년대 인터넷소설체":"i suddenly thought of u…","하드보일드 누아르체":"A note left in the city","고풍스러운 말투":"A letter for thee","사극 선비 말투":"A word for you","군인식 말투":"CONTACT REPORT","마왕의 말투":"A decree for the mortal","군주의 말투":"A royal message","신탁을 내리는 신의 말투":"Today's oracle","옛날 번역기체":"The contact message has arrived","귀엽고 애교 있는 말투":"Come talk to meee","수다스럽고 말이 많은 말투":"It's nothing urgent, but I wanted to talk"
+    "반말":"Hey, got a minute?","했다체 · 건조한 서술":"A message arrived","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"A message for your attention","극존칭":"A humble message","무뚝뚝한 단답":"Listen.","기계적인 말투":"STATUS MESSAGE","사무적인 말투 · 직장 메일체":"Quick update","판교어 · 스타트업 업무체":"Quick check-in","다정하고 부드러운 말투":"A gentle note","상냥하고 배려하는 말투":"Read this when you're ready","소심하고 머뭇거리는 말투":"Um… may I say something?","열정적인 말투":"I have to tell you this!","능글맞고 여유로운 말투":"Well, hear me out","냉소적인 말투":"A message, for what it's worth","걸걸한 아저씨 말투":"Hey, listen up","거칠고 상스러운 말투":"Hey. Listen.","중2병 말투":"A message beyond the seal","귀여니체 · 2000년대 인터넷소설체":"i suddenly thought of u…","하드보일드 누아르체":"A note left in the city","고풍스러운 말투":"A letter for thee","사극 선비 말투":"A word for you","군인식 말투":"CONTACT REPORT","마왕의 말투":"A decree for the mortal","군주의 말투":"A royal message","신탁을 내리는 신의 말투":"Today's oracle","옛날 번역기체":"The contact message has arrived","귀엽고 애교 있는 말투":"Come talk to meee","수다스럽고 말이 많은 말투":"It's nothing urgent, but I wanted to talk"
   },
   ja:{
-    "반말":"ちょっと話さない？","했다체 · 건조한 서술":"伝言が届いた","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"お伝えしたいことがあります","극존칭":"謹んで申し上げます","무뚝뚝한 단답":"話がある。","기계적인 말투":"状態メッセージ受信","사무적인 말투 · 직장 메일체":"簡単に共有いたします","판교어 · 스타트업 업무체":"クイックチェックイン","다정하고 부드러운 말투":"そっと伝えたいこと","상냥하고 배려하는 말투":"ゆっくり読んでください","소심하고 머뭇거리는 말투":"あの……少しいいですか？","열정적인 말투":"今すぐ伝えたい！","능글맞고 여유로운 말투":"まあ、ちょっと聞いて","냉소적인 말투":"一応、伝えておく","걸걸한 아저씨 말투":"おい、ちょっと聞け","거칠고 상스러운 말투 · 순화":"おい、聞いてくれ","중2병 말투":"封印の彼方からの伝言","귀여니체 · 2000년대 인터넷소설체":"急にキミを思い出したょ…","하드보일드 누아르체":"街に残された短い伝言","고풍스러운 말투":"そなたへ送る言葉","사극 선비 말투":"そなたに尋ねたいことがある","군인식 말투":"連絡事項報告","마왕의 말투":"人の子への勅命","군주의 말투":"王よりの言葉","신탁을 내리는 신의 말투":"今日の神託","옛날 번역기체":"連絡のメッセージが到着しました","귀엽고 애교 있는 말투":"ちょっと来てほしいな～","수다스럽고 말이 많은 말투":"急ぎじゃないけど少し話したくて"
+    "반말":"ちょっと話さない？","했다체 · 건조한 서술":"伝言が届いた","존댓말 · 해요체":null,"격식 있는 존댓말 · 하십시오체":"お伝えしたいことがあります","극존칭":"謹んで申し上げます","무뚝뚝한 단답":"話がある。","기계적인 말투":"状態メッセージ受信","사무적인 말투 · 직장 메일체":"簡単に共有いたします","판교어 · 스타트업 업무체":"クイックチェックイン","다정하고 부드러운 말투":"そっと伝えたいこと","상냥하고 배려하는 말투":"ゆっくり読んでください","소심하고 머뭇거리는 말투":"あの……少しいいですか？","열정적인 말투":"今すぐ伝えたい！","능글맞고 여유로운 말투":"まあ、ちょっと聞いて","냉소적인 말투":"一応、伝えておく","걸걸한 아저씨 말투":"おい、ちょっと聞け","거칠고 상스러운 말투":"おい、聞いてくれ","중2병 말투":"封印の彼方からの伝言","귀여니체 · 2000년대 인터넷소설체":"急にキミを思い出したょ…","하드보일드 누아르체":"街に残された短い伝言","고풍스러운 말투":"そなたへ送る言葉","사극 선비 말투":"そなたに尋ねたいことがある","군인식 말투":"連絡事項報告","마왕의 말투":"人の子への勅命","군주의 말투":"王よりの言葉","신탁을 내리는 신의 말투":"今日の神託","옛날 번역기체":"連絡のメッセージが到着しました","귀엽고 애교 있는 말투":"ちょっと来てほしいな～","수다스럽고 말이 많은 말투":"急ぎじゃないけど少し話したくて"
   }
 };
 
 export function characterContactTitle(character,base,{language="ko"}={}){
   const text=String(base||"").trim(),style=effectiveSpeechStyle(character),localized=CONTACT_TITLES[language]||CONTACT_TITLES.ko;
   if(!text)return text;
+  if(style==="초성 쓰는 반말")return language==="en"?`hey, ${text} lol`:language==="ja"?`ねえ、${text}w`:`야 ${koreanCasual(text)} ㅋㅋ`;
   if(style==="과묵한 직설체")return language==="en"?"A word.":language==="ja"?"話がある。":"할 말이 있다.";
   if(style==="냉정한 격식체")return language==="en"?"A matter to clarify":language==="ja"?"確認したいことがあります":"확인할 사항이 있습니다";
   if(style==="반말"&&language==="ko")return koreanCasual(text);
@@ -163,19 +165,20 @@ export function characterContactTitle(character,base,{language="ko"}={}){
 }
 
 export function characterContactSpeech(character,base,{language="ko"}={}){
+  if(effectiveSpeechStyle(character)==="초성 쓰는 반말")return language==="en"?`hey, ${base} lol`:language==="ja"?`ねえ、${base}w`:`야 ${koreanCasual(String(base||""))} ㅋㅋ`;
   const text=String(base||"").trim(),style=effectiveSpeechStyle(character);
   if(!text)return text;
-  if(style==="과묵한 직설체")return language==="en"?`Listen. ${text.replace(/Would you like to/g,"Will you").replace(/I would like to/g,"I'll")}`:language==="ja"?`話がある。${text.replace(/大丈夫です/g,"問題ない").replace(/しましょう/g,"しよう").replace(/しています/g,"している").replace(/です/g,"だ")}`:`들어. ${koreanCasual(text)}`;
+  if(style==="과묵한 직설체")return language==="en"?`Listen. ${text.replace(/Would you like to/g,"Will you").replace(/I would like to/g,"I'll")}`:language==="ja"?`話がある。${text.replace(/大丈夫です/g,"問題ない").replace(/しましょう/g,"しよう").replace(/しています/g,"している").replace(/です/g,"だ")}`:`${koreanCasual(text)}`;
   if(style==="냉정한 격식체")return language==="en"?`To be clear: ${text.replace(/I'm/g,"I am").replace(/I'll/g,"I will").replace(/Let's/g,"Let us")}`:language==="ja"?`確認しておきます。${text.replace(/だよ/g,"です").replace(/してね/g,"してください")}`:`명확히 말씀드리겠습니다. ${koreanFormal(text)}`;
   if(language==="en"){
     const wrappers={
-      "반말":value=>`Hey—${value}`,"했다체 · 건조한 서술":value=>`A message was sent. ${value}`,"존댓말 · 해요체":value=>value,"격식 있는 존댓말 · 하십시오체":value=>`Please note: ${value}`,"극존칭":value=>`With the utmost respect, please receive these words: ${value}`,"무뚝뚝한 단답":value=>`Briefly: ${value.replace(/\bI am\b/g,"I'm").replace(/\bI have\b/g,"I've")}`,"기계적인 말투":value=>`STATUS MESSAGE: ${value}`,"사무적인 말투 · 직장 메일체":value=>`Quick update: ${value}`,"판교어 · 스타트업 업무체":value=>`A quick check-in—${value}`,"다정하고 부드러운 말투":value=>`I thought of you, so I wanted to say this gently: ${value}`,"상냥하고 배려하는 말투":value=>`There's no need to hurry. ${value}`,"소심하고 머뭇거리는 말투":value=>`Um… sorry to message out of nowhere. ${value}`,"열정적인 말투":value=>`Hey! ${value}`,"능글맞고 여유로운 말투":value=>`No rush, but hear me out. ${value}`,"냉소적인 말투":value=>`The world won't answer for us, so here it is. ${value}`,"걸걸한 아저씨 말투":value=>`Hey, let's talk this through. ${value}`,"거칠고 상스러운 말투 · 순화":value=>`Look, no need to overcomplicate it. ${value}`,"중2병 말투":value=>`A message crossed the sealed boundary: ${value}`,"귀여니체 · 2000년대 인터넷소설체":value=>`hey… i suddenly thought of u T_T ${value}`,"하드보일드 누아르체":value=>`${value} That's how the day goes in this town.`,"고풍스러운 말투":value=>`My thoughts turned to thee. ${value}`,"사극 선비 말투":value=>`May I ask for thy counsel? ${value}`,"군인식 말투":value=>`Contact report. ${value}`,"마왕의 말투":value=>`Mortal, heed my decree. ${value}`,"군주의 말투":value=>`Hear the words of your sovereign. ${value}`,"신탁을 내리는 신의 말투":value=>`Receive this oracle. ${value}`,"옛날 번역기체":value=>`It is informed to you that ${value.charAt(0).toLowerCase()}${value.slice(1)}`,"귀엽고 애교 있는 말투":value=>`${value} Tell me, pleeease?`,"수다스럽고 말이 많은 말투":value=>`It's nothing urgent, and I was just thinking of you, but ${value}`
+      "반말":value=>`Hey—${value}`,"했다체 · 건조한 서술":value=>`A message was sent. ${value}`,"존댓말 · 해요체":value=>value,"격식 있는 존댓말 · 하십시오체":value=>`Please note: ${value}`,"극존칭":value=>`With the utmost respect, please receive these words: ${value}`,"무뚝뚝한 단답":value=>`Briefly: ${value.replace(/\bI am\b/g,"I'm").replace(/\bI have\b/g,"I've")}`,"기계적인 말투":value=>`STATUS MESSAGE: ${value}`,"사무적인 말투 · 직장 메일체":value=>`Quick update: ${value}`,"판교어 · 스타트업 업무체":value=>`A quick check-in—${value}`,"다정하고 부드러운 말투":value=>`I thought of you, so I wanted to say this gently: ${value}`,"상냥하고 배려하는 말투":value=>`There's no need to hurry. ${value}`,"소심하고 머뭇거리는 말투":value=>`Um… sorry to message out of nowhere. ${value}`,"열정적인 말투":value=>`Hey! ${value}`,"능글맞고 여유로운 말투":value=>`No rush, but hear me out. ${value}`,"냉소적인 말투":value=>`The world won't answer for us, so here it is. ${value}`,"걸걸한 아저씨 말투":value=>`Hey, let's talk this through. ${value}`,"거칠고 상스러운 말투":value=>`Look, no need to overcomplicate it. ${value}`,"중2병 말투":value=>`A message crossed the sealed boundary: ${value}`,"귀여니체 · 2000년대 인터넷소설체":value=>`hey… i suddenly thought of u T_T ${value}`,"하드보일드 누아르체":value=>`${value} That's how the day goes in this town.`,"고풍스러운 말투":value=>`My thoughts turned to thee. ${value}`,"사극 선비 말투":value=>`May I ask for thy counsel? ${value}`,"군인식 말투":value=>`Contact report. ${value}`,"마왕의 말투":value=>`Mortal, heed my decree. ${value}`,"군주의 말투":value=>`Hear the words of your sovereign. ${value}`,"신탁을 내리는 신의 말투":value=>`Receive this oracle. ${value}`,"옛날 번역기체":value=>`It is informed to you that ${value.charAt(0).toLowerCase()}${value.slice(1)}`,"귀엽고 애교 있는 말투":value=>`${value} Tell me, pleeease?`,"수다스럽고 말이 많은 말투":value=>`It's nothing urgent, and I was just thinking of you, but ${value}`
     };
     return (wrappers[style]||((value)=>value))(text);
   }
   if(language==="ja"){
     const wrappers={
-      "반말":value=>`ねえ、${value.replace(/です。/g,"だよ。").replace(/ます。/g,"るよ。")}`,"했다체 · 건조한 서술":value=>`連絡することになった。${value}`,"존댓말 · 해요체":value=>value,"격식 있는 존댓말 · 하십시오체":value=>`お伝えいたします。${value}`,"극존칭":value=>`恐れながら申し上げます。${value}`,"무뚝뚝한 단답":value=>`簡潔に。${value.replace(/です。$/,"。")}`,"기계적인 말투":value=>`状態報告。${value}`,"사무적인 말투 · 직장 메일체":value=>`取り急ぎ共有いたします。${value}`,"판교어 · 스타트업 업무체":value=>`簡単に認識を合わせたいです。${value}`,"다정하고 부드러운 말투":value=>`ふと思い出して、そっと伝えたくなりました。${value}`,"상냥하고 배려하는 말투":value=>`急がなくても大丈夫です。${value}`,"소심하고 머뭇거리는 말투":value=>`あの……急に連絡してすみません。${value}`,"열정적인 말투":value=>`ねえ！ ${value}`,"능글맞고 여유로운 말투":value=>`まあ、急ぎじゃないけどね。${value}`,"냉소적인 말투":value=>`世界が代わりに答えてくれるわけでもない。${value}`,"걸걸한 아저씨 말투":value=>`おい、ちょっと話そうじゃないか。${value}`,"거칠고 상스러운 말투 · 순화":value=>`ああ、難しく考えずに聞け。${value}`,"중2병 말투":value=>`封印の向こうから告げよう……${value}`,"귀여니체 · 2000년대 인터넷소설체":value=>`ねぇ…急にキミを思い出したょ T_T ${value}`,"하드보일드 누아르체":value=>`${value} そういう日もある。`,"고풍스러운 말투":value=>`ふと、そなたを思い出した。${value}`,"사극 선비 말투":value=>`そなたの考えを聞かせてもらいたい。${value}`,"군인식 말투":value=>`連絡事項を報告する。${value}`,"마왕의 말투":value=>`人の子よ、我が命を聞け。${value.replace(/あなた/g,"そなた")}`,"군주의 말투":value=>`余の言葉を聞け。${value.replace(/あなた/g,"そなた")}`,"신탁을 내리는 신의 말투":value=>`この神託を受け取りなさい。${value}`,"옛날 번역기체":value=>`あなたへ次のことが通知されます。${value}`,"귀엽고 애교 있는 말투":value=>`${value} 答えてほしいな～。`,"수다스럽고 말이 많은 말투":value=>`別に急ぎじゃなくて、ちょっと思い出しただけなんですけど、${value}`
+      "반말":value=>`ねえ、${value.replace(/です。/g,"だよ。").replace(/ます。/g,"るよ。")}`,"했다체 · 건조한 서술":value=>`連絡することになった。${value}`,"존댓말 · 해요체":value=>value,"격식 있는 존댓말 · 하십시오체":value=>`お伝えいたします。${value}`,"극존칭":value=>`恐れながら申し上げます。${value}`,"무뚝뚝한 단답":value=>`簡潔に。${value.replace(/です。$/,"。")}`,"기계적인 말투":value=>`状態報告。${value}`,"사무적인 말투 · 직장 메일체":value=>`取り急ぎ共有いたします。${value}`,"판교어 · 스타트업 업무체":value=>`簡単に認識を合わせたいです。${value}`,"다정하고 부드러운 말투":value=>`ふと思い出して、そっと伝えたくなりました。${value}`,"상냥하고 배려하는 말투":value=>`急がなくても大丈夫です。${value}`,"소심하고 머뭇거리는 말투":value=>`あの……急に連絡してすみません。${value}`,"열정적인 말투":value=>`ねえ！ ${value}`,"능글맞고 여유로운 말투":value=>`まあ、急ぎじゃないけどね。${value}`,"냉소적인 말투":value=>`世界が代わりに答えてくれるわけでもない。${value}`,"걸걸한 아저씨 말투":value=>`おい、ちょっと話そうじゃないか。${value}`,"거칠고 상스러운 말투":value=>`ああ、難しく考えずに聞け。${value}`,"중2병 말투":value=>`封印の向こうから告げよう……${value}`,"귀여니체 · 2000년대 인터넷소설체":value=>`ねぇ…急にキミを思い出したょ T_T ${value}`,"하드보일드 누아르체":value=>`${value} そういう日もある。`,"고풍스러운 말투":value=>`ふと、そなたを思い出した。${value}`,"사극 선비 말투":value=>`そなたの考えを聞かせてもらいたい。${value}`,"군인식 말투":value=>`連絡事項を報告する。${value}`,"마왕의 말투":value=>`人の子よ、我が命を聞け。${value.replace(/あなた/g,"そなた")}`,"군주의 말투":value=>`余の言葉を聞け。${value.replace(/あなた/g,"そなた")}`,"신탁을 내리는 신의 말투":value=>`この神託を受け取りなさい。${value}`,"옛날 번역기체":value=>`あなたへ次のことが通知されます。${value}`,"귀엽고 애교 있는 말투":value=>`${value} 答えてほしいな～。`,"수다스럽고 말이 많은 말투":value=>`別に急ぎじゃなくて、ちょっと思い出しただけなんですけど、${value}`
     };
     return (wrappers[style]||((value)=>value))(text);
   }
@@ -196,18 +199,18 @@ export function characterContactSpeech(character,base,{language="ko"}={}){
     "능글맞고 여유로운 말투":value=>`뭐, 급한 건 아닌데 말이지. ${koreanCasual(value)}`,
     "냉소적인 말투":value=>`세상이 답을 대신 골라 주진 않으니까. ${koreanCasual(value)}`,
     "걸걸한 아저씨 말투":value=>`어이, 잠깐 얘기 좀 해 보자고. ${koreanCasual(value)}`,
-    "거칠고 상스러운 말투 · 순화":value=>`아, 복잡하게 굴 것 없이 들어 봐. ${koreanCasual(value)}`,
+    "거칠고 상스러운 말투":value=>`씨발, 복잡하게 굴 것 없이 들어 봐. ${koreanCasual(value)}`,
     "중2병 말투":value=>`봉인의 틈에서 전언이 도착했다… ${koreanPlain(value)}`,
     "귀여니체 · 2000년대 인터넷소설체":value=>`있자나… 갑자기 니 생각나서 연락했오 ㅠ_ㅠ ${koreanCasual(value)}`,
     "하드보일드 누아르체":value=>`${koreanPlain(value)} 이 도시의 하루는 늘 그런 식으로 흘렀다.`,
     "고풍스러운 말투":value=>`문득 그대 생각이 났네. ${koreanPlain(value)}`,
     "사극 선비 말투":value=>`잠시 그대에게 전할 말이 있소. ${koreanPlain(value)}`,
-    "군인식 말투":value=>`연락 사항 보고. ${koreanFormal(value)}`,
+    "군인식 말투":value=>`전달 사항입니다. ${koreanFormal(value)} 확인했습니까?`,
     "마왕의 말투":value=>`필멸자여, 짐의 말을 들으라. ${koreanSovereign(value)}`,
     "군주의 말투":value=>`그대여, 짐의 말을 새겨들으라. ${koreanSovereign(value)}`,
     "신탁을 내리는 신의 말투":value=>`이 신탁을 받으라. ${koreanSovereign(value)}`,
-    "옛날 번역기체":value=>`당신에게 다음의 사실이 연락됩니다. ${value}`,
-    "귀엽고 애교 있는 말투":value=>`${value} 나한테도 대답해 주면 안 돼요오?`,
+    "옛날 번역기체":value=>`당신에게 도착했다. 연락의 내용이. ${value}`,
+    "귀엽고 애교 있는 말투":value=>`${value} 답장 기다릴게에 (づ｡◕‿‿◕｡)づ`,
     "수다스럽고 말이 많은 말투":value=>`별일은 아니고 그냥 생각이 나서 연락한 건데요, 있잖아요, ${value}`
   };
   return (wrappers[style]||((value)=>value))(text);
@@ -215,19 +218,20 @@ export function characterContactSpeech(character,base,{language="ko"}={}){
 
 export function characterPlanSpeech(character,language="ko"){
   const style=effectiveSpeechStyle(character);
+  if(style==="초성 쓰는 반말")return language==="en"?"plan set, lets go lol":language==="ja"?"予定決まった、行こw":"ㅇㅋ 이 순서로 ㄱㄱ";
   if(style==="과묵한 직설체")return language==="en"?"The order is set. I'll get it done.":language==="ja"?"順番は決まった。片づける。":"순서는 정했다. 하나씩 끝낸다.";
   if(style==="냉정한 격식체")return language==="en"?"I will proceed in this order. There is a reason for each step.":language==="ja"?"この順番で進めます。それぞれに理由があります。":"이 순서로 진행하겠습니다. 각 단계에는 이유가 있습니다.";
   if(language==="en")return characterQuestionPrompt(character,{kind:"everyday",language,base:"I'll do things in this order today."}).replace(/\?$/,".");
   if(language==="ja")return characterQuestionPrompt(character,{kind:"everyday",language,base:"今日はこの順番でやってみます。"}).replace(/？$/,"。");
   const lines={
-    "반말":"오늘은 이 순서대로 해 볼게.","했다체 · 건조한 서술":"오늘은 이 순서대로 하기로 했다.","존댓말 · 해요체":"오늘은 이 순서대로 해 볼게요.","격식 있는 존댓말 · 하십시오체":"오늘은 이 순서대로 진행하겠습니다.","극존칭":"오늘은 분부해 주신 순서대로 행하겠사옵니다.","무뚝뚝한 단답":"이 순서. 그대로 해.","기계적인 말투":"작업 순서 확인. 계획을 실행합니다.","사무적인 말투 · 직장 메일체":"금일 일정은 해당 순서로 진행 예정입니다.","판교어 · 스타트업 업무체":"오늘 액션 아이템은 이 순서로 얼라인해서 진행할게요.","다정하고 부드러운 말투":"오늘은 이 순서대로 천천히 해 볼게요.","상냥하고 배려하는 말투":"무리하지 않게 이 순서대로 해 볼게요.","소심하고 머뭇거리는 말투":"저… 오늘은 이 순서대로 해 봐도 될까요?", "열정적인 말투":"좋아요! 오늘은 이 순서대로 힘차게 해 볼게요!", "능글맞고 여유로운 말투":"뭐, 오늘은 이 순서가 제일 재밌겠네.","냉소적인 말투":"계획대로 된다는 보장은 없지만, 일단 이 순서지.","걸걸한 아저씨 말투":"좋아, 오늘은 이 순서대로 시원하게 해 보자고.","거칠고 상스러운 말투 · 순화":"복잡하게 굴 것 없이 이 순서대로 확 해치우자고.","중2병 말투":"정해진 운명의 순서대로 오늘의 의식을 시작하지.","귀여니체 · 2000년대 인터넷소설체":"오늘은 이 순서대루 해볼꺼야아 >_<", "하드보일드 누아르체":"순서는 정해졌다. 남은 건 묵묵히 걷는 일뿐이다.","고풍스러운 말투":"오늘은 이 순서대로 행해 보겠네.","사극 선비 말투":"오늘은 정한 차례에 따라 행하겠소.","군인식 말투":"금일 일정 확인. 순서대로 수행하겠습니다.","마왕의 말투":"정해진 순서대로 오늘의 권능을 펼치리라.","군주의 말투":"오늘은 이 순서대로 국사를 돌보겠다.","신탁을 내리는 신의 말투":"정해진 순서대로 행하라. 길이 열릴지니.","옛날 번역기체":"오늘 나는 이 순서에 의하여 행동할 것입니다.","귀엽고 애교 있는 말투":"오늘은 이 순서대로 해 볼게요오.","수다스럽고 말이 많은 말투":"오늘 할 게 꽤 많긴 한데요, 일단 이 순서대로 하나씩 해 보면 딱 좋을 것 같아요."
+    "반말":"오늘은 이 순서대로 해 볼게.","했다체 · 건조한 서술":"오늘은 이 순서대로 하기로 했다.","존댓말 · 해요체":"오늘은 이 순서대로 해 볼게요.","격식 있는 존댓말 · 하십시오체":"오늘은 이 순서대로 진행하겠습니다.","극존칭":"오늘은 분부해 주신 순서대로 행하겠사옵니다.","무뚝뚝한 단답":"이 순서. 그대로 해.","기계적인 말투":"작업 순서 확인. 계획을 실행합니다.","사무적인 말투 · 직장 메일체":"금일 일정은 해당 순서로 진행 예정입니다.","판교어 · 스타트업 업무체":"오늘 액션 아이템은 이 순서로 얼라인해서 진행할게요.","다정하고 부드러운 말투":"오늘은 이 순서대로 천천히 해 볼게요.","상냥하고 배려하는 말투":"무리하지 않게 이 순서대로 해 볼게요.","소심하고 머뭇거리는 말투":"저… 오늘은 이 순서대로 해 봐도 될까요?", "열정적인 말투":"좋아요! 오늘은 이 순서대로 힘차게 해 볼게요!", "능글맞고 여유로운 말투":"뭐, 오늘은 이 순서가 제일 재밌겠네.","냉소적인 말투":"계획대로 된다는 보장은 없지만, 일단 이 순서지.","걸걸한 아저씨 말투":"좋아, 오늘은 이 순서대로 시원하게 해 보자고.","거칠고 상스러운 말투":"복잡하게 굴 것 없이 이 순서대로 확 해치우자고.","중2병 말투":"정해진 운명의 순서대로 오늘의 의식을 시작하지.","귀여니체 · 2000년대 인터넷소설체":"오늘은 이 순서대루 해볼꺼야아 >_<", "하드보일드 누아르체":"순서는 정해졌다. 남은 건 묵묵히 걷는 일뿐이다.","고풍스러운 말투":"오늘은 이 순서대로 행해 보겠네.","사극 선비 말투":"오늘은 정한 차례에 따라 행하겠소.","군인식 말투":"금일 일정 확인. 순서대로 수행하겠습니다.","마왕의 말투":"정해진 순서대로 오늘의 권능을 펼치리라.","군주의 말투":"오늘은 이 순서대로 국사를 돌보겠다.","신탁을 내리는 신의 말투":"정해진 순서대로 행하라. 길이 열릴지니.","옛날 번역기체":"오늘 나는 이 순서에 의하여 행동할 것입니다.","귀엽고 애교 있는 말투":"오늘은 이 순서대로 해 볼게에 (｡•̀ᴗ-)✧","수다스럽고 말이 많은 말투":"오늘 할 게 꽤 많긴 한데요, 일단 이 순서대로 하나씩 해 보면 딱 좋을 것 같아요."
   };
   return lines[style]||"오늘은 이 순서대로 해 볼게요.";
 }
 
 
 export function canonicalSpeechStyle(value){
- return ({'상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
+ return ({'귀여니체 · 2000년대 인터넷소설체':'반말','거칠고 상스러운 말투 · 순화':'거칠고 상스러운 말투','상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
 }
 
 // The native select remains the source of truth for existing save/draft handlers.
@@ -265,7 +269,7 @@ export function speechStyleExample(character,options={}){
  '능글맞고 여유로운 말투':["The weekend, huh? I bet you've got something interesting in mind.",'週末ねえ。君なら面白いことを思いつきそうだ。'],
  '냉소적인 말투':["The world will keep spinning either way. So, what's the plan?",'何を選んでも世界は回るけどね。で、どうする？'],
  '걸걸한 아저씨 말투':["Come on, let's pick a plan and make a day of it!",'なあ、週末どうする？ 景気よく決めようぜ！'],
- '거칠고 상스러운 말투 · 순화':["Enough messing around. Just pick a damn plan.",'ぐずぐずすんなよ。さっさと決めちまおうぜ。'],
+ '거칠고 상스러운 말투':["Enough messing around. Just pick a damn plan.",'ぐずぐずすんなよ。さっさと決めちまおうぜ。'],
  '귀여니체 · 2000년대 인터넷소설체':["weekend plan?? i cant choooose T_T",'週末どぉするぅ…？ 選べなぃよぉ T_T'],
  '고풍스러운 말투':["Pray, what wouldst thou have us do this weekend?",'週末はいかに過ごそうか。そなたの考えを聞かせておくれ。'],
  '사극 선비 말투':["Would you care to share your plans for the weekend? I would gladly hear them.",'週末はどう過ごされるかな。そなたの考えをぜひ聞かせてほしい。'],

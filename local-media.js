@@ -6,6 +6,9 @@ const refToData=new Map();
 // Rendering only: keep base64 payloads out of repeatedly parsed HTML. Original
 // state and exports continue to contain the durable image data, never blob URLs.
 const displayImages=new Map();
+const displayOriginals=new Map();
+// Retry the durable source if this WebView cannot decode a display-only blob.
+globalThis.document?.addEventListener("error",event=>{const image=event.target;if(image?.tagName!=="IMG")return;const original=displayOriginals.get(image.currentSrc||image.src);if(original){event.stopImmediatePropagation();image.src=original}},true);
 let displayImageBytes=0;
 const DISPLAY_IMAGE_LIMIT=32*1024*1024;
 export function displayImageSource(value){
@@ -18,7 +21,7 @@ export function displayImageSource(value){
     const decoded=atob(match[2]),bytes=new Uint8Array(decoded.length);
     for(let i=0;i<decoded.length;i++)bytes[i]=decoded.charCodeAt(i);
     const url=URL.createObjectURL(new Blob([bytes],{type:match[1]}));
-    displayImages.set(value,url);displayImageBytes+=value.length;
+    displayImages.set(value,url);displayOriginals.set(url,value);displayImageBytes+=value.length;
     return url;
   }catch{return value}
 }

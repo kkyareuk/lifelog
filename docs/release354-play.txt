@@ -1,0 +1,9 @@
+<ko-KR>
+장면 속 캐릭터 사진 로딩과 이미지 표시 실패 시 재시도를 개선했습니다. 알림 사진 준비가 지연될 때 기본 아이콘을 사용하도록 보완했습니다. 초성 반말을 추가하고 일부 말투와 예문을 수정했습니다. 귀여니체는 선택 목록에서 제거했습니다.
+</ko-KR>
+<en-US>
+Improved character photo loading and image retry behavior. Notifications can use the app icon when thumbnail preparation times out. Added casual texting speech and revised several speech styles and examples. Removed the 2000s web-novel style from the chooser.
+</en-US>
+<ja-JP>
+キャラクター画像の読み込みと表示失敗時の再試行を改善しました。通知画像の準備が遅い場合はアプリアイコンを使います。チャット口調を追加し、一部の口調と例文を調整しました。2000年代ネット小説風の口調を選択一覧から削除しました。
+</ja-JP>

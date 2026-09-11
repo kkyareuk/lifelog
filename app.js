@@ -6198,7 +6198,7 @@ async function sendCharacterNotificationTest(){
   localStorage.setItem("drawer-village-last-test-notification-character",character.id);
   const at=new Date(Date.now()+5000),seed=notificationHash(String(Date.now())),topics=notificationTopicsFor(character),topic=topics[seed%Math.max(1,topics.length)]||"checkins",item=topic==="questions"?buildQuestionNotification(character,at,seed):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed):buildMomentNotification(character,topic,at,seed),largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
   if(owner!==localStorage.scope)return;
-  const message=mailEnvelope({id:829999999,title:item.title,body:item.body,largeIcon,at,extra:item.extra},owner);
+  const message=mailEnvelope({id:829999999,title:item.title,body:item.body,largeIcon,at:new Date(Date.now()+5000),extra:item.extra},owner);
   await scheduleCharacterNotification(message);
   if(owner!==localStorage.scope)return;
   contactMailbox.record([message]);showToast("5초 뒤 시험 알림이 도착해요");

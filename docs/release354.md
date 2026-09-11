@@ -1,0 +1,4 @@
+# 354 / 1.0.321 — dev
+Photo decode fallback to durable source; scene avatars load eagerly. Notification thumbnail preparation times out after 2 seconds rather than preventing scheduling indefinitely; test notification time starts after icon preparation. Device delivery not verified (adb no connected device). Global 3–6 second stalls remain unresolved; need 353+ Performance report.
+Removed selectable 2000s novel style (legacy becomes casual), added texting slang; rough speech no longer labeled toned down, soldier question revised, cute emoticons and fragmented translation wording. Cold formal unchanged pending user direction.
+Validation: stalled-image mock timeout; text alias/EN/JA; real book popup and room access QA. Old notification static suite has unrelated schema/status-bar/version assertions; not reported as passing.
