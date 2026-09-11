@@ -62,6 +62,7 @@ try{
   assert.equal(profile.Entitlements['application-identifier'],`${team}.${bundle}`);
   assert.equal(profile.Entitlements['get-task-allow'],false);
   assert.equal(profile.Entitlements['beta-reports-active'],true);
+  assert.ok(profile.Entitlements['com.apple.developer.applesignin']?.includes('Default'),'Distribution profile lacks Sign in with Apple; regenerate it before upload');
   assert.ok(!profile.ProvisionedDevices&&!profile.ProvisionsAllDevices);
   assert.ok(new Date(profile.ExpirationDate)>new Date());
   assert.match(profile.UUID,/^[A-Fa-f0-9-]+$/);
@@ -89,6 +90,9 @@ try{
   run('xcodebuild',['-workspace','ios/App/App.xcworkspace','-scheme','App','-configuration','Release','-sdk','iphoneos','-destination','generic/platform=iOS','-archivePath',archive,'-derivedDataPath',path.join(temp,'DerivedData'),'archive']);
   const app=path.join(archive,'Products/Applications/App.app');
   run('codesign',['--verify','--deep','--strict',app]);
+  const signedEntitlements=run('codesign',['-d','--entitlements',':-',app]);
+  assert.ok(signedEntitlements.includes('com.apple.developer.applesignin')&&signedEntitlements.includes('Default'),'Signed app is missing Sign in with Apple entitlement');
+  saveStatus('signing-capabilities',{appleSignIn:true,profileAppleSignIn:true});
   const info=JSON.parse(run('plutil',['-convert','json','-o','-',path.join(app,'Info.plist')]));
   assert.equal(info.CFBundleIdentifier,bundle);
   assert.equal(info.CFBundleShortVersionString,release.version);
