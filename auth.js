@@ -872,7 +872,7 @@ function watchMailboxSignal(){
   clearTimeout(mailboxSignalTimer);mailboxSignalTimer=setTimeout(()=>{if(user?.uid===uid)void refreshMailbox(true).catch(error=>console.warn('Mailbox signal refresh',error.code))},250);
  },error=>console.warn('Mailbox signal',error.code));
 }
-const groupSnapshot=()=>{const s={...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})};return window.DrawerVillageSafety?.filterSnapshot(s)||s};
+const groupSnapshot=()=>{const s={...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})};const visible=window.DrawerVillageSafety?.filterSnapshot(s)||s;return {...visible,membershipMembers:groupState.members}};
 let olderMailboxRequest=null;
 async function loadOlderMailbox(){
  if(olderMailboxRequest)return olderMailboxRequest;
