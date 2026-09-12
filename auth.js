@@ -1064,7 +1064,7 @@ async function createGroup({name}={}){
   const batch=writeBatch(db),createdAt=serverTimestamp();
   batch.set(doc(db,"groups",groupId),{
     name:groupName,ownerUid:account.uid,ownerName:accountName(),inviteCode,createdAt,updatedAt:createdAt,
-    rules:{memberCharacterLimit:20,operatorCharacterLimit:100,managerCharacterLimit:100,allowHomeVisits:true},
+    rules:{memberCharacterLimit:20,operatorCharacterLimit:100,managerCharacterLimit:100,allowInterTownMovement:true,allowHomeVisits:true},
     hostTownId:"",hostTownName:town.name,towns:[town],schemaVersion:3
   });
   batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),photoURL:accountPhoto(),role:"owner",joinedAt:createdAt});
@@ -1103,6 +1103,7 @@ async function updateGroupRules(patch={}){
     allowCohabitation:patch.allowCohabitation!==false,
     allowMail:patch.allowMail!==false,
     allowGifts:patch.allowGifts!==false,
+    allowInterTownMovement:patch.allowInterTownMovement!==false,
     allowHomeVisits:patch.allowHomeVisits!==false
   };
   await setUserDoc(doc(db,"groups",groupState.activeGroupId),{rules,updatedAt:serverTimestamp()},{merge:true});

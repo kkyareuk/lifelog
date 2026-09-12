@@ -20,3 +20,6 @@ JA translation of release notes (not uploaded: no existing JA App Store localiza
 ・アカウント確認と削除時の不具合を修正しました。
 ・キャラクター設定、部屋の写真管理、予定画面の使いやすさを改善しました。
 ・画面移動と保存処理の安定性を改善しました。
+
+## 2026-09-12 approval and distribution verified
+App Store Connect shows version1.0.327 build363 as 배포 준비됨 on the deliverable page, AFTER_APPROVAL selected. Submission81a957b3-e919-4c05-a6b9-fa76b0e05b83 accepted. No additional manual release action required. Public storefront propagation can take24hours. Later dev changes are not in363.

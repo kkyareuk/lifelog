@@ -2,6 +2,6 @@
   "version": "1.0.327",
   "build": 363,
   "sourceAndroidCode": 360,
-  "stage": "apple-reauth-validation-pending",
-  "appStoreReady": false
+  "stage": "released",
+  "appStoreReady": true
 }
