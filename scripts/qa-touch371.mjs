@@ -6,7 +6,7 @@ import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=process.cwd(),out=resolve('qa-furniture366');await mkdir(out,{recursive:true});
-const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();let body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(process.env.QA_STAGED==='1'&&['/app.js','/shared-home-editor.js','/app.css'].includes(pathname))body=execFileSync('git',['show',':'+pathname.slice(1)]);if(pathname==='/app.js')body=body.toString()+'\nwindow.qaRender=render;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();let body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(process.env.QA_STAGED==='1'&&['/app.js','/shared-home-editor.js','/app.css'].includes(pathname))body=execFileSync('git',['show',':'+pathname.slice(1)]);if(pathname==='/views.js')body=body.toString()+'\nwindow.qaSeatMarkup=homeLifePersonMarkup;';if(pathname==='/app.js')body=body.toString()+'\nwindow.qaRender=render;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
 const useWebKit=process.argv.includes('--webkit'); const browser=await (useWebKit?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
 try{
@@ -50,17 +50,37 @@ try{
  for(const [id,x,y,z,kind] of [['a',80,80,1,'chair'],['b',80,80,2,'chair'],['t',170,270,1,'table']]){
  const el=document.createElement('button');el.className='room-furniture-item';Object.assign(el.dataset,{furniturePlacement:id,homeId:'h',roomKey:'r',furnitureKind:kind});el.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:60px;height:60px;z-index:${z};padding:0`;el.innerHTML='<span class="room-furniture-art" style="width:60px;height:60px">X</span>';layer.append(el);
  }
- window.dragSelections=[];window.dragMoves=[];const home={id:'h',rooms:{r:{furniturePlacements:[{id:'a',item:'의자'},{id:'b',item:'의자'},{id:'t',item:'식탁'}]}}};
+ window.dragSelections=[];window.dragMoves=[];const home={id:'h',rooms:{r:{furniturePlacements:[{id:'a',item:'의자',x:27.5,y:18.33},{id:'b',item:'의자',x:27.5,y:18.33},{id:'t',item:'식탁',x:50,y:50}]}}};window.dragHome=home;
  (await import('/furniture-drag.js')).bindFurnitureDrag(root,{getHome:()=>home,select:el=>dragSelections.push(el.dataset.furniturePlacement),move:(el,pos)=>dragMoves.push(pos)});
  });
  const touch=async(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
  for(let i=0;i<2;i++){await touch('touchStart',[{x:110,y:110}]);await touch('touchEnd',[])}
  assert.deepEqual(await page.evaluate(()=>dragSelections),['b','a']);
  await touch('touchStart',[{x:110,y:110}]);await touch('touchMove',[{x:200,y:276}]);await page.waitForTimeout(40);await touch('touchEnd',[]);
- assert.equal(await page.evaluate(()=>dragMoves.at(-1).tableId),'t');
+ assert.equal(await page.evaluate(()=>dragMoves.at(-1).tableId),'t');assert.equal(await page.evaluate(()=>dragMoves.at(-1).rotation),0);
  await page.locator('#drag-fixture [data-chair-magnet]').click();
  await touch('touchStart',[{x:110,y:110}]);await touch('touchMove',[{x:200,y:276}]);await page.waitForTimeout(40);await touch('touchEnd',[]);
  assert.equal(await page.evaluate(()=>dragMoves.at(-1).tableId),'');
  console.log('OVERLAP CYCLE / MAGNET ON-OFF PASS');
+
+ await page.evaluate(()=>{dragHome.rooms.r.furniturePlacements[1].tableId='t';const frame=document.createElement('span');frame.className='chair-frame-overlay';frame.dataset.chairFrame='b';frame.style.cssText='position:absolute;left:80px;top:80px;width:60px;height:60px';frame.innerHTML='<span class="room-furniture-art">F</span>';document.querySelector('#drag-fixture .room-furniture-layer').append(frame)});
+ await touch('touchStart',[{x:200,y:300}]);await touch('touchMove',[{x:230,y:340}]);await page.waitForTimeout(40);
+ assert.equal(await page.locator('#drag-fixture .furniture-drag-preview').count(),3);
+ assert.equal(await page.locator('#drag-fixture [data-chair-frame].furniture-drag-source').evaluate(el=>getComputedStyle(el).opacity),'0');
+ await touch('touchEnd',[]);assert.equal(await page.locator('#drag-fixture .furniture-drag-preview').count(),0);
+ const grouped=await page.evaluate(()=>{const h=g.state.homes[g.active().homeId],keys=Object.keys(h.rooms),r=h.rooms[keys[0]];r.furniturePlacements=[{id:'table-group',item:'식탁',x:40,y:40},{id:'chair-group',item:'의자',x:40,y:55,tableId:'table-group',seatSide:'south',rotation:180}];g.moveFurniturePlacement(h.id,keys[0],keys[1],'table-group',{x:55,y:50});const moved=h.rooms[keys[1]].furniturePlacements;return {table:moved.find(p=>p.id==='table-group'),chair:moved.find(p=>p.id==='chair-group'),source:r.furniturePlacements.length}});
+ assert.equal(grouped.source,0);assert.equal(grouped.chair.x,grouped.table.x);assert.equal(grouped.chair.y-grouped.table.y,15);assert.equal(grouped.chair.tableId,'table-group');console.log('CHAIR FRAME PREVIEW / LINKED TABLE CROSS-ROOM MOVE PASS');
+
+
+ await page.evaluate(async()=>{
+ document.querySelector('#drag-fixture').remove();document.querySelector('#depth-fixture').remove();
+ const root=document.createElement('section');root.id='seat-qa';root.className='home';root.style.cssText='position:fixed;inset:0;z-index:999999;background:white';
+ const c=g.active(),scene={title:'밥을 먹는 중',desc:'식사하고 있어요',home:true};
+ root.innerHTML='<div class="room" style="position:relative;width:380px;height:600px"><div class="room-furniture-item" data-furniture-placement="seat" data-furniture-kind="chair" style="position:absolute;left:140px;top:240px;width:100px;height:140px"><img class="furniture-sprite" style="width:100px;height:140px" /></div><div class="room-people has-home-life" style="position:absolute;inset:0">'+window.qaSeatMarkup(c,scene,{phase:'using',item:'의자',furnitureId:'seat',x:50,y:50},{name:'식당'},'dining',0)+ '</div></div>';
+ document.body.append(root);(await import('/scene-depth.js')).bindSceneDepth(root);
+ });await page.waitForTimeout(150);
+ const seat=await page.evaluate(()=>{const r=document.querySelector('#seat-qa'),p=r.querySelector('.home-person'),a=p.querySelector('.avatar,.sprite'),b=a.getBoundingClientRect(),c=r.querySelector('.furniture-sprite').getBoundingClientRect();return {width:p.getBoundingClientRect().width,center:b.x+b.width/2,chairCenter:c.x+c.width/2,labels:p.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,seated:p.classList.contains('is-seated'),action:p.className,animation:getComputedStyle(p.querySelector('.home-person-visual')).animationName}});
+ assert.equal(seat.labels,0);assert(seat.seated);assert(Math.abs(seat.width-67)<1);assert(Math.abs(seat.center-seat.chairCenter)<4,JSON.stringify(seat));assert(seat.action.includes('scene-action-eating'));assert(seat.animation.includes('home-activity-cook'));console.log('SEATED SIZE / CENTER / HIDDEN LABELS / EATING MOTION PASS',seat);
+ await page.screenshot({path:resolve(out,'seated374.png')});
 
 }finally{await browser.close();server.close()}

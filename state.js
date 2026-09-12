@@ -682,7 +682,7 @@ function normalizeHomes(x){
     h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
     h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
     h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room],index)=>{
-      room.name=String(room.name||"이름 없는 방");room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
+      room.name=String(room.name||"이름 없는 방");if(["다이닝룸","다이닝 룸"].includes(room.name))room.name="식당";room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
       room.image=String(room.image||"");
       room.floorImage=String(room.floorImage||"");
       room.floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
@@ -1722,7 +1722,7 @@ export function setRoomType(homeId,roomKey,type){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room||!FURNITURE_CATALOG[type])return;
   const oldType=room.type||"other";
   const oldDefaultFloor=defaultHomeSurfaceForRoom(oldType);
-  const defaultNames={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
+  const defaultNames={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"식당",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
   room.type=type;
   if(!room.floorImage&&(!room.floorMaterial||room.floorMaterial===oldDefaultFloor))room.floorMaterial=defaultHomeSurfaceForRoom(type);
   room.wallMaterial=normalizeWallSurface(room.wallMaterial,room.floorMaterial,type);
@@ -1900,6 +1900,19 @@ export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,
   if(!from||!to)return false;
   const source=normalizeFurniturePlacements(from.furniturePlacements),current=source.find(item=>item.id===placementId);
   if(!current)return false;
+  if(current.item==='식탁'&&source.some(item=>item.tableId===current.id)){
+    const moving=source.filter(item=>item.id===current.id||item.tableId===current.id),ids=new Set(moving.map(item=>item.id));
+    const target=from===to?source.filter(item=>!ids.has(item.id)):normalizeFurniturePlacements(to.furniturePlacements);
+    if(from!==to&&target.some(item=>ids.has(item.id)))return false;
+    const dx=Math.max(.5-Math.min(...moving.map(p=>p.x)),Math.min(99.5-Math.max(...moving.map(p=>p.x)),Number(position.x??current.x)-current.x));
+    const dy=Math.max(.5-Math.min(...moving.map(p=>p.y)),Math.min(99.5-Math.max(...moving.map(p=>p.y)),Number(position.y??current.y)-current.y));
+    const moved=moving.map(item=>normalizeFurniturePlacement({...item,x:item.x+dx,y:item.y+dy}));
+    from.furniturePlacements=source.filter(item=>!ids.has(item.id));to.furniturePlacements=[...target,...moved];
+    from.furniture=[...new Set(from.furniturePlacements.map(p=>p.item))];to.furniture=[...new Set(to.furniturePlacements.map(p=>p.item))];
+    moving.forEach(item=>releaseFurnitureInteraction(home,item.id));
+    if(from!==to)touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
+    save();return moved.find(item=>item.id===placementId);
+  }
   const patch={x:position.x??current.x,y:position.y??current.y,...(position.tableId!==undefined?{tableId:position.tableId,seatSide:position.seatSide||"",rotation:position.rotation??current.rotation}:fromRoomKey!==toRoomKey?{tableId:"",seatSide:""}:{})};
   if(fromRoomKey===toRoomKey)return updateFurniturePlacement(homeId,fromRoomKey,placementId,patch);
   const target=normalizeFurniturePlacements(to.furniturePlacements);

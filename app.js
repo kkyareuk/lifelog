@@ -1001,7 +1001,7 @@ const maintenanceConfig=()=>window.PARALLEL_CITY_CONFIG?.maintenance||{};
 const maintenanceEnabled=()=>Boolean(maintenanceConfig().enabled);
 const ONBOARDING_KEY="drawer-village-onboarding-v2";
 const SETUP_COACH_KEY="drawer-village-first-setup-v2";
-const ROOM_EDITOR_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
+const ROOM_EDITOR_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"식당",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
 const roomIllustration=(type="other",index=0)=>{
   const palettes={
     living:[["#e8d6bf","#a5785d"],["#d7e6df","#5b8476"]],kitchen:[["#e8e4da","#8c9a91"],["#f2dfc5","#b9825e"]],
@@ -1265,7 +1265,7 @@ function setFurniturePlacementStyle(element,placement){
     const layer=element.closest('.room-furniture-layer');
     let overlay=[...layer.querySelectorAll('[data-chair-frame]')].find(el=>el.dataset.chairFrame===placement.id);
     if(sprite.frame){
-      if(!overlay){overlay=document.createElement('span');overlay.className='chair-frame-overlay';overlay.dataset.chairFrame=placement.id;overlay.innerHTML='<img class="furniture-sprite" alt="">';layer.append(overlay)}
+      if(!overlay){overlay=document.createElement('span');overlay.className='chair-frame-overlay';overlay.dataset.chairFrame=placement.id;overlay.innerHTML='<span class="room-furniture-art"><img class="furniture-sprite" alt=""></span>';layer.append(overlay)}
       overlay.style.cssText=element.style.cssText;overlay.querySelector('img').src=sprite.frame;
     }else overlay?.remove();
   }
