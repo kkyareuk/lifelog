@@ -1,5 +1,5 @@
 import {execFileSync} from 'node:child_process';
-import {mkdirSync, writeFileSync, existsSync} from 'node:fs';
+import {mkdirSync, writeFileSync, existsSync, readFileSync, copyFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 
 export function selectDevices(list) {
@@ -38,14 +38,26 @@ async function main() {
       simctl(['install', device.udid, app]);
       const launch = simctl(['launch', device.udid, 'com.drawervillage.app']);
       if (!/com\.drawervillage\.app:\s*\d+/.test(launch)) throw new Error(`Unexpected launch: ${launch}`);
-      await new Promise(resolve => setTimeout(resolve, 15_000));
+      const container = simctl(['get_app_container',device.udid,'com.drawervillage.app','data']);
+      const probe = `${container}/Documents/drawer-startup-check.json`;
+      let startup=null;
+      for(let attempt=0;attempt<45;attempt++){
+        await new Promise(resolve=>setTimeout(resolve,2000));
+        if(existsSync(probe)){try{startup=JSON.parse(readFileSync(probe,'utf8'))}catch{}}
+        if(startup?.dom?.appChildren>0&&startup.dom.textLength>50&&startup.dom.buttons>0)break;
+      }
+      writeFileSync(`${reports}/${device.family}-startup.json`,JSON.stringify(startup,null,2));
+      const scene=`${container}/Documents/drawer-scene-check.json`;
+      if(existsSync(scene))copyFileSync(scene,`${reports}/${device.family}-scene.json`);
+
       simctl(['io', device.udid, 'screenshot', `${reports}/${device.family}.png`]);
+      if(!(startup?.dom?.appChildren>0&&startup.dom.textLength>50&&startup.dom.buttons>0))throw new Error('WebView did not render game UI; inspect startup and scene reports');
       // A screenshot alone can be SpringBoard after a crash; verify a live app PID.
       const processList = simctl(['spawn', device.udid, 'launchctl', 'list']);
       const running = processList.split('\n').some(line =>
         /^\d+\s/.test(line) && line.includes('com.drawervillage.app'));
       if (!running) throw new Error('App exited before the launch screenshot');
-      results.push({...device, launch, running, screenshot:`${device.family}.png`});
+      results.push({...device, launch, running, startup, screenshot:`${device.family}.png`});
     } finally {
       try { simctl(['shutdown', device.udid], 30_000); } catch { /* preserve original error */ }
       writeFileSync(`${reports}/launch-results.json`, JSON.stringify({

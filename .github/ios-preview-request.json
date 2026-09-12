@@ -1,5 +1,5 @@
 {
-  "request": "2026-09-13-build377-cumulative-ui",
+  "request": "2026-09-13-build377-startup-diagnostics",
   "purpose": "Compile and launch cumulative UI and furniture fixes on iPhone and iPad; no purchase",
   "appStoreUpload": false
 }

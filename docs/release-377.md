@@ -10,29 +10,32 @@ Node contact rules/context destinations/three-language perspectives, old schedul
 
 Android377 APK/AAB compiled and signature/version verified. Grouped home interactions and separate bed foreground labels also hidden during accepted affection; declined scenes retain neutral labels without romantic effects. Chrome grouped/bed/sofa rendering assertions pass; WebKit furniture companion selection and primary screens pass. iOS local project checks pass. Store upload, simulator build and submission status recorded after completion; this document alone does not claim distribution.
 
-## Store notes
+## Store notes (Android production 356 → 377)
 <ko-KR>
-화면 이동·저장과 백업의 안정성을 개선했습니다.
-프로필 편집, 사진 배치와 일정 화면의 스크롤을 수정했습니다.
-멀티 집 공유 코드 적용과 이전 일정 수정·삭제 오류를 개선했습니다.
-가구 이동, 의자 연결과 착석 위치를 다듬고 두 사람이 소파를 이용할 수 있게 했습니다.
-게임 안에서 문의를 보내고 질문의 선택지에 구체적인 의견을 남길 수 있습니다.
-캐릭터 상호작용과 성격에 따른 반응을 다양하게 했습니다.
+화면 이동·저장·백업과 계정 확인의 안정성을 개선했습니다.
+구매 내역 복원과 슬롯 표시를 다듬었습니다.
+프로필·사진 배치·일정 화면의 스크롤을 수정했습니다.
+멀티 집 공유 코드 적용과 이전 일정 수정·삭제를 개선했습니다.
+가구 드래그, 의자 연결과 착석 위치를 조정하고 소파를 두 사람이 이용할 수 있게 했습니다.
+게임 내 문의와 질문 선택지에 구체적인 의견을 보내는 기능을 추가했습니다.
+캐릭터 상호작용과 성격별 반응을 다양하게 했습니다.
 </ko-KR>
 <en-US>
-Improved navigation, saving and backup stability.
+Improved navigation, saving, backups and account checks.
+Refined purchase restoration and slot display.
 Fixed scrolling in profile, photo placement and schedule screens.
-Improved shared-home imports and editing or deleting older multiplayer schedules.
+Improved shared-home imports and older multiplayer schedule edits/deletions.
 Refined furniture dragging, linked chairs and seating, including two-person sofas.
-Send support requests in game and give specific feedback on question answers.
-Added more varied character interactions and personality-based reactions.
+Added in-game support requests and specific question-answer feedback.
+Expanded character interactions and personality-based reactions.
 </en-US>
 <ja-JP>
-画面移動・保存・バックアップの安定性を改善しました。
-プロフィール、写真配置、予定画面のスクロールを修正しました。
-共有ハウスの読み込みと、以前のマルチ予定の編集・削除を改善しました。
+画面移動・保存・バックアップとアカウント確認の安定性を改善しました。
+購入履歴の復元と枠の表示を調整しました。
+プロフィール・写真配置・予定画面のスクロールを修正しました。
+共有ハウスの読み込みと以前のマルチ予定の編集・削除を改善しました。
 家具の移動、椅子の連結と着席位置を調整し、ソファを二人で使えるようにしました。
-ゲーム内からお問い合わせや質問の選択肢への詳しい意見を送れます。
+ゲーム内のお問い合わせと質問の選択肢への詳しい意見を送る機能を追加しました。
 キャラクターの交流と性格に応じた反応を増やしました。
 </ja-JP>
 
@@ -40,3 +43,5 @@ New/changed UI and narrative text: English100%, Japanese100% scoped; whole-app t
 
 ## Store progress
 Android production release 20: only bundle377 selected; release name377 (1.0.328), 100% of existing target countries. Submitted via Play Console. Publishing overview shows changes under review with pre-review checks still running. Managed publishing disabled. Not yet publicly available. iOS377 archive/upload and simulator workflow running; do not select376.
+
+iOS App Store upload377 accepted from9074dcd (not internal-only); Apple build ID20002e24-69d0-4af3-8f5c-198b8628ea34 selected for1.0.328. Korean and existing English metadata updated. Existing auto-release-after-approval preserved. Export questionnaire answered none of the listed algorithms after source/native dependency configuration review (system networking/authentication and SHA-256 digest, no custom encryption implementation found); Apple reference: https://developer.apple.com/documentation/security/complying-with-encryption-export-regulations . First377 simulator run timed out in simctl launch without stdout/stderr after180s; fresh-runner rerun pending. No iOS review submission yet.
