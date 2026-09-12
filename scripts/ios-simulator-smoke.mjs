@@ -27,7 +27,10 @@ async function main() {
       encoding:'utf8', timeout, killSignal:'SIGKILL', maxBuffer:8*1024*1024
     }).trim();
   };
-  const devices = selectDevices(JSON.parse(simctl(['list', '--json'])));
+  const request = JSON.parse(readFileSync(`${root}.github/ios-preview-request.json`, 'utf8'));
+  if (request.deviceFamily && !['iPhone', 'iPad'].includes(request.deviceFamily)) throw new Error('Invalid simulator family');
+  const devices = selectDevices(JSON.parse(simctl(['list', '--json'])))
+    .filter(device => !request.deviceFamily || device.family === request.deviceFamily);
   const results = [];
   for (const device of devices) {
     console.log(`Launch smoke: ${device.name} / iOS ${device.runtime}`);
@@ -58,11 +61,24 @@ async function main() {
         /^\d+\s/.test(line) && line.includes('com.drawervillage.app'));
       if (!running) throw new Error('App exited before the launch screenshot');
       results.push({...device, launch, running, startup, screenshot:`${device.family}.png`});
+    } catch (error) {
+      // Launch can time out before the normal probe path. Keep evidence instead
+      // of confusing a simulator command failure with an app crash.
+      try {
+        const container = simctl(['get_app_container', device.udid, 'com.drawervillage.app', 'data'], 30_000);
+        for (const name of ['startup', 'scene']) {
+          const source = `${container}/Documents/drawer-${name}-check.json`;
+          if (existsSync(source)) copyFileSync(source, `${reports}/${device.family}-${name}.json`);
+        }
+        simctl(['io', device.udid, 'screenshot', `${reports}/${device.family}-failure.png`], 30_000);
+      } catch (captureError) { console.error('Failure evidence unavailable:', captureError.message); }
+      results.push({...device, error:error.message, passed:false});
+      throw error;
     } finally {
       try { simctl(['shutdown', device.udid], 30_000); } catch { /* preserve original error */ }
       writeFileSync(`${reports}/launch-results.json`, JSON.stringify({
         commit:process.env.GITHUB_SHA || null, results,
-        scope:'Launch/process check only; screenshots require visual review. Not functional, signing, TestFlight or device QA.'
+        scope:'Native launch, game DOM and process check; screenshots require visual review. Not full functional, signing, TestFlight or physical device QA.'
       }, null, 2));
     }
   }

@@ -1,5 +1,6 @@
 {
-  "request": "2026-09-13-build377-startup-document-diagnostics",
+  "request": "2026-09-13-build377-isolated-ipad-startup",
+  "deviceFamily": "iPad",
   "purpose": "Compile and launch cumulative UI and furniture fixes on iPhone and iPad; no purchase",
   "appStoreUpload": false
 }
