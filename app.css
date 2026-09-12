@@ -1436,7 +1436,9 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .room-furniture-props{position:absolute;left:50%;bottom:58%;z-index:2;display:flex;align-items:flex-end;justify-content:center;gap:1px;width:max-content;max-width:72px;transform:translateX(-50%);pointer-events:none}
 .room-furniture-props i{display:block;font-style:normal;font-size:clamp(10px,1.65vw,17px);line-height:1;filter:drop-shadow(0 2px 2px #17203380);transform:translateY(calc((var(--prop-slot,0) % 2) * -2px))}
 html body #app .home .room-furniture-item small{display:none;position:absolute;left:50%;top:100%;max-width:92px;padding:3px 6px;border-radius:999px;background:#30251ef2;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px;line-height:1.2;text-shadow:none;white-space:normal;text-align:center;min-width:48px;overflow-wrap:anywhere;transform:translateX(-50%) rotate(calc(var(--furniture-rotation) * -1));pointer-events:none}
-.home.is-editing .room-furniture-item{pointer-events:auto!important;cursor:grab;touch-action:none!important}
+.home.is-editing .room-furniture-item{pointer-events:none!important;cursor:grab;touch-action:none!important}
+.home.is-editing .room-furniture-art{pointer-events:auto;touch-action:none}
+.home.is-editing .furniture-drag-preview *{pointer-events:none!important}
 .home.is-editing .room-furniture-item.furniture-drag-source{opacity:0}
 .home.is-editing .room-furniture-item.furniture-drag-preview{pointer-events:none!important;z-index:1000}
 html body #app .home.is-editing .room-furniture-item small{display:block}

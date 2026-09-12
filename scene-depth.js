@@ -19,7 +19,7 @@ export function scheduleSceneDepth(){
         const chair=items.find(el=>el.dataset.furniturePlacement===person.dataset.seatId);
         if(!chair)continue;
         const r=(chair.querySelector('.furniture-sprite')||chair).getBoundingClientRect(),container=(person.offsetParent||scene).getBoundingClientRect(),sofa=chair.dataset.furnitureKind==='sofa';
-        seats.push([person,(r.left+r.width/2-container.left)/container.width*100,(r.top+r.height*(sofa?.75:.72)-container.top)/container.height*100,r.width*(sofa?.45:.9)]);
+        seats.push([person,(r.left+r.width/2-container.left)/container.width*100,(r.top+r.height*(sofa?.86:.76)-container.top)/container.height*100,r.width*(sofa?.42:.76)]);
         bounds.find(row=>row.element===person).bottom=bounds.find(row=>row.element===chair).bottom+.1;
       }
       for(const occupant of bounds.filter(row=>row.element.dataset.coupleBedId)) {

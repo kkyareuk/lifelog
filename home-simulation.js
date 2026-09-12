@@ -162,7 +162,8 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
     const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
-    let candidates=placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
+    const pinned=placements.find(item=>item.id===(scene.furniture?.id||scene.meetingFurniture?.id));
+    let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
     if(sleeping){
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);

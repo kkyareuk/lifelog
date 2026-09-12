@@ -209,10 +209,8 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
 // A contain image has letterboxing inside its grid footprint. Use its painted
 // rectangle for the selection outline, not the transparent footprint.
 export function fitFurnitureSelection(element){
-  const image=element.querySelector(".couple-bed-base");
-  if(!image?.naturalWidth)return;
-  const width=element.clientWidth,height=element.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
-  const paintedWidth=Math.min(width,height*ratio),paintedHeight=Math.min(height,width/ratio);
-  element.style.setProperty("--selection-inset-x",`${Math.max(0,(width-paintedWidth*1.05)/2)}px`);
-  element.style.setProperty("--selection-inset-y",`${Math.max(0,(height-paintedHeight*1.05)/2)}px`);
+  const art=element.querySelector('.furniture-sprite,.couple-bed-base,.room-furniture-art');if(!art)return;
+  const outer=element.getBoundingClientRect(),r=art.getBoundingClientRect(),sx=outer.width/Math.max(1,element.offsetWidth),sy=outer.height/Math.max(1,element.offsetHeight);
+  element.style.setProperty('--selection-inset-x',`${(r.left-outer.left)/sx}px`);
+  element.style.setProperty('--selection-inset-y',`${(r.top-outer.top)/sy}px`);
 }

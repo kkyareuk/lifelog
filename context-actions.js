@@ -30,8 +30,14 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
  if(target.type==='furniture'){
   furniture=room.furniturePlacements?.find(p=>p.id===target.id);if(!furniture)return null;
   if(!contextActions({...target,item:furniture.item}).some(a=>a.kind===kind&&(a.lifeTask||'')===lifeTask))return null;
+  if(furniture.item==='식탁'){
+   const table=furniture,placements=room.furniturePlacements||[],busy=new Set(Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id).map(([,d])=>d.furniture?.id));
+   for(const [id,a] of Object.entries(home.lifeSimulation?.agents||{}))if(id!==c.id&&a.phase==='using')busy.add(a.furnitureId);
+   furniture=placements.filter(p=>p.item==='의자'&&!busy.has(p.id)&&(p.tableId===table.id||!p.tableId&&Math.hypot(p.x-table.x,p.y-table.y)<28)).sort((a,b)=>Math.hypot(a.x-table.x,a.y-table.y)-Math.hypot(b.x-table.x,b.y-table.y))[0];
+   if(!furniture)return null;
+  }
   const capacity=/커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
-  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&d.homeId===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
+  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
   if(used>=capacity)return null;
  }
  return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};

@@ -19,7 +19,7 @@ function validate(input){
  return p;
 }
 const scalar=new Set('id from to successorId a b teacherId parentId childId sourceId targetId characterId homeId sharedHomeId sourceHomeId townId workplaceId placeId visitHomeId ownerCharacterId partnerId'.split(' '));
-const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds allowedCharacterIds'.split(' '));
+const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds accessCharacterIds allowedCharacterIds'.split(' '));
 function remap(v,map,key=''){
  if(Array.isArray(v))return v.map(x=>typeof x==='string'&&arrays.has(key)?map[x]||x:remap(x,map));
  if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).map(([k,x])=>[['characters','homes','relationships','characterViews','routines','monthlyRoutines','view-row'].includes(key)?map[k]||k:k,remap(x,map,key==='characterViews'?'view-row':k)]));

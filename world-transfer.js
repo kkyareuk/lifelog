@@ -1,7 +1,7 @@
 import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
 import {state,personalState,cloneState,replaceState,save} from './state.js?v=20260909dev305';
 const scalar=new Set('id from to successorId a b teacherId parentId childId sourceId targetId characterId homeId sharedHomeId sourceHomeId townId workplaceId placeId visitHomeId ownerCharacterId partnerId'.split(' '));
-const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds allowedCharacterIds'.split(' '));
+const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds accessCharacterIds allowedCharacterIds'.split(' '));
 export function mapPackageIds(v,map,key=''){
  if(Array.isArray(v))return v.map(x=>typeof x==='string'&&arrays.has(key)?map[x]??x:mapPackageIds(x,map)).filter(x=>x!=='');
  if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,x])=>[['characters','homes','relationships','characterViews','routines','monthlyRoutines','view-row'].includes(key)?map[k]||k:k,mapPackageIds(x,map,key==='characterViews'?'view-row':k)]));
@@ -74,7 +74,7 @@ export async function worldTransferDialog({homeId='',townId='',kind='town',rende
     if(api.getSnapshot().activeGroupId!==snapshot.activeGroupId)throw Error('account-changed');
     const [sourceId,original]=Object.entries(pack.homes)[0]||[];if(!original)throw Error('home-missing');
     const mapped=mapPackageIds(original,Object.fromEntries(Object.keys(pack.characters).map(id=>[id,mapping[id]||''])));
-    await api.saveHomeLayout({id:homeId,revision:targetRevision,layout:{rooms:mapped.rooms,deletedRoomKeys:[],floorCount:mapped.floorCount||1,activeFloor:mapped.activeFloor||1}});
+    await api.saveHomeLayout({id:homeId,revision:targetRevision,layout:{image:mapped.image||'',rooms:mapped.rooms,deletedRoomKeys:[],floorCount:mapped.floorCount||1,activeFloor:mapped.activeFloor||1}});
   }else{importWorldPackage(pack,{mapping,...limits()});api?.select('')}render();d.close()});
  });
  const move=node('button',text('선택한 내 마을을 멀티로 옮기기','Move selected personal town to multiplayer','選んだ自分の村をマルチへ移転'));

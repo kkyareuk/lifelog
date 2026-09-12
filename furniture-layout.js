@@ -115,6 +115,7 @@ export function normalizeFurniturePlacement(value,index=0){
     rotation:Number(rotation.toFixed(2)),
     facing:["front","left","right"].includes(value.facing)?value.facing:"front",
     flipped:value.flipped===true,
+    tableId:String(value.tableId||"" ).slice(0,120),seatSide:["north","south","west","east"].includes(value.seatSide)?value.seatSide:"",
     props:supportsFurnitureProps(item)?normalizeFurnitureProps(value.props):[],
     assignedCharacterIds:isBedFurniture(item)?[...new Set((Array.isArray(value.assignedCharacterIds)?value.assignedCharacterIds:[]).map(String).filter(Boolean))].slice(0,furnitureCapacity(item)):[]
   };

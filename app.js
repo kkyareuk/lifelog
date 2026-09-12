@@ -1,4 +1,4 @@
-import {preserveFurnitureDragSize} from './furniture-drag-size.js';
+import {bindFurnitureDrag} from './furniture-drag.js';
 import {addInGameFeedback} from "./in-game-feedback.js";
 import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
 import {installInputBoundary} from './input-boundary.js?v=20260909dev305';
@@ -1316,62 +1316,10 @@ function bindFurniturePlacementEditors(){
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
   };
-  document.querySelectorAll("[data-furniture-placement]").forEach(element=>{
-    let pointerId=null,canvas=null,latest=null,ghost=null,dragged=false,startX=0,startY=0;
-    element.onclick=event=>{event.preventDefault();event.stopPropagation();selectFurniture(element)};
-    element.onpointerdown=event=>{
-      const room=element.closest(".room");if(!room||pointerId!==null||event.button!==0)return;
-      event.preventDefault();event.stopPropagation();selectFurniture(element);
-      pointerId=event.pointerId;canvas=room.closest("[data-room-canvas]");latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
-      element.setPointerCapture(pointerId);
-    };
-    element.onpointermove=event=>{
-      if(pointerId!==event.pointerId||!canvas)return;
-      event.preventDefault();event.stopPropagation();
-      if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
-      if(!dragged)return;
-      if(!ghost){
-        ghost=element.cloneNode(true);preserveFurnitureDragSize(element,ghost);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');
-        ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
-        element.classList.add('furniture-drag-source');
-      }
-      // Pointer capture stays on the source. elementsFromPoint also sees the room
-      // below the floating controls, so Android's bottom bar or our toolbar can
-      // never turn a valid last position into a cancelled move.
-      const target=document.elementsFromPoint(event.clientX,event.clientY)
-        .map(node=>node.closest?.('.room[data-room-key]')).find(room=>room&&canvas.contains(room));
-      const layer=target?.querySelector('.room-furniture-layer');
-      if(!target||!canvas.contains(target)||!layer){ghost.remove();return}
-      const home=state.homes[element.dataset.homeId],current=home?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
-      if(!current)return;
-      // Stored percentages are relative to the furniture layer's padding box,
-      // not the room's outer border. Mixing those rectangles nudged an object a
-      // few pixels upward every time it was picked up and dropped again.
-      const roomRect=layer.getBoundingClientRect();
-      const snapped=snapFurniturePosition((event.clientX-roomRect.left)/roomRect.width*100,(event.clientY-roomRect.top)/roomRect.height*100,furnitureGridForRoom(roomRect,canvas.getBoundingClientRect()),furnitureFootprint(current.item));
-      latest={roomKey:target.dataset.roomKey,...snapped};
-      if(ghost.parentElement!==layer)layer.append(ghost);
-      setFurniturePlacementStyle(ghost,normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y}));
-    };
-    const finish=event=>{
-      if(pointerId===null||event.pointerId!==pointerId)return;
-      const captured=pointerId;pointerId=null;
-      if(element.hasPointerCapture(captured))element.releasePointerCapture(captured);
-      ghost?.remove();ghost=null;element.classList.remove('furniture-drag-source');
-      // Android WebView commonly ends a drag with pointercancel/lostcapture when
-      // the finger crosses a scroll boundary. The latest validated room position
-      // is still the user's intended drop and must be committed.
-      if(latest){
-        const {homeId,roomKey,furniturePlacement:placementId}=element.dataset;
-        if(moveFurniturePlacement(homeId,roomKey,latest.roomKey,placementId,latest)){
-          pendingFurnitureSelection={homeId,roomKey:latest.roomKey,placementId};render();
-        }
-      }
-      latest=null;
-      event.preventDefault();event.stopPropagation();
-    };
-    element.onpointerup=finish;element.onpointercancel=finish;element.onlostpointercapture=finish;
-  });
+  bindFurnitureDrag(document.querySelector('.home-page'),{getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
+    const {homeId,roomKey,furniturePlacement:id}=element.dataset;
+    if(moveFurniturePlacement(homeId,roomKey,position.roomKey,id,position)){pendingFurnitureSelection={homeId,roomKey:position.roomKey,placementId:id};render()}
+  }});
   const destination=toolbar.querySelector('[data-furniture-move-room]');
   if(destination)destination.onchange=()=>{
     const {homeId,roomKey,placementId}=toolbar.dataset,toRoomKey=destination.value;

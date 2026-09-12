@@ -1900,7 +1900,7 @@ export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,
   if(!from||!to)return false;
   const source=normalizeFurniturePlacements(from.furniturePlacements),current=source.find(item=>item.id===placementId);
   if(!current)return false;
-  const patch={x:position.x??current.x,y:position.y??current.y};
+  const patch={x:position.x??current.x,y:position.y??current.y,...(position.tableId!==undefined?{tableId:position.tableId,seatSide:position.seatSide||"",rotation:position.rotation??current.rotation}:fromRoomKey!==toRoomKey?{tableId:"",seatSide:""}:{})};
   if(fromRoomKey===toRoomKey)return updateFurniturePlacement(homeId,fromRoomKey,placementId,patch);
   const target=normalizeFurniturePlacements(to.furniturePlacements);
   if(target.some(item=>item.id===placementId))return false;

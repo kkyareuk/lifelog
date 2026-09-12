@@ -2320,7 +2320,7 @@ function home(sharedPass=false){
 function homeCard(id,chars){
   const h=state.homes[id]||{id,name:"이름 없는 집",rooms:{}};
   const nativeHome=Boolean(document.documentElement?.classList?.contains?.("native-app"));
-  const currentScenes=new Map(state.order.map(characterId=>state.characters[characterId]).filter(Boolean).map(c=>[c.id,eventFor(c)]));
+  const currentScenes=new Map((state.homeEditMode?[]:state.order).map(characterId=>state.characters[characterId]).filter(Boolean).map(c=>[c.id,eventFor(c)]));
   const sceneFor=c=>currentScenes.get(c.id);
   const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;

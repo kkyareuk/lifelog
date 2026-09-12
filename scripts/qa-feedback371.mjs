@@ -19,12 +19,17 @@ try{
  }
  console.log('FEEDBACK KO/EN/JA failure preservation and idempotent retry PASS');
  await page.evaluate(async()=>{
- window.g=await import('/state.js?v=20260909dev305');g.createCharacter(100);const source=g.state.homes[g.active().homeId],room=Object.values(source.rooms)[0];room.ownerCharacterIds=[g.active().id];room.image='https://example.invalid/room.png';
+ window.g=await import('/state.js?v=20260909dev305');g.createCharacter(100);const source=g.state.homes[g.active().homeId],room=Object.values(source.rooms)[0];room.ownerCharacterIds=[g.active().id];room.accessCharacterIds=[g.active().id];source.image='https://example.invalid/home.png';room.image='https://example.invalid/room.png';
  const transfer=await import('/world-transfer.js');const pack=transfer.makeWorldPackage(g.state,'home',source.id);window.homeWrites=[];
  const snapshot={activeGroupId:'qa-import',group:{id:'qa-import',towns:[{id:source.townId,name:'QA'}]},homes:[{id:'shared-target',townId:source.townId,layoutRevision:7,layoutJson:JSON.stringify(source)}],residents:[{id:'shared-person',name:'Shared person',profileJson:'{}',townId:source.townId,sharedHomeId:'shared-target'}]};
  window.DrawerVillageGroups={getSnapshot:()=>snapshot,readWorldCode:async()=>({package:pack}),saveHomeLayout:async value=>homeWrites.push(value)};
  await transfer.worldTransferDialog({homeId:'shared-target',render:()=>{},toast:message=>{throw Error(message)},limits:()=>({})});
  });
  await page.getByRole('button',{name:'공유 코드로 불러오기',exact:true}).click();await page.locator('dialog[open] label select').first().selectOption('shared-person');await page.getByRole('button',{name:'이 멀티 집의 방·인테리어에 적용',exact:true}).click();
- const writes=await page.evaluate(()=>homeWrites);assert.equal(writes.length,1);assert.equal(writes[0].id,'shared-target');assert.equal(writes[0].revision,7);const room=Object.values(writes[0].layout.rooms)[0];assert.deepEqual(room.ownerCharacterIds,['shared-person']);assert.equal(room.image,'https://example.invalid/room.png');console.log('SHARED HOME import room picture / owner remap / revision PASS');
+ const writes=await page.evaluate(()=>homeWrites);assert.equal(writes.length,1);assert.equal(writes[0].id,'shared-target');assert.equal(writes[0].revision,7);const room=Object.values(writes[0].layout.rooms)[0];assert.deepEqual(room.ownerCharacterIds,['shared-person']);assert.deepEqual(room.accessCharacterIds,['shared-person']);assert.equal(writes[0].layout.image,'https://example.invalid/home.png');assert.equal(room.image,'https://example.invalid/room.png');console.log('SHARED HOME import room picture / owner remap / revision PASS');
+ const seats=await page.evaluate(async()=>{
+ const {contextDestination}=await import('/context-actions.js');const c=g.active(),h=g.state.homes[c.homeId],roomKey=Object.keys(h.rooms)[0],room=h.rooms[roomKey];room.ownerMode='common';room.ownerCharacterIds=[];room.accessMode='all';const table={id:'table',item:'식탁',x:50,y:50};room.furniturePlacements=[table];const target={type:'furniture',id:'table',homeId:h.id,room:roomKey};const missing=contextDestination(g.state,c,target,'meal')===null;
+ room.furniturePlacements.push({id:'chair',item:'의자',x:50,y:60,tableId:'table'});const available=contextDestination(g.state,c,target,'meal')?.furniture?.id==='chair';h.lifeSimulation={agents:{other:{phase:'using',furnitureId:'chair'}}};const busy=contextDestination(g.state,c,target,'meal')===null;return {missing,available,busy};
+ });assert.deepEqual(seats,{missing:true,available:true,busy:true});console.log('TABLE requires free chair PASS');
+
 }finally{await browser.close();server.close()}

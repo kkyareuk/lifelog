@@ -36,7 +36,7 @@ const includedFiles=new Set([
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
-  "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
+  "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js","furniture-drag.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
   "town-fit.css"
 ]);
 const relativeModuleImports=source=>{

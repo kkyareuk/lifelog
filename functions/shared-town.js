@@ -48,6 +48,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const layout=input.layout;if(!layout||typeof layout!=='object'||Array.isArray(layout)||JSON.stringify(layout).length>180000||!layout.rooms||Object.keys(layout.rooms).length>50)fail('invalid-layout');
       for(const room of Object.values(layout.rooms)){if(!room||typeof room!=='object'||(room.furniturePlacements||[]).length>200)fail('invalid-layout')}
       const clean={rooms:layout.rooms,deletedRoomKeys:Array.isArray(layout.deletedRoomKeys)?layout.deletedRoomKeys.filter(k=>typeof k==='string').slice(-100):[],floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
+      if(typeof layout.image==='string')clean.image=layout.image.slice(0,20000);
       const old=JSON.parse(home.layoutJson||'{}');tx.update(homeRef,{layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1};
     }),
     saveCatalogItem:async(uid,input)=>db.runTransaction(async tx=>{

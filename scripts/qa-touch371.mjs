@@ -43,4 +43,24 @@ try{
  const depth=await page.evaluate(()=>{const r=document.querySelector('#depth-fixture');return ['.room-furniture-item','.home-person','.room-pet'].map(s=>Number(r.querySelector(s).style.zIndex))});assert(depth[1]<depth[0]&&depth[0]<depth[2]);console.log('PERSON / TABLE / PET DEPTH PASS');
 
 
+ await page.evaluate(async()=>{
+ const root=document.createElement('section');root.id='drag-fixture';root.className='home is-editing';root.style.cssText='position:fixed;inset:0;z-index:99999;background:white';
+ root.innerHTML='<nav data-furniture-edit-toolbar></nav><div data-room-canvas><div class="room" data-room-key="r"><div class="room-furniture-layer" style="position:fixed;left:0;top:0;width:400px;height:600px"></div></div></div>';
+ document.body.append(root);const layer=root.querySelector('.room-furniture-layer');
+ for(const [id,x,y,z,kind] of [['a',80,80,1,'chair'],['b',80,80,2,'chair'],['t',170,270,1,'table']]){
+ const el=document.createElement('button');el.className='room-furniture-item';Object.assign(el.dataset,{furniturePlacement:id,homeId:'h',roomKey:'r',furnitureKind:kind});el.style.cssText=`position:absolute;left:${x}px;top:${y}px;width:60px;height:60px;z-index:${z};padding:0`;el.innerHTML='<span class="room-furniture-art" style="width:60px;height:60px">X</span>';layer.append(el);
+ }
+ window.dragSelections=[];window.dragMoves=[];const home={id:'h',rooms:{r:{furniturePlacements:[{id:'a',item:'의자'},{id:'b',item:'의자'},{id:'t',item:'식탁'}]}}};
+ (await import('/furniture-drag.js')).bindFurnitureDrag(root,{getHome:()=>home,select:el=>dragSelections.push(el.dataset.furniturePlacement),move:(el,pos)=>dragMoves.push(pos)});
+ });
+ const touch=async(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points});
+ for(let i=0;i<2;i++){await touch('touchStart',[{x:110,y:110}]);await touch('touchEnd',[])}
+ assert.deepEqual(await page.evaluate(()=>dragSelections),['b','a']);
+ await touch('touchStart',[{x:110,y:110}]);await touch('touchMove',[{x:200,y:276}]);await page.waitForTimeout(40);await touch('touchEnd',[]);
+ assert.equal(await page.evaluate(()=>dragMoves.at(-1).tableId),'t');
+ await page.locator('#drag-fixture [data-chair-magnet]').click();
+ await touch('touchStart',[{x:110,y:110}]);await touch('touchMove',[{x:200,y:276}]);await page.waitForTimeout(40);await touch('touchEnd',[]);
+ assert.equal(await page.evaluate(()=>dragMoves.at(-1).tableId),'');
+ console.log('OVERLAP CYCLE / MAGNET ON-OFF PASS');
+
 }finally{await browser.close();server.close()}
