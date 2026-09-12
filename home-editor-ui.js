@@ -1,3 +1,4 @@
+import {furnitureSprite} from "./furniture-sprites.js?v=20260909dev305";
 import {bedPillowPoint} from './bed-perspective.js?v=20260909dev305';
 import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev305";
 
@@ -32,7 +33,7 @@ const drawerState=home=>{
   return state;
 };
 export function furniturePickerArt(item){
-  return item==="커플 침대"?`<span class="furniture-picker-couple-bed" aria-hidden="true">${["base","quilt","footboard"].map(layer=>`<img src="assets/furniture/couple-bed/couple-bed-${layer}.png" alt="">`).join("")}</span>`:`<span aria-hidden="true">${furnitureIcon(item)}</span>`;
+  return furnitureSprite({item})?`<span class="furniture-picker-couple-bed" aria-hidden="true"><img src="${furnitureSprite({item}).src}" alt=""></span>`:item==="커플 침대"?`<span class="furniture-picker-couple-bed" aria-hidden="true">${["base","quilt","footboard"].map(layer=>`<img src="assets/furniture/couple-bed/couple-bed-${layer}.png" alt="">`).join("")}</span>`:`<span aria-hidden="true">${furnitureIcon(item)}</span>`;
 }
 export function homeFurnitureDrawer(home,locale){
   const copy=homeEditorCopy(locale),ui=drawerState(home);

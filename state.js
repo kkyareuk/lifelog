@@ -1014,7 +1014,7 @@ export function restoreBuildings(ids){
     if(town)town.places.push(clone(item.place));
   }
   const town=state.towns.find(town=>town.id===state.activeTownId);
-  if(town)state.world=clone(town);
+  if(town)state.world=copyWorldForSave(town);
   if(candidates.length)save(true);
   return candidates.length;
 }
@@ -1856,7 +1856,7 @@ export function updateFurniturePlacement(homeId,roomKey,placementId,patch,persis
     placements[index]=next;room.furniturePlacements=placements;
   }
   // 위치·크기·회전·표시 순서는 생활 행동 후보를 바꾸지 않는다.
-  if(persist)save(true);
+  if(persist)save();
   return room.furniturePlacements.find(item=>item.id===placementId)||false;
 }
 // Transfer the existing object, not a newly-created copy: props and bed assignments
@@ -2256,12 +2256,12 @@ export function addTown(limit=2){
   syncTown();
   const id=uid(),base=fresh().world;
   const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:[],decorations:[]};
-  state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
+  state.towns.push(town);state.activeTownId=id;state.world=copyWorldForSave(town);save(true);return id;
 }
 export function switchTown(id,{activeId,deferSave=false}={}){
   const activeTab=state.activeTab;
   syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return null;
-  state.activeTownId=id;state.world=clone(town);
+  state.activeTownId=id;state.world=copyWorldForSave(town);
   const requestedCharacter=state.characters[activeId]?.townId===id?activeId:null;
   const localCharacter=requestedCharacter||state.order.find(cid=>state.characters[cid]?.townId===id);
   state.activeId=localCharacter||null;

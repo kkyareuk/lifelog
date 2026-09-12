@@ -115,6 +115,7 @@ export const isPendingLocalImage=value=>isLocalRef(value);
 export async function initializeLocalMediaState(root){
   navigator.storage?.persist?.().catch(()=>{});
   const jobs=[];
+  const queuedImages=new Set();
   let found=0;
   const walk=node=>{
     if(!node||typeof node!=="object")return;
@@ -130,7 +131,10 @@ export async function initializeLocalMediaState(root){
       }
       // A data URL is already usable. Keep its IndexedDB copy current without
       // reporting it as a newly restored image or repainting the active editor.
-      else if(isData(value))jobs.push(async()=>{await persistLocalImage(value);return false});
+      else if(isData(value)&&!dataToRef.has(value)&&!queuedImages.has(value)){
+        queuedImages.add(value);
+        jobs.push(async()=>{await persistLocalImage(value);return false});
+      }
       else if(value&&typeof value==="object")walk(value);
     });
   };

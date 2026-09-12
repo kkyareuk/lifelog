@@ -9,3 +9,14 @@
 - New EN/JA labels and scene copy complete; whole-app translation percentage not measured.
 
 Validation: check-reports365, answer-journal345, wardrobe330, routine284, mail348, membership-roster364, shared-travel364 pass; changed JS syntax checks pass. No APK/IPA built, no server deployment, no customer message sent. iOS1.0.327/363 unchanged.
+
+## Furniture art and mobile follow-up (2026-09-12, dev; no version bump)
+
+- Imported original transparent PNG crops for chairs, sofa, table/desk and single bed. Crop manifest records original rectangles; alpha and RGB pixels unchanged. Existing composite double bed remains intact.
+- Rotation selects supplied directional art. Relative art sizes use the single-bed source width as reference; existing placement sizes remain adjustable.
+- Home furniture/people now share a stacking context; village/home artwork bottoms determine order. One scheduled layout read after resize/render/placement, no frame loop or image pixel scanning. Old manual layer buttons removed.
+- Rear chair uses separate seat/frame artwork; frame can overlap a table while the seat remains behind it. Using-chair agents are positioned at the chair. Physical-device animation verification remains necessary.
+- Local photo initialization skips already-persisted images and deduplicates shared strings. Town switching avoids photo JSON roundtrips. Furniture placement edits and post-hydration save use deferred storage.
+- LD/profile photos were not migrated into inventory or changed by these fixes. Wardrobe synchronization uses inventory.fashion and catalog definitions.
+- QA: original art loading, directional selection, chair-frame/table ordering, saved rotation after restart, error-free home/town navigation pass at384x854. CPU4x synthetic one-character navigation50–234ms (two animation frames); NOT evidence that customer Android3–4second stalls are resolved. Prior photo-safe copy and input-save regression checks pass.
+- No new user-facing text; EN/JA existing labels reused. Overall translation completion not measured. No new APK/IPA or production deployment.
