@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.io.FileInputStream;
+import java.util.UUID;
 
 @CapacitorPlugin(name = "ProfileExport")
 public class ProfileExportPlugin extends Plugin {
@@ -99,31 +101,61 @@ public class ProfileExportPlugin extends Plugin {
     @PluginMethod
     public void saveJson(PluginCall call) {
         String filename = call.getString("filename", "drawer-village-backup.json");
-        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("application/json");
-        intent.putExtra(Intent.EXTRA_TITLE, filename);
-        startActivityForResult(call, intent, "saveJsonResult");
+        String data = call.getString("data", "");
+        if (data.isEmpty()) { call.reject("backup-data-empty"); return; }
+        File pending = null;
+        try {
+            pending = new File(getContext().getCacheDir(), "backup-" + UUID.randomUUID() + ".json");
+            try (OutputStream output = new FileOutputStream(pending)) {
+                output.write(data.getBytes(StandardCharsets.UTF_8));
+            }
+            // Capacitor persists call options twice when the picker stops this activity.
+            // Persist only the cache token, never the multi-megabyte JSON payload.
+            call.getData().remove("data");
+            call.getData().put("backupToken", pending.getName());
+            Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("application/json");
+            intent.putExtra(Intent.EXTRA_TITLE, filename);
+            startActivityForResult(call, intent, "saveJsonResult");
+        } catch (Exception error) {
+            if (pending != null) pending.delete();
+            call.reject("backup-prepare-failed", error);
+        }
+    }
+
+    private File pendingBackup(PluginCall call) throws Exception {
+        String token = call.getString("backupToken", "");
+        if (!token.matches("backup-[0-9a-fA-F-]{36}\\.json")) throw new Exception("backup-token-invalid");
+        return new File(getContext().getCacheDir(), token);
     }
 
     @ActivityCallback
     private void saveJsonResult(PluginCall call, ActivityResult result) {
         if (call == null) return;
-        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
-            call.reject("backup-save-cancelled");
-            return;
-        }
+        File pending = null;
         try {
+            pending = pendingBackup(call);
+            if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
+                call.reject("backup-save-cancelled");
+                return;
+            }
+            if (!pending.isFile() || pending.length() == 0) throw new Exception("backup-data-missing");
             Uri uri = result.getData().getData();
-            String data = call.getString("data", "");
             try (OutputStream output = stream(uri)) {
-                output.write(data.getBytes(StandardCharsets.UTF_8));
+                try (FileInputStream input = new FileInputStream(pending)) {
+                    byte[] buffer = new byte[8192];
+                    int count;
+                    while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
+                }
             }
             JSObject payload = new JSObject();
             payload.put("uri", uri.toString());
             call.resolve(payload);
         } catch (Exception error) {
             call.reject(error.getMessage(), error);
+        } finally {
+            if (pending != null) pending.delete();
         }
     }
 }
