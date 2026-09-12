@@ -58,3 +58,11 @@ Server-dependent wardrobe and schedule-ID fixes are excluded from these notes un
 • 멀티 멤버 관리 목록에서 차단한 계정과 방장을 확인할 수 있도록 고쳤어요.
 
 아직 테스트 중인 버전입니다. 마을 이동 후 반응 속도와 가구 겹침을 확인해 주세요.
+
+## Build verification (2026-09-12)
+- Source: 7089ab0779a09daca78421a9f9a826a9b55c463d; version 1.0.328, build 365.
+- Android signed APK/AAB completed; package manifest and both corrected CSS files verified inside APK.
+- 402x820 Chromium touch scroll and WebKit profile/placement layout checks passed. Profile scroll container stays within dialog; placement caption follows preview without overlap.
+- Apple upload 34685294625 accepted. Final app and distribution profile both contain Apple Sign In entitlement.
+- ASC selected build 365, export encryption question answered none of the listed algorithms (uses platform cryptography; no custom crypto implementation identified). Manual release selected.
+- First iOS simulator attempt timed out in simctl launch after successful compilation. Same-source failed job rerun; review submission awaits that result. No physical iPhone test available.
