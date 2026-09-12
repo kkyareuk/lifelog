@@ -9,10 +9,12 @@ if (signingPropertiesFile.exists()) {
 android {
     namespace "com.drawervillage.app"
     compileSdk rootProject.ext.compileSdkVersion
+    buildFeatures { buildConfig true }
     defaultConfig {
         applicationId "com.drawervillage.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
+        buildConfigField "boolean", "WEBVIEW_INSPECTION", "false"
         versionCode 366
         versionName "1.0.328"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -43,6 +45,12 @@ android {
                 signingConfig signingConfigs.release
             }
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        inspect {
+            initWith release
+            matchingFallbacks = ['release']
+            versionNameSuffix "-inspect"
+            buildConfigField "boolean", "WEBVIEW_INSPECTION", "true"
         }
     }
 }
@@ -99,4 +107,11 @@ try {
     }
 } catch(Exception e) {
     logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
+
+// Inspection APKs are for USB diagnosis only, never store bundles.
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { it.name.toLowerCase().startsWith('bundleinspect') }) {
+        throw new GradleException('Inspection builds must not be uploaded to stores. Build assembleInspect instead.')
+    }
 }

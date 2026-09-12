@@ -17,6 +17,9 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(ProfileExportPlugin.class);
         registerPlugin(PlayGamesAchievementsPlugin.class);
         super.onCreate(savedInstanceState);
+        if (BuildConfig.WEBVIEW_INSPECTION) {
+            android.webkit.WebView.setWebContentsDebuggingEnabled(true);
+        }
         installSystemBarInsets();
         hideSystemBars();
     }
