@@ -1,3 +1,4 @@
+import {preserveFurnitureDragSize} from './furniture-drag-size.js';
 import {latestSaveQueue} from './latest-save-queue.js?v=20260909dev305';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,deleteRoom,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev305';
@@ -56,7 +57,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
     if(!layer){ghost?.remove();return}
     const box=layer.getBoundingClientRect(),position=snapFurniturePosition((m.clientX-box.left)/box.width*100,(m.clientY-box.top)/box.height*100,furnitureGridForRoom(box,canvas.getBoundingClientRect()),furnitureFootprint(item.item));
     latest={roomKey:target.dataset.roomKey,...position};
-    if(!ghost){ghost=el.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');el.classList.add('furniture-drag-source')}
+    if(!ghost){ghost=el.cloneNode(true);preserveFurnitureDragSize(el,ghost);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');el.classList.add('furniture-drag-source')}
     if(ghost.parentElement!==layer)layer.append(ghost);
     ghost.style.setProperty('--furniture-x',position.x+'%');ghost.style.setProperty('--furniture-y',position.y+'%');
    };

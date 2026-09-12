@@ -1,3 +1,4 @@
+import {preserveFurnitureDragSize} from './furniture-drag-size.js';
 import {addInGameFeedback} from "./in-game-feedback.js";
 import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
 import {installInputBoundary} from './input-boundary.js?v=20260909dev305';
@@ -1258,7 +1259,7 @@ function setFurniturePlacementStyle(element,placement){
   element.style.setProperty("--furniture-flip",String(sprite?.flip??(couple?perspective.artFlip:placement.flipped?-1:1)));
   if(couple){element.dataset.bedSide=String(perspective.side);element.dataset.bedDirection=String(perspective.direction);element.querySelectorAll('.couple-bed-layer').forEach(image=>{const layer=['base','quilt','footboard'].find(key=>image.classList.contains('couple-bed-'+key));image.src=`assets/furniture/couple-bed/couple-bed-${perspective.side?'side-':''}${layer}.${perspective.side?'svg':'png'}`})}
   if(sprite){
-    element.style.setProperty("--sprite-width",String(sprite.width/527*2/furnitureFootprint(placement.item).columns));
+    element.style.setProperty("--sprite-width",String(sprite.width/527*2*sprite.scale/furnitureFootprint(placement.item).columns));
     element.style.setProperty("--sprite-ratio",String(sprite.width/sprite.height));
     element.querySelector('.furniture-sprite').src=sprite.src;
     const layer=element.closest('.room-furniture-layer');
@@ -1330,7 +1331,7 @@ function bindFurniturePlacementEditors(){
       if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
       if(!dragged)return;
       if(!ghost){
-        ghost=element.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');
+        ghost=element.cloneNode(true);preserveFurnitureDragSize(element,ghost);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');
         ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
         element.classList.add('furniture-drag-source');
       }
