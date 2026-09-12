@@ -1,3 +1,4 @@
+import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
 import {installInputBoundary} from './input-boundary.js?v=20260909dev305';
 installInputBoundary();
 import {timeOperation,performanceSummary} from './performance-diagnostics.js?v=20260909dev305';
@@ -4599,7 +4600,7 @@ function bind(){
       const nativeExport=window.Capacitor?.Plugins?.ProfileExport;
       if(window.Capacitor?.isNativePlatform?.()&&nativeExport?.saveJson){
         showToast({en:"Choose where to save the backup.",ja:"バックアップの保存先を選んでください。"}[state.uiLanguage]||"백업 파일을 저장할 위치를 선택해 주세요");
-        const result=await nativeExport.saveJson({filename,data:json});
+        const result=await exportNativeJson(nativeExport,filename,json);
         if(!result?.uri)throw new Error("backup-save-missing-uri");
         showToast({en:"Backup file saved.",ja:"バックアップファイルを保存しました。"}[state.uiLanguage]||"백업 파일을 저장했어요");
       }else{

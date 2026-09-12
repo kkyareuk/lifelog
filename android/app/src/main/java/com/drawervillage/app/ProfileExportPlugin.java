@@ -99,15 +99,51 @@ public class ProfileExportPlugin extends Plugin {
     }
 
     @PluginMethod
+    public void appendJsonChunk(PluginCall call) {
+        File pending = null;
+        try {
+            String chunk = call.getString("data", "");
+            if (chunk.isEmpty() || chunk.length() > 32768) throw new Exception("backup-chunk-invalid");
+            String token = call.getString("backupToken", "");
+            pending = token.isEmpty()
+                ? new File(getContext().getCacheDir(), "backup-" + UUID.randomUUID() + ".json")
+                : pendingBackup(call);
+            if (!token.isEmpty() && !pending.isFile()) throw new Exception("backup-data-missing");
+            if (pending.length() != call.getInt("offset", 0)) throw new Exception("backup-chunk-order");
+            try (OutputStream output = new FileOutputStream(pending, true)) {
+                output.write(chunk.getBytes(StandardCharsets.UTF_8));
+            }
+            JSObject result = new JSObject();
+            result.put("backupToken", pending.getName());
+            result.put("offset", pending.length());
+            call.resolve(result);
+        } catch (Exception error) {
+            if (pending != null) pending.delete();
+            call.reject("backup-chunk-failed", error);
+        }
+    }
+
+    @PluginMethod
+    public void cancelJsonExport(PluginCall call) {
+        try { pendingBackup(call).delete(); call.resolve(); }
+        catch (Exception error) { call.reject("backup-cleanup-failed", error); }
+    }
+
+    @PluginMethod
     public void saveJson(PluginCall call) {
         String filename = call.getString("filename", "drawer-village-backup.json");
         String data = call.getString("data", "");
-        if (data.isEmpty()) { call.reject("backup-data-empty"); return; }
         File pending = null;
         try {
-            pending = new File(getContext().getCacheDir(), "backup-" + UUID.randomUUID() + ".json");
-            try (OutputStream output = new FileOutputStream(pending)) {
-                output.write(data.getBytes(StandardCharsets.UTF_8));
+            if (!call.getString("backupToken", "").isEmpty()) {
+                pending = pendingBackup(call);
+                if (!pending.isFile() || pending.length() == 0) throw new Exception("backup-data-missing");
+            } else {
+                if (data.isEmpty()) throw new Exception("backup-data-empty");
+                pending = new File(getContext().getCacheDir(), "backup-" + UUID.randomUUID() + ".json");
+                try (OutputStream output = new FileOutputStream(pending)) {
+                    output.write(data.getBytes(StandardCharsets.UTF_8));
+                }
             }
             // Capacitor persists call options twice when the picker stops this activity.
             // Persist only the cache token, never the multi-megabyte JSON payload.

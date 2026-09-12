@@ -35,7 +35,7 @@ const includedFiles=new Set([
   "relationship-context.js",
   "life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
-  "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","world-transfer.css","mailbox.css","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
+  "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","native-json-export.js","multiplayer-art.js","dictionary.js","world-transfer.css","mailbox.css","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
   "_headers",
   "index.html",
   "login.html",

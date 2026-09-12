@@ -1,3 +1,4 @@
+import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
 import {portableMedia} from './portable-media.js?v=20260909dev305';
 import {withWardrobe,restoreWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {worldTransferDialog} from './world-transfer.js?v=20260909dev305';
@@ -53,7 +54,7 @@ export function mergeCatalogFile(file){
 export async function downloadSettings(file,name){
   file=await portableMedia(file,state.uiLanguage);const data=JSON.stringify(file,null,2),filename=name.replace(/[\\/:*?"<>|]/g,'_')+'.json';
   const native=window.Capacitor?.Plugins?.ProfileExport;
-  if(window.Capacitor?.isNativePlatform?.()&&native?.saveJson){await native.saveJson({filename,data});return}
+  if(window.Capacitor?.isNativePlatform?.()&&native?.saveJson){await exportNativeJson(native,filename,data);return}
   const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 const catalogCopy={ko:['물품 선택','검색','전체 선택','선택 해제','취소','선택한 물품 저장','선택한 물품 추가','선택한 물품 다운로드'],en:['Choose items','Search','Select all','Clear selection','Cancel','Save selected items','Add selected items','Download selected items'],ja:['品物を選択','検索','すべて選択','選択解除','キャンセル','選んだ品物を保存','選んだ品物を追加','選んだ品物をダウンロード']};
