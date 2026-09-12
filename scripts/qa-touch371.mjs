@@ -6,7 +6,7 @@ import {createRequire} from 'node:module';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=process.cwd(),out=resolve('qa-furniture366');await mkdir(out,{recursive:true});
-const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();let body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(process.env.QA_STAGED==='1'&&['/app.js','/shared-home-editor.js','/app.css'].includes(pathname))body=execFileSync('git',['show',':'+pathname.slice(1)]);if(pathname==='/views.js')body=body.toString()+'\nwindow.qaSeatMarkup=homeLifePersonMarkup;';if(pathname==='/app.js')body=body.toString()+'\nwindow.qaRender=render;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();let body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(process.env.QA_STAGED==='1'&&['/app.js','/shared-home-editor.js','/app.css'].includes(pathname))body=execFileSync('git',['show',':'+pathname.slice(1)]);if(pathname==='/views.js')body=body.toString()+'\nwindow.qaSeatMarkup=homeLifePersonMarkup;window.qaInteractionMarkup=homeLifeInteractionMarkup;window.qaBedStatusMarkup=homeBedForegroundStatusMarkup;';if(pathname==='/app.js')body=body.toString()+'\nwindow.qaRender=render;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
 const useWebKit=process.argv.includes('--webkit'); const browser=await (useWebKit?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
 try{
@@ -111,5 +111,12 @@ try{
  });
  const effect=await page.locator('#seat-qa .home-person').evaluate(e=>({class:e.className,labels:e.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,hearts:getComputedStyle(e,'::after').content,animation:getComputedStyle(e,'::after').animationName}));
  assert(effect.class.includes('is-affection'));assert.equal(effect.labels,0);assert(effect.hearts.includes('♥'));assert.equal(effect.animation,'affection-heart');console.log('AFFECTION labels hidden / heart effect PASS');
+ const groups=await page.evaluate(()=>{
+  const c=g.active(),scene={title:'스킨십하는 중',meetingKind:'affection',groupInteraction:true},room={name:'침실'};
+  const html=qaInteractionMarkup([c],[scene],{},room,'bed',0),declined=qaInteractionMarkup([c],[{...scene,contactRejected:true}],{},room,'bed',0);
+  const root=document.createElement('div');root.innerHTML=html;document.body.append(root);
+  const e=root.firstElementChild,result={labels:root.querySelectorAll('.home-interaction-status').length,hearts:getComputedStyle(e,'::after').content,bed:qaBedStatusMarkup([c],[scene],room,'bed',{id:'bed'},0),declinedEffect:declined.includes('is-affection'),declinedLabel:declined.includes('home-interaction-status')};root.remove();return result;
+ });assert.equal(groups.labels,0);assert(groups.hearts.includes('♥'));assert.equal(groups.bed,'');assert.equal(groups.declinedEffect,false);assert(groups.declinedLabel);console.log('AFFECTION grouped / bed foreground / rejection PASS',groups);
+
 
 }finally{await browser.close();server.close()}

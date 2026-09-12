@@ -15,7 +15,7 @@ try{
 
  await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');const a=g.state.characters[g.createCharacter()],b=g.state.characters[g.createCharacter()];a.name='First';b.name='Second';a.ageGroup=b.ageGroup='성인';b.homeId=a.homeId;b.townId=a.townId;g.state.activeId=a.id;g.state.activeTownId=a.townId;g.state.activeHomeId=a.homeId;window.qaPeople=[a.id,b.id];g.updateCharacterView(b.id,a.id,'touchIntensity','성인 간 친밀한 접촉까지');const h=g.state.homes[a.homeId];h.rooms.living.furniturePlacements=[{id:'qa-sofa',item:'소파',x:50,y:60}];window.DrawerVillageNavigation.go('home');window.qaRender();document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
  await page.waitForTimeout(500);
- await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.locator('[data-furniture-placement="qa-sofa"]').click();
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.locator('[data-furniture-placement="qa-sofa"]').click({position:{x:8,y:30}});
  const menu=page.locator('[data-context-menu]');await menu.waitFor();await menu.getByRole('button',{name:'스킨십하기',exact:true}).click();await menu.getByRole('button',{name:'Second',exact:true}).click();await page.waitForTimeout(600);
  assert.equal(await menu.count(),0);
  const result=await page.evaluate(()=>{const [a,b]=qaPeople,d=g.state.characterDirectives[a];return {kind:d.kind,seat:d.furniture?.id,other:g.state.characterDirectives[b]?.kind}});assert.deepEqual(result,{kind:'affection',seat:'qa-sofa',other:'affection'});
@@ -24,5 +24,6 @@ try{
   await page.evaluate(tab=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.DrawerVillageNavigation.go(tab)},tab);await page.waitForTimeout(200);
   const metrics=await page.evaluate(()=>({text:document.querySelector('#app')?.textContent?.length||document.body.textContent.length,dialogs:document.querySelectorAll('dialog[open]').length}));assert(metrics.text>20,tab);console.log('OPEN',tab,metrics);
  }
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));assert(await page.locator('.settings-home .app-version-card').isVisible());
  console.log('PASS navigation smoke only; individual dialog scrolling covered separately');
 }finally{await browser.close();server.close()}
