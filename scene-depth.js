@@ -1,6 +1,6 @@
 // One batched geometry read after layout/placement, never an animation loop.
 let root=null,observer=null,frame=0;
-const actors='.room-furniture-item,.home-life-person,.room-couple-bed-overlay,.chair-frame-overlay';
+const actors='.room-furniture-item,.home-person,.room-couple-bed-overlay,.chair-frame-overlay';
 export function scheduleSceneDepth(){
   if(frame||!root)return;
   frame=requestAnimationFrame(()=>{
@@ -21,6 +21,14 @@ export function scheduleSceneDepth(){
         const r=chair.getBoundingClientRect(),container=scene.getBoundingClientRect();
         seats.push([person,(r.left+r.width/2-container.left)/container.width*100,(r.top+r.height*.48-container.top)/container.height*100,r.width*1.1]);
         bounds.find(row=>row.element===person).bottom=bounds.find(row=>row.element===chair).bottom+.1;
+      }
+      for(const occupant of bounds.filter(row=>row.element.dataset.coupleBedId)) {
+        const bed=bounds.find(row=>row.element.dataset.furniturePlacement===occupant.element.dataset.coupleBedId);
+        if(bed)occupant.bottom=bed.bottom+.1;
+      }
+      for(const overlay of bounds.filter(row=>row.element.dataset.bedOverlay)) {
+        const bed=bounds.find(row=>row.element.dataset.furniturePlacement===overlay.element.dataset.bedOverlay);
+        if(bed)overlay.bottom=bed.bottom+.2;
       }
       bounds.sort((a,b)=>a.bottom-b.bottom);
       bounds.forEach(({element},index)=>updates.push([element,10+index*3]));

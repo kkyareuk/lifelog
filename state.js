@@ -217,6 +217,7 @@ const normalizedBodyProfile=value=>{
     carePlan:{mode:String(source.carePlan?.mode||"설정하지 않음"),weekdays:Array.isArray(source.carePlan?.weekdays)?source.carePlan.weekdays.filter(x=>["월","화","수","목","금","토","일"].includes(x)):[],start:/^([01]\d|2[0-3]):[0-5]\d$/.test(source.carePlan?.start)?source.carePlan.start:"09:00",end:/^([01]\d|2[0-3]):[0-5]\d$/.test(source.carePlan?.end)?source.carePlan.end:"16:00",placeId:String(source.carePlan?.placeId||"")},
     healthConditions:Array.isArray(source.healthConditions)?[...new Set(source.healthConditions.map(String))].slice(0,12):[],
     healthOther:String(source.healthOther||"").slice(0,200),
+    healthRecords:(Array.isArray(source.healthRecords)?source.healthRecords:source.healthOther?[{name:source.healthOther,type:'',pain:0}]:[]).slice(0,30).map(r=>({name:String(r?.name||'').slice(0,200),type:String(r?.type||'').slice(0,100),pain:Math.max(0,Math.min(10,Number(r?.pain)||0))})),
     wheelchair:normalizeDevice("wheelchair","사용하지 않음"),
     prostheticArm:normalizeDevice("prostheticArm","사용하지 않음"),
     prostheticLeg:normalizeDevice("prostheticLeg","사용하지 않음"),
@@ -1877,7 +1878,7 @@ export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,
   to.furniture=[...new Set([...(to.furniture||[]),current.item])];
   releaseFurnitureInteraction(home,placementId);
   touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
-  save(true);return moved;
+  save();return moved;
 }
 function releaseFurnitureInteraction(home,placementId){
   const simulation=home.lifeSimulation;
