@@ -28,6 +28,7 @@ run(["scripts/prepare-app.mjs","--ios"]);
 run(["scripts/check-native-module-closure.mjs"]);
 const shim=process.platform==="win32"?["--require","./scripts/windows-userinfo-shim.cjs"]:[];
 run([...shim,"./node_modules/@capacitor/cli/bin/capacitor","sync","ios"]);
-await writeFile(podfile,(await readFile(podfile,"utf8")).replaceAll("../../../drawer-village-current/node_modules","../../node_modules"));
+// Capacitor resolves junctions on Windows; never commit that machine's path.
+await writeFile(podfile,(await readFile(podfile,"utf8")).replace(/(['"])(?:\.\.\/)+[^'"\r\n]*node_modules/g,'$1../../node_modules'));
 run(["scripts/check-ios-project.mjs"]);
 if(process.platform!=="darwin")console.log("iOS project/assets prepared only. CocoaPods, Xcode compilation, signing and device tests must run on a Mac.");

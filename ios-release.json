@@ -1,7 +1,7 @@
 {
-  "version": "1.0.327",
-  "build": 363,
-  "sourceAndroidCode": 360,
-  "stage": "released",
-  "appStoreReady": true
+  "version": "1.0.328",
+  "build": 364,
+  "sourceAndroidCode": 364,
+  "stage": "testing",
+  "appStoreReady": false
 }

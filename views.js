@@ -1,4 +1,4 @@
-import {accountIdentity} from "./account-identity.js";
+import {accountIdentity} from "./account-identity.js?v=20260909dev305";
 import {commitInputBoundary} from './input-boundary.js?v=20260909dev305';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {displayImageSource} from "./local-media.js?v=20260909dev305";
