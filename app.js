@@ -1,3 +1,4 @@
+import {addInGameFeedback} from "./in-game-feedback.js";
 import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
 import {installInputBoundary} from './input-boundary.js?v=20260909dev305';
 installInputBoundary();
@@ -1339,7 +1340,7 @@ function bindFurniturePlacementEditors(){
       const target=document.elementsFromPoint(event.clientX,event.clientY)
         .map(node=>node.closest?.('.room[data-room-key]')).find(room=>room&&canvas.contains(room));
       const layer=target?.querySelector('.room-furniture-layer');
-      if(!target||!canvas.contains(target)||!layer){latest=null;ghost.remove();return}
+      if(!target||!canvas.contains(target)||!layer){ghost.remove();return}
       const home=state.homes[element.dataset.homeId],current=home?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
       if(!current)return;
       // Stored percentages are relative to the furniture layer's padding box,
@@ -1483,6 +1484,7 @@ function replaceFeedbackFormWithEmailLink(){
     return `<a class="primary feedback-email-button feedback-email-type" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${label}</a>`;
   }).join("");
   card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><div class="feedback-email-types">${links}</div><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
+  addInGameFeedback(card,diagnostics,state.uiLanguage);
 }
 
 function restoreWindowScroll(x,y){

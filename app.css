@@ -1436,7 +1436,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .room-furniture-props{position:absolute;left:50%;bottom:58%;z-index:2;display:flex;align-items:flex-end;justify-content:center;gap:1px;width:max-content;max-width:72px;transform:translateX(-50%);pointer-events:none}
 .room-furniture-props i{display:block;font-style:normal;font-size:clamp(10px,1.65vw,17px);line-height:1;filter:drop-shadow(0 2px 2px #17203380);transform:translateY(calc((var(--prop-slot,0) % 2) * -2px))}
 html body #app .home .room-furniture-item small{display:none;position:absolute;left:50%;top:100%;max-width:92px;padding:3px 6px;border-radius:999px;background:#30251ef2;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px;line-height:1.2;text-shadow:none;white-space:normal;text-align:center;min-width:48px;overflow-wrap:anywhere;transform:translateX(-50%) rotate(calc(var(--furniture-rotation) * -1));pointer-events:none}
-.home.is-editing .room-furniture-item{pointer-events:auto!important;cursor:grab}
+.home.is-editing .room-furniture-item{pointer-events:auto!important;cursor:grab;touch-action:none!important}
 .home.is-editing .room-furniture-item.furniture-drag-source{opacity:0}
 .home.is-editing .room-furniture-item.furniture-drag-preview{pointer-events:none!important;z-index:1000}
 html body #app .home.is-editing .room-furniture-item small{display:block}
@@ -1969,7 +1969,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 @media(max-width:640px){.settings-category-grid{grid-template-columns:1fr}.settings-category-grid>:is(button,a){padding:13px}.settings-shell .notification-settings-body{padding-inline:10px}.notification-setting-head{display:grid}.notification-setting-head>button{width:100%}.notification-setting-grid{grid-template-columns:1fr}.notification-character-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.achievement-grid{grid-template-columns:1fr}.achievement-card p{min-height:0}}
 
 /* 방 안 반려동물 */
-.room-pets{position:absolute;right:8px;top:48%;transform:translateY(-50%);z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.room-pets{position:absolute;right:8px;top:48%;transform:none;z-index:auto;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
 .room-pet{display:flex;align-items:flex-end;gap:3px;max-width:170px;padding:0;border:0;background:transparent;box-shadow:none;filter:drop-shadow(0 7px 7px #19223844)}
 .room-pet img,.room-pet-emoji{width:44px;height:44px;display:grid;place-items:center;object-fit:contain;background:transparent;font-size:29px;flex:0 0 auto}.room-pet .room-pet-photo{border-radius:50%;object-fit:cover}.room-pet .room-pet-icon{border-radius:0;object-fit:contain}
 .room-pet-status{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:1px!important;min-width:72px;max-width:125px;padding:6px 8px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;text-align:left;white-space:normal!important}
@@ -8020,6 +8020,9 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
 @keyframes reaction-surprise{0%,15%,100%{translate:0 0;scale:1}25%{translate:0 -12px;scale:1.08}35%{translate:-3px 0}42%{translate:3px 0}50%{translate:0 0;scale:1}}
 @keyframes reaction-sway{0%,100%{rotate:-4deg}50%{rotate:4deg}}
 @keyframes reaction-blush{0%,100%{rotate:0deg;filter:none}40%,65%{rotate:5deg;filter:drop-shadow(0 0 5px #e9929280)}}
+.character-discovery-dialog [data-fit-panel]{display:grid;gap:8px;margin:16px 0}
+.character-discovery-dialog [data-fit-panel] button[aria-pressed="true"]{background:#ead2a0;color:#392719;border:2px solid #8a6539}
+.character-discovery-dialog [data-fit-panel] button[aria-pressed="true"]::before{content:"\2713  "}
 .character-discovery-dialog h3 select{display:inline-block;max-width:100%;min-width:100px;padding:8px 12px;margin:4px;border:1px solid #aa8a55;border-radius:12px;background:#fffaf0;color:#3b2a1c;font:inherit}
 
 html:is([data-animation-intensity=off],[data-animation-intensity=reduced]) :is(.discovery-animation>*,.scene-reaction){animation:none}

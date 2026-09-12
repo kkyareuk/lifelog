@@ -1,3 +1,4 @@
+import {fitFeedbackPanel} from './discovery-feedback.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {repeatDiscoveryCandidates} from './character-discovery-rules.js?v=20260909dev305';
 import {rememberScene,storyQuestions} from './story-events.js?v=20260909dev305';
@@ -44,7 +45,7 @@ export function showDiscovery(c,scene,question,context={}){
  };choices.append(b)});
  const hint=document.createElement('small');hint.textContent=(question.options||question.form)?t('고른 정보가 캐릭터 설정에 저장돼요. 답한 질문은 다시 나오지 않아요.','Your chosen information is saved to the character. Answered questions do not return.','選んだ情報をキャラクター設定に保存します。回答済みの質問は再び出ません。'):t('선택이 쌓이면 이 캐릭터의 모습도 조금씩 달라져요. 잠근 설정은 그대로 유지돼요.','Their choices gradually shape who they are. Locked settings stay unchanged.','選択を重ねると、少しずつその人らしさが育ちます。固定した設定は変わりません。');
  const feedback=document.createElement('button');feedback.type='button';feedback.dataset.discoveryFeedback='';feedback.textContent=t('캐릭터스러운 답이 없어요!','None of these answers fit my character!','このキャラらしい答えがありません！');
- feedback.onclick=async()=>{if(!valid())return;feedback.disabled=true;status.textContent=t('의견을 보내고 있어요…','Sending feedback…','意見を送信しています…');try{await window.ParallelCityAuth.submitFeedback({category:'discovery-answer-fit',message:JSON.stringify({questionId:question.id,prompt:prompt.textContent,choices:[...choices.querySelectorAll('button')].map(b=>b.textContent),language:state.uiLanguage,build:'343',group:!!context.groupId}),allowReply:false});status.textContent=t('보냈어요. 매주 일요일에 모아 살펴볼게요. 답변은 그대로 선택할 수 있어요.','Sent. We review feedback every Sunday. You can still choose an answer.','送信しました。毎週日曜日に確認します。引き続き回答を選べます。');}catch{feedback.disabled=false;status.textContent=t('보내지 못했어요. 로그인과 연결을 확인한 뒤 다시 눌러 주세요.','Could not send. Check your sign-in and connection, then retry.','送信できませんでした。ログインと接続を確認して再試行してください。');}};
+ fitFeedbackPanel({button:feedback,question,answers:[...choices.querySelectorAll('button')].map(b=>b.textContent),language:state.uiLanguage,valid,status,selectedOption:()=>select?{value:select.value,text:select.selectedOptions[0]?.textContent||''}:null,submit:data=>window.ParallelCityAuth.submitFeedback({category:'discovery-answer-fit',message:JSON.stringify({...data,build:'371',group:!!context.groupId}),allowReply:false})});
  const skip=document.createElement('button');skip.type='button';skip.textContent=t('지금은 넘기기','Skip for now','今は見送る');skip.onclick=close;d.append(heading,art,name,prompt);if(editor)d.append(editor.root);d.append(choices,hint,feedback,status,skip);d.onclose=()=>{d.remove();if(pending===d){pending=null;pendingCheck=null}};document.body.append(d);timeOperation('question-modal',()=>d.showModal());
 }
 let requestTimer=null;

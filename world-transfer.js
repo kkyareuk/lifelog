@@ -65,8 +65,17 @@ export async function worldTransferDialog({homeId='',townId='',kind='town',rende
  const publish=node('button',text('공유 코드 만들기','Create sharing code','共有コードを作成'));publish.onclick=()=>task(publish,async()=>{const pack=makeWorldPackage(source,mode.value,select.value),result=await api.publishWorldCode(pack);same();panel.replaceChildren();const code=node('input','',panel);code.readOnly=true;code.value=result.code.match(/.{1,6}/g).join('-');const copy=node('button',text('코드 복사','Copy code','コードをコピー'),panel);copy.onclick=()=>navigator.clipboard.writeText(code.value).catch(()=>code.select());const revoke=node('button',text('코드 사용 중지','Revoke code','コードを無効化'),panel);revoke.onclick=()=>task(revoke,async()=>{await api.revokeWorldCode(result.code);panel.replaceChildren()})});
  const code=node('input');code.placeholder=text('공유 코드 입력','Enter sharing code','共有コードを入力');code.maxLength=24;const read=node('button',text('공유 코드로 불러오기','Import by sharing code','共有コードで読み込む'));
  read.onclick=()=>task(read,async()=>{const result=await api.readWorldCode(code.value);same();const pack=result.package;if(pack.kind!==scope)throw Error('wrong-sharing-kind');panel.replaceChildren();node('h3',pack.name,panel);node('p',counts(pack),panel);const mapping={};
-  if(pack.kind!=='town')for(const [id,c] of Object.entries(pack.characters)){const label=node('label',c.name,panel),target=node('select','',label);const empty=node('option',text('연결할 캐릭터 선택','Choose a character','接続する人物を選択'),target);empty.value='';for(const char of Object.values(personalState().characters)){const o=node('option',char.name,target);o.value=char.id}target.onchange=()=>mapping[id]=target.value}
-  const apply=node('button',text('새 사본으로 가져오기','Import a new copy','新しいコピーとして読み込む'),panel);apply.onclick=()=>task(apply,async()=>{same();importWorldPackage(pack,{mapping,...limits()});api?.select('');render();d.close()});
+  if(pack.kind!=='town')for(const [id,c] of Object.entries(pack.characters)){const label=node('label',c.name,panel),target=node('select','',label);const empty=node('option',text('연결할 캐릭터 선택','Choose a character','接続する人物を選択'),target);empty.value='';for(const char of Object.values(source.characters)){const o=node('option',char.name,target);o.value=char.id}target.onchange=()=>mapping[id]=target.value}
+  const sharedTarget=scope==='home'&&snapshot.homes?.find(h=>h.id===homeId)&&!personalState().homes[homeId];
+  const targetRevision=Number(snapshot.homes?.find(h=>h.id===homeId)?.layoutRevision)||0;
+  const apply=node('button',sharedTarget?text('이 멀티 집의 방·인테리어에 적용','Apply to this multiplayer home’s rooms and interior','このマルチの家の部屋・内装に適用'):text('새 사본으로 가져오기','Import a new copy','新しいコピーとして読み込む'),panel);
+  if(sharedTarget)node('p',text('기존 방과 가구 배치를 교체합니다. 방 주인과 출입 대상을 위에서 연결해 주세요. 집의 소유 계정은 바뀌지 않아요.','Replaces existing rooms and furniture. Match room owners and visitors above. The account owning this home stays the same.','既存の部屋と家具配置を置き換えます。持ち主と入室対象を上で指定してください。家の所有アカウントは変わりません。'),panel);
+  apply.onclick=()=>task(apply,async()=>{same();if(sharedTarget){
+    if(api.getSnapshot().activeGroupId!==snapshot.activeGroupId)throw Error('account-changed');
+    const [sourceId,original]=Object.entries(pack.homes)[0]||[];if(!original)throw Error('home-missing');
+    const mapped=mapPackageIds(original,Object.fromEntries(Object.keys(pack.characters).map(id=>[id,mapping[id]||''])));
+    await api.saveHomeLayout({id:homeId,revision:targetRevision,layout:{rooms:mapped.rooms,deletedRoomKeys:[],floorCount:mapped.floorCount||1,activeFloor:mapped.activeFloor||1}});
+  }else{importWorldPackage(pack,{mapping,...limits()});api?.select('')}render();d.close()});
  });
  const move=node('button',text('선택한 내 마을을 멀티로 옮기기','Move selected personal town to multiplayer','選んだ自分の村をマルチへ移転'));
  move.hidden=scope!=='town';

@@ -1,6 +1,6 @@
 // One batched geometry read after layout/placement, never an animation loop.
 let root=null,observer=null,frame=0;
-const actors='.room-furniture-item,.home-person,.room-couple-bed-overlay,.chair-frame-overlay';
+const actors='.room-furniture-item,.home-person,.room-pet,.room-couple-bed-overlay,.chair-frame-overlay';
 export function scheduleSceneDepth(){
   if(frame||!root)return;
   frame=requestAnimationFrame(()=>{
@@ -9,7 +9,7 @@ export function scheduleSceneDepth(){
     for(const scene of root.querySelectorAll('.room,.world.town-environment')){
       const items=[...scene.querySelectorAll(scene.matches('.room')?actors:'.map-art-button,.person:not(.place-people),.meeting-walker')];
       const bounds=items.map(element=>{
-        const art=element.querySelector('.furniture-sprite,.room-furniture-art,.home-person-visual,img')||element;
+        const art=element.querySelector('.furniture-sprite,.room-furniture-art,.home-person-visual .avatar,.home-person-visual .sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji,img')||element;
         const rect=art.getBoundingClientRect();
         // object-fit:contain may leave vertical padding around the actual art.
         const height=art.naturalWidth?Math.min(rect.height,rect.width*art.naturalHeight/art.naturalWidth):rect.height;
@@ -18,8 +18,8 @@ export function scheduleSceneDepth(){
       for(const person of items.filter(el=>el.dataset.seatId)){
         const chair=items.find(el=>el.dataset.furniturePlacement===person.dataset.seatId);
         if(!chair)continue;
-        const r=chair.getBoundingClientRect(),container=scene.getBoundingClientRect();
-        seats.push([person,(r.left+r.width/2-container.left)/container.width*100,(r.top+r.height*.48-container.top)/container.height*100,r.width*1.1]);
+        const r=(chair.querySelector('.furniture-sprite')||chair).getBoundingClientRect(),container=(person.offsetParent||scene).getBoundingClientRect(),sofa=chair.dataset.furnitureKind==='sofa';
+        seats.push([person,(r.left+r.width/2-container.left)/container.width*100,(r.top+r.height*(sofa?.75:.72)-container.top)/container.height*100,r.width*(sofa?.45:.9)]);
         bounds.find(row=>row.element===person).bottom=bounds.find(row=>row.element===chair).bottom+.1;
       }
       for(const occupant of bounds.filter(row=>row.element.dataset.coupleBedId)) {

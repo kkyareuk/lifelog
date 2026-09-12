@@ -53,7 +53,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
    el.onpointermove=m=>{
     if(m.pointerId!==pointer||Math.hypot(m.clientX-startX,m.clientY-startY)<5&&!ghost)return;stop(m);
     const target=document.elementsFromPoint(m.clientX,m.clientY).map(n=>n.closest?.('.room[data-room-key]')).find(n=>n&&canvas.contains(n)),layer=target?.querySelector('.room-furniture-layer');
-    if(!layer){latest=null;ghost?.remove();return}
+    if(!layer){ghost?.remove();return}
     const box=layer.getBoundingClientRect(),position=snapFurniturePosition((m.clientX-box.left)/box.width*100,(m.clientY-box.top)/box.height*100,furnitureGridForRoom(box,canvas.getBoundingClientRect()),furnitureFootprint(item.item));
     latest={roomKey:target.dataset.roomKey,...position};
     if(!ghost){ghost=el.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');el.classList.add('furniture-drag-source')}

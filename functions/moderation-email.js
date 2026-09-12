@@ -11,7 +11,7 @@ function message(reportId,report,projectId){
   '이 알림은 계정을 자동 정지하거나 신고를 처리 완료로 변경하지 않습니다.'
  ].join('\n')};
 }
-function createHandler({config,fetcher=fetch,clock=Date.now,projectId='lifelog-98fff'}){
+function createHandler({config,fetcher=fetch,clock=Date.now,projectId='lifelog-98fff',compose=message,prefix='moderation'}){
  return async event=>{
   if(!event.data)return;
   const ref=event.data.ref,current=await ref.get();
@@ -27,8 +27,8 @@ function createHandler({config,fetcher=fetch,clock=Date.now,projectId='lifelog-9
   if(!settings?.apiKey||!settings?.from||/[\r\n]/.test(settings.from))throw Error('moderation-email-not-configured');
   const response=await fetcher('https://api.resend.com/emails',{
    method:'POST',headers:{Authorization:`Bearer ${settings.apiKey}`,'Content-Type':'application/json',
-    'Idempotency-Key':'moderation-'+createHash('sha256').update(reportId).digest('hex')},
-   body:JSON.stringify({from:settings.from,...message(reportId,report,projectId)}),signal:AbortSignal.timeout(15000)
+    'Idempotency-Key':prefix+'-'+createHash('sha256').update(reportId).digest('hex')},
+   body:JSON.stringify({from:settings.from,...compose(reportId,report,projectId)}),signal:AbortSignal.timeout(15000)
   });
   if(!response.ok){
    await ref.update({emailNotification:{status:'retrying',httpStatus:response.status,updatedAt:clock()}});

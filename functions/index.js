@@ -366,3 +366,7 @@ exports.reconcileDiamondPlayRefunds=require('firebase-functions/v2/scheduler').o
  const publisher=google.androidpublisher({version:'v3',auth:new google.auth.GoogleAuth({scopes:['https://www.googleapis.com/auth/androidpublisher']})});let token;
  do{const result=await publisher.purchases.voidedpurchases.list({packageName:PACKAGE_NAME,startTime:String(Date.now()-29*86400000),includeQuantityBasedPartialRefund:true,token,maxResults:1000});for(const item of result.data.voidedPurchases||[])await require('./diamond-refunds').playRefund(db,item);token=result.data.tokenPagination?.nextPageToken}while(token);
 });
+
+exports.playerFeedbackApi=require("./player-feedback-trigger").api;
+exports.playerFeedbackEmail=require("./player-feedback-trigger").email;
+exports.questionFeedbackWeekly=require("./question-feedback-weekly").weekly;

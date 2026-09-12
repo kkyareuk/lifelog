@@ -17,7 +17,7 @@ const copy=()=>COPY[state.uiLanguage]||COPY.ko;
 const roleLabel=(role,text)=>text[role]||role;
 const localAvatar=character=>{const source=character?.icon||character?.photo;return source?`<img src="${esc(source)}" alt="">`:`<span>${esc((character?.name||"?").slice(0,1))}</span>`};
 const sharedAvatar=resident=>(resident.icon||resident.photo)?`<img src="${esc(resident.icon||resident.photo)}" alt="">`:`<span>${esc((resident.name||"?").slice(0,1))}</span>`;
-const groupPage=(content,className="")=>`<section class="groups-page ${className}">${content}</section>`;
+const groupPage=(content,className="")=>`<section class="groups-page ${className}">${window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId?`<button type="button" data-multiplayer-select="">${groupText("내 마을로 돌아가기","Return to my village","自分の村へ戻る")}</button>`:""}${content}</section>`;
 const linkedTown=group=>group?.towns?.find(town=>town?.sourceTownId||town?.ownerUid)||group?.towns?.[0]||null;
 const townPreview=town=>String(town?.previewImage||town?.bg||"").trim();
 const townPreviewMarkup=town=>{const source=townPreview(town);return source?`<img src="${esc(source)}" alt="">`:`<span class="multiplayer-town-placeholder" aria-hidden="true">🏘️</span>`};

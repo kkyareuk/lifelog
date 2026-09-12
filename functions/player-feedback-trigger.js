@@ -1,0 +1,12 @@
+const {onRequest}=require('firebase-functions/v2/https');
+const {onDocumentCreated}=require('firebase-functions/v2/firestore');
+const {defineSecret}=require('firebase-functions/params');
+const express=require('express');
+const db=require('firebase-admin').firestore();
+const service=require('./player-feedback').createService(db),app=express();
+app.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Content-Type');res.set('Access-Control-Allow-Methods','POST, OPTIONS');if(req.method==='OPTIONS')return res.sendStatus(204);next()});
+app.use(express.json({limit:'24kb'}));
+app.post('/',async(req,res)=>{try{res.json(await service(req.ip,req.body))}catch(e){res.status(e.status||503).json({message:e.status?e.message:'feedback-unavailable'})}});
+exports.api=onRequest({region:'asia-northeast3',maxInstances:2,timeoutSeconds:30},app);
+const settings=defineSecret('MODERATION_EMAIL_CONFIG');
+exports.email=onDocumentCreated({document:'playerFeedback/{reportId}',region:'asia-northeast3',retry:true,maxInstances:1,concurrency:1,secrets:[settings]},require('./moderation-email').createHandler({config:()=>JSON.parse(settings.value()),prefix:'feedback',compose:(id,r)=>({to:['kkyaareuk@gmail.com'],subject:'[서랍마을 문의] '+({bug:'오류 제보',suggestion:'건의',purchase:'구매 문의',other:'기타'}[r.type]||'기타'),text:`접수 번호: ${id}\n\n${r.message}\n\n--- 사용자가 전송한 진단 정보 (인증 자료 아님) ---\n${r.diagnostics}\n\n이름과 이메일을 받지 않은 문의입니다. 직접 회신 주소가 없습니다.`})}));

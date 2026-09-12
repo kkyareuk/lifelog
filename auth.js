@@ -813,6 +813,7 @@ async function submitFeedback({category,message,allowReply=false}={}){
   if(!user)throw Object.assign(new Error("Google 로그인이 필요합니다."),{code:"feedback/login-required"});
   const cleanMessage=String(message||"").trim();
   if(!cleanMessage)throw Object.assign(new Error("피드백 내용을 입력해 주세요."),{code:"feedback/empty"});
+  if(category==="discovery-answer-fit"&&cleanMessage.length>3000)throw Error("feedback-too-long");
   const feedbackId=`${user.uid}_${Date.now()}_${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
   await setUserDoc(doc(db,"feedback",feedbackId),{
     uid:user.uid,
