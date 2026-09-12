@@ -37,3 +37,6 @@ Added more varied character interactions and personality-based reactions.
 </ja-JP>
 
 New/changed UI and narrative text: English100%, Japanese100% scoped; whole-app translation percentage not measured.
+
+## Store progress
+Android production release 20: only bundle377 selected; release name377 (1.0.328), 100% of existing target countries. Submitted via Play Console. Publishing overview shows changes under review with pre-review checks still running. Managed publishing disabled. Not yet publicly available. iOS377 archive/upload and simulator workflow running; do not select376.
