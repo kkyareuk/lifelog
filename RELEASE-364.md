@@ -8,6 +8,7 @@
 • 선택한 답변과 활동이 다시 나타나는 문제를 개선했어요.
 • 멀티 멤버 목록과 마을 이동 규칙을 개선했어요.
 • 식사·수면과 건강 설정 선택지를 보완했어요.
+• 서랍마을 앱 아이콘을 적용했어요.
 </ko-KR>
 <en-US>
 • Updated sofa, chair and desk artwork and furniture rotation.
@@ -16,6 +17,7 @@
 • Improved saving of answers and selected activities.
 • Improved multiplayer member lists and town travel rules.
 • Added eating, sleep and health setting options.
+• Added the Drawer Village app icon.
 </en-US>
 <ja-JP>
 • ソファ・椅子・机の絵と家具の回転を改善しました。
@@ -24,6 +26,7 @@
 • 回答と選んだ活動の保存を改善しました。
 • マルチのメンバー一覧と村間移動のルールを改善しました。
 • 食事・睡眠・健康の設定項目を追加しました。
+• 「引き出し村」のアプリアイコンを追加しました。
 </ja-JP>
 ```
 
