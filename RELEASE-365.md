@@ -42,6 +42,7 @@ Server-dependent wardrobe and schedule-ID fixes are excluded from these notes un
 이번 업데이트에서 변경된 주요 내용을 안내드립니다.
 
 🎨 UI/UX
+• 서랍마을 앱 아이콘을 적용했어요.
 • 소파·의자·책상 그림을 바꾸고 가구 회전을 개선했어요.
 • 집과 마을에서 가구와 캐릭터가 겹쳐 보이는 순서를 개선했어요.
 
@@ -51,6 +52,8 @@ Server-dependent wardrobe and schedule-ID fixes are excluded from these notes un
 • 멀티 마을 이동 규칙을 개인 마을 설정과 분리했어요.
 
 🐛 오류 수정
+• 캐릭터 프로필에서 아래 항목까지 스크롤되지 않던 문제를 수정했어요.
+• 캐릭터 사진 배치 창에서 안내문이 미리보기와 겹치던 문제를 수정했어요.
 • 선택한 답변·활동이 다시 나타나는 문제를 개선했어요.
 • 멀티 멤버 관리 목록에서 차단한 계정과 방장을 확인할 수 있도록 고쳤어요.
 
