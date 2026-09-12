@@ -7,6 +7,13 @@ export function mapPackageIds(v,map,key=''){
  if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,x])=>[['characters','homes','relationships','characterViews','routines','monthlyRoutines','view-row'].includes(key)?map[k]||k:k,mapPackageIds(x,map,key==='characterViews'?'view-row':k)]));
  return typeof v==='string'&&scalar.has(key)?map[v]??v:v;
 }
+export function copyHomeWithoutResidents(home,mapping={}){
+ const copy=mapPackageIds(home,mapping);
+ for(const room of Object.values(copy.rooms||{})){
+  if(room.accessMode==='selected'&&!room.accessCharacterIds?.length&&!room.accessGroups?.length&&!room.accessPetIds?.length&&!room.accessCustom?.length)room.accessMode='everyone';
+ }
+ return copy;
+}
 const participants=r=>r.groupMembers?.length?r.groupMembers:r.memberIds?.length?r.memberIds:[r.a,r.b].filter(Boolean);
 export function makeWorldPackage(world,kind,selection){
  const town=world.towns.find(t=>t.id===selection)||world.world,home=world.homes[selection];if(kind==='town'&&!world.towns.some(t=>t.id===selection))throw Error('town-missing');
@@ -40,7 +47,7 @@ export function importWorldPackage(pack,{mapping={},characterLimit=5,townLimit=2
   const count=Object.values(next.catalog).reduce((n,rows)=>n+rows.length,0);let added=0;
   for(const [kind,rows] of Object.entries(copy.catalog||{})){next.catalog[kind]||=[];for(const item of rows){const old=next.catalog[kind].find(x=>x.id===item.id);if(old&&JSON.stringify(old)!==JSON.stringify(item))throw Error('catalog-id-conflict');if(!old){next.catalog[kind].push(item);added++}}}if(count+added>80)throw Error('catalog-limit');
  }
- for(const [sourceId,original] of Object.entries(pack.homes)){const id=map[sourceId],h=pack.kind==='home'?mapPackageIds(original,{...map,...Object.fromEntries(ids.map(cid=>[cid,mapping[cid]||'']))}):copy.homes[id];next.homes[id]={...h,id,townId};next.activeHomeId=id}
+ for(const [sourceId,original] of Object.entries(pack.homes)){const id=map[sourceId],h=pack.kind==='home'?copyHomeWithoutResidents(original,{...map,...Object.fromEntries(ids.map(cid=>[cid,mapping[cid]||'']))}):copy.homes[id];next.homes[id]={...h,id,townId};next.activeHomeId=id}
  // Keep existing relations untouched: previews map to characters, never overwrite a pair silently.
  if(pack.kind==='relationships')for(const r of Object.values(copy.relationships)){const key=participants(r).slice().sort().join('|');if(Object.values(next.relationships).some(old=>participants(old).slice().sort().join('|')===key))throw Error('relationship-already-exists')}
  Object.assign(next.relationships,copy.relationships);next.characterGroups.push(...copy.characterGroups);
@@ -59,21 +66,21 @@ export async function worldTransferDialog({homeId='',townId='',kind='town',rende
  const mode=node('select');for(const [id,label] of [['home',text('집 · 방 · 인테리어','Home, rooms and interior','家・部屋・インテリア')],['relationships',text('관계 전체','All relationships','関係全体')],['town',text('마을 전체','Entire town','村全体')]]){const option=node('option',label,mode);option.value=id}mode.value=scope;mode.hidden=true;
  const select=node('select'),fill=()=>{select.replaceChildren();for(const item of mode.value==='home'?Object.values(source.homes):source.towns){const option=node('option',item.name,select);option.value=item.id}select.hidden=mode.value==='relationships'};fill();if(homeId)select.value=homeId;if(townId)select.value=townId;mode.onchange=fill;
  const info=node('p',scope==='home'?text('집 정보, 방 정보와 인테리어 배치를 공유해요.','Share home and room settings with interior placement.','家と部屋の情報、インテリア配置を共有します。'):scope==='relationships'?text('불러올 관계의 캐릭터를 직접 연결해 주세요.','Match the characters when importing relationships.','関係を読み込む際に人物を指定してください。'):text('마을 전체를 새 사본으로 불러오거나 내 마을을 멀티로 옮겨요.','Import a copy of an entire town or move your personal town to multiplayer.','村全体をコピーとして読み込むか、自分の村をマルチへ移転します。'));
- const slotHelp=node('p',text('마을은 포함된 캐릭터 전원을 함께 공유해요. 받는 계정에는 전원 수만큼의 빈 캐릭터 슬롯과 마을 슬롯이 필요해요. 구매한 슬롯 권리는 전달되지 않아요.','A town shares all its characters. The receiving account needs enough free character slots and a town slot. Purchased slot rights are not transferred.','村は含まれる全員を共有します。受け取るアカウントには全員分の空きキャラクター枠と村枠が必要です。購入した枠の権利は移りません。'));d.append(slotHelp);
+ const slotHelp=node('p',text('마을은 포함된 캐릭터 전원을 함께 공유해요. 받는 계정에는 전원 수만큼의 빈 캐릭터 슬롯과 마을 슬롯이 필요해요. 구매한 슬롯 권리는 전달되지 않아요.','A town shares all its characters. The receiving account needs enough free character slots and a town slot. Purchased slot rights are not transferred.','村は含まれる全員を共有します。受け取るアカウントには全員分の空きキャラクター枠と村枠が必要です。購入した枠の権利は移りません。'));slotHelp.hidden=scope!=='town';d.append(slotHelp);
  const status=node('p');status.setAttribute('role','status');const panel=node('section');
  const task=async(button,run)=>{button.disabled=true;status.textContent=text('처리 중… 창을 닫아도 서버 처리는 계속됩니다.','Processing… Server operations continue if you close this window.','処理中…画面を閉じてもサーバーの処理は続きます。');try{same();await run();if(d.isConnected)status.textContent=text('완료했어요.','Done.','完了しました。')}catch(e){status.textContent=errorText(e.message);toast(status.textContent)}finally{button.disabled=false}};
  const publish=node('button',text('공유 코드 만들기','Create sharing code','共有コードを作成'));publish.onclick=()=>task(publish,async()=>{const pack=makeWorldPackage(source,mode.value,select.value),result=await api.publishWorldCode(pack);same();panel.replaceChildren();const code=node('input','',panel);code.readOnly=true;code.value=result.code.match(/.{1,6}/g).join('-');const copy=node('button',text('코드 복사','Copy code','コードをコピー'),panel);copy.onclick=()=>navigator.clipboard.writeText(code.value).catch(()=>code.select());const revoke=node('button',text('코드 사용 중지','Revoke code','コードを無効化'),panel);revoke.onclick=()=>task(revoke,async()=>{await api.revokeWorldCode(result.code);panel.replaceChildren()})});
  const code=node('input');code.placeholder=text('공유 코드 입력','Enter sharing code','共有コードを入力');code.maxLength=24;const read=node('button',text('공유 코드로 불러오기','Import by sharing code','共有コードで読み込む'));
  read.onclick=()=>task(read,async()=>{const result=await api.readWorldCode(code.value);same();const pack=result.package;if(pack.kind!==scope)throw Error('wrong-sharing-kind');panel.replaceChildren();node('h3',pack.name,panel);node('p',counts(pack),panel);const mapping={};
-  if(pack.kind!=='town')for(const [id,c] of Object.entries(pack.characters)){const label=node('label',c.name,panel),target=node('select','',label);const empty=node('option',text('연결할 캐릭터 선택','Choose a character','接続する人物を選択'),target);empty.value='';for(const char of Object.values(source.characters)){const o=node('option',char.name,target);o.value=char.id}target.onchange=()=>mapping[id]=target.value}
+  let mappingPanel=panel;if(pack.kind==='home'){mappingPanel=node('details','',panel);node('summary',text('캐릭터 연결 (선택 사항)','Match characters (optional)','キャラクターの接続（任意）'),mappingPanel);node('p',text('연결 없이 빈집에도 바로 복사할 수 있어요. 연결하지 않은 인물 지정은 비워 두며, 출입 대상이 모두 비면 누구나 들어갈 수 있게 복사해요.','You can copy into an empty home without matching characters. Unmatched person assignments are cleared; if no allowed visitors remain, access is set to everyone.','人物を接続せず空き家にもコピーできます。未接続の人物指定は空になり、入室対象がなくなる場合は誰でも入れる設定になります。'),panel);}if(pack.kind!=='town')for(const [id,c] of Object.entries(pack.characters)){const label=node('label',c.name,mappingPanel),target=node('select','',label);const empty=node('option',text('연결할 캐릭터 선택','Choose a character','接続する人物を選択'),target);empty.value='';for(const char of Object.values(source.characters)){const o=node('option',char.name,target);o.value=char.id}target.onchange=()=>mapping[id]=target.value}
   const sharedTarget=scope==='home'&&snapshot.homes?.find(h=>h.id===homeId)&&!personalState().homes[homeId];
   const targetRevision=Number(snapshot.homes?.find(h=>h.id===homeId)?.layoutRevision)||0;
   const apply=node('button',sharedTarget?text('이 멀티 집의 방·인테리어에 적용','Apply to this multiplayer home’s rooms and interior','このマルチの家の部屋・内装に適用'):text('새 사본으로 가져오기','Import a new copy','新しいコピーとして読み込む'),panel);
-  if(sharedTarget)node('p',text('기존 방과 가구 배치를 교체합니다. 방 주인과 출입 대상을 위에서 연결해 주세요. 집의 소유 계정은 바뀌지 않아요.','Replaces existing rooms and furniture. Match room owners and visitors above. The account owning this home stays the same.','既存の部屋と家具配置を置き換えます。持ち主と入室対象を上で指定してください。家の所有アカウントは変わりません。'),panel);
+  if(sharedTarget)node('p',text('기존 방과 가구 배치를 교체합니다. 캐릭터 연결 없이도 적용할 수 있어요. 집의 소유 계정은 바뀌지 않아요.','Replaces existing rooms and furniture. Matching room owners and visitors is optional. The account owning this home stays the same.','既存の部屋と家具配置を置き換えます。持ち主と入室対象の接続は任意です。家の所有アカウントは変わりません。'),panel);
   apply.onclick=()=>task(apply,async()=>{same();if(sharedTarget){
     if(api.getSnapshot().activeGroupId!==snapshot.activeGroupId)throw Error('account-changed');
     const [sourceId,original]=Object.entries(pack.homes)[0]||[];if(!original)throw Error('home-missing');
-    const mapped=mapPackageIds(original,Object.fromEntries(Object.keys(pack.characters).map(id=>[id,mapping[id]||''])));
+    const mapped=copyHomeWithoutResidents(original,Object.fromEntries(Object.keys(pack.characters).map(id=>[id,mapping[id]||''])));
     await api.saveHomeLayout({id:homeId,revision:targetRevision,layout:{image:mapped.image||'',rooms:mapped.rooms,deletedRoomKeys:[],floorCount:mapped.floorCount||1,activeFloor:mapped.activeFloor||1}});
   }else{importWorldPackage(pack,{mapping,...limits()});api?.select('')}render();d.close()});
  });
