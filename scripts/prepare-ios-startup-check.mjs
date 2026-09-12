@@ -18,7 +18,7 @@ source=source.replace(anchor,anchor+`
         let destination = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("drawer-startup-check.json")
         var report: [String: Any] = ["attempt": startupChecks, "hasWebView": webView != nil, "loading": webView?.isLoading ?? false, "width": webView?.bounds.width ?? 0, "height": webView?.bounds.height ?? 0]
         if let data = try? JSONSerialization.data(withJSONObject: report) { try? data.write(to: destination) }
-        webView?.evaluateJavaScript("JSON.stringify({ready:document.readyState,appChildren:document.querySelector('#app')?.children.length||0,textLength:document.querySelector('#app')?.textContent.length||0,buttons:document.querySelectorAll('#app button').length,bootErrors:window.__qaBootErrors||[]})") { [weak self] value, error in
+        webView?.evaluateJavaScript("JSON.stringify({ready:document.readyState,appChildren:document.querySelector('#app')?.children.length||0,textLength:document.querySelector('#app')?.textContent.length||0,buttons:document.querySelectorAll('#app button').length,url:location.href,rendered:document.documentElement.dataset.drawerRendered||null,bootError:document.documentElement.dataset.drawerBootError||null})") { [weak self] value, error in
             if let value = value as? String, let bytes = value.data(using: .utf8), let js = try? JSONSerialization.jsonObject(with: bytes) { report["dom"] = js }
             if let error = error { report["error"] = error.localizedDescription }
             if let data = try? JSONSerialization.data(withJSONObject: report) { try? data.write(to: destination) }
