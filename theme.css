@@ -419,7 +419,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     border:0!important;
     border-radius:0!important;
   }
-  html.native-platform[data-active-tab="character"] .mobile-character-editor-shell{
+  html.native-platform[data-active-tab="character"] .mobile-character-editor-shell:not(.character-quick-settings-shell){
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
     grid-template-rows:auto minmax(0,1fr) auto!important;

@@ -1,0 +1,21 @@
+import {createServer} from 'node:http';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url),{chromium}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=process.cwd(),out=resolve('qa-furniture366');await mkdir(out,{recursive:true});
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();const body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:402,height:820},isMobile:true,hasTouch:true});
+ await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin);await page.waitForFunction(()=>window.DrawerVillageNavigation);
+ await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');g.createCharacter(100);document.documentElement.classList.add('native-app','native-platform');window.DrawerVillageNavigation.go('character')});await page.waitForTimeout(600);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+ await page.locator('[data-open-quick-character-settings]:visible').first().click();await page.waitForTimeout(400);
+ const inspect=()=>page.evaluate(()=>Array.from(document.querySelectorAll('dialog[open],dialog[open] > *, .character-quick-fields,.home-layout-preview,.character-home-layout-editor')).map(e=>({cls:e.className,w:e.clientWidth,h:e.clientHeight,scroll:e.scrollHeight,touch:getComputedStyle(e).touchAction,overflow:getComputedStyle(e).overflow,rect:JSON.stringify(e.getBoundingClientRect())})));
+  const profile=await page.evaluate(()=>{const d=document.querySelector('.character-quick-settings-dialog'),f=d.querySelector('.character-quick-fields');return {bottom:f.getBoundingClientRect().bottom,dialogBottom:d.getBoundingClientRect().bottom,overflow:f.scrollHeight-f.clientHeight}});assert(profile.bottom<profile.dialogBottom);assert(profile.overflow>0);
+ const cdp=await page.context().newCDPSession(page);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:340,y:630}]});for(let y=610;y>=330;y-=20){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:340,y}]});await page.waitForTimeout(16)}await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(250);assert(await page.locator('.character-quick-fields').evaluate(e=>e.scrollTop>0));await page.locator('.character-quick-fields').evaluate(e=>e.scrollTop=0);
+ console.log('PROFILE_SCROLL_PASS',profile);await page.screenshot({path:resolve(out,'profile-verified.png')});
+ await page.locator('[data-open-character-layout]:visible').first().click();await page.waitForTimeout(300);  const layout=await page.evaluate(()=>{const p=document.querySelector('.home-layout-preview'),c=document.querySelector('.home-layout-preview-caption'),e=document.querySelector('.character-home-layout-editor');return {previewBottom:p.getBoundingClientRect().bottom,captionTop:c.getBoundingClientRect().top,overflow:e.scrollHeight-e.clientHeight}});assert(layout.captionTop>=layout.previewBottom);assert(layout.overflow>0);await page.locator('.character-home-layout-editor').evaluate(e=>e.scrollTop=e.scrollHeight);await page.waitForTimeout(100);console.log('LAYOUT_FLOW_PASS',layout);await page.screenshot({path:resolve(out,'layout-verified.png')});
+}finally{await browser.close();server.close()}
