@@ -26,7 +26,7 @@ export function scheduleSceneDepth(){
         const prior=Number(chair.dataset.seatPull)||0,baseLeft=r.left-prior;
         const table=items.find(el=>el.dataset.furniturePlacement===chair.dataset.tableId);
         const side=chair.dataset.seatSide,sideChair=!sofa&&['left','right'].includes(chair.dataset.seatDirection);
-        const width=sofa?Math.min(48,(r.width>r.height?r.width:r.height)*.28):Math.min(44,r.width*.52);
+        const width=sofa?Math.min(64,Math.max(38,(r.width>r.height?r.width:r.height)*.45)):Math.min(60,Math.max(36,r.width*.9));
         let pull=0;
         if(table&&sideChair){
           const tr=(table.querySelector('.furniture-sprite')||table).getBoundingClientRect();
@@ -36,7 +36,7 @@ export function scheduleSceneDepth(){
         }
         pulls.push([chair,pull]);
         const frame=items.find(el=>el.dataset.chairFrame===chair.dataset.furniturePlacement);if(frame)pulls.push([frame,pull]);
-        const occupants=seated.filter(el=>el.dataset.seatId===person.dataset.seatId).sort((a,b)=>(a.dataset.characterId||'').localeCompare(b.dataset.characterId||''));
+        const occupants=seated.filter(el=>el.dataset.seatId===person.dataset.seatId).sort((a,b)=>Number(a.dataset.seatOrder||0)-Number(b.dataset.seatOrder||0)||(a.dataset.characterId||'').localeCompare(b.dataset.characterId||''));
         const slot=occupants.indexOf(person),sideSofa=sofa&&['left','right'].includes(chair.dataset.seatDirection);
         const x=baseLeft+pull+r.width*(sofa&&!sideSofa?(slot===0?.32:.68):.5);
         const y=r.top+r.height*(sofa?(sideSofa?(slot===0?.42:.72):.80):.66);
@@ -47,7 +47,8 @@ export function scheduleSceneDepth(){
         if(table){
           // Seat separation keeps faces outside the tabletop. Only this table
           // receives an occupant ordering exception; unrelated depth is kept.
-          row.bottom=Math.max(row.bottom,bounds.find(row=>row.element===table).bottom+.1);
+          const tableBottom=bounds.find(row=>row.element===table).bottom;
+          if(side==='north'){chairRow.bottom=Math.min(chairRow.bottom,tableBottom-.3);row.bottom=tableBottom-.2}else if(sideChair||side==='south')row.bottom=Math.max(row.bottom,tableBottom+.1);
           if(person.classList.contains('scene-action-eating'))meals.push([table,person.dataset.characterId||person.dataset.homePerson,side||'north']);
         }
       }

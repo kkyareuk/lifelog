@@ -80,7 +80,7 @@ try{
  document.body.append(root);(await import('/scene-depth.js')).bindSceneDepth(root);
  });await page.waitForTimeout(150);
  const seat=await page.evaluate(()=>{const r=document.querySelector('#seat-qa'),p=r.querySelector('.home-person'),a=p.querySelector('.avatar,.sprite'),b=a.getBoundingClientRect(),c=r.querySelector('.furniture-sprite').getBoundingClientRect();return {width:p.getBoundingClientRect().width,center:p.getBoundingClientRect().x+p.getBoundingClientRect().width/2,chairCenter:c.x+c.width/2,labels:p.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,seated:p.classList.contains('is-seated'),action:p.className,animation:getComputedStyle(p.querySelector('.home-person-visual')).animationName}});
- assert.equal(seat.labels,0);assert(seat.seated);assert(Math.abs(seat.width-44)<1);assert(Math.abs(seat.center-seat.chairCenter)<4,JSON.stringify(seat));assert(seat.action.includes('scene-action-eating'));assert(seat.animation.includes('home-activity-cook'));console.log('SEATED SIZE / CENTER / HIDDEN LABELS / EATING MOTION PASS',seat);
+ assert.equal(seat.labels,0);assert(seat.seated);assert(Math.abs(seat.width-60)<1);assert(Math.abs(seat.center-seat.chairCenter)<4,JSON.stringify(seat));assert(seat.action.includes('scene-action-eating'));assert(seat.animation.includes('home-activity-cook'));console.log('SEATED SIZE / CENTER / HIDDEN LABELS / EATING MOTION PASS',seat);
  await page.screenshot({path:resolve(out,'seated374.png')});
 
 
@@ -102,7 +102,14 @@ try{
  (await import('/scene-depth.js')).bindSceneDepth(root);
  });await page.waitForTimeout(180);
  const pair=await page.locator('#seat-qa .home-person').evaluateAll(es=>es.map(e=>{const b=e.getBoundingClientRect();return {x:b.x,width:b.width,bottom:b.bottom}}));
- assert.equal(pair.length,2);assert(pair[0].x+pair[0].width<pair[1].x);assert(pair.every(p=>p.width<=48));
+ assert.equal(pair.length,2);assert(pair[0].x+pair[0].width<pair[1].x);assert(pair.every(p=>p.width<=64));
  await page.screenshot({path:resolve(out,'sofa375.png')});console.log('TWO DISTINCT SOFA SEATS PASS',pair);
+
+ await page.evaluate(async()=>{
+ const root=document.querySelector('#seat-qa'),c=g.active(),scene={title:'스킨십하는 중',home:true,meetingKind:'affection',groupInteraction:true},agent={phase:'using',item:'소파',furnitureId:'sofa',x:50,y:50};
+ root.querySelector('.room-people').innerHTML=qaSeatMarkup(c,scene,agent,{name:'거실'},'living',0);
+ });
+ const effect=await page.locator('#seat-qa .home-person').evaluate(e=>({class:e.className,labels:e.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,hearts:getComputedStyle(e,'::after').content,animation:getComputedStyle(e,'::after').animationName}));
+ assert(effect.class.includes('is-affection'));assert.equal(effect.labels,0);assert(effect.hearts.includes('♥'));assert.equal(effect.animation,'affection-heart');console.log('AFFECTION labels hidden / heart effect PASS');
 
 }finally{await browser.close();server.close()}

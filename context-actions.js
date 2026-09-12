@@ -9,7 +9,9 @@ export function contextActions(target){
  {kind:'talk',label:label('대화하기','Talk','話す')},{kind:'hug',label:label('포옹하기','Hug','抱きしめる')},{kind:'debate',label:label('토론하기','Discuss','議論する')},{kind:'hangout',label:label('함께 시간 보내기','Spend time together','一緒に過ごす')}];
  if(target.type==='place')return [{kind:'walk',label:label('방문하기','Visit','訪れる')},{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')}];
  const item=target.item||'';
- if(/침대|bed/i.test(item))return [{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')}];
+ const affection={kind:'affection',companion:true,label:label('스킨십하기','Physical affection','スキンシップ')};
+ if(/침대|bed/i.test(item))return [{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},affection];
+ if(/소파|sofa/i.test(item))return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},affection];
  if(/냉장|싱크|가스|오븐|조리/i.test(item))return [{kind:'meal',lifeTask:'simple_cook',label:label('요리하기','Cook','料理する')},{kind:'meal',label:label('식사하기','Eat','食事する')}];
  if(/식탁|dining table/i.test(item))return [{kind:'meal',label:label('여기서 밥 먹기','Eat here','ここで食事する')}];
  if(/책장|책상/i.test(item))return [{kind:'read',label:label('책 읽기','Read','読書する')},{kind:'study',label:label('공부하기','Study','勉強する')}];
@@ -17,7 +19,7 @@ export function contextActions(target){
  if(/TV|텔레비전|컴퓨터|게임/i.test(item))return [{kind:'game',label:label('게임하기','Play a game','ゲームをする')},{kind:'relax',label:label('쉬기','Relax','くつろぐ')}];
  return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},{kind:'chores',lifeTask:'clean',label:label('청소하기','Clean','掃除する')}];
 }
-export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask=''){
+export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='',companionId=''){
  if(!target||typeof target!=='object')return null;
  if(target.type==='place'){
   const place=(world.world.places||[]).find(p=>p.id===target.id);if(!place||!['walk','rest'].includes(kind))return null;
@@ -31,14 +33,14 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
   furniture=room.furniturePlacements?.find(p=>p.id===target.id);if(!furniture)return null;
   if(!contextActions({...target,item:furniture.item}).some(a=>a.kind===kind&&(a.lifeTask||'')===lifeTask))return null;
   if(furniture.item==='식탁'){
-   const table=furniture,placements=room.furniturePlacements||[],busy=new Set(Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id).map(([,d])=>d.furniture?.id));
+   const table=furniture,placements=room.furniturePlacements||[],busy=new Set(Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id).map(([,d])=>d.furniture?.id));
    for(const [id,a] of Object.entries(home.lifeSimulation?.agents||{}))if(id!==c.id&&a.phase==='using')busy.add(a.furnitureId);
    furniture=placements.filter(p=>p.item==='의자'&&!busy.has(p.id)&&(p.tableId===table.id||!p.tableId&&Math.hypot(p.x-table.x,p.y-table.y)<28)).sort((a,b)=>Math.hypot(a.x-table.x,a.y-table.y)-Math.hypot(b.x-table.x,b.y-table.y))[0];
    if(!furniture)return null;
   }
   const capacity=/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
-  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
-  if(used>=capacity)return null;
+  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
+  if(used>=(kind==='affection'?1:capacity))return null;
  }
  return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
 }
@@ -51,7 +53,7 @@ export function contextGroups(target,actor){
  return [
  {label:label('대화하기','Conversation','会話'),actions:[action('talk','대화하기','Talk','話す'),action('comfort','위로하기','Comfort','慰める'),...socials.filter(a=>a.section==='conversation'||a.kind==='debate')]},
  {label:label('연락하기','Contact','連絡'),actions:socials.filter(a=>a.remote)},
- {label:label('애정 상호작용','Affection','愛情表現'),actions:[action('hug','포옹하기','Hug','抱きしめる'),action('kiss','키스하기','Kiss','キスする'),action('compliment','칭찬하기','Compliment','褒める'),action('handhold','손잡기','Hold hands','手をつなぐ'),action('lean','어깨에 기대기','Lean on their shoulder','肩に寄り添う')]},
+ {label:label('애정 상호작용','Affection','愛情表現'),actions:[action('hug','포옹하기','Hug','抱きしめる'),action('kiss','키스하기','Kiss','キスする'),action('compliment','칭찬하기','Compliment','褒める'),action('handhold','손잡기','Hold hands','手をつなぐ'),action('lean','어깨에 기대기','Lean on their shoulder','肩に寄り添う'),action('affection','스킨십하기','Physical affection','スキンシップ')]},
  {label:label('갈등 상호작용','Conflict','対立'),actions:socials.filter(a=>a.negative)},
  {label:label('선물하기','Gifts','贈り物'),actions:[action('gift','선물 건네기','Give a gift','贈り物を渡す')]},
  {label:label('동행하기','Together','一緒に行動'),actions:[action('hangout','함께 시간 보내기','Spend time together','一緒に過ごす'),...socials.filter(a=>['dine','cook_together','play_together','study_together','read_together'].includes(a.kind))]}

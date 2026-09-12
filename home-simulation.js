@@ -158,6 +158,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   Object.keys(current.agents).forEach(id=>{if(!eligibleSet.has(id))delete current.agents[id]});
   current.reservations={};
   const occupied=new Map();
+  eligible.sort((a,b)=>Number(Boolean(current.agents[b]?.furnitureId))-Number(Boolean(current.agents[a]?.furnitureId)));
   eligible.forEach((characterId,index)=>{
     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
@@ -169,7 +170,8 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if(diningTables.length)candidates=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&diningTables.some(table=>item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
     const watching=/TV|홈시어터|프로젝터|빔프로젝터/.test(candidates[0]?.item||'');
     const sofas=placements.filter(item=>item.roomKey===roomKey&&item.item==='소파'&&(occupied.get(item.id)||0)<2);
-    if(watching&&sofas.length)candidates=sofas;
+    const resting=/쉬|휴식|relax|resting|休む|休ん/.test(scene.title||'');
+    if((watching||resting)&&!pinned&&sofas.length)candidates=sofas;
     if(context.interactionId&&!pinned&&sofas.length)candidates=sofas;
     if(sleeping){
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
@@ -181,7 +183,10 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     // pick another bed while the same sleep continues. Deleted/reassigned beds
     // still use the normal destination selection.
     const previousBed=sleeping&&previous?.actionKind==="sleep"?candidates.find(item=>item.id===previous.furnitureId):null;
-    const rawTarget=previousBed||(candidates.length?candidates[hash(`${characterId}:${sceneKey}`)%candidates.length]:null);
+    const previousSeat=candidates.find(item=>item.id===previous?.furnitureId&&['소파','의자'].includes(item.item)&&previous.sceneKey===sceneKey);
+    const seatScore=item=>{const others=Object.values(current.agents).filter(a=>a.characterId!==characterId&&a.furnitureId===item.id&&eligible.includes(a.characterId));return others.some(a=>(context.seatCloseIds||[]).includes(a.characterId))?3:!(occupied.get(item.id)||others.length)?2:0};
+    const ranked=candidates.some(item=>item.item==='소파')?candidates.slice().sort((a,b)=>seatScore(b)-seatScore(a)):candidates;
+    const rawTarget=previousBed||previousSeat||(ranked.length?ranked[candidates.some(item=>item.item==='소파')?0:hash(`${characterId}:${sceneKey}`)%ranked.length]:null);
     const target=rawTarget?{...rawTarget,...safeHomePoint(rawTarget.x,rawTarget.y)}:null;
     if(target)occupied.set(target.id,(occupied.get(target.id)||0)+1);
     const old=current.agents[characterId],sameScene=(old?.sceneKey===sceneKey||Boolean(previousBed))&&(!old.furnitureId||Boolean(target&&old.furnitureId===target.id));

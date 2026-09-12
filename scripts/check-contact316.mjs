@@ -12,10 +12,26 @@ for(const [x,y] of [[a,b],[b,a]])game.updateCharacterView(x.id,y.id,'touchIntens
 a.touchReaction='몸에 손이 닿는 것을 싫어함';
 for(const kind of ['handhold','hug','lean','kiss','kiss_cautious','kiss_reconcile','affection']){assert(game.contactAllowed(a,b,kind),kind);assert(game.directCharacterActivity(a.id,kind,{targetId:b.id,now}),kind);assert.equal(state.characterDirectives[a.id].kind,kind)}
 for(const [x,y] of [[a,b],[b,a]])game.updateCharacterView(x.id,y.id,'touchIntensity','손잡기·팔짱까지');
-assert(game.contactAllowed(a,b,'handhold'));assert(!game.contactAllowed(a,b,'lean'));
-for(const lang of ['ko','en','ja'])assert(game.contactFailure(a,b,'kiss',lang).includes(a.name));
+assert(game.contactAllowed(a,b,'handhold'));assert(game.contactAllowed(a,b,'lean'));
+assert(game.directCharacterActivity(a.id,'lean',{targetId:b.id,now}));assert(state.characterDirectives[a.id].contactRejected);
+for(const lang of ['ko','en','ja'])assert.equal(game.contactFailure(a,b,'kiss',lang),'');
+assert(game.directCharacterActivity(a.id,'kiss',{targetId:b.id,now}));assert(state.characterDirectives[a.id].contactRejected);
+assert(game.directCharacterActivity(a.id,'bother',{targetId:b.id,now}));
+assert(state.characterDirectives[a.id].copy.ko.desc!==state.characterDirectives[b.id].copy.ko.desc);
 a.ageGroup=b.ageGroup='청소년';assert(game.directCharacterActivity(a.id,'handhold',{targetId:b.id,now}));assert(!game.directCharacterActivity(a.id,'kiss',{targetId:b.id,now}));
 a.ageGroup='성인';b.ageGroup='노인';for(const [x,y]of[[a,b],[b,a]])game.updateCharacterView(x.id,y.id,'touchIntensity','성인 간 친밀한 접촉까지');
-for(const home of Object.values(state.homes))for(const room of Object.values(home.rooms)){room.accessMode='owners';room.ownerMode='selected';room.ownerCharacterIds=[]}
+const {contextGroups,contextActions}=await import('../context-actions.js?v=20260909dev305');
+assert(contextGroups({type:'person',id:b.id},a).some(g=>g.actions.some(x=>x.kind==='affection')));
+const h=state.homes[a.homeId],roomKey=Object.keys(h.rooms)[0];b.townId=a.townId;
+for(const item of ['소파','침대']){
+ const p={id:'contact-furniture',item,x:50,y:60};h.rooms[roomKey].furniturePlacements=[p];
+ const contextTarget={type:'furniture',homeId:h.id,room:roomKey,id:p.id,item};
+ assert(contextActions(contextTarget).some(x=>x.kind==='affection'&&x.companion));
+ assert(game.directCharacterActivity(a.id,'affection',{targetId:b.id,contextTarget,now}));
+ assert.equal(state.characterDirectives[a.id].furniture.id,p.id);assert.equal(state.characterDirectives[b.id].furniture.id,p.id);
+ for(const lang of ['ko','en','ja'])assert(state.characterDirectives[a.id].copy[lang].desc!==state.characterDirectives[b.id].copy[lang].desc);
+}
+console.log('PASS contextual affection menu, sofa/bed destinations and three-language distinct perspectives');
+for(const home of Object.values(state.homes))for(const room of Object.values(home.rooms)){room.accessMode='owners';room.ownerMode='selected';room.ownerCharacterIds=['another-owner']}
 assert(!game.directCharacterActivity(a.id,'affection',{targetId:b.id,now}),'must respect room access even without furniture');
 console.log('PASS cumulative contact limits, adult/senior pairing, nonsexual teen handholding, minor kiss block, directional failure copy, no-furniture adult contact and room access');

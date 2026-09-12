@@ -1,5 +1,5 @@
 {
-  "request": "2026-09-12-build365-profile-scroll",
-  "purpose": "Compile and launch updated furniture and navigation on iPhone and iPad; no purchase",
+  "request": "2026-09-13-build376-cumulative-ui",
+  "purpose": "Compile and launch cumulative UI and furniture fixes on iPhone and iPad; no purchase",
   "appStoreUpload": false
 }

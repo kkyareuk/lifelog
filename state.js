@@ -2,7 +2,7 @@ import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {writeAnswerDelta,writeChoiceDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
-import {contactNarrative,rejectsContact} from './contact-narrative.js?v=20260909dev305';
+import {contactNarrative,rejectsContact,botherNarrative} from './contact-narrative.js?v=20260909dev305';
 import {contextDestination} from './context-actions.js?v=20260909dev305';
 import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
 import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
@@ -1490,7 +1490,8 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   return copy;
 }
 function baseSocialDirectiveCopy(kind,actor,target,subject,topic,options={}){
-  if(['hug','kiss','kiss_cautious','kiss_reconcile'].includes(kind))return contactNarrative(state,actor,target,characterViewFor(actor.id,target.id),kind==='hug'?'hug':'kiss',options);
+  if(kind==='bother')return botherNarrative(state,actor,target,characterViewFor(actor.id,target.id),options);
+  if(['hug','kiss','kiss_cautious','kiss_reconcile','handhold','lean','affection'].includes(kind))return contactNarrative(state,actor,target,characterViewFor(actor.id,target.id),kind.startsWith('kiss')?'kiss':kind,options);
   if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const reasons=gossipReasons(characterViewFor(actor.id,subject.id),subject);const desc=criticizing&&reasons.length?reasons[Math.floor(seededChoice(actor.id+':'+subject.id+':'+(options.now||Math.floor(Date.now()/60000)))()*reasons.length)]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
 
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;
@@ -1520,10 +1521,6 @@ export function contactFailure(a,b,kind,lang='ko'){
  if(required===undefined)return '';
  if(!a||!b||a.id===b.id)return text('함께할 다른 캐릭터를 골라 주세요.','Choose another character.','相手のキャラクターを選んでください。');
  if(required>=4&&[a,b].some(c=>!isAdultAge(c.ageGroup)))return text('이 행동은 두 캐릭터 모두 청년·성인·중년·장년·노년 중 하나로 설정되어야 해요. 나이대가 서로 같을 필요는 없어요.','Both characters must be adults or seniors for this action. Their age groups do not need to match.','この行動は双方が成人または高齢者である必要があります。年齢区分が同じである必要はありません。');
- for(const [c,other] of [[a,b],[b,a]]){
-  const level=String(characterViewFor(c.id,other.id).touchIntensity||'').trim().replace('성인 간 합의된 친밀한 접촉까지','성인 간 친밀한 접촉까지');
-  if(levels.indexOf(level)<required)return text(`${c.name} → ${other.name}의 시선에서 신체 접촉 허용 범위를 확인해 주세요. 두 방향 모두 이 행동을 허용해야 해요.`, `Check the contact limit in ${c.name}'s view of ${other.name}. Both directions must allow this action.`,`${c.name}から${other.name}への視線で接触の範囲を確認してください。双方の設定でこの行動を許可する必要があります。`);
- }
  return '';
 }
 export function contactAllowed(a,b,kind){return !contactFailure(a,b,kind)}
@@ -1542,7 +1539,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   // Explicit mutual contact settings also permit a directed kiss. A custom
   // relationship name must not silently veto the user's settings.
   if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id)&&!contactAllowed(character,target,kind))return false;
-  const contactRejected=['hug','kiss','kiss_cautious','kiss_reconcile'].includes(kind)&&rejectsContact(characterViewFor(target.id,character.id));
+  const contactRejected=['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(kind)&&rejectsContact(characterViewFor(target.id,character.id),kind);
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   if(kind==="drinks"&&[character,target].some(c=>!isAdultAge(c?.ageGroup)))return false;
   options={...options,contactRejected,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
@@ -1558,7 +1555,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     character.timelineResetAt=startedAt;delete state.dailyPlans?.[characterId];save();return true;
   }
   let destination=targetScene,otherJourney=null;
-  if(options.contextTarget){destination=contextDestination(state,character,options.contextTarget,kind,startedAt,options.lifeTask||'');if(!destination||target)return false;
+  if(options.contextTarget){destination=contextDestination(state,character,options.contextTarget,kind,startedAt,options.lifeTask||'',target?.id);if(!destination||target&&kind!=='affection')return false;if(target&&!roomEntryAllowed(target,state.homes[destination.visitHomeId],state.homes[destination.visitHomeId]?.rooms?.[destination.room]))return false;
     if(kind==='nap'&&destination.furniture){const beds=(state.homes[destination.visitHomeId]?.rooms[destination.room]?.furniturePlacements||[]).filter(p=>/침대|bed/i.test(p.item)),capacity=/커플|더블|2인|double|couple/i.test(destination.furniture.item)?2:1;const sleepers=state.order.filter(id=>id!==characterId).map(id=>state.characters[id]).filter(Boolean).filter(c=>{const s=scene(c);return s.home&&(s.visitHomeId||c.homeId)===destination.visitHomeId&&s.room===destination.room&&/sleep|nap|수면|자는|잠든|눈을 붙|眠/.test([s.kind,s.title].join(' '))&&(!s.furniture?.id?beds.length<=1:s.furniture.id===destination.furniture.id)});if(sleepers.length>=capacity)return false;} }
   else if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
@@ -1567,7 +1564,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     const rooms=Object.entries(home.rooms||{}).filter(([,room])=>kind!=='affection'||canEnter(character,room)&&canEnter(target,room));let chosen;
     if(kind==='affection'){
       const ordered=rooms.slice().sort(([a],[b])=>Number(b===targetScene?.room)-Number(a===targetScene?.room));
-      for(const [key,room] of ordered){const items=room.furniturePlacements?.length?room.furniturePlacements:(room.furniture||[]).map(item=>({item,x:50,y:60}));const furniture=items.find(p=>!/아기|baby/i.test(p.item)&&/침대|욕조|샤워|의자|bed|bath|shower|chair/i.test(p.item));if(furniture){chosen={key,furniture};break}}
+      for(const [key,room] of ordered){const items=room.furniturePlacements?.length?room.furniturePlacements:(room.furniture||[]).map(item=>({item,x:50,y:60}));const furniture=items.find(p=>!/아기|baby/i.test(p.item)&&/소파|침대|의자|sofa|bed|chair/i.test(p.item));if(furniture){chosen={key,furniture};break}}
       if(!chosen){const room=ordered.find(([key])=>key===targetScene?.room)||ordered.find(([,r])=>r.type==="living")||ordered[0];if(room)chosen={key:room[0]};else return false;}
     }else{const room=rooms.find(([key,r])=>key===definition.room||r.type===definition.room)||rooms[0];if(!room)return false;chosen={key:room[0]}}
     destination={home:true,visitHomeId:home.id,room:chosen.key,townId:home.townId||character.townId};
@@ -1978,7 +1975,8 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
 }
 export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
-  const result=advanceLifeSimulation(home,characterIds,contexts,now);
+  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
+  const result=advanceLifeSimulation(home,characterIds,seatingContexts,now);
   home.lifeSimulation=result.simulation;
   if(result.changed&&persist)save(false,false);
   return result;

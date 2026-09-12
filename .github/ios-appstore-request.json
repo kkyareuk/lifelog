@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-appstore365-profile-scroll",
+  "request": "2026-09-13-appstore376-cumulative-fixes",
   "version": "1.0.328",
-  "build": 365,
+  "build": 376,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

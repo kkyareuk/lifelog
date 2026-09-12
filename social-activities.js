@@ -1,5 +1,6 @@
 // Shared command definitions: local and multiplayer use the same activity IDs.
 export const SOCIAL_ACTIVITIES={
+ bother:{section:'conversation',labels:['귀찮게 굴기','Playfully bother','ちょっかいを出す'],lines:['장난스럽게 말을 걸고 있어요.','They playfully seek attention.','ふざけて気を引いています。']},
  message:{remote:true,labels:['문자 보내기','Send a message','メッセージを送る'],lines:['휴대폰으로 전할 말을 적어 보내고 있어요. 상대의 답장을 강요하지 않고 자기 자리에서 연락해요.','They type and send a message from where they are, without demanding a reply.','その場で伝えたいことを入力して送っています。返事は急かしません。']},
  remote_checkin:{remote:true,labels:['문자로 안부 묻기','Check in by message','メッセージで近況を聞く'],lines:['잘 지내는지 묻는 문자를 보내고 있어요. 상대가 확인할 때까지 하던 일을 이어 가요.','They send a message asking how the other person is doing, then continue their own day.','元気にしているかメッセージで尋ね、相手が確認するまで自分の用事を続けます。']},
  phone_call:{remote:true,labels:['전화 걸기','Make a call','電話をかける'],lines:['자기 자리에서 전화를 걸고 연결을 기다리고 있어요. 아직 상대가 받은 것은 아니에요.','They place a call from where they are and wait for an answer. The other person has not answered yet.','その場で電話をかけ、つながるのを待っています。相手はまだ出ていません。']},
