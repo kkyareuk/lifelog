@@ -2204,7 +2204,7 @@ function roomFurnitureMarkup(homeId,roomKey,room,edit,bedStates=new Map()){
     const label=furnitureLabel(placement.item,state.uiLanguage),props=placement.props||[],footprint=furnitureFootprint(placement.item),coupleBed=placement.item==="커플 침대",bedState=edit?"default":bedStates.get(placement.id)||"default";
     const sprite=furnitureSprite(placement);
     const art=sprite?`<span class="room-furniture-art"><img class="furniture-sprite" src="${sprite.src}" alt=""></span>`:coupleBed?`<span class="room-furniture-art room-couple-bed-art" data-bed-layer-state="${bedState}" data-bed-side="${bedPerspective(placement).side}" aria-hidden="true">${coupleBedImage("base","",placement)}${bedState!=="under-cover"?coupleBedImage("quilt","",placement):""}${bedState==="default"?coupleBedImage("footboard","",placement):""}</span>`:`<span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>`;
-    return `<button type="button" class="room-furniture-item ${coupleBed?"is-couple-bed":""}" data-furniture-kind="${sprite?.kind||""}" data-bed-direction="${bedPerspective(placement).direction}" data-bed-side="${coupleBed&&bedPerspective(placement).side}" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="${furniturePlacementStyle(placement,footprint)}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}>${art}${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`;
+    return `<button type="button" class="room-furniture-item ${coupleBed?"is-couple-bed":""}" data-furniture-kind="${sprite?.kind||""}" data-seat-side="${esc(placement.seatSide||"")}" data-table-id="${esc(placement.tableId||"")}" data-seat-direction="${sprite?.direction||""}" data-bed-direction="${bedPerspective(placement).direction}" data-bed-side="${coupleBed&&bedPerspective(placement).side}" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="${furniturePlacementStyle(placement,footprint)}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}>${art}${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`;
   }).join("")}${placements.filter(p=>furnitureSprite(p)?.frame).map(p=>`<span class="chair-frame-overlay" data-chair-frame="${esc(p.id)}" style="${furniturePlacementStyle(p,furnitureFootprint(p.item))}"><span class="room-furniture-art"><img class="furniture-sprite" src="${furnitureSprite(p).frame}" alt=""></span></span>`).join("")}</div>`;
 }
 function roomFurnitureOverlayMarkup(room,bedStates=new Map()){
@@ -2531,6 +2531,13 @@ function homeCard(id,chars){
           peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),lifeAgents[person.id]||{},room,key,index+slot,coupleBedSlots.get(person.id)??slot,{conversing:true,slot:slot+1,bedPlacement:sharedBed,bedState:"under-cover",bedConversation:true,hideStatus:true}));
         });
         foregroundMarkup.push(homeBedForegroundStatusMarkup(pair,pair.map(sceneFor),room,key,sharedBed,index,{shared:true}));
+        return;
+      }
+      // Seated actors retain individual seat anchors for TV, conversation and
+      // affection instead of being replaced by a standing group renderer.
+      if(agent?.phase==='using'&&['의자','소파'].includes(agent.item)&&agent.furnitureId){
+        renderedPeople.add(character.id);
+        peopleMarkup.push(homeLifePersonMarkup(character,sceneFor(character),agent,room,key,index));
         return;
       }
       const tvPartners=agent?.actionKind==="watch"?(tvGroups.get(agent.furnitureId||`${agent.roomKey}:watch`)||[]):[];

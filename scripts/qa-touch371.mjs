@@ -79,8 +79,30 @@ try{
  root.innerHTML='<div class="room" style="position:relative;width:380px;height:600px"><div class="room-furniture-item" data-furniture-placement="seat" data-furniture-kind="chair" style="position:absolute;left:140px;top:240px;width:100px;height:140px"><img class="furniture-sprite" style="width:100px;height:140px" /></div><div class="room-people has-home-life" style="position:absolute;inset:0">'+window.qaSeatMarkup(c,scene,{phase:'using',item:'의자',furnitureId:'seat',x:50,y:50},{name:'식당'},'dining',0)+ '</div></div>';
  document.body.append(root);(await import('/scene-depth.js')).bindSceneDepth(root);
  });await page.waitForTimeout(150);
- const seat=await page.evaluate(()=>{const r=document.querySelector('#seat-qa'),p=r.querySelector('.home-person'),a=p.querySelector('.avatar,.sprite'),b=a.getBoundingClientRect(),c=r.querySelector('.furniture-sprite').getBoundingClientRect();return {width:p.getBoundingClientRect().width,center:b.x+b.width/2,chairCenter:c.x+c.width/2,labels:p.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,seated:p.classList.contains('is-seated'),action:p.className,animation:getComputedStyle(p.querySelector('.home-person-visual')).animationName}});
- assert.equal(seat.labels,0);assert(seat.seated);assert(Math.abs(seat.width-67)<1);assert(Math.abs(seat.center-seat.chairCenter)<4,JSON.stringify(seat));assert(seat.action.includes('scene-action-eating'));assert(seat.animation.includes('home-activity-cook'));console.log('SEATED SIZE / CENTER / HIDDEN LABELS / EATING MOTION PASS',seat);
+ const seat=await page.evaluate(()=>{const r=document.querySelector('#seat-qa'),p=r.querySelector('.home-person'),a=p.querySelector('.avatar,.sprite'),b=a.getBoundingClientRect(),c=r.querySelector('.furniture-sprite').getBoundingClientRect();return {width:p.getBoundingClientRect().width,center:p.getBoundingClientRect().x+p.getBoundingClientRect().width/2,chairCenter:c.x+c.width/2,labels:p.querySelectorAll('.home-person-status,.home-person-chat-bubble').length,seated:p.classList.contains('is-seated'),action:p.className,animation:getComputedStyle(p.querySelector('.home-person-visual')).animationName}});
+ assert.equal(seat.labels,0);assert(seat.seated);assert(Math.abs(seat.width-44)<1);assert(Math.abs(seat.center-seat.chairCenter)<4,JSON.stringify(seat));assert(seat.action.includes('scene-action-eating'));assert(seat.animation.includes('home-activity-cook'));console.log('SEATED SIZE / CENTER / HIDDEN LABELS / EATING MOTION PASS',seat);
  await page.screenshot({path:resolve(out,'seated374.png')});
+
+
+ await page.evaluate(()=>{
+ const r=document.querySelector('#seat-qa .room'),chair=r.querySelector('[data-furniture-placement="seat"]');chair.dataset.tableId='table';chair.dataset.seatSide='west';chair.dataset.seatDirection='right';
+ const t=document.createElement('div');t.className='room-furniture-item';t.dataset.furniturePlacement='table';t.dataset.furnitureKind='table';t.style.cssText='position:absolute;left:160px;top:240px;width:120px;height:140px';t.innerHTML='<img class="furniture-sprite" src="/assets/furniture/wood/table-front.png" style="width:120px;height:140px">';r.append(t);chair.querySelector('img').src='/assets/furniture/wood/chair-side.png';
+ });await page.evaluate(async()=>(await import('/scene-depth.js')).scheduleSceneDepth());await page.waitForTimeout(180);
+ const pulled=await page.evaluate(()=>{const r=document.querySelector('#seat-qa'),p=r.querySelector('.home-person').getBoundingClientRect(),t=r.querySelector('[data-furniture-placement="table"]').getBoundingClientRect();return {right:p.right,left:t.left,pull:Number(r.querySelector('[data-furniture-placement="seat"]').dataset.seatPull),food:r.querySelectorAll('[data-seat-meal]').length}});
+ assert(pulled.right<pulled.left);assert(pulled.pull<0);assert.equal(pulled.food,1);
+ await page.evaluate(async()=>(await import('/scene-depth.js')).scheduleSceneDepth());await page.waitForTimeout(100);assert(Math.abs(Number(await page.locator('#seat-qa [data-furniture-placement="seat"]').getAttribute('data-seat-pull'))-pulled.pull)<.01);
+ await page.screenshot({path:resolve(out,'dining375.png')});
+ await page.evaluate(async()=>{document.querySelector('#seat-qa .home-person').remove();(await import('/scene-depth.js')).scheduleSceneDepth()});await page.waitForTimeout(100);
+ assert.equal(await page.locator('#seat-qa [data-furniture-placement="seat"]').getAttribute('data-seat-pull'),'0');assert.equal(await page.locator('#seat-qa [data-seat-meal]').count(),0);console.log('SIDE CHAIR CLEARANCE / MEAL / STABLE OFFSET / RELEASE PASS');
+
+
+ await page.evaluate(async()=>{
+ const root=document.querySelector('#seat-qa'),c=g.active(),a={phase:'using',item:'소파',furnitureId:'sofa',x:50,y:50},scene={title:'거실에서 쉬는 중',home:true};
+ root.innerHTML='<div class="room" style="position:relative;width:380px;height:600px"><div data-furniture-placement="sofa" data-furniture-kind="sofa" data-seat-direction="front" class="room-furniture-item" style="position:absolute;left:90px;top:180px;width:200px;height:115px"><img class="furniture-sprite" src="/assets/furniture/wood/sofa-front.png" style="width:200px;height:115px"></div><div class="room-people has-home-life">'+qaSeatMarkup({...c,id:'a'},scene,a,{name:'거실'},'living',0)+qaSeatMarkup({...c,id:'b'},scene,a,{name:'거실'},'living',1)+'</div></div>';
+ (await import('/scene-depth.js')).bindSceneDepth(root);
+ });await page.waitForTimeout(180);
+ const pair=await page.locator('#seat-qa .home-person').evaluateAll(es=>es.map(e=>{const b=e.getBoundingClientRect();return {x:b.x,width:b.width,bottom:b.bottom}}));
+ assert.equal(pair.length,2);assert(pair[0].x+pair[0].width<pair[1].x);assert(pair.every(p=>p.width<=48));
+ await page.screenshot({path:resolve(out,'sofa375.png')});console.log('TWO DISTINCT SOFA SEATS PASS',pair);
 
 }finally{await browser.close();server.close()}

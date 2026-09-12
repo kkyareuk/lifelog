@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {advanceHomeLifeSimulation} from '../home-simulation.js';
+const home={rooms:{living:{furniturePlacements:[{id:'s',item:'소파',x:50,y:55},{id:'tv',item:'TV',x:50,y:20}]}}};
+const ctx=(title,extra={})=>({scene:{title,room:'living'},animateMovement:false,...extra});
+let r=advanceHomeLifeSimulation(home,['a','b','c'],{a:ctx('TV를 보는 중'),b:ctx('쉬는 중'),c:ctx('쉬는 중')},100000);
+assert.equal(r.simulation.reservations.s.characterIds.length,2);assert.equal(r.simulation.agents.a.furnitureId,'s');assert.equal(r.simulation.agents.b.furnitureId,'s');assert.notEqual(r.simulation.agents.c.furnitureId,'s');
+r=advanceHomeLifeSimulation(home,['a','b'],{a:ctx('포옹하는 중',{interactionId:'hug'}),b:ctx('포옹하는 중',{interactionId:'hug'})},100000);
+assert.equal(r.simulation.reservations.s.characterIds.length,2);assert.equal(r.simulation.agents.a.x,r.simulation.agents.b.x);assert.equal(r.simulation.agents.a.phase,'using');
+const dining={rooms:{living:{furniturePlacements:[{id:'t',item:'식탁',x:50,y:50},{id:'a',item:'의자',tableId:'t',x:30,y:50},{id:'b',item:'의자',tableId:'t',x:70,y:50}]}}};
+r=advanceHomeLifeSimulation(dining,['a','b','c'],{a:ctx('식사하는 중'),b:ctx('식사하는 중'),c:ctx('식사하는 중')},100000);
+assert.equal(r.simulation.agents.a.item,'의자');assert.equal(r.simulation.agents.b.item,'의자');assert.notEqual(r.simulation.agents.a.furnitureId,r.simulation.agents.b.furnitureId);assert.equal(r.simulation.agents.c.furnitureId,'');
+console.log('PASS sofa capacity, independent activities, shared affection anchors and dining seat capacity');

@@ -36,7 +36,7 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
    furniture=placements.filter(p=>p.item==='의자'&&!busy.has(p.id)&&(p.tableId===table.id||!p.tableId&&Math.hypot(p.x-table.x,p.y-table.y)<28)).sort((a,b)=>Math.hypot(a.x-table.x,a.y-table.y)-Math.hypot(b.x-table.x,b.y-table.y))[0];
    if(!furniture)return null;
   }
-  const capacity=/커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
+  const capacity=/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
   const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
   if(used>=capacity)return null;
  }

@@ -137,7 +137,7 @@ export function normalizeHomeLifeSimulation(value,roomKeys=[]){
 function placementList(home){
   return Object.entries(home?.rooms||{}).flatMap(([roomKey,room])=>(Array.isArray(room?.furniturePlacements)?room.furniturePlacements:[]).filter(Boolean).map(placement=>({
     id:String(placement.id||""),roomKey,item:String(placement.item||""),x:clamp(placement.x,6,94,50),y:clamp(placement.y,14,90,65),
-    assignedCharacterIds:Array.isArray(placement.assignedCharacterIds)?placement.assignedCharacterIds.map(String):[],capacity:String(placement.item||"")==="커플 침대"?2:/TV|홈시어터|프로젝터|빔프로젝터/.test(String(placement.item||""))?4:/침대/.test(String(placement.item||""))?1:1
+    tableId:String(placement.tableId||""),assignedCharacterIds:Array.isArray(placement.assignedCharacterIds)?placement.assignedCharacterIds.map(String):[],capacity:["커플 침대","소파"].includes(String(placement.item||""))?2:/TV|홈시어터|프로젝터|빔프로젝터/.test(String(placement.item||""))?4:/침대/.test(String(placement.item||""))?1:1
   }))).filter(placement=>placement.id&&placement.item);
 }
 
@@ -164,6 +164,13 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
     const pinned=placements.find(item=>item.id===(scene.furniture?.id||scene.meetingFurniture?.id));
     let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
+    // Select actual seats for dining and screen viewing, not the tabletop/TV.
+    const diningTables=candidates.filter(item=>item.item==='식탁');
+    if(diningTables.length)candidates=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&diningTables.some(table=>item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
+    const watching=/TV|홈시어터|프로젝터|빔프로젝터/.test(candidates[0]?.item||'');
+    const sofas=placements.filter(item=>item.roomKey===roomKey&&item.item==='소파'&&(occupied.get(item.id)||0)<2);
+    if(watching&&sofas.length)candidates=sofas;
+    if(context.interactionId&&!pinned&&sofas.length)candidates=sofas;
     if(sleeping){
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
@@ -219,6 +226,9 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const agents=ordered.map(id=>current.agents[id]).filter(Boolean);if(agents.length<2)return;
     const roomKey=[...contextRooms][0];
     if(agents.some(agent=>agent.roomKey!==roomKey))return;
+    // Partners using one sofa stay in its two seats; social animation must not
+    // send them back to a free-standing meeting point.
+    if(agents.every(agent=>agent.item==='소파')&&agents[0].furnitureId===agents[1].furnitureId){agents.forEach(agent=>{agent.interactionId=interactionId;agent.approachingInteraction=false});return}
     const anchor=safeHomePoint(clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,24,82,58)),anchorX=anchor.x,anchorY=anchor.y;
     const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?9:17;
     const hydrateInteraction=ordered.some(characterId=>contexts?.[characterId]?.animateMovement===false);
@@ -239,7 +249,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   // 결정적인 방향으로만 밀어 재렌더할 때 좌우가 뒤집히거나 떨리지 않는다.
   const agents=eligible.map(id=>current.agents[id]).filter(Boolean);
   for(let i=0;i<agents.length;i+=1)for(let j=i+1;j<agents.length;j+=1){
-    const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey)continue;
+    const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey||a.furnitureId&&b.furnitureId&&["의자","소파"].includes(a.item)&&["의자","소파"].includes(b.item))continue;
     const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?10:23,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
     if(distance>=minDistance)continue;
     const direction=hash(`${a.characterId}:${b.characterId}`)%2?1:-1,shift=(minDistance-distance)/2+1;
