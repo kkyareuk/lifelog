@@ -83,12 +83,12 @@ async function commit(){
   collect();
   if(scope){const groupId=scope,editing=ui.editing,draft=structuredClone(ui.draft);const result=await window.DrawerVillageGroups.saveCatalogItem({groupId,kind:editing.kind,id:editing.id,item:draft,expected:ui.original});if(scope===groupId&&ui.editing===editing)updateCatalogItem(editing.kind,editing.id,result.items?.find(i=>i.id===editing.id)||draft);return true}
   updateCatalogItem(ui.editing.kind,ui.editing.id,ui.draft);
-  if(save(true))return true;
+  if(await save(true))return true;
   // An uploaded/restored image may still occupy the small snapshot store.
   // Wait for its durable media copy before retrying; never remove the photo.
   const characters=state.characters;
   await initializeLocalMediaState(state);
-  return state.characters===characters&&save(true);
+  return state.characters===characters&&await save(true);
 }
 function closeEditor(){ui.editing=null;ui.draft=null;redraw();const results=document.querySelector('.dictionary-results');if(results)results.scrollTop=ui.scroll}
 function open(kind,id){const item=catalog()[kind]?.find(i=>i.id===id);if(!item)return;ui.scroll=document.querySelector('.dictionary-results')?.scrollTop||0;ui.editing={kind,id};ui.original=cfg.shared?.catalog?.find(c=>c.id===kind)?.items?.find(i=>i.id===id)||null;ui.draft=structuredClone(drafts.get(`${kind}:${id}`)||item);redraw()}

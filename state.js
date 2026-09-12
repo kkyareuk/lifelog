@@ -992,6 +992,7 @@ export function runIsolatedWorld(world,run){
 let timer;
 let pendingNotify=false;
 let saveRunning=false;
+let saveEpoch=0,snapshotTask=null,pendingSnapshotJob=null;
 let lastRecoveryBackupAt=0;
 let lastRecoveryBackupSerialized="";
 let deferredTextSaveTarget=null;
@@ -1020,10 +1021,10 @@ export function restoreBuildings(ids){
   return candidates.length;
 }
 const hasCharacters=value=>Array.isArray(value?.order)&&value.order.some(id=>value.characters?.[id]);
-function preserveLastNonempty(value,serialized="",force=false){
+function preserveLastNonempty(value,serialized="",force=false,copyPrimary=false){
   if(!hasCharacters(value))return false;
   const now=Date.now();
-  // The primary save remains immediate.  The recovery mirror is only a safety
+  // The recovery mirror is only a safety
   // copy, so rewriting the same multi-megabyte payload for every slider or
   // checkbox doubled storage work without improving recovery.  Refresh it at
   // most once per minute, and force it for imports/state replacement.
@@ -1037,14 +1038,14 @@ function preserveLastNonempty(value,serialized="",force=false){
         // Keep only missing building records, not another full photo-heavy save.
         localStorage.setItem(BUILDING_RECOVERY_KEY,JSON.stringify({towns,lastSaved:now}));
       }
-      localStorage.setItem(LAST_NONEMPTY_KEY,payload);
+      if(copyPrimary)localStorage.copyItem(KEY,LAST_NONEMPTY_KEY);else localStorage.setItem(LAST_NONEMPTY_KEY,payload);
     }
     lastRecoveryBackupSerialized=payload;
     lastRecoveryBackupAt=now;
     return true;
   }catch{return false}
 }
-function writeState(notify=true){return timeOperation('save',()=>writeStateNow(notify))}
+function writeState(notify=true){saveEpoch++;pendingSnapshotJob=null;return timeOperation('save',()=>writeStateNow(notify))}
 function writeStateNow(notify=true){
   if(editorPersonalState)return true;
   if(saveRunning)return false;
@@ -1056,7 +1057,7 @@ function writeStateNow(notify=true){
     const serialized=timeOperation("save-serialize",()=>stringifyLocalMediaState(state,{characterSettingsView:"hub"}));
     timeOperation("save-storage",()=>localStorage.setItem(KEY,serialized));
     clearAnswerDeltas(localStorage);
-    timeOperation("save-recovery",()=>preserveLastNonempty(state,serialized));
+    timeOperation("save-recovery",()=>preserveLastNonempty(state,serialized,false,true));
     stored=true;
   }catch(error){
     console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
@@ -1068,8 +1069,39 @@ function writeStateNow(notify=true){
   if(stored&&notify)window.dispatchEvent(new Event("parallel-city-saved"));
   return stored;
 }
+// One snapshot is encoded at a time; pending requests collapse to the latest state.
+// The synchronous writer is reserved for page exit and account switching.
+function queueSnapshotWrite(notify){
+  pendingSnapshotJob={notify:notify||pendingSnapshotJob?.notify};
+  if(snapshotTask)return snapshotTask;
+  snapshotTask=Promise.resolve().then(async()=>{
+    let result=true;
+    while(pendingSnapshotJob){
+      const job=pendingSnapshotJob;pendingSnapshotJob=null;
+      const owner=state,epoch=saveEpoch;
+      const current=()=>state===owner&&saveEpoch===epoch&&!editorPersonalState;
+      try{
+        timeOperation("save-town",()=>syncTown());
+        owner.lastSaved=Date.now();
+        const serialized=timeOperation("save-serialize",()=>stringifyLocalMediaState(owner,{characterSettingsView:"hub"}));
+        result=await localStorage.setItemAsync(KEY,serialized,current);
+        if(!result)continue;
+        clearAnswerDeltas(localStorage);
+        timeOperation("save-recovery",()=>preserveLastNonempty(owner,serialized,false,true));
+        document.querySelector("#save-state")?.replaceChildren(document.createTextNode("기기에 저장됨"));
+        if(job.notify)window.dispatchEvent(new Event("parallel-city-saved"));
+      }catch(error){
+        result=false;
+        if(current()){document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 공간을 확인해 주세요"));console.warn("Device snapshot save failed",error)}
+      }
+    }
+    return result;
+  }).finally(()=>{snapshotTask=null});
+  return snapshotTask;
+}
 export function save(immediate=false,notify=true){
   if(isolatedWorldDepth||editorPersonalState)return true;
+  saveEpoch++;
   clearTimeout(timer);
   if(immediate)clearDeferredTextSave();
   pendingNotify=pendingNotify||notify;
@@ -1101,15 +1133,16 @@ export function save(immediate=false,notify=true){
     timer=undefined;
     const shouldNotify=pendingNotify;
     pendingNotify=false;
-    return writeState(shouldNotify);
+    return queueSnapshotWrite(shouldNotify);
   };
   // 큰 캐릭터·사진 상태를 복제하는 작업이므로 타이핑 사이에는 실행하지 않는다.
-  // 명시적인 저장과 화면 종료는 여전히 즉시 저장한다.
+  // 명시 저장은 큐를 바로 시작하며 Promise로 완료를 알린다. 화면 종료는 flushSave가 동기 기록한다.
   if(immediate)return run();
   timer=setTimeout(run,1400);
 }
 export function flushSave(notify=false){
-  if(!timer)return false;
+  if(!timer&&!snapshotTask&&!deferredTextSaveTarget)return false;
+  clearDeferredTextSave();
   clearTimeout(timer);
   timer=undefined;
   const shouldNotify=notify&&pendingNotify;
@@ -2365,7 +2398,7 @@ export function switchAccountState(uid){
   endCharacterEditor();
   if(localStorage.scope===String(uid||"guest"))return false;
   // Flush only the departing account, then cancel every deferred write.
-  save(true,false);clearTimeout(timer);timer=undefined;
+  writeState(false);clearTimeout(timer);timer=undefined;
   clearDeferredTextSave();pendingNotify=false;
   localStorage.switchScope(uid);
   lastRecoveryBackupAt=0;lastRecoveryBackupSerialized="";

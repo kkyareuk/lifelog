@@ -62,7 +62,7 @@ const includedFiles=new Set([
   "auth.js",
   "character-notifications.js",
   "config.js",
-  "local-media.js",
+  "local-media.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js",
   "furniture-layout.js","furniture-sprites.js","scene-depth.js",
   "home-simulation.js",
   "home-surfaces.js",

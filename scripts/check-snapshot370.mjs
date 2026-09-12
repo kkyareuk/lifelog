@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {pack,unpack} from '../snapshot-codec.js';
+const map=new Map();let limit=Infinity;
+const storage={get length(){return map.size},key:i=>[...map.keys()][i],getItem:k=>map.get(k)??null,removeItem:k=>map.delete(k),setItem(k,v){const size=[...map].reduce((n,[key,value])=>n+(key===k?0:value.length),0)+v.length;if(size>limit)throw new DOMException('full','QuotaExceededError');map.set(k,v)}};
+globalThis.localStorage=storage;
+const {createAccountStorage}=await import('../account-storage.js');
+const key='drawer-village-game-v1',raw=JSON.stringify({photo:'abcdefgh'.repeat(50000),name:'한글 😀'});
+let release;const account=createAccountStorage(storage,(value,level,repack)=>new Promise(resolve=>{release=()=>resolve(pack(repack?unpack(value):value,level))}));
+account.setItem(key,pack(raw));const delayed=account.setItemAsync(key,raw+' ');await Promise.resolve();account.setItem(key,'{"latest":true}');release();assert.equal(await delayed,false);assert.equal(account.getItem(key),'{"latest":true}');
+account.setItem(key,pack(raw));const switched=account.setItemAsync(key,raw+' ');account.switchScope('B');account.switchScope('guest');release();assert.equal(await switched,false);assert.equal(account.getItem(key),raw);
+const removed=account.setItemAsync(key,raw+' ');account.removeItem(key);release();assert.equal(await removed,false);assert.equal(account.getItem(key),null);
+const immediate=createAccountStorage(storage,async(v,l,r)=>pack(r?unpack(v):v,l));limit=10000;assert.equal(await immediate.setItemAsync(key,raw),true);assert.equal(immediate.getItem(key),raw);
+const old=storage.getItem(key);limit=1;await assert.rejects(immediate.setItemAsync(key,JSON.stringify({new:'value'})),{name:'QuotaExceededError'});assert.equal(storage.getItem(key),old);
+console.log('PASS async storage: exact bytes, quota compression, stale write, account roundtrip, deletion and failure preservation');
+const {encodeSnapshot}=await import('../snapshot-worker-client.js');
+globalThis.Worker=class{postMessage(){queueMicrotask(()=>this.onerror())}terminate(){}};
+await assert.rejects(encodeSnapshot(raw),/snapshot-worker-failed/);delete globalThis.Worker;assert.equal(unpack(await encodeSnapshot(raw)),raw);
+console.log('PASS worker failure rejects without writing; subsequent encoding recovers');

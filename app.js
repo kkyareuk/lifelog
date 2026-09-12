@@ -2283,7 +2283,7 @@ async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfte
     showToast(copy.characterSaving);
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   }
-  if(save(true)===false){showToast(({ko:"저장하지 못했어요. 기기 저장 공간을 확인하고 다시 저장해 주세요.",en:"Could not save. Check device storage and try again.",ja:"保存できませんでした。端末の空き容量を確認し、もう一度保存してください。"})[state.uiLanguage]||"저장하지 못했어요.");return false}
+  if(await save(true)===false){showToast(({ko:"저장하지 못했어요. 기기 저장 공간을 확인하고 다시 저장해 주세요.",en:"Could not save. Check device storage and try again.",ja:"保存できませんでした。端末の空き容量を確認し、もう一度保存してください。"})[state.uiLanguage]||"저장하지 못했어요.");return false}
   if(characterSave)queueCharacterNotificationSchedule();
   if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
