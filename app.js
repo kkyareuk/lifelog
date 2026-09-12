@@ -5416,8 +5416,9 @@ function routineGroupShortcuts(excludedId){
   return `<div class="routine-group-shortcuts"><small>그룹으로 빠르게 선택</small><div>${groups.map(group=>`<button type="button" data-routine-group="${htmlEsc(group.id)}">${htmlEsc(group.name)}</button>`).join("")}</div></div>`;
 }
 function wireRoutineGroupShortcuts(sheet,excludedId){
+  const routineWorld=state;
   sheet.querySelectorAll("[data-routine-group]").forEach(button=>button.onclick=()=>{
-    const members=(state.characterGroups||[]).find(group=>group.id===button.dataset.routineGroup)?.memberIds?.filter(id=>id!==excludedId&&state.characters[id])||[];
+    const members=(routineWorld.characterGroups||[]).find(group=>group.id===button.dataset.routineGroup)?.memberIds?.filter(id=>id!==excludedId&&routineWorld.characters[id])||[];
     const boxes=members.map(id=>sheet.querySelector(`[name="withId"][value="${CSS.escape(id)}"]`)).filter(Boolean),select=!boxes.length?false:!boxes.every(box=>box.checked);
     boxes.forEach(box=>{box.checked=select});button.classList.toggle("on",select);
   });

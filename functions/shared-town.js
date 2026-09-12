@@ -1,6 +1,6 @@
 const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status})};
 const id=v=>{if(typeof v!=='string'||!v||v.length>180||/[\/\x00-\x1f]/.test(v))fail('invalid-id');return v};
-const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+const rows=s=>s.docs.map(d=>({...d.data(),id:d.id}));
 function createSharedTownService({db,engine,clock=Date.now}){
   async function context(tx,groupId,uid){
     const ref=db.collection('groups').doc(id(groupId));

@@ -969,8 +969,8 @@ function watchActiveGroup(groupId,{force=false}={}){
     // An empty local cache is not evidence of server deletion.
     if(snapshot.metadata?.fromCache&&(mapSnapshot?snapshot.empty:!snapshot.exists()))return;
     const value=mapSnapshot
-      ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
-      :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
+      ?snapshot.docs.map(item=>({...item.data(),id:item.id}))
+      :snapshot.exists()?{...snapshot.data(),id:snapshot.id}:null;
     const groups=key==="group"&&value
       ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:value.ownerUid===user?.uid?"owner":item.myRole}:item)
       :['members','residents'].includes(key)?groupState.groups.map(item=>item.id===groupId?{...item,[key==='members'?'memberCount':'residentCount']:value.length}:item):groupState.groups;
@@ -1022,7 +1022,7 @@ async function refreshGroups({preferredId=""}={}){
   try{
     const indexSnapshot=await getDocsFromServer(collection(db,"users",session.uid,"groupMemberships"));
     assertSession(session);
-    const indexed=indexSnapshot.docs.map(item=>({id:item.id,...item.data()}));
+    const indexed=indexSnapshot.docs.map(item=>({...item.data(),id:item.id}));
     const groups=(await mapConcurrent(indexed,4,async membership=>{
       try{
         const snapshot=await getDocFromServer(doc(db,"groups",membership.groupId||membership.id));

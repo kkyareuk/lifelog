@@ -15,11 +15,11 @@ export function syncSharedCharacterEditor(){
  const s=window.DrawerVillageGroups?.getSnapshot?.(),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
  if(state.activeTab==='character'&&editorPending(s))return;
  if(state.activeTab!=='character'||!s?.group||!s.activeGroupId||!uid){leaveSharedCharacterEditor();return}
- if(session?.uid===uid&&session.groupId===s.activeGroupId&&characterEditorActive()){const ids=(s.residents||[]).filter(r=>r.ownerUid===uid).map(r=>r.id);if(ids.length===state.order.length&&ids.every(id=>state.order.includes(id))){if(session.catalog!==s.catalog){const incoming=buildSharedWorld(s,state.uiLanguage);for(const id of state.order)restoreWardrobe(withWardrobe(state.characters[id],state.catalog),id,incoming.catalog);state.catalog=incoming.catalog;session.catalog=s.catalog;}return;}}
+ if(session?.uid===uid&&session.groupId===s.activeGroupId&&characterEditorActive()){const ids=(s.residents||[]).filter(r=>r.ownerUid===uid).map(r=>r.id);if(ids.length===state.order.length&&ids.every(id=>state.order.includes(id))){if(session.catalog!==s.catalog){const incoming=buildSharedWorld(s,state.uiLanguage);for(const id of state.order)state.characters[id]=restoreWardrobe(withWardrobe(state.characters[id],state.catalog),id,incoming.catalog);state.catalog=incoming.catalog;session.catalog=s.catalog;}return;}}
  leaveSharedCharacterEditor();
  const incoming=buildSharedWorld(s,state.uiLanguage),cached=drafts.get(uid+':'+s.activeGroupId);
  const world=cached||incoming;
- if(cached){world.characters=Object.fromEntries(Object.entries(incoming.characters).map(([id,c])=>[id,cached.characters[id]||c]));world.order=incoming.order;world.homes=incoming.homes;world.towns=incoming.towns;world.world=incoming.world;for(const id of world.order)restoreWardrobe(withWardrobe(world.characters[id],cached.catalog),id,incoming.catalog);world.catalog=incoming.catalog;}
+ if(cached){world.characters=Object.fromEntries(Object.entries(incoming.characters).map(([id,c])=>[id,cached.characters[id]||c]));world.order=incoming.order;world.homes=incoming.homes;world.towns=incoming.towns;world.world=incoming.world;for(const id of world.order)world.characters[id]=restoreWardrobe(withWardrobe(world.characters[id],cached.catalog),id,incoming.catalog);world.catalog=incoming.catalog;}
  const defaults=runIsolatedWorld(emptyWorld(),()=>{const id=createCharacter();return structuredClone(state.characters[id])});
  for(const id of world.order)world.characters[id]={...structuredClone(defaults),...world.characters[id],discovery:world.characters[id].discovery||{version:0,locks:{}},id};
  world.order=world.order.filter(id=>world.characters[id]?.ownerUid===uid);

@@ -1,7 +1,7 @@
 import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
-import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
+import {writeAnswerDelta,writeChoiceDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
 import {contactNarrative,rejectsContact} from './contact-narrative.js?v=20260909dev305';
 import {contextDestination} from './context-actions.js?v=20260909dev305';
 import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
@@ -1050,12 +1050,12 @@ function writeStateNow(notify=true){
   saveRunning=true;
   let stored=false;
   try{
-    syncTown();
+    timeOperation("save-town",()=>syncTown());
     state.lastSaved=Date.now();
-    const serialized=stringifyLocalMediaState(state,{characterSettingsView:"hub"});
-    localStorage.setItem(KEY,serialized);
+    const serialized=timeOperation("save-serialize",()=>stringifyLocalMediaState(state,{characterSettingsView:"hub"}));
+    timeOperation("save-storage",()=>localStorage.setItem(KEY,serialized));
     clearAnswerDeltas(localStorage);
-    preserveLastNonempty(state,serialized);
+    timeOperation("save-recovery",()=>preserveLastNonempty(state,serialized));
     stored=true;
   }catch(error){
     console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
@@ -1605,7 +1605,8 @@ export function setDailyQuestion(question){
     kind:String(question.kind||"everyday"),shown:Boolean(question.shown),answered:Boolean(question.answered)
     ,mailId:String(question.mailId||"")
   }:null;
-  save(true,false);
+  writeChoiceDelta(localStorage,state);
+  save(false,false);
   return state.dailyQuestion;
 }
 export function scheduleCharacterChoice(choice){
@@ -1626,7 +1627,8 @@ export function scheduleCharacterChoice(choice){
   character.timelineResetAt=Date.now();
   if(targetId)state.characters[targetId].timelineResetAt=Date.now();
   if(state.dailyQuestion)state.dailyQuestion.answered=true;
-  save(true);
+  writeChoiceDelta(localStorage,state);
+  save();
   return scheduled.id;
 }
 export function settleScheduledChoices(now=Date.now()){
@@ -1940,7 +1942,7 @@ export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];
   if(!(kind==="fashion"&&data?.ownerId)&&Object.entries(state.catalog).reduce((n,[k,items])=>n+items.filter(item=>k!=="fashion"||!item.ownerId).length,0)>=80)return null;
   const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",createdAt:Date.now(),userCreated:true,...data};
-  state.catalog[kind].push(item);save(true);return item.id;
+  state.catalog[kind].push(item);if(kind==="fashion"&&state.characters[data?.ownerId]){const c=state.characters[data.ownerId];c.inventory??={};c.inventory.fashion=[...new Set([...(c.inventory.fashion||[]),item.id])];}save(true);return item.id;
 }
 export function updateCatalogItem(kind,id,patch){
   const item=state.catalog[kind]?.find(x=>x.id===id);if(!item)return;
@@ -2239,10 +2241,15 @@ export function setWorldBackground(value){
   if(!art)return false;
   state.world.bg=art.src;state.world.illustrationId=art.id;save(true);return true;
 }
+function copyWorldForSave(value){
+  if(Array.isArray(value))return value.map(copyWorldForSave);
+  if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,copyWorldForSave(item)]));
+  return value;
+}
 function syncTown(){
   if(!state.activeTownId)return;
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);
-  if(index>=0)state.towns[index]={...clone(state.world),id:state.activeTownId};
+  if(index>=0)state.towns[index]={...copyWorldForSave(state.world),id:state.activeTownId};
 }
 export function addTown(limit=2){
   if(state.towns.length>=limit)return null;

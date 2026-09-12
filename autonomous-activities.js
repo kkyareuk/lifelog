@@ -23,3 +23,14 @@ export function applyAutonomousPolicy(character,scene,characters={},language='ko
  const copy={ko:['잠시 쉬는 중','하던 일을 멈추고 자기 자리에서 잠시 숨을 돌리고 있어요.'],en:['Taking a short break','They stop what they were doing and take a moment in their own space.'],ja:['少し休憩しているところ','していたことをやめ、自分の場所でひと息ついています。']}[language]||['잠시 쉬는 중','하던 일을 멈추고 잠시 쉬고 있어요.'];
  return {...scene,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],activityFamily:null,groupInteraction:false,withId:undefined,withIds:[],participantOrder:[],interactionId:undefined,sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined,autonomyAdjusted:true};
 }
+
+export function applyEatingSleepSetting(c,scene,language='ko'){
+ const title=scene.baseTitle||scene.title||'';
+ const sleepless=c.sleepHabit==='잠을 전혀 이루지 못함'&&(/자는 중|잠드는 중|수면|잠들어|깊이 잠|기상/.test(title)||scene.sleeping===true);
+ const meal=/식사|먹는 중|아침을 먹|점심을 먹|저녁을 먹/.test(title);
+ const skipped=meal&&(c.foodHabit==='먹지 않음'||c.foodHabit==='거의 먹지 않음'&&[...String(c.id)+':'+String(scene.minute||0)].reduce((n,ch)=>n+ch.charCodeAt(0),0)%4!==0);
+ if(!sleepless&&!skipped)return scene;
+ const copies=sleepless?{ko:['잠을 이루지 못하는 중','잠이 오지 않아 뒤척이다가 조용히 쉬고 있어요.'],en:['Unable to fall asleep','They cannot fall asleep and are resting quietly after tossing and turning.'],ja:['眠れずにいるところ','寝つけず寝返りを打ったあと、静かに休んでいます。']}:{ko:['식사 시간에 쉬는 중','음식을 먹는 대신 잠시 자기 시간을 보내고 있어요.'],en:['Taking a break at mealtime','They are taking some time for themselves instead of eating.'],ja:['食事の時間に休んでいるところ','食べる代わりに、自分の時間を過ごしています。']};
+ const [name,desc]=copies[language]||copies.ko;
+ return {...scene,title:name,desc,baseTitle:name,baseDesc:desc,mood:sleepless?'피곤함':'평온',sleeping:false,groupInteraction:false,withId:undefined,withIds:[],sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
+}
