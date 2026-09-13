@@ -187,7 +187,7 @@ img.sprite,.char-row>.sprite,.char-row>.avatar,.home-person>.sprite,.home-person
 .detail-column{display:grid;gap:16px}
 .hero{height:270px}
 .place-photo{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:15px;margin-top:20px}
-.life-log{padding:20px}.life-log ol{list-style:none;padding:0;margin:15px 0 0}.life-log li{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.life-log li span{display:grid}.life-log small,.life-log time{color:var(--muted)}.life-log .now b{color:var(--p)}
+.life-log{padding:20px}.life-log ol{list-style:none;padding:0;margin:15px 0 0}.life-log li{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.life-log li>span{display:grid;min-width:0}.life-log small,.life-log time{color:var(--muted)}.life-log .now b{color:var(--p)}
 .life-log ol{max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding-right:7px}.home-family-log ol{max-height:360px}
 .home-page{width:min(1200px,100%);margin:0 auto}.home-tabs{display:flex;flex-wrap:wrap;gap:10px;overflow:visible;margin:12px 0 18px}.home-tabs button{min-width:172px;min-height:58px;padding:12px 18px;font-size:17px;background:var(--home-grad);background-image:linear-gradient(#17203338,#17203338),var(--home-photo,linear-gradient(transparent,transparent)),var(--home-grad);background-position:center;background-size:cover}.home-tabs .on{color:#fff}
 .home-grid{display:block;width:100%;margin:auto}.rooms{grid-template-rows:1.1fr .72fr 1.45fr;min-height:0;aspect-ratio:16/9}
@@ -1390,13 +1390,13 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
   box-shadow:0 28px 90px #0009;
 }
 .native-log-dialog::backdrop{background:#0b1119cc;backdrop-filter:blur(5px)}
-.native-log-dialog form{display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:calc(100dvh - 20px);padding:0}
+.native-log-dialog form{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;max-height:calc(100dvh - 20px);padding:0}
 .native-log-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:17px 18px;border-bottom:1px solid var(--line)}
 .native-log-dialog-head span{display:grid}.native-log-dialog-head small{color:var(--muted);font-size:10px;letter-spacing:.08em}.native-log-dialog-head h2{margin:2px 0 0}
 .native-log-dialog-head button{width:44px;height:44px;padding:0;font-size:27px}
 .native-log-dialog>form>ol{display:block;max-height:none;margin:0;padding:8px 18px 18px;overflow-y:auto;list-style:none;overscroll-behavior:contain}
 .native-log-dialog>form>ol>li{display:grid;grid-template-columns:5ch minmax(0,1fr);gap:12px;padding:16px 0;border-bottom:1px solid var(--line)}
-.native-log-dialog>form>ol>li>span{display:grid;gap:4px}.native-log-dialog time,.native-log-dialog small{color:var(--muted)}.native-log-dialog small{white-space:normal;line-height:1.6}.native-log-dialog time{font-size:14px;white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.log-companion{display:flex;align-items:center;gap:6px;font-size:12px}.log-companion :is(.avatar,.sprite){width:30px;height:30px;object-fit:contain}
+.native-log-dialog>form>ol>li>span{display:grid;gap:4px}.native-log-dialog time,.native-log-dialog small{color:var(--muted)}.native-log-dialog small{white-space:normal;line-height:1.6}.native-log-dialog time{font-size:14px;white-space:nowrap;overflow-wrap:normal;font-variant-numeric:tabular-nums}.log-participants{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}.log-participants:empty{display:none}.log-participants .log-companion{display:inline-flex;align-items:center;gap:6px;font-size:12px;max-width:100%;min-width:0}.log-companion b{overflow-wrap:anywhere}.log-entry-body{gap:8px;min-width:0}.native-log-dialog .log-order-control{margin:0;padding:8px 18px;border-bottom:1px solid var(--line)}.log-companion :is(.avatar,.sprite){width:30px;height:30px;object-fit:contain}
 .native-log-dialog-close{margin:10px 18px max(14px,env(safe-area-inset-bottom))}
 
 /* 방 이름과 편집 버튼은 같은 상단 묶음에 두어 인물 얼굴을 가리지 않는다. */

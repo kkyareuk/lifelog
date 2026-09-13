@@ -1680,7 +1680,7 @@ function dailyLogItems(entries,c){
       const purpose=x.datePurpose?` · ${x.datePurpose}`:"";
       return `<li data-log-minute="${Number(x.minute)||0}" class="date-schedule" style="--log-theme:${logTheme}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
     }
-    return `<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${logTheme}"><time>${esc(x.time)}</time><span>${[...new Set([x.withId,...(x.withIds||[])])].filter(id=>id&&id!==c.id&&state.characters[id]).map(id=>`<span class="log-companion">${avatar(state.characters[id])}<b>${esc(state.characters[id].name)}</b></span>`).join("")}<b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
+    return `<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${logTheme}"><time>${esc(x.time)}</time><span class="log-entry-body"><span class="log-participants">${[...new Set([x.withId,...(x.withIds||[])])].filter(id=>id&&id!==c.id&&state.characters[id]).map(id=>`<span class="log-companion">${avatar(state.characters[id])}<b>${esc(state.characters[id].name)}</b></span>`).join("")}</span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
   }).join("");
 }
 function compactDisplayedTimeline(entries,minGap=30){

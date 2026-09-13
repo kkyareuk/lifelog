@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-navigation356",
-  "version": "1.0.323",
-  "build": 356,
+  "request": "2026-09-13-build379-user-internal-testflight",
+  "version": "1.0.330",
+  "build": 379,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

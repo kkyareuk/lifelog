@@ -36,4 +36,4 @@
 .supporter-page input[type=search]{width:100%;padding:12px 16px;border:1px solid #b99a72;border-radius:22px;background:#fff6df;color:#44372e}
 .supporter-page .supporter-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 10px;align-items:center}
 .supporter-page .supporter-name-wrap{display:block;text-align:center;padding:12px 2px;background:none;border:0;box-shadow:none}
-.supporter-page .supporter-name{text-shadow:0 1px 2px #fff,0 0 5px #fff;font-size:clamp(14px,4vw,var(--supporter-size,24px))}
+.supporter-page .supporter-name-wrap .supporter-name{color:#fff6df;background:none;-webkit-text-stroke:.7px #17100b;paint-order:stroke fill;text-shadow:-1px -1px #17100b,1px -1px #17100b,-1px 1px #17100b,1px 1px #17100b;font-size:clamp(14px,4vw,var(--supporter-size,24px))}
