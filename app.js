@@ -2565,7 +2565,7 @@ function bind(){
   refreshCharacterSelectionSummaries();
   const cartKey="drawer-village-cart";
   const cartLimit=50000;
-  const cartPrices={character_slot_1:1000,character_slots_5:4800,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
+  const cartPrices={character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
