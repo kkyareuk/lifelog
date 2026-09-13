@@ -1429,7 +1429,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .room-couple-bed-overlay{position:absolute;left:var(--furniture-x);top:var(--furniture-y);z-index:calc(var(--furniture-layer) + 1);width:calc(var(--furniture-cell-w,25%)*var(--furniture-grid-width,1));height:calc(var(--furniture-cell-h,25%)*var(--furniture-grid-height,1));transform:translate(-50%,-50%) rotate(var(--furniture-rotation)) scale(var(--furniture-scale));transform-origin:50% 70%}
 .room-couple-bed-overlay .couple-bed-layer{transform:scaleX(var(--furniture-flip,1)) scale(1.05)}
 .room-foreground-layer{position:absolute;inset:0;z-index:6;overflow:visible;pointer-events:none}
-.home-bed-foreground-status{position:absolute;left:var(--bed-status-x);top:var(--bed-status-y);z-index:1;display:grid;place-items:center;max-width:min(150px,86%);transform:translate(-50%,-50%);filter:drop-shadow(0 5px 5px #19223835)}
+.home-bed-foreground-status{position:absolute;left:var(--bed-status-x);top:var(--bed-status-y);z-index:1;display:grid;place-items:center;max-width:min(150px,86%);transform:translateX(-50%);filter:drop-shadow(0 5px 5px #19223835)}
 .home-bed-foreground-status .home-interaction-status{min-width:88px;max-width:132px;padding:6px 9px!important}
 .home-bed-foreground-status.is-shared .home-interaction-status{min-width:104px;max-width:148px}
 .home-bed-foreground-status .home-interaction-status b{font-size:11px}
@@ -8044,6 +8044,7 @@ body #app .character-book-v8 .discovery-title{display:flex!important;align-items
 .discovery-question-icon{display:block;width:44px;height:30px;background-image:url('./assets/character-ui/question-sheet.png');background-size:747.5px 832px;background-position:-175px -318px;flex:none}
 .discovery-rail-button .discovery-countdown{display:block;font:700 10px/12px sans-serif;color:#fff;text-shadow:0 1px 3px #000;text-align:center;margin-top:2px}
 .discovery-rail-button:disabled{opacity:.55}.game-hud-command-actions{position:absolute;right:5.5vw;bottom:1.15dvh;display:flex;flex-direction:column;align-items:flex-end;gap:6px;z-index:4}
+.activity-settings-section{margin:18px 0;padding:4px 14px 10px;border:1px solid #d8c5aa;border-radius:14px;text-align:left}.activity-settings-section legend{padding:0 8px;color:#654a32;font-weight:700;font-size:15px}
 .discovery-group-lock{display:flex;gap:12px;align-items:center;padding:12px 0}.discovery-group-lock input{width:20px;height:20px;flex:none;accent-color:#795339}
 
 .discovery-score{font-size:11px!important;white-space:nowrap;color:#705234;background:#f1e5ce;border-radius:6px;padding:2px 4px;margin-left:auto}

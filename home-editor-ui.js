@@ -114,12 +114,14 @@ export function fitCoupleBedOccupants(root){
     if(!status.isConnected)return;
     const room=status.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(status.dataset.bedStatusFor)}"]`),image=bed?.querySelector('.couple-bed-base');
     if(!image?.naturalWidth||!bed.clientWidth||!bed.clientHeight)return;
-    const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
-    const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio,style=getComputedStyle(bed);
-    const x=width/2,y=height/2+.36*paintedHeight*1.05,[ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
-    const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy)),parent=status.offsetParent,layer=bed.offsetParent;
-    status.style.setProperty('--bed-status-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
-    status.style.setProperty('--bed-status-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
+    // Place the shared label below the complete painted bed, including its
+    // transformed footboard, rather than inside the quilt/footboard rectangle.
+    const painted=bed.querySelector('.room-furniture-art')||image,rect=painted.getBoundingClientRect();
+    const parent=status.offsetParent,parentRect=parent.getBoundingClientRect();
+    const scaleX=parentRect.width/parent.clientWidth||1,scaleY=parentRect.height/parent.clientHeight||1;
+    const half=Math.min(75,parent.clientWidth*.43),x=(rect.left+rect.width/2-parentRect.left)/scaleX;
+    status.style.setProperty('--bed-status-x',`${Math.max(half,Math.min(parent.clientWidth-half,x))}px`);
+    status.style.setProperty('--bed-status-y',`${(rect.bottom-parentRect.top)/scaleY+8}px`);
   });
   const fit=()=>{layout();layoutStatuses()};
   if(!people.length&&!statuses.length)return;
