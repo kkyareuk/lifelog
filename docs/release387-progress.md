@@ -1,13 +1,13 @@
 # 387 release preparation — 2026-09-14
 
-Status: in progress, not built or submitted. Public Android baseline verified in Play Console: 381 (1.0.332). Internal: 386 (1.0.334). User authorized production and Apple review, then cancelled both five-slot bundles.
+Status: Android production387 submitted (Google pre-review checks running); iOS387 signed/upload accepted, Apple login required before review submission. Public Android baseline verified in Play Console: 381 (1.0.332). Internal: 386 (1.0.334). User authorized production and Apple review, then cancelled both five-slot bundles.
 
 ## Changes validated so far
 - Late local photo restoration no longer overwrites a newly edited field.
 - File and URL image selections retain their original world; asynchronous completion is rejected after a world/account replacement.
 - Five-slot character/town packs hidden from the shop and rejected by the shared client sale filter, including cached web carts. Receipt identities and previously granted slots remain unchanged.
 - Multiplayer profile/join dialogs use the existing localized error mapping instead of replacing all failures with a connectivity message.
-- Price notice updated in Korean, English and Japanese.
+- Shop price-change banner removed. Price change appears first in the public announcement and KO/EN/JA release notes.
 
 ## Checks
 - check-photo-restore387: restore/edit race, untouched restore, world switch before/during photo write, same-world edit, hidden bundles.
@@ -19,8 +19,8 @@ Status: in progress, not built or submitted. Public Android baseline verified in
 ## Still required
 - The build252 LD replacement report is NOT confirmed reproduced or recovered. Need affected saved state/original image to determine why that particular base LD changed; never infer identity or overwrite an existing photo automatically.
 - Multiplayer377 join failure exact server reason remains unconfirmed. Active server includes joinGroup; generic dialog was hiding errors. Validate deployed rules/profile update and join slot checks.
-- Verify actual lock toggle under quota, physical device if available.
-- Finish storefront retirement (Google/Apple/web), preserving receipt grants.
-- Build387, Android production rollout, updated Apple build/review; cumulative public notes since381. No completed deployment claim yet.
+- Actual lock toggle under forced quota passed in Chrome/WebKit, including reload persistence. Reporter physical device not verified.
+- Google5-pack inactive; web cards removed and active api new-order rejection deployed, preserving old grants. Apple5-pack removal remains pending login.
+- Android AAB387 SHA256 977AC3C0D7DEEEE0BDCB950B4F36C1366C9D4BBCAF962F397F2A688001D13C31; Google release22 full rollout submitted, not yet live. iOS GitHub run34787923433 uploadAccepted true/internalOnly false/submittedForReview false. Public announcement release-387 created/read-verified, cumulative since last announcement351. Apple review pending login.
 
 Translation: changed user-facing notices and existing mapped errors have KO/EN/JA coverage; full-app coverage not measured.

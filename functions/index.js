@@ -133,7 +133,7 @@ app.post("/payments/orders",async(request,response)=>{
     const identity=await signedInUser(request);
     const {environment}=tossCredentials();
     const items=webCart(request.body?.items);
-    if(items.some(i=>i.packageId==="diamonds_100"))throw Object.assign(Error("판매하지 않는 상품입니다."),{status:400});
+    if(items.some(i=>["diamonds_100","character_slots_5","town_slots_5"].includes(i.packageId)))throw Object.assign(Error("판매하지 않는 상품입니다."),{status:400});
     const {amount,count,orderName}=orderSummary(items);
     if(!Number.isSafeInteger(amount)||amount<100)throw Object.assign(new Error("결제 금액을 확인해 주세요."),{status:400});
     const orderId=`dv_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
