@@ -7,7 +7,7 @@ Public baseline: 4fd1afc (origin/main). This change does not promote dev/interna
 - Public web supports single-slot cart quantities and entitlement totals.
 - Google Play active purchase options verified at these prices.
 - Billing API selectively updated from its currently deployed source; active revision api-00019-ful, 2026-09-13T15:48:28Z. Removed the exclusive single/five date gate, changed five-pack price, permitted five distinct cart products. No other function was deployed.
-- Apple single-slot product remains pending submission; do not claim available until reviewed.
+- Apple single-slot product submitted and Waiting for Review (submission c5de3578-1fd2-45fe-b5a2-c8a37a4d4dd4). Existing five-slot product changed with immediate global pricing; current Korea price KRW 4,800 verified.
 
 Validation: scripts/check-slot-public.cjs (prices, mixed quantities, old entitlements, invalid carts); scripts/qa-slot-public.mjs (384px shop, Korean/English/Japanese titles and prices). No real purchase was charged. Legacy prepare-web build helper fails on its pre-existing missing character-code.js whitelist entry; public Pages serves the repository root and was tested directly.
 
@@ -19,3 +19,5 @@ Add character slots individually for KRW 1,000, or choose the existing five-slot
 
 ## Japanese
 キャラクタースロットを1枠1,000ウォンで追加できます。従来の5枠セットも4,800ウォンで利用できます。購入済みの枠はそのまま維持されます。
+
+Public Pages deployment of 5ceb0cf verified built.
