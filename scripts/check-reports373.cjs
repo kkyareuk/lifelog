@@ -33,6 +33,11 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  assert.equal((await relations.propose('member',{groupId:'g',requestId:'old-personal-edit',kind:'schedule',targetId:'old-personal',patch:{...patch,memberIds:['a'],sourceId:'a'}})).status,'accepted');
  assert.equal(data.get('groups/g/relationshipRequests/old-personal-edit').patch.memberIds[0],'a');
  console.log('PASS old personal-ID schedule resolves to group resident without losing owner validation');
+ data.set('groups/g/schedules/ambiguous',{...patch,memberIds:['personal-a'],sourceId:'personal-a'});
+ data.set('groups/g/residents/other',{name:'Other',ownerUid:'op',sourceCharacterId:'personal-a',profileJson:'{}'});
+ await assert.rejects(()=>relations.propose('member',{groupId:'g',requestId:'ambiguous-edit',kind:'schedule',targetId:'ambiguous',patch:{...patch,memberIds:['a']}}),/ambiguous-schedule-resident/);
+ data.delete('groups/g/residents/other');
+ console.log('PASS ambiguous personal IDs never select a resident arbitrarily');
  const gift={groupId:'g',requestId:'coat-gift',sourceId:'a',targetId:'b',subject:'Coat',body:'For you',gift:{kind:'fashion',item:{id:'coat',name:'Coat'}}};
  await relations.sendMail('member',gift);await relations.sendMail('member',gift);
  const profile=JSON.parse(data.get('groups/g/residents/b').profileJson);assert.deepEqual(profile.inventory.fashion,['coat']);assert.equal(profile.wardrobeItems.length,1);assert.equal(profile.wardrobeItems[0].id,'coat');

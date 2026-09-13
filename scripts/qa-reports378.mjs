@@ -30,5 +30,10 @@ try{
  await page.evaluate(()=>{document.querySelector('#depth-qa').remove();window.DrawerVillageNavigation.go('town')});await page.waitForTimeout(200);
  assert.equal(await page.locator('.town-native-town-pill > span').count(),1);assert.equal(await page.locator('.town-native-community > span').count(),1);assert.equal(await page.locator('.town-native-town-pill > span i').textContent(),'▾');
  await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.screenshot({path:resolve(out,'town378.png')});
+ await page.evaluate(()=>window.DrawerVillageNavigation.go('mailbox'));
+ await page.locator('[data-mail-folder="compose"]').click();
+ const sender=page.locator('[data-player-mail] [name="sourceId"]');assert.equal(await sender.inputValue(),'');
+ await page.locator('[data-player-mail] [name="gift"]').evaluate(e=>{e.value='fashion:qa-coat';e.dispatchEvent(new Event('change',{bubbles:true}))});
+ assert.equal(await sender.inputValue(),'');console.log('PLAYER_SENDER_PRESERVED_AFTER_GIFT_PASS');
 }finally{await browser.close();server.close()}
 
