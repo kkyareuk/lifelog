@@ -48,3 +48,6 @@ Characters interacting in the same bed share one status card below the bed. Remo
 
 ## Wider tester announcement, cumulative since public/internal baseline 381
 The previous internal 385 notice in docs/mail-support385.md covers 383–385. For a future closed-test release, verify the actual last closed-test code before using this draft. Include its final gift acceptance/sender labels, idol/band and hobby gift categories, mailbox quota/retry recovery, and the above 386 items; do not imply a closed-test deployment occurred in this run.
+
+## Deployment verified
+2026-09-14 01:09 KST: Google Play internal release285, 386 (1.0.334), internally available. dev c49f514. Public promotion not performed. Board main d6da2a2.
