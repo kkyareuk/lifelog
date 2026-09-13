@@ -24,3 +24,8 @@ Status: Android production387 submitted (Google pre-review checks running); iOS3
 - Android AAB387 SHA256 977AC3C0D7DEEEE0BDCB950B4F36C1366C9D4BBCAF962F397F2A688001D13C31; Google release22 full rollout submitted, not yet live. iOS GitHub run34787923433 uploadAccepted true/internalOnly false/submittedForReview false. Public announcement release-387 created/read-verified, cumulative since last announcement351. Apple review pending login.
 
 Translation: changed user-facing notices and existing mapped errors have KO/EN/JA coverage; full-app coverage not measured.
+
+## Apple submission completed
+- 2026-09-14: iOS1.0.335 build387 (f950f9ed-cebd-42c1-b6c2-eefc364070fa) submitted successfully; submission385f23b0-eb50-4554-8884-35752d34a4e9. Replaced withdrawn382. Automatic release after approval retained.
+- KO/EN storefront release notes updated; JA release-note translation prepared in update-announcement387.md, Japanese storefront localization does not currently exist.
+- Apple character_slots_5 product6808704292 saved as developer removed from sale; existing grants preserved.
