@@ -6,7 +6,7 @@ September13 public supporter endpoint returned three approved public entries. Bu
 
 Validation: Chrome and WebKit402×820, 30 log entries with three companions, horizontal positions, scroll range, visible close button, supporter computed colors/stroke; save/feedback/tour regression suite; supporter social checks; iOS request checks. Android release APK/AAB built successfully and APK signature/version verified as1.0.330/379. No physical iPhone verification.
 
-Deployment: Android internal release281 verified available to internal testers September13 20:07 KST. iOS internal-only TestFlight workflow34753311646 in progress. Final status will be recorded after verification.
+Deployment: Android internal release281 verified available to internal testers September13 20:07 KST. iOS internal-only TestFlight workflow34753311646 succeeded. Apple upload/build9d49d86e-9cd9-49a9-8edf-cc4c00ac10e7 processed successfully. After reviewing the encryption implementation, the missing encryption questionnaire was completed with none of the listed implemented algorithms. UI verified Ready to Test and existing internal group 나만 테스트 (one tester) assigned. Test instructions saved. No beta external review or App Store submission.
 
 Limitations: legacy shared schedule recovery still requires the separate backend deployment. Shared automatic mail/notifications remain pending. New slot SKU/pricing code is included but store prices/products and production backend have not been changed; do not announce the new prices as available.
 
