@@ -1,0 +1,44 @@
+import assert from "node:assert/strict";
+import {createServer} from "node:http";
+import {readFile,mkdir} from "node:fs/promises";
+import {resolve,extname,sep} from "node:path";
+import {createRequire} from "node:module";
+import {fileURLToPath} from "node:url";
+
+const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
+const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-slot-public");
+await mkdir(output,{recursive:true});
+const previewAuth=Buffer.from("window.ParallelCityAuth={getInfo:()=>({ready:true,busy:false,user:null})};");
+const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
+const server=createServer(async(request,response)=>{
+  try{
+    const pathname=decodeURIComponent(new URL(request.url,"http://localhost").pathname),file=resolve(root,"."+(pathname==="/"?"/index.html":pathname));
+    if(!file.startsWith(root+sep)||!mime[extname(file)])return response.writeHead(404).end();
+    let body=pathname==="/auth.js"?previewAuth:await readFile(file);
+    if(pathname==="/views.js")body=body.toString().replace("const rawViewEvent=(c,date)=>{","const rawViewEvent=(c,date)=>{window.qaSceneCalls=(window.qaSceneCalls||0)+1;").replace("if(c&&date===renderSceneDate&&projectedRenderScenes.has(c))","if(!window.qaDisableCache&&c&&date===renderSceneDate&&projectedRenderScenes.has(c))");
+    response.writeHead(200,{"Content-Type":mime[extname(file)],"Cache-Control":"no-store"}).end(body);
+  }catch{response.writeHead(404).end()}
+});
+await new Promise(done=>server.listen(0,"127.0.0.1",done));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:process.env.QA_BROWSER||"chrome",headless:true});
+
+try{
+ const page=await browser.newPage({viewport:{width:384,height:854}});await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin);await page.waitForFunction(()=>window.ParallelCity);
+ for(const language of ['ko','en','ja']){
+ const result=await page.evaluate(async language=>{
+  const g=await import('/state.js?v=20260908hotfix274'),v=await import('/views.js?v=20260908hotfix274');
+  if(!g.state.order.length)g.createCharacter(20);g.state.uiLanguage=language;g.state.activeTab='shop';v.setAccountEntitlements({characterSlotPacks:1,characterSingleSlots:2});
+  v.renderApp(g.state);v.translateDynamicInterface(document.body);
+  return {text:document.body.textContent,single:document.querySelector('[data-cart-add="character_slot_1"]')!==null,pack:document.querySelector('[data-cart-add="character_slots_5"]')!==null};
+ },language);
+ assert(result.single&&result.pack);assert(result.text.includes('1,000'));assert(result.text.includes('4,800'));
+ assert(result.text.includes({ko:'캐릭터 1명 추가',en:'Add 1 character',ja:'キャラクター1人を追加'}[language]));
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+ await page.screenshot({path:resolve(output,language+'.png'),fullPage:true});console.log(language+' shop products and prices PASS');
+ }
+}finally{await browser.close();server.close()}
+
+
+
+
