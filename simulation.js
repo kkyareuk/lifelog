@@ -262,10 +262,15 @@ const scheduledTown=(c,date=new Date())=>{
   const target=visitHome?state.towns.find(t=>t.id===visitHome.townId):state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId));
   return canTravelBetween(townFor(c,date),target,state.preventInterTownMovement)?target:townFor(c,date);
 };
+const birthdayGuests=(host,date)=>state.order.map(id=>state.characters[id]).filter(person=>person&&canTravelBetween(townFor(person,date),townFor(host,date),state.preventInterTownMovement));
+const reachableBirthdays=(c,date)=>{
+  const key=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
+  return state.order.map(id=>state.characters[id]).filter(person=>person?.birthday===key&&canTravelBetween(townFor(c,date),townFor(person,date),state.preventInterTownMovement));
+};
 const travelPurpose=(c,date=new Date())=>{
   if(state.preventInterTownMovement)return {town:townFor(c,date),label:"",kind:"home"};
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
-  const birthdayHost=state.order.map(id=>state.characters[id]).find(character=>character?.birthday===birthdayKey);
+  const birthdayHost=reachableBirthdays(c,date)[0];
   if(birthdayHost)return {town:townFor(birthdayHost,date),label:`${birthdayHost.name}의 생일파티`,kind:"birthday"};
   const workTown=workplaceTown(c);
   if(workTown&&c.job!=="무직")return {town:workTown,label:"출근 일정",kind:"work"};
@@ -2853,16 +2858,17 @@ function buildScene(c,date){
   const hairCare=(!work||work.home)?appearanceCareEvent(c,990,date):null;if(hairCare)list.push(hairCare);
   const financialStress=financialStressEvent(c,1005,date);if(financialStress)list.push(financialStress);
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
-  const birthdayCharacters=state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===birthdayKey);
+  const birthdayCharacters=reachableBirthdays(c,date);
   if(birthdayCharacters.length){
     const host=birthdayCharacters[0],hostTown=townFor(host,date),restaurants=(hostTown?.places||[]).filter(place=>place.type==="음식점");
     const restaurant=restaurants.length&&hash(`${birthdayKey}:${date.getFullYear()}:birthday-place`)%2===0?restaurants[hash(`${birthdayKey}:restaurant`)%restaurants.length]:null;
+    const guests=birthdayGuests(host,date);
     const names=birthdayCharacters.map(character=>character.name).join(", "),isBirthday=birthdayCharacters.some(character=>character.id===c.id);
     const title=isBirthday?`${names}의 생일파티에서 축하받는 중`:`${names}의 생일파티에서 함께 축하하는 중`;
     const desc=restaurant
-      ?`${state.order.map(id=>state.characters[id]?.name).filter(Boolean).join(", ")}이 한자리에 모여 식사와 케이크를 나누고 생일을 축하하고 있어요.`
+      ?`${guests.map(person=>person.name).join(", ")}이 한자리에 모여 식사와 케이크를 나누고 생일을 축하하고 있어요.`
       :`${host.name}의 집에 모두 모여 음식을 차리고 케이크와 선물을 나누며 생일을 축하하고 있어요.`;
-    const shared={mood:"축하",groupInteraction:true,withIds:state.order.filter(id=>id!==c.id),birthdayIds:birthdayCharacters.map(character=>character.id)};
+    const shared={mood:"축하",groupInteraction:true,withIds:guests.map(person=>person.id).filter(id=>id!==c.id),birthdayIds:birthdayCharacters.map(character=>character.id)};
     list.push(restaurant
       ?entry(1140,title,desc,{...shared,townId:hostTown.id,placeId:restaurant.id})
       :entry(1140,title,desc,{...shared,home:true,visitHomeId:host.homeId,room:"living"}));

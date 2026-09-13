@@ -1,4 +1,4 @@
-// Public roster plus creator-reviewed additions scoped to internal build 380. No account or payment data.
+// Public roster plus creator-reviewed additions scoped to internal build 381. No account or payment data.
 export const SUPPORTER_CREDITS={
   "version": 1,
   "updatedAt": "2026-09-13",
@@ -47,7 +47,7 @@ export const SUPPORTER_CREDITS={
     }
   ],
   "internalPreview": {
-    "build": 380,
+    "build": 381,
     "entries": [
       {
         "id": "ca7d67bb-9d23-4c9a-b9af-ed76e963cedf",

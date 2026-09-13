@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-13-build380-user-reports-credits-internal",
-  "version": "1.0.331",
-  "build": 380,
+  "request": "2026-09-13-build381-home-birthday-effects-internal",
+  "version": "1.0.332",
+  "build": 381,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

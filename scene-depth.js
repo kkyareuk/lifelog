@@ -5,11 +5,11 @@ export function scheduleSceneDepth(){
   if(frame||!root)return;
   frame=requestAnimationFrame(()=>{
     frame=0;if(!root?.isConnected)return;
-    const updates=[],seats=[],pulls=[],meals=[];
+    const updates=[],seats=[],pulls=[],meals=[],labels=[];
     for(const scene of root.querySelectorAll('.room,.world.town-environment')){
       const items=[...scene.querySelectorAll(scene.matches('.room')?actors:'.map-art-button,.person:not(.place-people),.meeting-walker')];
       const bounds=items.map(element=>{
-        const art=element.querySelector('.furniture-sprite,.room-furniture-art,.home-person-visual .avatar,.home-person-visual .sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji,img')||element;
+        const art=element.querySelector('.furniture-sprite,.couple-bed-layer,.home-person-visual .avatar,.home-person-visual .sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji,img')||element.querySelector('.room-furniture-art')||element;
         const rect=art.getBoundingClientRect();
         // object-fit:contain may leave vertical padding around the actual art.
         const height=art.naturalWidth?Math.min(rect.height,rect.width*art.naturalHeight/art.naturalWidth):rect.height;
@@ -60,6 +60,16 @@ export function scheduleSceneDepth(){
         const bed=bounds.find(row=>row.element.dataset.furniturePlacement===overlay.element.dataset.bedOverlay);
         if(bed)overlay.bottom=bed.bottom+.2;
       }
+      const sceneRect=scene.getBoundingClientRect();
+      for(const person of items.filter(el=>el.dataset.usingFurniture)){
+        const furniture=items.find(el=>el.dataset.furniturePlacement===person.dataset.usingFurniture);
+        const status=person.querySelector('.home-person-status')||person.sceneStatus;
+        if(!furniture||!status)continue;
+        const art=furniture.querySelector('.furniture-sprite,.couple-bed-layer')||furniture.querySelector('.room-furniture-art')||furniture;
+        const r=art.getBoundingClientRect(),height=art.naturalWidth?Math.min(r.height,r.width*art.naturalHeight/art.naturalWidth):r.height;
+        const personBottom=bounds.find(row=>row.element===person)?.bottom||0;
+        labels.push({scene,furniture,person,status,x:r.left+r.width/2-sceneRect.left,y:Math.max(r.top+(r.height+height)/2,personBottom)-sceneRect.top+6,z:20+bounds.length*3});
+      }
       bounds.sort((a,b)=>a.bottom-b.bottom);
       bounds.forEach(({element},index)=>updates.push([element,10+index*3]));
       // Occupancy badges are UI labels, not actors standing behind buildings.
@@ -85,6 +95,15 @@ export function scheduleSceneDepth(){
       const marker=document.createElement('span');marker.dataset.seatMeal=id;marker.className='seat-meal';marker.setAttribute('aria-hidden','true');marker.textContent='🍛';
       const [x,y]=({north:[50,24],south:[50,65],west:[25,45],east:[75,45]})[side]||[50,35];
       marker.style.cssText=`position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);font-size:clamp(18px,4vw,24px)!important;line-height:1!important;pointer-events:none`;const surface=table.querySelector('.room-furniture-art')||table;if(surface!==table)surface.style.position='relative';surface.append(marker);
+    }
+    for(const label of labels){
+      const {scene,furniture,person,status,x,y,z}=label;
+      const group=labels.filter(other=>other.furniture===furniture),offset=(group.indexOf(label)-(group.length-1)/2)*124;
+      let layer=scene.querySelector(':scope > .room-activity-labels');
+      if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';layer.style.cssText='position:absolute;inset:0;pointer-events:none;overflow:visible';scene.append(layer)}
+      layer.style.zIndex=String(z);
+      if(status.parentElement!==layer){person.sceneStatus=status;layer.append(status);status.addEventListener('click',()=>person.click());}
+      status.style.cssText=`position:absolute;left:${x+offset}px;top:${y}px;transform:translateX(-50%);width:max-content;max-width:120px;font-size:10px;line-height:1.2;pointer-events:auto;text-align:center`;
     }
     for(const [element,z] of updates)element.style.zIndex=String(z);
     for(const [person,x,y,width] of seats){
