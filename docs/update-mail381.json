@@ -1,0 +1,28 @@
+{
+  "_delivery": {
+    "status": "approved",
+    "authorization": "User explicitly requested production promotion and cumulative in-game update announcement on 2026-09-13. No push.",
+    "fromVersion": 351,
+    "toVersion": 381,
+    "iosBuild": 382,
+    "previousDispatch": "villageAnnouncements/release-347 (body updated through351)"
+  },
+  "ko": {
+    "sender": "서랍마을 운영팀",
+    "recipient": "서랍마을 주민님",
+    "subject": "서랍마을 1.0.332 업데이트 안내",
+    "body": "안녕하세요, 서랍마을입니다.\n1.0.332 정식 업데이트를 준비했습니다. 스토어 검토·반영 시점에 따라 업데이트 버튼이 보이는 시간은 다를 수 있습니다. 아직 이전 버전이 보이면 조금 기다려 주세요.\n\n마지막 업데이트 공지 이후 누적 변경 사항을 안내드립니다.\n\n• 저장·백업과 화면 이동의 안정성을 개선했습니다. 저장 실패 안내를 구분하고, 질문 답변과 사진이 많은 캐릭터의 저장 처리를 다듬었습니다.\n• 프로필, 사진 배치, 일정과 선택창의 스크롤·겹침을 수정했습니다. iOS의 프로필 PNG·PDF 내보내기는 공유 시트로 연결했습니다.\n• 집 공유 코드를 빈집에도 적용할 수 있도록 개선했습니다. 가구를 방 사이로 옮기는 조작, 이동 중 크기, 겹친 가구 선택, 식탁에 붙인 의자의 이동·방향을 다듬었습니다.\n• 두 사람이 소파를 이용하고 낮잠·독서·영상·음악 감상 등을 선택할 수 있습니다. 의자·소파 착석과 식사·음료 연출을 개선하고, 가구 사용 중 이름과 행동을 가구 아래에 표시합니다.\n• 캐릭터 상호작용과 성격·관계에 따른 반응을 다양하게 했습니다. 캐릭터를 누르면 현재 행동을 확인하고 할 일을 고를 수 있습니다.\n• 생활 로그를 최신순·오래된순으로 정렬하고, 여러 인물을 가로로 볼 수 있습니다. 멀티의 미래 기록 표시를 수정했습니다.\n• 건물 위 주민 표시, 침대 앞뒤 표시, 반려동물 이동 초기화, 샤워 장소, 생일의 마을 이동 제한과 평온한 행동의 번개 효과를 수정했습니다.\n• 건강 기록과 일부 생활·관계 배경 설정, 도움말을 보완했습니다. 우편에 선물을 고를 때 발신자가 바뀌는 문제도 수정했습니다.\n• 응원자 명단과 글자 가독성을 개선했습니다. 설정의 ‘함께 만든 서랍마을’ 아래 ‘익명 문의’에서 의견과 오류를 보내실 수 있습니다. 질문 선택지에도 구체적인 의견을 남길 수 있습니다.\n\n이전 멀티 일정의 추가 복구와 멀티 자동 우편·알림은 별도 작업 중입니다. 새 슬롯 상품·가격은 이번 공지의 출시 항목에 포함되지 않습니다.\n제보와 응원에 감사드립니다."
+  },
+  "en": {
+    "sender": "Drawer Village Team",
+    "recipient": "Village resident",
+    "subject": "Drawer Village 1.0.332 update",
+    "body": "Hello from Drawer Village!\nVersion1.0.332 has been prepared for public release. The update button may appear at different times as store review and processing finish. Please wait if the previous version is still shown.\n\nHighlights since our last update announcement:\n\n• Improved saving, backups and navigation, with clearer save errors and refined handling of question answers and photo-heavy characters.\n• Fixed scrolling and overlapping controls in profiles, photo placement, schedules and pickers. iOS profile PNG/PDF export now uses the native share sheet.\n• Improved home-code imports into empty homes, moving furniture between rooms, drag sizing, selecting overlapping furniture and linked dining-chair movement/direction.\n• Two residents can share a sofa and choose naps, reading, videos or music. Refined seating, meals and drinks; names and activities appear below furniture during use.\n• Expanded personality- and relationship-based interactions. Tap a character to see the current activity and choose an action.\n• Added newest/oldest log ordering and horizontal participant layout. Fixed future entries in multiplayer logs.\n• Fixed building resident badges, bed depth, pet movement resets, bathing destinations, birthday travel limits and lightning during calm activities.\n• Refined health records, selected lifestyle/relationship backgrounds and help. Fixed letter senders changing when selecting a gift.\n• Updated supporter credits and readability. Anonymous support is below Together We Made Drawer Village in Settings. Questions also accept specific choice feedback.\n\nAdditional recovery for older multiplayer schedules and multiplayer automatic mail/notifications remain separate work. New slot products/prices are not part of this release announcement.\nThank you for your reports and support!"
+  },
+  "ja": {
+    "sender": "村の引き出し 運営チーム",
+    "recipient": "村の住民さま",
+    "subject": "村の引き出し 1.0.332 アップデートのお知らせ",
+    "body": "こんにちは、村の引き出しです。\n1.0.332の正式アップデートを準備しました。ストアの審査・反映状況により、更新ボタンが表示される時期は異なります。旧バージョンが表示される場合は、しばらくお待ちください。\n\n前回のお知らせ以降の主な変更です。\n\n• 保存・バックアップ・画面移動の安定性を改善しました。保存失敗の案内を分け、質問の回答や写真の多いキャラクターの保存を調整しました。\n• プロフィール、写真配置、予定、選択画面のスクロールや重なりを修正しました。iOSのPNG・PDF出力は共有シートにつなげました。\n• 空き家への共有コード適用、部屋をまたぐ家具移動、移動中の大きさ、重なった家具の選択、食卓につないだ椅子の移動・向きを改善しました。\n• 二人でソファを使い、昼寝・読書・動画・音楽などを選べます。着席、食事・飲み物の演出を調整し、家具使用中の名前・行動を家具の下に表示します。\n• 性格・関係に応じた交流や反応を充実させました。キャラクターを押すと現在の行動を確認して次の行動を選べます。\n• 生活ログの新しい順・古い順と人物の横並び表示を追加し、マルチの未来の記録を修正しました。\n• 建物上の住民表示、ベッドの前後関係、ペットの移動リセット、入浴場所、誕生日の村間移動制限、穏やかな行動中の稲妻を修正しました。\n• 健康記録、一部の生活・関係背景、ヘルプを改善しました。贈り物の選択で手紙の差出人が変わる問題も修正しました。\n• 応援者クレジットと文字の読みやすさを改善しました。設定の「一緒に作った村の引き出し」の下の匿名お問い合わせからご連絡いただけます。質問の選択肢にも具体的な意見を送れます。\n\n以前のマルチ予定の追加復旧とマルチ自動郵便・通知は別途対応中です。新しい枠商品・価格は今回の公開項目には含みません。\nご報告と応援、ありがとうございます。"
+  }
+}
