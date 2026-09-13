@@ -29,3 +29,8 @@ Translation: changed user-facing notices and existing mapped errors have KO/EN/J
 - 2026-09-14: iOS1.0.335 build387 (f950f9ed-cebd-42c1-b6c2-eefc364070fa) submitted successfully; submission385f23b0-eb50-4554-8884-35752d34a4e9. Replaced withdrawn382. Automatic release after approval retained.
 - KO/EN storefront release notes updated; JA release-note translation prepared in update-announcement387.md, Japanese storefront localization does not currently exist.
 - Apple character_slots_5 product6808704292 saved as developer removed from sale; existing grants preserved.
+
+## Worldwide availability — 2026-09-14
+- User authorized app downloads and character_slot_1 worldwide. App selection expanded from3 to all175 territories and future territories enabled. Verified summary:3 available,171 processing,1 unavailable (Afghanistan; Apple content-rating restriction). UI says changes take up to24hours.
+- Character single-slot IAP6811144000 already selected all175 territories and future territories; verified without changing price. Product remains waiting for review.
+- No binary/code or translation changes; no rating answers changed to bypass regional restriction.
