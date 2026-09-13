@@ -27,7 +27,7 @@
       diamonds_100:"diamonds_100",
       character_slots_5:"character_slots_5",
       character_slot_1:"character_slot_1",
-      town_slot_1:"town_slot_1",
+      town_slot_1:"town_slot_1",town_slots_5:"town_slots_5",
       storage_50mb:"storage_50mb",
       green_tea:"green_tea"
     }

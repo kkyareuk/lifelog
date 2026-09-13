@@ -13,12 +13,13 @@ const app=express();
 app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
-const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","storage_50mb","green_tea"]);
-const CONSUMABLE_PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","green_tea"]);
+const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","storage_50mb","green_tea"]);
+const CONSUMABLE_PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
-  character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
+  character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:4800},
   diamonds_100:{name:"다이아 100개 충전",amount:1000},
   character_slot_1:{name:"캐릭터 슬롯 1개 추가",amount:1000},
+  town_slots_5:{name:"마을 슬롯 5개 추가",amount:9300},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
   storage_50mb:{name:"사진 저장 공간 50MB 추가",amount:2900},
   green_tea:{name:"서랍마을 응원 선물",amount:3000}
@@ -94,14 +95,14 @@ function nextEntitlements(current,productId,quantity){
   if(productId==="diamonds_100")next.diamondPaid=(Number(current?.diamondPaid)||0)+count*100;
   if(productId==="character_slot_1")next.characterSingleSlots=(Number(current?.characterSingleSlots)||0)+count;
   if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks ?? (current?.purchases||[]).filter(id=>id==="character_slots_5").length)||0)+count;
-  if(productId==="town_slot_1")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count;
+  if(productId==="town_slot_1"||productId==="town_slots_5")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count*(productId==="town_slots_5"?5:1);
   if(productId==="storage_50mb")next.storage50=true;
   if(productId==="green_tea")next.teaSupportCount=(Number(current?.teaSupportCount)||0)+count;
   return next;
 }
 
 function webCart(rawItems){
-  if(!Array.isArray(rawItems)||!rawItems.length||rawItems.length>4){
+  if(!Array.isArray(rawItems)||!rawItems.length||rawItems.length>Object.keys(WEB_PRODUCTS).length){
     throw Object.assign(new Error("장바구니 상품을 확인해 주세요."),{status:400});
   }
   const seen=new Set();
@@ -132,8 +133,6 @@ app.post("/payments/orders",async(request,response)=>{
     const identity=await signedInUser(request);
     const {environment}=tossCredentials();
     const items=webCart(request.body?.items);
-    const activeSlot=Date.now()<Date.parse("2026-09-14T00:00:00+09:00")?"character_slots_5":"character_slot_1";
-    if(items.some(i=>["character_slots_5","character_slot_1"].includes(i.packageId)&&i.packageId!==activeSlot))throw Object.assign(Error("판매 구성이 변경됐습니다. 상점에서 다시 확인해 주세요."),{status:409});
     if(items.some(i=>i.packageId==="diamonds_100"))throw Object.assign(Error("판매하지 않는 상품입니다."),{status:400});
     const {amount,count,orderName}=orderSummary(items);
     if(!Number.isSafeInteger(amount)||amount<100)throw Object.assign(new Error("결제 금액을 확인해 주세요."),{status:400});

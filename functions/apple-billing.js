@@ -6,6 +6,7 @@ const productMap=Object.freeze({
  'com.drawervillage.app.diamonds_100':'diamonds_100',
  'com.drawervillage.app.character_slot_1':'character_slot_1',
  'com.drawervillage.app.character_slots_5':'character_slots_5',
+ 'com.drawervillage.app.town_slots_5':'town_slots_5',
  'com.drawervillage.app.town_slot_1':'town_slot_1',
  'com.drawervillage.app.green_tea':'green_tea'
 });
@@ -88,9 +89,9 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
    const receipt=await tx.get(ref),saved=receipt.data();if(saved?.revoked)return;
    if(saved?.uid){
     const userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(saved.uid),user=await tx.get(userRef),field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';
-    const ent={...(user.data()?.[field]||{})},key={character_slot_1:'characterSingleSlots',character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
+    const ent={...(user.data()?.[field]||{})},key={character_slot_1:'characterSingleSlots',character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',town_slots_5:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
     if(saved.productId==='diamonds_100')ent.diamondPaid=(Number(ent.diamondPaid)||0)-saved.quantity*100;
-    if(key)ent[key]=Math.max(0,(Number(ent[key])||0)-saved.quantity);
+    if(key)ent[key]=Math.max(0,(Number(ent[key])||0)-saved.quantity*(saved.productId==='town_slots_5'?5:1));
     const deleted=await tx.get(db.collection("deletedAccounts").doc(saved.uid));
     if(!deleted.exists)tx.set(userRef,{[field]:ent,updatedAt:serverTimestamp()},{merge:true});
    }

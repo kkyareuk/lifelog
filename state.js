@@ -1,3 +1,4 @@
+import {recordSaveFailure,clearSaveFailure,saveFailureMessage} from './save-status.js?v=20260909dev305';
 import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
@@ -1058,9 +1059,9 @@ function writeStateNow(notify=true){
     timeOperation("save-storage",()=>localStorage.setItem(KEY,serialized));
     clearAnswerDeltas(localStorage);
     timeOperation("save-recovery",()=>preserveLastNonempty(state,serialized,false,true));
-    stored=true;
+    stored=true;clearSaveFailure();
   }catch(error){
-    console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
+    recordSaveFailure(error);console.warn("Device save failed",error);
   }finally{
     saveRunning=false;
   }
@@ -1078,21 +1079,27 @@ function queueSnapshotWrite(notify){
     let result=true;
     while(pendingSnapshotJob){
       const job=pendingSnapshotJob;pendingSnapshotJob=null;
-      const owner=state,epoch=saveEpoch;
-      const current=()=>state===owner&&saveEpoch===epoch&&!editorPersonalState;
+      const owner=state,epoch=saveEpoch,ownerScope=localStorage.scope;
+      const current=()=>state===owner&&saveEpoch===epoch&&localStorage.scope===ownerScope&&!editorPersonalState;
       try{
         timeOperation("save-town",()=>syncTown());
         owner.lastSaved=Date.now();
         const serialized=timeOperation("save-serialize",()=>stringifyLocalMediaState(owner,{characterSettingsView:"hub"}));
         result=await localStorage.setItemAsync(KEY,serialized,current);
-        if(!result)continue;
+        if(!result||!current()){
+          // A newer edit invalidates the encoded bytes, not the save request.
+          // Persist the latest world before resolving an explicit Save button.
+          if(state===owner&&localStorage.scope===ownerScope&&!editorPersonalState)pendingSnapshotJob={notify:job.notify||pendingSnapshotJob?.notify};
+          continue;
+        }
+        clearSaveFailure();
         clearAnswerDeltas(localStorage);
         timeOperation("save-recovery",()=>preserveLastNonempty(owner,serialized,false,true));
         document.querySelector("#save-state")?.replaceChildren(document.createTextNode("기기에 저장됨"));
         if(job.notify)window.dispatchEvent(new Event("parallel-city-saved"));
       }catch(error){
-        result=false;
-        if(current()){document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 공간을 확인해 주세요"));console.warn("Device snapshot save failed",error)}
+        result=false;recordSaveFailure(error);
+        if(current()){document.querySelector("#save-state")?.replaceChildren(document.createTextNode(saveFailureMessage(state.uiLanguage)));console.warn("Device snapshot save failed",error)}
       }
     }
     return result;
@@ -1219,7 +1226,7 @@ export function saveDiscoveryPatch(id,patch){
  const c=state.characters[id];if(!c||isolatedWorldDepth||editorPersonalState)throw Error('Character changed');
  const before={...c};
  try{updateCharacter(id,patch,false);writeAnswerDelta(localStorage,id,{...Object.fromEntries(Object.keys(patch).map(k=>[k,c[k]])),timelineResetAt:c.timelineResetAt});}
- catch(error){for(const key of Object.keys(c))if(!Object.hasOwn(before,key))delete c[key];Object.assign(c,before);throw error;}
+ catch(error){recordSaveFailure(error,"answer-journal");for(const key of Object.keys(c))if(!Object.hasOwn(before,key))delete c[key];Object.assign(c,before);throw error;}
  save();return true;
 }
 export function updateCharacter(id,patch,persist=true){

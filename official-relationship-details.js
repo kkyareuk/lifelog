@@ -31,6 +31,13 @@ OFFICIAL_RELATIONSHIP_DETAILS['가족']={label:words('가족|Family|家族'),fie
 OFFICIAL_RELATIONSHIP_DETAILS['부부'].fields[0].options.push({id:'3',label:words('태어나기 전부터 가문끼리 정한 혼인|Marriage promised by the families before birth|生まれる前から家同士で決めた婚姻')},{id:'4',label:words('어린 시절부터 약혼자로 자란 사이|Raised as betrothed partners since childhood|幼い頃から婚約者として育った二人')},{id:'5',label:words('가문의 동맹을 유지하기 위한 혼인|Marriage to preserve an alliance between families|家同士の同盟を守るための婚姻')},{id:'6',label:words('몰락한 가문을 구하기 위해 맺은 혼인|Marriage to rescue a declining family|衰退した家を救うために結んだ婚姻')},{id:'7',label:words('기한과 이별 조건을 정한 계약결혼|Contract marriage with an end date and separation terms|期間と別れの条件を決めた契約結婚')},{id:'8',label:words('서로의 비밀을 지키기 위한 위장결혼|A marriage of convenience to protect each other’s secrets|互いの秘密を守るための偽装結婚')});
 // Keep rivalry and clan membership composable; no character-specific new relation type.
 OFFICIAL_RELATIONSHIP_DETAILS['라이벌'].fields[0].options.push({id:'3',label:words('정치·지위·승계를 두고 경쟁|Competition for political influence, status or succession|政治的影響力・地位・継承をめぐる競争')});
+OFFICIAL_RELATIONSHIP_DETAILS['라이벌'].fields[0].label=words('라이벌 배경|Rivalry background|ライバル関係の背景');
+OFFICIAL_RELATIONSHIP_DETAILS['라이벌'].fields[0].options.push(
+ {id:'4',label:words('정치적 라이벌|Political rivals|政治的ライバル')},
+ {id:'5',label:words('학업·연구 경쟁|Academic or research rivalry|学業・研究での競争')},
+ {id:'6',label:words('직업·사업 경쟁|Career or business rivalry|仕事・事業での競争')},
+ {id:'7',label:words('예술·기술 경쟁|Artistic or technical rivalry|芸術・技術での競争')}
+);
 OFFICIAL_RELATIONSHIP_DETAILS['같은 가문'].fields[0].options.push({id:'3',label:words('교류가 거의 없던 먼 가문원|Distant clan members with little prior contact|交流がほとんどなかった遠い一族の人')});
 export const detailText=(value,language='ko')=>value?.[language]||value?.ko||'';
 export const NARRATIVE_WEIGHTS=['매우 높음','높음','보통','낮음','비중 없음'];

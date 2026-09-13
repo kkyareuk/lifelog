@@ -50,7 +50,7 @@ export function createAccountStorage(storage,encode=encodeSnapshot){
     async setItemAsync(name,value,current=()=>true){
       const target=key(name),ownerEpoch=scopeEpoch,revision=changed(target),raw=String(value);
       const valid=()=>scopeEpoch===ownerEpoch&&revisions.get(target)===revision&&current();
-      const encoded=isSnapshot(name)&&storage.getItem(target)?.startsWith(PACKED)?await encode(raw):raw;
+      const encoded=isSnapshot(name)?await encode(raw):raw;
       if(!valid())return false;
       try{storage.setItem(target,encoded);return true}catch(error){if(!quotaError(error))throw error}
       // Compression, verification and quota recovery run outside the UI thread.

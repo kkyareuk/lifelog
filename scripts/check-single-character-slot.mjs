@@ -24,12 +24,13 @@ assert.equal(next({characterSingleSlots:4},'character_slots_5',2).characterSingl
 const catalog=source.match(/const WEB_PRODUCTS=Object.freeze\(([\s\S]*?)\);/)[1];
 const webCart=vm.runInNewContext(`const WEB_PRODUCTS=${catalog};(${source.match(/function webCart[\s\S]*?\n}/)[0]})`);
 assert.equal(webCart([{packageId:'character_slot_1',quantity:3}])[0].unitAmount,1000);
-assert.equal(webCart([{packageId:'character_slots_5',quantity:1}])[0].unitAmount,1200);
+assert.equal(webCart([{packageId:'character_slots_5',quantity:1}])[0].unitAmount,4800);
 assert.equal(webCart([{packageId:'character_slot_1',quantity:50}])[0].quantity,50);
 assert.equal(webCart([{packageId:'green_tea',quantity:20}])[0].quantity,20);
 assert.throws(()=>webCart([{packageId:'green_tea',quantity:Number.MAX_SAFE_INTEGER}]));
 assert.throws(()=>webCart([{packageId:'green_tea',quantity:-1}]));
-for(const id of ['character_slot_1','character_slots_5']){
+assert.equal(webCart([{packageId:'town_slots_5',quantity:2}])[0].unitAmount,9300);
+for(const id of ['character_slot_1','character_slots_5','town_slots_5']){
   validatePurchase({transactionId:'123',productId:'com.drawervillage.app.'+id,bundleId:'com.drawervillage.app',environment:'Sandbox',type:'Consumable',quantity:1,appAccountToken:accountToken('buyer')},'buyer','Sandbox','123');
 }
 assert.match(read('views.js'),/character_slot_1:\{label:"캐릭터 슬롯",title:"캐릭터 1명 추가"/);

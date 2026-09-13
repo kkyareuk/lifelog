@@ -1,3 +1,6 @@
+import {startIntroTour,introTourActive} from './intro-tour.js';
+import {installLogOrder} from './log-order.js';
+import {saveFailureMessage,saveFailureDiagnostic} from './save-status.js?v=20260909dev305';
 import {profileExporter,saveNativeProfile} from './profile-document-export.js?v=20260909dev305';
 import {bindFurnitureDrag} from './furniture-drag.js';
 import {addInGameFeedback} from "./in-game-feedback.js";
@@ -1413,15 +1416,9 @@ function renderMaintenance(){
   document.querySelector("#maintenance-reload")?.addEventListener("click",()=>location.reload());
 }
 
-function replaceFeedbackFormWithEmailLink(){
+function bindAnonymousFeedback(){
   const card=document.querySelector(".feedback-card");
   if(!card)return;
-  const copy={
-    ko:{title:"개발자에게 피드백 보내기",description:"보내려는 내용의 유형을 고르면 기기의 메일 앱이 열려요. 아래 진단 정보가 함께 들어가 문제를 확인하는 데 도움을 줍니다.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","어떤 동작을 했을 때 무엇이 잘못되었는지, 다시 발생하는 순서를 적어 주세요."],["기능 제안","제안","원하는 기능과 사용 상황을 적어 주세요."],["생활 장면·관계","장면/관계","어떤 캐릭터 설정에서 어떤 장면이 어색했는지 적어 주세요. 캐릭터 이름은 필요한 경우에만 직접 적어 주세요."],["번역·문구","번역","언어와 어색하거나 잘못된 문구를 적어 주세요."],["결제·계정·동기화","결제/동기화","표시된 오류 문구와 시도한 순서를 적어 주세요. 비밀번호나 API 비밀키는 적지 마세요."],["디자인·사용성","UI","보기 어렵거나 누르기 불편한 위치와 원하는 모습을 적어 주세요."]]},
-    en:{title:"Send feedback to the developer",description:"Choose a category to open your email app. Helpful device diagnostics are included automatically.",recipient:"Recipient",diagnostics:"Automatically included diagnostics",prompt:"Please describe the details below.",types:[["Report a bug","Bug","Describe what you did, what went wrong, and how to reproduce it."],["Suggest a feature","Feature","Describe the feature and when you would use it."],["Life scenes & relationships","Scene/Relationship","Describe which settings produced an awkward scene. Add character names only if needed."],["Translation & wording","Translation","Tell us the language and the incorrect or awkward text."],["Payments, account & sync","Payment/Sync","Include the error message and steps you tried. Never include passwords or secret API keys."],["Design & usability","UI","Describe what was hard to read or use and what you expected instead."]]},
-    ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
-  }[state.uiLanguage]||null;
-  const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
   const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"web");
   const appVersion=String(window.DRAWER_VILLAGE_APP_VERSION||"web"),versionCode=String(window.DRAWER_VILLAGE_VERSION_CODE||"-");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
@@ -1438,16 +1435,13 @@ function replaceFeedbackFormWithEmailLink(){
     `Online: ${navigator.onLine?"yes":"no"}`,
     `Theme: ${state.colorMode||"light"} / ${state.visualTheme||"monochrome"}`,
     `Performance: ${performanceSummary()}`,
+    `Save: ${saveFailureDiagnostic()}`,
     `Data counts: characters ${state.order?.length||0}, towns ${state.towns?.length||0}`,
     `Media restore: found ${lastLocalMediaResult.found}, restored ${lastLocalMediaResult.resolved}, pending ${lastLocalMediaResult.pending}`
   ].join("\n");
-  const links=text.types.map(([label,prefix,hint])=>{
-    const subject=encodeURIComponent(`[${state.uiLanguage==="ja"?"ひきだし村":state.uiLanguage==="en"?"Drawer Village":"서랍마을"}][${prefix}]`);
-    const body=encodeURIComponent(`${text.prompt}\n${hint}\n\n--- ${text.diagnostics} ---\n${diagnostics}`);
-    return `<a class="primary feedback-email-button feedback-email-type" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${label}</a>`;
-  }).join("");
-  card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><div class="feedback-email-types">${links}</div><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
+  card.replaceChildren();
   addInGameFeedback(card,diagnostics,state.uiLanguage);
+
 }
 
 function restoreWindowScroll(x,y){
@@ -1688,7 +1682,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
     cleanupRenderedScreen();
     withLogNameBatch(()=>withSimulationBatch(()=>renderApp(state,renderDate,{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen},()=>prepareActiveHomeLife(renderDate))));
-    replaceFeedbackFormWithEmailLink();
+    bindAnonymousFeedback();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages
     // back to the top before the actual click handler finished.
@@ -1893,6 +1887,7 @@ function restoreMobileCharacterDialogs(){
 }
 
 function maybeShowPageGuide(){
+  if(introTourActive())return;
   const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
   const accountGuides=window.ParallelCityAuth?.getInfo?.().guideState;
   if(accountGuides&&!accountGuides.loaded)return;
@@ -2256,7 +2251,7 @@ async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfte
     showToast(copy.characterSaving);
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   }
-  if(await save(true)===false){showToast(({ko:"저장하지 못했어요. 기기 저장 공간을 확인하고 다시 저장해 주세요.",en:"Could not save. Check device storage and try again.",ja:"保存できませんでした。端末の空き容量を確認し、もう一度保存してください。"})[state.uiLanguage]||"저장하지 못했어요.");return false}
+  if(await save(true)===false){showToast(saveFailureMessage(state.uiLanguage));return false}
   if(characterSave)queueCharacterNotificationSchedule();
   if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
@@ -2607,6 +2602,8 @@ document.addEventListener("click",event=>{
 });
 
 function bind(){
+  document.querySelectorAll("[data-intro-tour]").forEach(button=>button.onclick=()=>startIntroTour({language:state.uiLanguage,hasCharacter:()=>state.order.length>0,go:tab=>window.DrawerVillageNavigation.go(tab)}));
+  installLogOrder(document);
   $("[data-auth-retry]")?.addEventListener("click",()=>location.reload());
 
   bindCharacterFolds();
@@ -2925,7 +2922,7 @@ function bind(){
   }catch(error){console.error("동적 편집 화면 연결 실패",error)}
   refreshCharacterSelectionSummaries();
   const cartKey="drawer-village-cart";
-  const cartPrices={character_slots_5:1200,character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
+  const cartPrices={character_slots_5:4800,character_slot_1:1000,town_slot_1:1900,town_slots_5:9300,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};

@@ -33,7 +33,7 @@ const includedFiles=new Set([
   "diamond-shop.css","diamond-shop.js",
   "life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css",
-  "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
+  "index.html","intro-tour.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js","furniture-drag.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
@@ -195,7 +195,7 @@ config=config.replace(
 config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
 if(platform==="ios"){
  config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=false;window.PARALLEL_CITY_CONFIG.iosApp=true;\n";
- config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{diamonds_100:"com.drawervillage.app.diamonds_100",character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
+ config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{diamonds_100:"com.drawervillage.app.diamonds_100",character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",town_slots_5:"com.drawervillage.app.town_slots_5",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
 }
 await writeFile(configPath,config,"utf8");
 
