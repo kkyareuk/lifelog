@@ -13,7 +13,7 @@ for(const name of ['index.html','login.html','payment.html','payment-success.htm
  const html=await readFile(resolve(dir,name),'utf8');
  assert(html.includes("connect-src 'self' data: blob:"));
  assert(html.includes("form-action 'none'"));
- assert(html.indexOf('Content-Security-Policy')<html.indexOf('<script'));
+ assert(html.indexOf('<script')<0||html.indexOf('Content-Security-Policy')<html.indexOf('<script'));
 }
 assert((await readFile(resolve(dir,'_headers'),'utf8')).includes('X-Robots-Tag: noindex, nofollow'));
 assert(!(await readFile(resolve(dir,'config.js'),'utf8')).includes('lifelog-98fff'));
