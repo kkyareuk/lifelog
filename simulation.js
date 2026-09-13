@@ -747,6 +747,16 @@ export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new
   const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
   if(!ordered.length)return"";
   if(item.homeEncounter&&rooms[requestedRoom]&&roomAllowsCharacter(c,home,rooms[requestedRoom]))return requestedRoom;
+  // Room names/types can be customized. Washing needs a real bathing fixture,
+  // never a washer/dryer merely because its room was once typed as a bathroom.
+  if(/샤워|목욕|반신욕|^(?:씻는 중|몸을 씻)|shower|taking a bath|シャワー|入浴/i.test(item.title||"")){
+    const equipped=ordered.filter(([,room])=>roomAllowsCharacter(c,home,room)&&
+      (Array.isArray(room.furniturePlacements)?room.furniturePlacements.map(p=>p.item):room.furniture||[]).some(name=>/샤워|욕조/.test(name)));
+    if(equipped.length){
+      const exact=equipped.find(([key])=>key===requestedRoom),owned=equipped.filter(([,room])=>ownsRoom(c,home,room));
+      return (exact||(owned.length?owned:equipped)[hash(`${c.id}:${dayKey(date)}:${item.minute||0}:bathing`)% (owned.length||equipped.length)])[0];
+    }
+  }
   const residence=settingList(c.residences).find(value=>value.homeId===home.id);
   const sleeping=/침실|잠드는|잠에서|잠자리에|자는 중/.test(`${item.title||""} ${item.desc||""}`)||requestedRoom==="bedroom"||requestedRoom===usableSleepRoom(c.sleepRoomId);
   let preferredSleepRoom=sleeping||isHomeSleepScene(item)?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";

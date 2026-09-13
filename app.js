@@ -1375,7 +1375,7 @@ function bindFurniturePlacementEditors(){
   });
   if(pendingFurnitureSelection){
     const target=[...document.querySelectorAll("[data-furniture-placement]")].find(element=>element.dataset.homeId===pendingFurnitureSelection.homeId&&element.dataset.roomKey===pendingFurnitureSelection.roomKey&&element.dataset.furniturePlacement===pendingFurnitureSelection.placementId);
-    if(target)requestAnimationFrame(()=>{target.scrollIntoView({block:"center",behavior:"smooth"});selectFurniture(target)});
+    if(target)requestAnimationFrame(()=>{selectFurniture(target)});
     pendingFurnitureSelection=null;
   }
 }
