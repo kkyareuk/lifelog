@@ -27,6 +27,16 @@ try{
  const page=await browser.newPage({viewport:{width:384,height:854}});await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.addLocatorHandler(page.locator('dialog.page-guide[open]'),async()=>{await page.locator('dialog.page-guide[open] button').last().click()});await page.goto(origin);await page.waitForFunction(()=>window.ParallelCity);
 
 
+ await page.evaluate(async()=>{
+ const g=await import('/state.js?v=20260909dev305'),{accountStorage}=await import('/account-storage.js?v=20260909dev305'),{createContactMailbox}=await import('/notification-mail.js?v=20260909dev305');
+ const id=g.createCharacter();g.state.uiLanguage='ko';g.state.activeTab='mailbox';
+ createContactMailbox(accountStorage).record([{extra:{mailOwner:accountStorage.scope,mailId:'qa-choice385',scheduledAt:new Date().toISOString(),mailTitle:'QA 선택 편지',mailBody:'오늘은 무엇을 할까요?',characterId:id,mode:'question',questionKind:'everyday',questionOptions:[{characterId:id,kind:'everyday',label:{ko:'잠깐 쉬기',en:'Rest',ja:'休む'},copy:{}}]}}]);
+ window.ParallelCity.mediaChanged();
+ });
+ await page.locator('[data-tab="mailbox"]:visible').first().click({timeout:10000});await page.locator('[data-mail-folder="inbox"]').click({timeout:10000});await page.locator('[data-open-contact-mail="qa-choice385"]').click();
+ await page.locator('[data-character-question-option="0"]').click();await page.waitForFunction(()=>!document.querySelector('.character-question-dialog[open]'));
+ assert(await page.evaluate(async()=>{const g=await import('/state.js?v=20260909dev305');return g.state.scheduledChoices.filter(c=>c.mailId==='qa-choice385').length===1}));
+ console.log('PASS real mailbox inbox -> question -> answer -> saved dialog close');
  const result=await page.evaluate(async()=>{
  const {openSnapshotStore,SNAPSHOT_REF}=await import('/snapshot-store.js'),{createAccountStorage}=await import('/account-storage.js');
  const main='drawer-village-game-v1',backup='drawer-village-last-nonempty-state-v1',value=JSON.stringify({photo:'x'.repeat(250000),name:'original'}),data=new Map([[main,value],['unrelated','keep']]);
