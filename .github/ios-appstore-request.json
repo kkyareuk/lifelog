@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-13-appstore377-cumulative-fixes",
-  "version": "1.0.328",
-  "build": 377,
+  "request": "2026-09-13-production381-ios382",
+  "version": "1.0.332",
+  "build": 382,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
