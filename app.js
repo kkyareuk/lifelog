@@ -2615,7 +2615,7 @@ function bind(){
   document.querySelector('[data-member-profile-edit]')?.addEventListener('click',()=>{
     const snapshot=groupApi.getSnapshot(),uid=window.ParallelCityAuth?.getInfo?.().user?.uid,groupId=snapshot.activeGroupId;
     const profile=(snapshot.members||[]).find(member=>member.uid===uid)||{};
-    openMemberProfile({language:state.uiLanguage,profile,onSave:async values=>{
+    openMemberProfile({language:state.uiLanguage,profile,formatError:groupErrorMessage,onSave:async values=>{
       if(groupApi.getSnapshot().activeGroupId!==groupId)throw Error('Group changed');
       const photoURL=values.file?await groupApi.uploadHomeMemberImage(values.file):values.photoURL;
       await groupApi.saveMemberProfile({groupId,name:values.name,photoURL});
@@ -2669,7 +2669,7 @@ function bind(){
     const code=new FormData(form).get("code");
     runGroupAction(button,async()=>{
       const profile=await groupApi.previewMemberProfile(code);
-      openMemberProfile({language:state.uiLanguage,profile,joining:true,onSave:async values=>{
+      openMemberProfile({language:state.uiLanguage,profile,formatError:groupErrorMessage,joining:true,onSave:async values=>{
         const groupId=await groupApi.join(code,{name:values.name});
         const photoURL=values.file?await groupApi.uploadHomeMemberImage(values.file):values.photoURL;
         await groupApi.saveMemberProfile({groupId,name:values.name,photoURL});
@@ -4635,8 +4635,8 @@ function bind(){
   bindSharedUi({bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
-async function applyImage(type,id,room,data){
-  const targetWorld=state;
+async function applyImage(type,id,room,data,targetWorld=state){
+  if(state!==targetWorld)throw new Error("image-target-changed");
   data=await persistLocalImage(data);
   const apply=()=>{
   if(type==="room")setHomeImage(id,room,data);
@@ -4654,7 +4654,7 @@ async function applyImage(type,id,room,data){
   else if(type==="sceneVariantIcon")setCharacterSceneImage(id,room,"icon",data);
   else if(type==="sceneVariantLd")setCharacterSceneImage(id,room,"ldImage",data);
   else if(state.characters[id])setCharacterImage(id,type,data);
-  };if(state===targetWorld)apply();else runIsolatedWorld(targetWorld,apply);
+  };if(state!==targetWorld)throw new Error("image-target-changed");apply();
 }
 
 const APP_TABS=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","groups","shop","settings","credits"];
@@ -5056,6 +5056,7 @@ function openCharacterSceneImages(){
 }
 
 async function useImageUrl(type,id,room){
+  const targetWorld=state;
   const value=await askImageUrl();
   if(!value)return;
   let resolved=value;
@@ -5067,7 +5068,7 @@ async function useImageUrl(type,id,room){
     if(!response.ok)throw new Error("image-download-failed");
     const blob=await response.blob();
     if(!blob.type.startsWith("image/"))throw new Error("not-an-image");
-    await applyImage(type,id,room,url.href);
+    await applyImage(type,id,room,url.href,targetWorld);
     render();
     showToast("이미지 링크를 저장했습니다 · 사진 저장 용량을 사용하지 않아요");
   }catch(error){
@@ -5079,7 +5080,7 @@ async function useImageUrl(type,id,room){
     }
     if(/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname)){
       if(resolved!==value){
-        await applyImage(type,id,room,resolved);
+        await applyImage(type,id,room,resolved,targetWorld);
         render();
         showToast("이미지 주소로 사진을 추가했습니다");
         return;
@@ -5088,7 +5089,7 @@ async function useImageUrl(type,id,room){
       return;
     }
     if(["http:","https:"].includes(url.protocol)){
-      await applyImage(type,id,room,url.href);
+      await applyImage(type,id,room,url.href,targetWorld);
       render();
       showToast("원본 링크로 추가했습니다 · 이 주소는 자르기를 지원하지 않아요");
       return;
@@ -5167,7 +5168,7 @@ function askImageUrl(){
 }
 
 function pickImage(type,id,room=""){
-  const task={type,id,room};
+  const task={type,id,room,world:state};
   pendingImage=task;
   activeImageInput?.remove();
   const input=document.createElement("input");
@@ -5193,7 +5194,7 @@ async function handleImageSelection(event,task){
   try{
     const data=await cropImage(file,task.type);
     if(!data)return;
-    await applyImage(task.type,task.id,task.room,data);
+    await applyImage(task.type,task.id,task.room,data,task.world);
     if(task.type==="catalogImage")replaceCatalogCard(task.room,task.id,{open:true});
     else render();
   }catch(err){

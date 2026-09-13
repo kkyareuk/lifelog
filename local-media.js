@@ -125,7 +125,7 @@ export async function initializeLocalMediaState(root){
         found+=1;
         jobs.push(async()=>{
         const resolved=await resolveLocalRef(value);
-        if(isData(resolved))node[key]=resolved;
+        if(isData(resolved)&&node[key]===value)node[key]=resolved;
         return isData(resolved);
         });
       }

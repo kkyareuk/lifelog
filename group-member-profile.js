@@ -3,7 +3,7 @@ const copy={
  en:{title:'My profile in this group',help:'This name and photo apply only to this group. Your account and other groups stay the same.',name:'Name in this group',photo:'Profile photo',remove:'Remove photo',save:'Save',join:'Join with this profile',cancel:'Cancel',busy:'Saving…',error:'Could not save. Check your connection and try again.'},
  ja:{title:'このグループでのプロフィール',help:'名前と写真はこのグループだけで使用します。アカウントや他のグループには反映されません。',name:'このグループで使う名前',photo:'プロフィール写真',remove:'写真を削除',save:'保存',join:'このプロフィールで参加',cancel:'キャンセル',busy:'保存中…',error:'保存できませんでした。接続を確認して再試行してください。'}
 };
-export function openMemberProfile({language='ko',profile={},joining=false,onSave,onComplete=()=>{}}){
+export function openMemberProfile({language='ko',profile={},joining=false,onSave,onComplete=()=>{},formatError=()=>""}){
  const t=copy[language]||copy.ko,dialog=document.createElement('dialog');
  dialog.className='member-profile-dialog';
  dialog.innerHTML=`<form><h2></h2><p data-help></p><label data-name-label><input name="name" maxlength="20" required autocomplete="nickname"></label><img data-preview alt="" width="96" height="96"><label data-photo-label><input name="photo" type="file" accept="image/*"></label><button type="button" data-remove></button><p role="status"></p><footer><button type="button" data-cancel></button><button type="submit"></button></footer></form>`;
@@ -25,7 +25,7 @@ export function openMemberProfile({language='ko',profile={},joining=false,onSave
  // Keep cancellation available even while the request is pending.
  [...form.elements].filter(el=>!el.hasAttribute('data-cancel')).forEach(el=>el.disabled=true);
  try{await onSave(values);if(dialog.isConnected){dialog.close();onComplete()}}
- catch(error){if(dialog.isConnected){status.textContent=t.error;[...form.elements].forEach(el=>el.disabled=false)}}finally{busy=false}
+ catch(error){if(dialog.isConnected){status.textContent=formatError(error)||t.error;[...form.elements].forEach(el=>el.disabled=false)}}finally{busy=false}
  };
  document.body.append(dialog);dialog.showModal();name.focus();return dialog;
 }
