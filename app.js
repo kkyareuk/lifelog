@@ -1,3 +1,4 @@
+import {profileExporter,saveNativeProfile} from './profile-document-export.js?v=20260909dev305';
 import {bindFurnitureDrag} from './furniture-drag.js';
 import {addInGameFeedback} from "./in-game-feedback.js";
 import {exportNativeJson} from './native-json-export.js?v=20260909dev305';
@@ -777,12 +778,12 @@ async function exportProfilePngV2(character,download=true){
 const safeExportFilename=value=>String(value||"character").replace(/[\\/:*?"<>|]/g,"-").trim()||"character";
 async function saveProfileCanvas(canvas,character,format="png"){
   const base=`${safeExportFilename(character.name)}-서랍마을-등록사항증명서`;
-  const data=canvas.toDataURL("image/png");
-  const nativePlugin=window.Capacitor?.Plugins?.ProfileExport;
-  if(window.Capacitor?.isNativePlatform?.()&&nativePlugin){
-    if(format==="pdf")await nativePlugin.savePdf({filename:`${base}.pdf`,data});
-    else await nativePlugin.savePng({filename:`${base}.png`,data});
-    showToast(format==="pdf"?"다운로드 폴더에 PDF를 저장했어요":"사진의 DrawerVillage 폴더에 PNG를 저장했어요");
+  const nativePlugin=profileExporter();
+  if(nativePlugin){
+    const platform=window.Capacitor.getPlatform?.();
+    const result=await saveNativeProfile(nativePlugin,canvas,`${base}.${format}`,format,platform);
+    if(result?.cancelled)return;
+    showToast(platform==='ios'?({ko:'파일 내보내기를 마쳤어요.',en:'File export completed.',ja:'ファイルを書き出しました。'}[state.uiLanguage]||'파일 내보내기를 마쳤어요.'):format==="pdf"?"다운로드 폴더에 PDF를 저장했어요":"사진의 DrawerVillage 폴더에 PNG를 저장했어요");
     return;
   }
   if(format==="pdf")throw new Error("browser-pdf");
@@ -798,7 +799,7 @@ function exportProfilePdf(character){
   win.document.close();setTimeout(()=>win.print(),900);
 }
 async function exportProfilePdfV2(character,bodyFont){
-  if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.ProfileExport){
+  if(profileExporter()){
     const canvas=await exportProfilePngV2(character,false,bodyFont);
     await saveProfileCanvas(canvas,character,"pdf");
     return;

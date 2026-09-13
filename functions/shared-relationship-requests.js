@@ -36,7 +36,24 @@ module.exports=({db,membership,notify,clock,id})=>{
    if(existing.exists){const r=existing.data();if(r.senderUid!==uid||(r.inputHash||hash(r.patch))!==inputHash||r.targetId!==targetId)fail('request-id-conflict',409);return {id:key,status:r.status}}
    if(input.targetId&&!old.exists)fail('relationship-missing',404);
    if(recent.docs.filter(d=>d.data().createdAt>clock()-3600000).length>=20)fail('proposal-rate-limit',429);
-   const oldIds=old.exists?members(old.data(),kind):[],all=[...new Set([...ids,...oldIds])];
+   let oldIds=old.exists?members(old.data(),kind):[];
+   // Older schedules stored personal character IDs. Resolve only IDs already
+   // present in that schedule, and only when the group has one matching resident.
+   // Never guess across owners when an imported character has multiple copies.
+   if(kind==='schedule'&&old.exists){
+    const groupResidents=await tx.get(root.collection('residents'));
+    const alias=new Map();
+    for(const oldId of oldIds){
+     if(groupResidents.docs.some(r=>r.id===oldId))continue;
+     const matches=groupResidents.docs.filter(r=>r.data().sourceCharacterId===oldId);
+     if(matches.length>1)fail('ambiguous-schedule-resident',409);
+     if(matches.length===1)alias.set(oldId,matches[0].id);
+    }
+    const canonical=values=>[...new Set(values.map(cid=>alias.get(cid)||cid))];
+    oldIds=canonical(oldIds);ids=canonical(ids);patch.memberIds=ids;
+    patch.sourceId=alias.get(patch.sourceId)||patch.sourceId;
+   }
+   const all=[...new Set([...ids,...oldIds])];
    let residents=await Promise.all(all.map(cid=>tx.get(root.collection('residents').doc(cid))));
    const missing=residents.filter(r=>!r.exists).map(r=>r.id);
    // Existing schedules may retain residents who left or were replaced. Editing

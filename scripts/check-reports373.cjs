@@ -28,6 +28,11 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  assert.deepEqual(data.get('groups/g/schedules/legacy-cancel').memberIds,['a']);
  await assert.rejects(()=>relations.propose('member',{...cancelInput,requestId:'forged',patch:{...patch,memberIds:['a','invented']}}),/resident-missing/);
  console.log('PASS departed participant legacy edit/cancel, retry and invalid new participant guard');
+ data.get('groups/g/residents/a').sourceCharacterId='personal-a';
+ data.set('groups/g/schedules/old-personal',{...patch,memberIds:['personal-a'],sourceId:'personal-a'});
+ assert.equal((await relations.propose('member',{groupId:'g',requestId:'old-personal-edit',kind:'schedule',targetId:'old-personal',patch:{...patch,memberIds:['a'],sourceId:'a'}})).status,'accepted');
+ assert.equal(data.get('groups/g/relationshipRequests/old-personal-edit').patch.memberIds[0],'a');
+ console.log('PASS old personal-ID schedule resolves to group resident without losing owner validation');
  const gift={groupId:'g',requestId:'coat-gift',sourceId:'a',targetId:'b',subject:'Coat',body:'For you',gift:{kind:'fashion',item:{id:'coat',name:'Coat'}}};
  await relations.sendMail('member',gift);await relations.sendMail('member',gift);
  const profile=JSON.parse(data.get('groups/g/residents/b').profileJson);assert.deepEqual(profile.inventory.fashion,['coat']);assert.equal(profile.wardrobeItems.length,1);assert.equal(profile.wardrobeItems[0].id,'coat');

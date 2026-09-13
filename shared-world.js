@@ -36,7 +36,7 @@ export function buildSharedWorld(snapshot,language='ko'){
     if(life.directive)characterDirectives[r.id]=life.directive;
     routines[r.id]=remap(schedule.routines);monthlyRoutines[r.id]=remap(schedule.monthlyRoutines);
   }
-  for(const schedule of (snapshot.schedules||[]).filter(s=>!s.cancelled))for(const cid of schedule.memberIds||[]){if(!characters[cid])continue;const shared={...schedule,withIds:schedule.memberIds.filter(id=>id!==cid),sharedScheduleId:schedule.id};if(schedule.monthly)(monthlyRoutines[cid]??=[]).push(shared);else for(const day of schedule.days||[])(routines[cid]??=[]).push({...shared,id:schedule.id+':'+day,seriesId:schedule.id,day})}
+  for(const original of (snapshot.schedules||[]).filter(s=>!s.cancelled)){const memberIds=[...new Set((original.memberIds||[]).map(id=>{if(characters[id])return id;const matches=(snapshot.residents||[]).filter(r=>r.sourceCharacterId===id);return matches.length===1?matches[0].id:id}))],schedule={...original,memberIds};for(const cid of memberIds){if(!characters[cid])continue;const shared={...schedule,withIds:schedule.memberIds.filter(id=>id!==cid),sharedScheduleId:schedule.id};if(schedule.monthly)(monthlyRoutines[cid]??=[]).push(shared);else for(const day of schedule.days||[])(routines[cid]??=[]).push({...shared,id:schedule.id+':'+day,seriesId:schedule.id,day})}}
   for(const [id,draft] of Object.entries(sharedSelection(snapshot).homeDrafts||{}))if(homes[id])homes[id]={...homes[id],...draft};
   // Room ownership references must use group resident IDs, not personal IDs.
   for(const h of Object.values(homes))for(const room of Object.values(h.rooms||{})){

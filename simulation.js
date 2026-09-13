@@ -752,7 +752,7 @@ export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new
   let preferredSleepRoom=sleeping||isHomeSleepScene(item)?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";
   if(isHomeSleepScene(item)&&residence?.sleepElsewhere===true){
     const night=new Date(date);if(night.getHours()<12)night.setDate(night.getDate()-1);
-    const frequency={rare:5,sometimes:15,often:35}[residence.sleepElsewhereFrequency]||5;
+    const frequency={rare:5,sometimes:15,often:35,frequent:50,high:70,mostly:85,almostAlways:95}[residence.sleepElsewhereFrequency]||5;
     const alternatives=ordered.filter(([key,room])=>key!==preferredSleepRoom&&['living','rest'].includes(room.type||key)&&roomAllowsCharacter(c,home,room));
     const seed=hash(`${c.id}:${home.id}:${dayKey(night)}:sleep-elsewhere`);
     if(alternatives.length&&seed%100<frequency)return alternatives[seed%alternatives.length][0];

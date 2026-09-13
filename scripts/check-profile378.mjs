@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {profileExporter,saveNativeProfile} from '../profile-document-export.js';
+const bytes=Buffer.alloc(120000,123),base64=bytes.toString('base64'),canvas={toDataURL:()=>`data:image/png;base64,${base64}`};
+const parts=[];let saved;
+const plugin={appendImage:async p=>{assert(p.data.length<=49152);assert.equal(p.offset,parts.join('').length);parts.push(p.data);return {token:'export'}},savePdf:async p=>{saved=p;return {cancelled:false}}};
+assert.equal(profileExporter({isNativePlatform:()=>true,getPlatform:()=> 'ios',Plugins:{IOSProfileExport:plugin}}),plugin);
+await saveNativeProfile(plugin,canvas,'profile.pdf','pdf','ios');assert.equal(parts.join(''),base64);assert.deepEqual(saved,{filename:'profile.pdf',token:'export'});
+let cancelled=false;
+await assert.rejects(()=>saveNativeProfile({...plugin,appendImage:async p=>{if(p.offset)throw Error('network');return {token:'failed'}},cancelImage:async p=>{assert.equal(p.token,'failed');cancelled=true}},canvas,'profile.png','png','ios'),/network/);assert(cancelled);
+console.log('PASS iOS profile exporter selection, bounded ordered data, exact reconstruction and failure cleanup');

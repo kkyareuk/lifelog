@@ -908,7 +908,7 @@ function normalizeHomes(x){
         isPrimary:Boolean(item.isPrimary),
         sleepRoomId:item.sleepRoomId==="__none__"?"__none__":homeRooms[item.sleepRoomId]?String(item.sleepRoomId):(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]||""),
         sleepElsewhere:item.sleepElsewhere===true,
-        sleepElsewhereFrequency:["rare","sometimes","often"].includes(item.sleepElsewhereFrequency)?item.sleepElsewhereFrequency:"rare",
+        sleepElsewhereFrequency:["rare","sometimes","often","frequent","high","mostly","almostAlways"].includes(item.sleepElsewhereFrequency)?item.sleepElsewhereFrequency:"rare",
         sourceRelationshipId:String(item.sourceRelationshipId||"")
       });
     });

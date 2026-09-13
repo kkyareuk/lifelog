@@ -1,6 +1,6 @@
 {
-  "request": "2026-09-13-build377-isolated-ipad-startup",
-  "deviceFamily": "iPad",
-  "purpose": "Compile and launch cumulative UI and furniture fixes on iPhone and iPad; no purchase",
+  "request": "2026-09-13-build378-profile-export-scroll",
+  "deviceFamily": "iPhone",
+  "purpose": "Internal validation only: compile iOS file export and verify startup. No App Store submission.",
   "appStoreUpload": false
 }

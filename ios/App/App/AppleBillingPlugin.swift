@@ -122,6 +122,90 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
 @objc(DrawerBridgeViewController)
 class DrawerBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(IOSProfileExportPlugin())
         if #available(iOS 15.0, *) { bridge?.registerPluginInstance(AppleBillingPlugin()) }
+    }
+}
+
+// File export uses the system share sheet on both iPhone and iPad. Bounded
+// chunks avoid retaining a full document in a single Capacitor call.
+@objc(IOSProfileExportPlugin)
+public class IOSProfileExportPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "IOSProfileExportPlugin"
+    public let jsName = "IOSProfileExport"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "appendImage", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "cancelImage", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "savePng", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "savePdf", returnType: CAPPluginReturnPromise)
+    ]
+    private var token = ""
+    private var bytes = Data()
+    private var offset = 0
+    private var exporting = false
+    @objc func appendImage(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            guard !self.exporting, let text = call.getString("data"), text.count <= 49152,
+                  let chunk = Data(base64Encoded: text), let position = call.getInt("offset") else { call.reject("INVALID_IMAGE_CHUNK"); return }
+            if position == 0 { self.token = UUID().uuidString; self.bytes = Data(); self.offset = 0 }
+            guard position == self.offset, position == 0 || call.getString("token") == self.token,
+                  self.bytes.count + chunk.count <= 32 * 1024 * 1024 else { call.reject("IMAGE_CHUNK_LIMIT"); return }
+            self.bytes.append(chunk); self.offset += text.count
+            call.resolve(["token": self.token])
+        }
+    }
+    @objc func cancelImage(_ call: CAPPluginCall) {
+        DispatchQueue.main.async {
+            if call.getString("token") == self.token { self.bytes = Data(); self.token = ""; self.offset = 0 }
+            call.resolve()
+        }
+    }
+    @objc func savePng(_ call: CAPPluginCall) { export(call, pdf: false) }
+    @objc func savePdf(_ call: CAPPluginCall) { export(call, pdf: true) }
+    private func export(_ call: CAPPluginCall, pdf: Bool) {
+        DispatchQueue.main.async {
+            guard !self.exporting, !self.token.isEmpty, call.getString("token") == self.token,
+                  let presenter = self.bridge?.viewController else { call.reject("EXPORT_UNAVAILABLE"); return }
+            self.exporting = true
+            let data = self.bytes
+            self.bytes = Data(); self.token = ""; self.offset = 0
+            let name = URL(fileURLWithPath: call.getString("filename") ?? "profile").lastPathComponent
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    guard let image = UIImage(data: data), image.size.width > 0 else { throw NSError(domain: "ProfileExport", code: 1) }
+                    let folder = FileManager.default.temporaryDirectory.appendingPathComponent("profile-" + UUID().uuidString)
+                    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                    let file = folder.appendingPathComponent(name)
+                    if pdf {
+                        let page = CGRect(x: 0, y: 0, width: 595, height: 842)
+                        let width: CGFloat = 547, height = image.size.height * width / image.size.width
+                        let renderer = UIGraphicsPDFRenderer(bounds: page)
+                        try renderer.writePDF(to: file) { context in
+                            for index in 0..<Int(ceil(height / 794)) {
+                                context.beginPage()
+                                context.cgContext.saveGState()
+                                context.cgContext.clip(to: CGRect(x: 24, y: 24, width: width, height: 794))
+                                image.draw(in: CGRect(x: 24, y: 24 - CGFloat(index) * 794, width: width, height: height))
+                                context.cgContext.restoreGState()
+                            }
+                        }
+                    } else { try data.write(to: file, options: .atomic) }
+                    DispatchQueue.main.async {
+                        let sheet = UIActivityViewController(activityItems: [file], applicationActivities: nil)
+                        sheet.popoverPresentationController?.sourceView = presenter.view
+                        sheet.popoverPresentationController?.sourceRect = CGRect(x: presenter.view.bounds.midX, y: presenter.view.bounds.midY, width: 1, height: 1)
+                        sheet.completionWithItemsHandler = { _, completed, _, error in
+                            self.exporting = false
+                            try? FileManager.default.removeItem(at: folder)
+                            if let error = error { call.reject("EXPORT_FAILED", nil, error) }
+                            else { call.resolve(["cancelled": !completed]) }
+                        }
+                        presenter.present(sheet, animated: true)
+                    }
+                } catch {
+                    DispatchQueue.main.async { self.exporting = false; call.reject("EXPORT_FAILED", nil, error) }
+                }
+            }
+        }
     }
 }
