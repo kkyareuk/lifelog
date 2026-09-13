@@ -146,7 +146,13 @@ while(moduleQueue.length){
   const name=moduleQueue.shift();
   if(visitedModules.has(name))continue;
   visitedModules.add(name);
-  const moduleUrl=new URL(name,output),source=await readFile(moduleUrl,"utf8");
+  const moduleUrl=new URL(name,output);
+  const originalSource=await readFile(moduleUrl,"utf8");
+  // Native packaging also discovers newer modules. Give unversioned imports
+  // the same identity in web output without changing the working source.
+  const source=originalSource.replace(/((?:from\s*|import\s*\(\s*|import\s+)["'])(\.[^"'?]+\.js)(["'])/g,
+    (_all,prefix,path,quote)=>`${prefix}${path}?v=${expectedModuleCache}${quote}`);
+  if(source!==originalSource)await writeFile(moduleUrl,source);
   for(const specifier of relativeImports(source)){
     const importedUrl=new URL(specifier,moduleUrl);
     if(importedUrl.pathname.endsWith(".js")&&importedUrl.searchParams.get("v")!==expectedModuleCache){
