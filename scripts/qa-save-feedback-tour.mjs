@@ -22,6 +22,7 @@ try{
  const persisted=await page.evaluate(async()=>{const g=await import('/state.js?v=20260909dev305');return g.state.characters[g.state.activeId]?.discovery});assert(persisted&&persisted.answered?.includes('dilemma-queue-gap'),JSON.stringify(persisted));
  console.log('PASS all 5 reported queue-gap choices save and survive reload');
  await page.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.DrawerVillageNavigation.go('settings')});await page.waitForTimeout(200);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+ assert(await page.locator('.feedback-card').evaluate(e=>e.previousElementSibling?.textContent.includes('함께 만든 서랍마을')),'Inquiry immediately follows community credits');
  await page.getByRole('button',{name:'익명 문의',exact:true}).click();assert(await page.getByRole('heading',{name:'익명 문의',exact:true}).isVisible());assert.equal(await page.locator('dialog[open] a[href^="mailto:"]').count(),0);await page.locator('dialog[open]').getByRole('button',{name:'닫기',exact:true}).click();
  await page.locator('[data-settings-pane="support"]').click();await page.locator('[data-intro-tour]').click();await page.waitForTimeout(250);
  assert(await page.locator('.intro-tour').isVisible());await page.screenshot({path:resolve(out,useWebKit?'tour-webkit.png':'tour-chrome.png')});const box=await page.locator('.intro-tour').boundingBox();assert(box.x>=0&&box.y>=0&&box.x+box.width<=403&&box.y+box.height<=821,JSON.stringify(box));

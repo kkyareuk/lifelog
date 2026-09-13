@@ -1,4 +1,4 @@
-// Approved public display data only; refreshed from the public credits endpoint.
+// Public roster plus creator-reviewed additions scoped to internal build 380. No account or payment data.
 export const SUPPORTER_CREDITS={
   "version": 1,
   "updatedAt": "2026-09-13",
@@ -45,5 +45,38 @@ export const SUPPORTER_CREDITS={
       "weight": 1,
       "seconds": 5
     }
-  ]
+  ],
+  "internalPreview": {
+    "build": 380,
+    "entries": [
+      {
+        "id": "ca7d67bb-9d23-4c9a-b9af-ed76e963cedf",
+        "name": "모리모",
+        "visibility": "named",
+        "color": "#594b3f",
+        "color2": "#594b3f",
+        "font": "default",
+        "effect": "plain",
+        "background": "none",
+        "animate": false,
+        "size": 18.1,
+        "weight": 1,
+        "seconds": 5
+      },
+      {
+        "id": "b521d412-1201-40b6-ba0c-5c987fdeac33",
+        "name": "스토",
+        "visibility": "named",
+        "color": "#594b3f",
+        "color2": "#594b3f",
+        "font": "default",
+        "effect": "plain",
+        "background": "none",
+        "animate": false,
+        "size": 18.2,
+        "weight": 1,
+        "seconds": 5
+      }
+    ]
+  }
 };
