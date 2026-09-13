@@ -35,3 +35,7 @@ Added two supporters to the test credits. Moved Anonymous inquiry below Together
 <ja-JP>
 テスト版クレジットに応援者2名を追加しました。匿名のお問い合わせを「みんなで作る引き出し村」の下へ移動しました。家具配置後に画面がずれる問題とシャワーの場所選びを修正しました。これまでの保存・生活ログ・ヘルプの改善も含みます。
 </ja-JP>
+
+## Deployment evidence
+
+Android APK/AAB built successfully; signed APK reports1.0.331/code380 and contains the changed credit/settings assets. Google Play internal release282 verified "provided to internal testers" September13 22:03 KST. TestFlight run34758674382 succeeded; Apple accepted internal-only380, no review submitted. Apple build6ccb509a-2820-4f19-94ae-0a7710e6b23b finished processing and UI confirmed Ready to Test with existing internal group 나만 테스트 (1 tester). Encryption questionnaire was answered consistently with379; no cryptographic implementation/dependency changes in the release diff. Test instructions saved. App source9adfeb7 is pushed to dev; no appmain promotion.
