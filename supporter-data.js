@@ -1,4 +1,4 @@
-// Public roster plus creator-reviewed additions scoped to release build 382. No account or payment data.
+// Public roster plus creator-reviewed additions scoped to release build 385. No account or payment data.
 export const SUPPORTER_CREDITS={
   "version": 1,
   "updatedAt": "2026-09-13",
@@ -47,7 +47,7 @@ export const SUPPORTER_CREDITS={
     }
   ],
   "internalPreview": {
-    "build": 382,
+    "build": 385,
     "entries": [
       {
         "id": "ca7d67bb-9d23-4c9a-b9af-ed76e963cedf",

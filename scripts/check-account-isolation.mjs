@@ -44,7 +44,7 @@ await callback({uid:'B',email:'b@test'});
 assert.equal(game.state.order.length,0,'New account must not inherit A');
 game.resetAll();
 const b1=game.createCharacter(),b2=game.createCharacter();
-game.save(true,false);
+await game.save(true,false);
 await auth.logout();await callback({uid:'A',email:'a@test'});
 assert.deepEqual(game.state.order,['a'],'A must not receive B characters');
 assert(!game.state.characters[b1]&&!game.state.characters[b2]);
@@ -68,7 +68,7 @@ await Promise.resolve();await Promise.resolve();
 const uploadTransition=callback({uid:'B',email:'b@test'});
 release();await Promise.all([staleUpload,uploadTransition]);hold=null;
 assert(!writes.slice(before).some(write=>write.data.character||write.data.state||write.data.gameState),'Account change must cancel a pending state upload');
-const created=game.createCharacter();game.save(true,false);
+const created=game.createCharacter();await game.save(true,false);
 assert.equal(await auth.upload({silent:true}),true,'Normal same-account upload still succeeds');
 assert(writes.some(write=>write.path.includes('/B/')&&JSON.stringify(write.data).includes(created)));
 assert(!writes.some(write=>write.path.includes('/B/')&&write.data.character?.id==='a'));
@@ -84,7 +84,9 @@ assert.equal(await auth.download(),true,'Manual cloud restore must succeed after
 assert.equal(accountStorage.getItem('drawer-village-game-v1').includes('복원한 A'),true);
 assert(memory.get('drawer-account:B:drawer-village-game-v1'),'B save remains present after A restoration');
 await auth.logout();
-const guestFirst=game.createCharacter();game.state.characters[guestFirst].name='첫 로그인 전 캐릭터';game.save(true,false);
+// Independent first-login case needs capacity for a new account copy.
+storageLimit=Infinity;
+const guestFirst=game.createCharacter();game.state.characters[guestFirst].name='첫 로그인 전 캐릭터';await game.save(true,false);
 assert.equal(accountStorage.scope,'guest');
 assert.equal(await auth.login(),true);
 assert.equal(accountStorage.scope,'C');

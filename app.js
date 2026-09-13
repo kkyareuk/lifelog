@@ -5869,6 +5869,8 @@ function giftOptions(character,target,now){
     ja:{buyTitle:`${item.name}を買いに行っているところ`,buyDesc:`${target.name}に贈る${item.name}を自分で確かめ、包装を頼みました。`,giveTitle:`${target.name}に${item.name}を渡しているところ`,giveDesc:`${target.name}の反応を見ながら、自分で選んだ${item.name}を渡しました。`,receiveTitle:`${character.name}から${item.name}を受け取っているところ`,receiveDesc:`包みを開けて${item.name}を確認し、${character.name}にお礼を言いました。`}
   }}));
 }
+function mailStorageNotice(error){showToast(error?.name==="QuotaExceededError"?saveFailureMessage(state.uiLanguage||"ko"):error.message)}
+function markContactMail(id,patch){try{contactMailbox.mark(id,patch)}catch(error){mailStorageNotice(error)}}
 function openDailyCharacterQuestion(question,now=new Date()){
   const character=state.characters[question.characterId];if(!character)return;
   const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=state.characters[question.targetId]||targets[Math.floor(Math.random()*targets.length)];
@@ -5880,19 +5882,22 @@ function openDailyCharacterQuestion(question,now=new Date()){
   const basePrompt=kind==="gift"?copy.gift(target.name):copy[kind];
   const prompt=question.mailBody||characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
   if(!question.mailId){const mailId='daily:'+question.day+':'+question.characterId;const extra={mailOwner:localStorage.scope,mailId,scheduledAt:now.toISOString(),mailTitle:prompt,mailBody:prompt,characterId:character.id,mode:'question',questionKind:kind,targetId:question.targetId||'',senderImage:character.icon||character.photo||'',questionOptions:options};contactMailbox.record([{extra}]);question={...question,mailId,mailBody:prompt};setDailyQuestion(question)}
-  if(question.mailId){const letter=contactMailbox.get(question.mailId);if(letter&&!letter.extra?.questionOptions)contactMailbox.mark(question.mailId,{extra:{...letter.extra,questionOptions:options}});}
+  if(question.mailId){const letter=contactMailbox.get(question.mailId);if(letter&&!letter.extra?.questionOptions)markContactMail(question.mailId,{extra:{...letter.extra,questionOptions:options}});}
   const dialog=document.createElement("dialog"),image=character.icon||character.photo;
   dialog.className="character-question-dialog mail-letter";
   dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<button value="later" class="mail-letter-close" aria-label="${copy.later}">×</button><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
   const decline=document.createElement('button');decline.type='button';decline.dataset.characterQuestionDecline='';decline.textContent=({ko:'이번에는 하지 않기',en:'Not this time',ja:'今回はしない'})[language]||'이번에는 하지 않기';
-  decline.onclick=()=>{if(question.mailId)contactMailbox.mark(question.mailId,{answered:true,read:true,declined:true});if(state.dailyQuestion?.mailId===question.mailId)setDailyQuestion({...state.dailyQuestion,answered:true});dialog.close('declined');showToast(({ko:'이번에는 하지 않기로 했어요.',en:'They decided not to do it this time.',ja:'今回はしないことにしました。'})[language]);render();};
+  decline.onclick=()=>{try{if(question.mailId)contactMailbox.mark(question.mailId,{answered:true,read:true,declined:true});if(state.dailyQuestion?.mailId===question.mailId)setDailyQuestion({...state.dailyQuestion,answered:true});dialog.close('declined');showToast(({ko:'이번에는 하지 않기로 했어요.',en:'They decided not to do it this time.',ja:'今回はしないことにしました。'})[language]);render();}catch(error){mailStorageNotice(error)}};
   dialog.querySelector('.character-question-options').append(decline);
-  dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=()=>{
-    const option=options[Number(button.dataset.characterQuestionOption)];
-    if(scheduleCharacterChoice(option)){
+  dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=async()=>{
+    const owner=localStorage.scope,option=options[Number(button.dataset.characterQuestionOption)],buttons=[...dialog.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);
+    try{
+      if(!scheduleCharacterChoice({...option,mailId:question.mailId}))throw Error(({ko:'이 선택에 필요한 캐릭터나 물품이 없어졌어요. 다른 선택지를 골라 주세요.',en:'A character or item needed for this choice is no longer available. Choose another option.',ja:'この選択に必要な人物や品物が見つかりません。別の選択肢を選んでください。'})[language]);
+      if(!await save(true))throw Error(saveFailureMessage(language));
+      if(owner!==localStorage.scope){dialog.close();return}
       if(question.mailId)contactMailbox.mark(question.mailId,{answered:true,read:true});
       dialog.close("answered");showToast(copy.saved);render();
-    }
+    }catch(error){showToast(error?.name==='QuotaExceededError'?saveFailureMessage(language):error.message);buttons.forEach(b=>b.disabled=false)}
   });
   dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();
 }
@@ -6208,16 +6213,16 @@ function openContactMail(id){
   // Received envelopes remain readable after the sender moves or is removed.
   // Interactive answers require the original local participants to still exist.
   if(sender&&e.mode==="question"&&!letter.answered){
-    contactMailbox.mark(id,{read:true});
+    markContactMail(id,{read:true});
     const now=new Date();
     const question={day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:e.characterId,targetId:e.targetId||"",kind:e.questionKind||"everyday",shown:true,answered:false};
-    setDailyQuestion({...question,mailId:id});
+    try{setDailyQuestion({...question,mailId:id})}catch(error){mailStorageNotice(error)}
     openDailyCharacterQuestion({...question,mailId:id,mailBody:letter.body});return;
   }
   const dialog=document.createElement("dialog");dialog.className="character-question-dialog mail-letter";
   const image=sender?.icon||sender?.photo||e.senderImage||"";
   dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
-  dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();contactMailbox.mark(id,{read:true});
+  dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();markContactMail(id,{read:true});
 }
 const notificationOpenQueue=createNotificationOpenQueue({
   ready:()=>{const auth=window.ParallelCityAuth?.getInfo?.();return document.visibilityState!=='hidden'&&document.documentElement.dataset.drawerRendered==='1'&&!document.querySelector('.village-account-loading')&&!!auth?.ready&&!auth.startupSyncing},

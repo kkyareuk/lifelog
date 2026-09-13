@@ -43,7 +43,7 @@ export function filterDictionary(items,{kind='',search='',sort='default',allowed
   return result;
 }
 function matches(){return filterDictionary(entries(),ui)}
-function tile(item){return `<button type="button" class="dictionary-tile" data-dict-open="${esc(item.id)}" data-kind="${item.kind}">${itemArt(item,cfg.icons[item.kind])}<b>${esc(item.name)}</b>${ratingStars(item.rating)}</button>`}
+function tile(item){return `<button type="button" class="dictionary-tile" data-dict-open="${esc(item.id)}" data-kind="${item.kind}">${itemArt(item,cfg.icons[item.kind])}<b>${esc(item.name)}</b>${item.giftFrom?`<small class="dictionary-gift-from">${esc(({ko:item.giftFrom+'에게서 받은 선물',en:'Gift from '+item.giftFrom,ja:item.giftFrom+'からの贈り物'})[state.uiLanguage]||item.giftFrom+'에게서 받은 선물')}</small>`:''}${ratingStars(item.rating)}</button>`}
 function results(){
   const items=matches();
   return `${items.slice(0,ui.limit).map(tile).join('')}${canAdd()?`<button type="button" class="dictionary-tile dictionary-add" data-dict-add><span>＋</span><b>${tr('물품 추가하기')}</b></button>`:''}${items.length>ui.limit?`<button type="button" class="dictionary-more" data-dict-more>${tr('더 보기')} (${ui.limit} / ${items.length})</button>`:''}${!items.length?`<p class="dictionary-no-results">${tr('해당하는 물품이 없어요.')}</p>`:''}`;

@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createContactMailbox} from '../notification-mail.js';
+const data=new Map();let failing=false;
+globalThis.localStorage={get length(){return data.size},key:i=>[...data.keys()][i],getItem:k=>data.get(k)??null,setItem(k,v){if(failing)throw new DOMException('full','QuotaExceededError');data.set(k,String(v))},removeItem:k=>data.delete(k)};
+globalThis.document={addEventListener(){},querySelector(){return null}};globalThis.window={addEventListener(){},dispatchEvent(){}};
+const game=await import('../state.js?v=20260909dev305');const id=game.createCharacter();await game.save(true,false);
+game.setDailyQuestion({characterId:id,day:'2026-09-14',mailId:'question'});await game.save(true,false);
+const before=JSON.stringify(game.state.scheduledChoices||[]),reset=game.state.characters[id].timelineResetAt;
+failing=true;assert.throws(()=>game.scheduleCharacterChoice({characterId:id,mailId:'question',kind:'everyday'}));assert.equal(JSON.stringify(game.state.scheduledChoices||[]),before);assert.equal(game.state.characters[id].timelineResetAt,reset);assert.equal(game.state.dailyQuestion.answered,false);
+failing=false;const choice=game.scheduleCharacterChoice({characterId:id,mailId:'question',kind:'everyday'});assert.equal(game.scheduleCharacterChoice({characterId:id,mailId:'question',kind:'everyday'}),choice);assert.equal(game.state.scheduledChoices.filter(c=>c.mailId==='question').length,1);await game.save(true,false);
+const storage={...globalThis.localStorage,scope:'guest'},mail=createContactMailbox(storage);mail.record([{extra:{mailOwner:'guest',mailId:'letter',scheduledAt:new Date().toISOString(),mailBody:'Hello'}}]);
+failing=true;assert.throws(()=>mail.mark('letter',{read:true}));assert.equal(mail.get('letter').read,false);assert.equal(mail.due().length,1);failing=false;mail.mark('letter',{read:true});assert.equal(mail.get('letter').read,true);
+console.log('PASS failed choice rolls back, retry deduplicates, mailbox remains readable after quota failure, retry persists');

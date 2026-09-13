@@ -1636,6 +1636,7 @@ export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1
   return true;
 }
 export function setDailyQuestion(question){
+  const previous=state.dailyQuestion;
   state.dailyQuestion=question&&typeof question==="object"?{
     day:String(question.day||""),minute:Math.max(600,Math.min(1079,Number(question.minute)||600)),
     characterId:state.characters[question.characterId]?String(question.characterId):"",
@@ -1643,11 +1644,12 @@ export function setDailyQuestion(question){
     kind:String(question.kind||"everyday"),shown:Boolean(question.shown),answered:Boolean(question.answered)
     ,mailId:String(question.mailId||"")
   }:null;
-  writeChoiceDelta(localStorage,state);
+  try{writeChoiceDelta(localStorage,state)}catch(error){state.dailyQuestion=previous;recordSaveFailure(error,"mail-question");throw error}
   save(false,false);
   return state.dailyQuestion;
 }
 export function scheduleCharacterChoice(choice){
+  if(choice?.mailId){const previous=(state.scheduledChoices||[]).find(item=>item.mailId===choice.mailId);if(previous)return previous.id;}
   const character=state.characters[choice?.characterId];
   if(!character)return null;
   const targetId=state.characters[choice.targetId]&&String(choice.targetId)!==String(character.id)?String(choice.targetId):"";
@@ -1655,17 +1657,18 @@ export function scheduleCharacterChoice(choice){
   const itemKind=String(choice.itemKind||""),itemId=String(choice.itemId||"");
   if(itemId&&!state.catalog?.[itemKind]?.some(item=>item.id===itemId))return null;
   const scheduled={
-    id:uid(),characterId:character.id,targetId,kind:String(choice.kind||"everyday"),
+    id:uid(),mailId:String(choice.mailId||""),characterId:character.id,targetId,kind:String(choice.kind||"everyday"),
     startAt:Number(choice.startAt)||Date.now(),buyAt:Number(choice.buyAt)||0,giveAt:Number(choice.giveAt)||0,
     itemKind,itemId,placeType:String(choice.placeType||""),copy:choice.copy&&typeof choice.copy==="object"?choice.copy:{},settledAt:0
   };
-  state.scheduledChoices=Array.isArray(state.scheduledChoices)?state.scheduledChoices:[];
+  const before={choices:state.scheduledChoices,actor:character.timelineResetAt,target:state.characters[targetId]?.timelineResetAt,answered:state.dailyQuestion?.answered};
+  state.scheduledChoices=Array.isArray(state.scheduledChoices)?[...state.scheduledChoices]:[];
   state.scheduledChoices.push(scheduled);
   state.scheduledChoices=state.scheduledChoices.slice(-120);
   character.timelineResetAt=Date.now();
   if(targetId)state.characters[targetId].timelineResetAt=Date.now();
   if(state.dailyQuestion)state.dailyQuestion.answered=true;
-  writeChoiceDelta(localStorage,state);
+  try{writeChoiceDelta(localStorage,state)}catch(error){state.scheduledChoices=before.choices;character.timelineResetAt=before.actor;if(targetId)state.characters[targetId].timelineResetAt=before.target;if(state.dailyQuestion)state.dailyQuestion.answered=before.answered;recordSaveFailure(error,"mail-answer");throw error}
   save();
   return scheduled.id;
 }
