@@ -18,3 +18,13 @@ Announcement audit: mailDispatches last mass mail340; common villageAnnouncement
 Android store notes entered in ko-KR/en-US/ja-JP, each under500characters. iOS existing Korean/English localizations updated; Japanese announcement copy included. New release/announcement copy EN/JA100%, whole-app coverage not measured.
 
 Native iOS382 changes relative to tested381 are release number/request and matching credit-preview build scope only; game source remains381. Chrome/WebKit latest report regression and three-language credit checks pass. No physical iPhone claim.
+
+App Store eligible upload succeeded: Actions34760574688, source176612e211d13d29d17c8a00aa173814cc68ec0d, version1.0.332/build382, internalOnly=false, uploadAccepted=true. UI build7fb2bf6f-d638-44f9-a22e-2e59ba5ffef5 ready for submission after matching encryption response. CI status artifact initially had build=null during processing; readiness is separately confirmed in Apple UI. Review submission pending at this record.
+
+## Store submission verified
+- Google Play:381(1.0.332), production100%, prechecks completed and review in progress. Managed publishing disabled, automatic release after approval. Baseline377; no actual availability claimed.
+- App Store:1.0.332(382), submitted September13 22:54 KST, statusWaiting for Review. Submission4af331fe-17ef-42f3-8509-a0521340ad46. Automatic release after approval, existing ratings retained. Only app version included; no new IAP items.
+- Announcement dispatchupdate-351-381-20260913-v1 in progress; recipient list711. Exact completion and readback follow.
+
+## Announcement completed
+Dispatchupdate-351-381-20260913-v1:711created,711stored,0skipped,0duplicates, KO697/EN8/JA6. Every recipient/content hash verified; account-mailbox readback passed. Push notifications queued0. Resultdocs/update-mail381-result.json. Copydocs/update-announcement381.md. Final store status remains review pending, not approved/live.

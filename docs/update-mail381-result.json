@@ -1,0 +1,15 @@
+{
+  "dispatch": "update-351-381-20260913-v1",
+  "pushNotificationsQueued": 0,
+  "created": 711,
+  "existing": 0,
+  "skipped": 0,
+  "stored": 711,
+  "languages": {
+    "ko": 697,
+    "en": 8,
+    "ja": 6
+  },
+  "verified": true,
+  "completedAt": 1789307801728
+}
