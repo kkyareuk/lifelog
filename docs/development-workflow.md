@@ -31,3 +31,12 @@
 ## 개발 순서
 오류 안정화 → 개발/공개 데이터 분리 → 가구 시점·크기·앵커 규격 정리 → 작은 시뮬레이션 모듈과 회귀검사 → 첫 DLC의 작은 완결 기능 시험 → 내부 피드백 → 별도 출시 결정.
 직업·재산팩은 후보로 두되 이 문서가 DLC 제작/가격 확정을 의미하지 않는다. 800명 처리 비용, Firestore 경합/읽기 비용은 실측 없이 가볍다고 판단하지 않는다.
+
+## 비공개 배포 완료
++- URL: https://drawer-village-private-dev.riwoo-03.chatgpt.site
++- Site: appgprj_6aa5f507f1b48191900795a34f6927b0, 소유자 전용 private operation 검증 후 배포 성공.
++- 로컬 체크아웃: C:/Users/Public/drawer-village-private-dev (별도 Git 저장소).
++- 게임 소스 e691254, 개발 Site 소스6145e7c9178ed815bcf5facee091e4e5f1ed3831. 앱378 유지.
++- 운영 구성 제거·결제 비활성·HTML 진입점 CSP 선적용·외부 API/폼 차단·DLC 기본off 검사 통과. 전체 멀티나 결제 테스트 성공을 의미하지 않음.
++- 다음 수정은 같은 Site project_id를 유지하고 준비/검사 후 소유자 전용으로 재배포한다. GitHub dev push만으로 이 사이트가 자동 갱신되지는 않는다.
++- Windows bash packager 실행 문제는 동일 prepare-site-build.cjs 검증 후 native tar로 패키징해 해결. 배포 파일에 개인 진단/백업은 포함하지 않음.
