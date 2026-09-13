@@ -30,3 +30,6 @@ Birthday gatherings now respect town travel restrictions. Fixed bed depth orderi
 <ja-JP>
 誕生日の集まりが村の移動制限に従うよう修正しました。ベッドの前後表示と穏やかな行動中の稲妻を修正しました。家具使用中も名前と行動を家具の下に表示します。380のクレジット・不具合修正も含みます。
 </ja-JP>
+
+## Deployment
+Android release APK/AAB1.0.332/381 built and signed; Google Play internal release283 verified provided to internal testers. Sourcebcc1742. TestFlight34759565509 succeeded, uploadAccepted=true/internalOnly=true/submittedForReview=false. Apple build86274164-cf8f-4d1e-b285-09a7abdf8606 processed, UI verified Testing with existing 나만 테스트 internal group (one invite), test instructions saved. Encryption answers consistent with unchanged prior implementation. Latest-build credits regression also passed.

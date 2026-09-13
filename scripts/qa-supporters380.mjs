@@ -28,7 +28,7 @@ try{
  await page.evaluate(async()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());const url=performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name;window.game=await import(url);window.views=await import(url.replace('/state.js?','/views.js?'));window.credits=await import(url.replace('/state.js?','/supporter-credits.js?'));game.createCharacter(10);game.state.activeTab='settings';game.state.settingsPane='home';views.renderApp(game.state)});
 
  for(const lang of ['ko','en','ja']){
-  await page.evaluate(lang=>{window.DRAWER_VILLAGE_VERSION_CODE='380';game.state.uiLanguage=lang;location.hash='tab=credits'},lang);
+  await page.evaluate(async lang=>{window.DRAWER_VILLAGE_VERSION_CODE=String((await import('/supporter-data.js?v=20260909dev305')).SUPPORTER_CREDITS.internalPreview.build);game.state.uiLanguage=lang;location.hash='tab=credits'},lang);
   await page.waitForSelector('.supporter-page');
   await page.evaluate(()=>credits.openSupporterCredits({remote:false}));
   for(const name of ['제논','Q','주검','모리모','스토'])assert(await page.locator('.supporter-name').filter({hasText:name}).count()>0);
