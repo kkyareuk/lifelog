@@ -3427,7 +3427,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] :is(.room-drag-handle,.room-resize-handle){width:28px;min-width:28px;height:28px;min-height:28px;font-size:15px}
   html.native-app[data-active-tab="home"] .home-person{max-width:86%}
   html.native-app[data-active-tab="home"] .home-person .avatar,
-  html.native-app[data-active-tab="home"] .home-person .sprite{width:42px;height:42px}
+  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{width:42px;height:42px}
   html.native-app[data-active-tab="home"] .home-person-status{max-width:108px;padding:5px 7px}
   html.native-app[data-active-tab="home"] .home-person small{font-size:8px}
 
@@ -3705,7 +3705,7 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   html.native-app[data-active-tab="home"] .room-people{left:4px;right:4px;bottom:4px;max-height:none}
   html.native-app[data-active-tab="home"] .home-person{max-width:min(92%,160px)}
   html.native-app[data-active-tab="home"] .home-person .avatar,
-  html.native-app[data-active-tab="home"] .home-person .sprite{width:38px;height:38px}
+  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{width:38px;height:38px}
   html.native-app[data-active-tab="home"] .home-person-visual :is(.avatar,.sprite){padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:0!important}
   html.native-app[data-active-tab="home"] .home-person-visual :is(span.avatar,span.sprite){color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.6px #211710;text-shadow:0 2px 4px #0008!important}
   html.native-app[data-active-tab="home"] .home-person-status{max-width:108px;padding:5px 7px;border-radius:11px;background:#fffdf3e8!important;box-shadow:0 3px 9px #0003!important;text-align:center}
@@ -4183,12 +4183,12 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
 /* 집 방 안의 주민은 작은 지도 점이 아니라 한눈에 알아볼 수 있는 생활 아이콘으로 표시한다. */
 .room-empty-image{display:none!important}
 @media(max-width:720px),(min-width:721px) and (orientation:portrait){
-  html.native-app[data-active-tab="home"] .home-person .avatar{
+  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .avatar{
     width:54px!important;
     height:54px!important;
     flex:0 0 54px!important;
   }
-  html.native-app[data-active-tab="home"] .home-person .sprite{
+  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{
     width:62px!important;
     height:62px!important;
     flex:0 0 62px!important;
@@ -4449,8 +4449,8 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
 /* Action props describe the actual object being handled, not the generic act
    of tidying. Coffee, beans, and controllers each have their own motion. */
 .native-app :is(.scene-action-coffee-drinking,.scene-action-coffee-brewing,.scene-action-beans-organizing) :is(.native-scene-action-prop,.native-person-action-prop){filter:drop-shadow(0 7px 7px #0009)}
-.native-app .scene-action-coffee-drinking :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-sip 2.25s ease-in-out infinite}
-.native-app .scene-action-coffee-brewing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-brew 1.8s ease-in-out infinite}
+:is(.native-app,.home) :is(.scene-action-coffee-drinking,.scene-action-drinking) :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-sip 2.25s ease-in-out infinite}
+:is(.native-app,.home) :is(.scene-action-coffee-brewing,.scene-action-drink-preparing) :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-brew 1.8s ease-in-out infinite}
 .native-app .scene-action-beans-organizing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-beans-sort 1.45s ease-in-out infinite}
 .native-app .scene-action-gaming :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-game-buttons .48s steps(2,end) infinite}
 .native-app .scene-action-assistive-check :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-gear-check 2.1s ease-in-out infinite}

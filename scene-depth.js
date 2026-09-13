@@ -26,7 +26,7 @@ export function scheduleSceneDepth(){
         const prior=Number(chair.dataset.seatPull)||0,baseLeft=r.left-prior;
         const table=items.find(el=>el.dataset.furniturePlacement===chair.dataset.tableId);
         const side=chair.dataset.seatSide,sideChair=!sofa&&['left','right'].includes(chair.dataset.seatDirection);
-        const width=sofa?Math.min(64,Math.max(38,(r.width>r.height?r.width:r.height)*.45)):Math.min(60,Math.max(36,r.width*.9));
+        const width=sofa?Math.min(60,Math.max(36,(r.width>r.height?r.width:r.height)*.42)):Math.min(66,Math.max(40,r.width*.98));
         let pull=0;
         if(table&&sideChair){
           const tr=(table.querySelector('.furniture-sprite')||table).getBoundingClientRect();
@@ -39,7 +39,7 @@ export function scheduleSceneDepth(){
         const occupants=seated.filter(el=>el.dataset.seatId===person.dataset.seatId).sort((a,b)=>Number(a.dataset.seatOrder||0)-Number(b.dataset.seatOrder||0)||(a.dataset.characterId||'').localeCompare(b.dataset.characterId||''));
         const slot=occupants.indexOf(person),sideSofa=sofa&&['left','right'].includes(chair.dataset.seatDirection);
         const x=baseLeft+pull+r.width*(sofa&&!sideSofa?(slot===0?.32:.68):.5);
-        const y=r.top+r.height*(sofa?(sideSofa?(slot===0?.42:.72):.80):.66);
+        const y=sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66);
         person.dataset.seatSlot=String(slot);
         seats.push([person,(x-container.left)/container.width*100,(y-container.top)/container.height*100,width]);
         const row=bounds.find(row=>row.element===person),chairRow=bounds.find(row=>row.element===chair);

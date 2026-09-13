@@ -11,7 +11,12 @@ export function contextActions(target){
  const item=target.item||'';
  const affection={kind:'affection',companion:true,label:label('스킨십하기','Physical affection','スキンシップ')};
  if(/침대|bed/i.test(item))return [{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},affection];
- if(/소파|sofa/i.test(item))return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},affection];
+ if(/소파|sofa/i.test(item))return [
+  {kind:'rest',label:label('편하게 쉬기','Relax on the sofa','ソファでくつろぐ')},
+  {kind:'nap',label:label('낮잠 자기','Take a nap','昼寝する')},
+  {kind:'read',label:label('책 읽기','Read a book','本を読む')},
+  {kind:'relax',lifeTask:'video',label:label('영상 보기','Watch videos','動画を見る')},
+  {kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')},affection];
  if(/냉장|싱크|가스|오븐|조리/i.test(item))return [{kind:'meal',lifeTask:'simple_cook',label:label('요리하기','Cook','料理する')},{kind:'meal',label:label('식사하기','Eat','食事する')}];
  if(/식탁|dining table/i.test(item))return [{kind:'meal',label:label('여기서 밥 먹기','Eat here','ここで食事する')}];
  if(/책장|책상/i.test(item))return [{kind:'read',label:label('책 읽기','Read','読書する')},{kind:'study',label:label('공부하기','Study','勉強する')}];

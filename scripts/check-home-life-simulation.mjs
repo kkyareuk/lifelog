@@ -37,7 +37,7 @@ equal(crossing.simulation.agents.a.fromRoomKey,"living","다른 방으로 걸을
 equal(crossing.simulation.agents.a.roomKey,"study","방 사이 이동의 도착 방을 별도로 보존한다");
 equal(crossing.simulation.agents.a.phase,"walking","방 사이 이동을 순간이동하지 않고 걷기 단계로 유지한다");
 
-const oneSeat={rooms:{living:{name:"거실",furniturePlacements:[{id:"only-sofa",item:"소파",x:50,y:65}]}}};
+const oneSeat={rooms:{living:{name:"거실",furniturePlacements:[{id:"only-chair",item:"의자",x:50,y:65}]}}};
 const sharedContext={a:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"a-seat",endsAt:start+40*60_000},b:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"b-seat",endsAt:start+40*60_000}};
 const conflict=advanceHomeLifeSimulation(oneSeat,["a","b"],sharedContext,start);
 equal(Object.values(conflict.simulation.agents).filter(agent=>agent.furnitureId).length,1,"한 자리에는 한 캐릭터만 배치한다");
@@ -108,8 +108,8 @@ ok(viewsSource.includes("entry?.home&&!entry.transit")&&viewsSource.includes("!s
 ok(viewsSource.includes('is-town-conversation')&&viewsSource.includes('town-conversation-bubbles')&&cssSource.includes('@keyframes town-conversation-left'),"마을에서 마주친 두 인물이 마주 보고 대화하는 몸동작을 표시한다");
 ok(viewsSource.includes('bubble-edge-left')&&viewsSource.includes('bubble-edge-right')&&cssSource.includes('.place-people.bubble-edge-left .town-conversation-bubbles')&&cssSource.includes('background:transparent!important;background-image:none!important'),"마을 대화 말풍선의 바깥 흰 판을 제거하고 가장자리 잘림을 방지한다");
 ok(homeSimulationSource.includes("currentAgentPoint(old,now)")&&homeSimulationSource.includes("approachingInteraction:true"),"대화 상대에게 이동할 때 현재 보간 위치부터 이어 달려가 순간이동을 막는다");
-ok(viewsSource.includes("visibleAgentPoint")&&viewsSource.includes("Math.hypot(point.x-current.x,point.y-current.y)<20"),"반려생물은 걷는 사람의 현재 위치까지 피해서 이동한다");
-ok(cssSource.includes('.room-pet.home-pet-roaming{position:absolute')&&cssSource.includes('linear var(--pet-roam-delay')&&cssSource.includes('z-index:3')&&cssSource.includes('.home-life-person{--life-edge:52px')&&cssSource.includes('z-index:4'),"반려생물은 transform 기반의 연속 보행으로 움직이며 사람을 가리지 않는다");
+ok(viewsSource.includes("visibleAgentPoint")&&viewsSource.includes("petMotionPath(key,seed,occupied,Date.now(),sleeping)"),"반려생물은 걷는 사람의 현재 위치까지 피해서 이동한다");
+ok(cssSource.includes('.room-pet.home-pet-roaming{position:absolute')&&cssSource.includes('linear var(--pet-roam-delay')&&cssSource.includes('z-index:3')&&cssSource.includes('.home-life-person{--life-edge:min(82px,50%)')&&cssSource.includes('z-index:4'),"반려생물은 transform 기반의 연속 보행으로 움직이며 사람을 가리지 않는다");
 ok(simulationSource.includes("returningHome:true")&&simulationSource.includes('movementKind:"jog"')&&simulationSource.includes("집 쪽으로 천천히 이동"),"아침 조깅 복귀를 실제 이동 상태와 일치시킨다");
 ok(cssSource.includes("@keyframes town-traveler-route")&&cssSource.includes("transform:translate3d"),"마을 이동 애니메이션은 저발열 transform 경로를 사용한다");
 ok(viewsSource.includes('movementClass=e.transit')&&viewsSource.includes('native-scene-moving-badge')&&cssSource.includes('@keyframes native-scene-jog'),"관찰 화면에서도 조깅 복귀가 이동 배지와 실제 움직임으로 표시된다");

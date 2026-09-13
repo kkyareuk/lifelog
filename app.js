@@ -1296,6 +1296,17 @@ function bindFurniturePlacementEditors(){
   const toolbar=document.querySelector("[data-furniture-edit-toolbar]");
   if(!toolbar)return;
   let selected=null;
+  const positionToolbar=()=>{
+    if(!selected?.isConnected||toolbar.hidden)return;
+    toolbar.style.removeProperty('top');toolbar.style.removeProperty('bottom');
+    const box=selected.getBoundingClientRect(),viewport=window.visualViewport;
+    const top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
+    if(box.top+box.height/2>top+height/2){
+      toolbar.style.top=Math.max(top+12,box.top-toolbar.offsetHeight-12)+'px';
+      toolbar.style.bottom='auto';
+    }
+  };
+  document.querySelector('.home-page')?.addEventListener('scroll',positionToolbar,true);
   const clearSelection=()=>{
     document.querySelectorAll("[data-furniture-placement].is-selected").forEach(item=>item.classList.remove("is-selected"));
     selected=null;toolbar.hidden=true;
@@ -1316,6 +1327,7 @@ function bindFurniturePlacementEditors(){
     const destination=toolbar.querySelector('[data-furniture-move-room]');if(destination)destination.value=element.dataset.roomKey;
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
+    positionToolbar();
   };
   bindFurnitureDrag(document.querySelector('.home-page'),{getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
     const {homeId,roomKey,furniturePlacement:id}=element.dataset;
@@ -1336,6 +1348,7 @@ function bindFurniturePlacementEditors(){
     toolbarToggle.setAttribute('aria-expanded',String(!collapsed));
     toolbarToggle.setAttribute('aria-label',collapsed?copy.expand:copy.collapse);
     toolbarToggle.textContent=collapsed?'＋':'−';
+    positionToolbar();
   };
   toolbar.querySelectorAll("[data-furniture-command]").forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();
@@ -2042,6 +2055,14 @@ function openHomeOccupantSheet(button){
   dismiss.onclick=close;
   document.body.append(dismiss);
   document.body.append(dialog);
+  // Anchor the information card next to its resident, falling below/above on
+  // narrow screens, while keeping the whole card inside the visible viewport.
+  const anchor=button.getBoundingClientRect(),vw=window.visualViewport?.width||innerWidth,vh=window.visualViewport?.height||innerHeight;
+  const width=Math.min(320,vw-24);dialog.style.width=width+'px';dialog.style.right='auto';dialog.style.bottom='auto';
+  const height=dialog.getBoundingClientRect().height;
+  const beside=anchor.right+12+width<=vw-12;
+  dialog.style.left=Math.max(12,Math.min(vw-width-12,beside?anchor.right+12:anchor.left))+'px';
+  dialog.style.top=Math.max(12,Math.min(vh-height-12,beside?anchor.top:anchor.bottom+height+12<=vh?anchor.bottom+8:anchor.top-height-8))+'px';
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
   if(character)dialog.querySelector("[data-open-command]")?.addEventListener("click",()=>{close();openDirectCommandDialog(character,sleeping)});

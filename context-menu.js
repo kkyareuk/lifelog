@@ -7,6 +7,9 @@ export function installContextMenu({world,execute,enabled,openHome}){
   if(!enabled()||e.target.closest('dialog,aside,header,nav,[data-context-menu]'))return;
   if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>12)return;
   const el=e.target.closest('[data-furniture-placement],[data-home-occupant="character"],[data-home-person],[data-person],.room[data-room-key],[data-place],[data-home-map]');if(!el)return;
+  // Home residents first open their current-activity card; its command button
+  // opens activities. Do not swallow that handler in the capture phase.
+  if(el.matches('[data-home-occupant="character"],[data-home-person]'))return;
   if(e.target.closest('button')&&e.target.closest('button')!==el)return;
   const info=world(),w=info.state,lang=w.uiLanguage||'ko',copy=words[lang]||words.ko;
   let target,title;

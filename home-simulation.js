@@ -94,6 +94,7 @@ const SCENE_FURNITURE=[
 ];
 export function furniturePatternForScene(scene){
   const text=`${scene?.title||""} ${scene?.desc||""}`;
+  if(/(?:음료|주스|커피|차를).{0,20}(?:준비|만들|우리|내리)|(?:준비|만들).{0,20}(?:음료|주스)/.test(scene?.title||""))return /조리대|커피|에스프레소|티 세트|냉장고/;
   return SCENE_FURNITURE.find(entry=>entry.scene.test(text))?.item||null;
 }
 
