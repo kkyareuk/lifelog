@@ -19,4 +19,4 @@ Common source affects web/Android/iOS; Android internal deployment only. Web sit
 KO/EN/JA new copy and release notes complete (100% changed scope; whole-app coverage not remeasured).
 
 ## Deployment
-392 uploaded to internal release289; processing/rollout confirmation pending.
+2026-09-14 20:32 KST: Play Console confirms 392 (1.0.340), 내부 테스터에게 제공됨, publication 20:31, release289. No supported-device losses; existing missing deobfuscation-file warning only. Implementation 2646b9e pushed to dev.
