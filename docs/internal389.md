@@ -23,7 +23,8 @@
 - drawer-village-1.0.337-389.aab (71,241,463 bytes)
 - SHA256: 0DE0EB4A971D7A5DDDDAAD6F05D5C20C3B8A755F23AB39D2E88B95D8C0BAB4E2
 - Play Console baseline verified: internal 386 / 1.0.334, production 387 / 1.0.335.
-- Internal release 286 upload in progress; availability will be recorded after rollout.
+- Internal release 286 is available to internal testers, verified in Play Console on 2026-09-14 at 15:03 KST. Code 389 / 1.0.337 is the latest release. All three release-note languages accepted. No device support loss; only nonblocking missing deobfuscation-map warning (minification disabled).
+- Implementation commit d21fab4 pushed to dev. Production was not promoted; game main remains unchanged under the development workflow.
 
 ## Release notes
 
