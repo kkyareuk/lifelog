@@ -173,7 +173,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const sofas=placements.filter(item=>item.roomKey===roomKey&&item.item==='소파'&&(occupied.get(item.id)||0)<2);
     const resting=/쉬|휴식|relax|resting|休む|休ん/.test(scene.title||'');
     if((watching||resting)&&!pinned&&sofas.length)candidates=sofas;
-    if(context.interactionId&&!pinned&&sofas.length)candidates=sofas;
+    if(context.interactionId&&!scene.sharedFurnitureKey&&!pinned&&sofas.length)candidates=sofas;
     if(sleeping){
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
@@ -234,7 +234,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if(agents.some(agent=>agent.roomKey!==roomKey))return;
     // Partners using one sofa stay in its two seats; social animation must not
     // send them back to a free-standing meeting point.
-    if(agents.every(agent=>agent.item==='소파')&&agents[0].furnitureId===agents[1].furnitureId){agents.forEach(agent=>{agent.interactionId=interactionId;agent.approachingInteraction=false});return}
+    if(members.every(id=>contexts[id]?.scene?.sharedFurnitureKey)||agents.every(agent=>agent.item==='소파')&&agents[0].furnitureId===agents[1].furnitureId){agents.forEach(agent=>{agent.interactionId=interactionId;agent.approachingInteraction=false});return}
     const anchor=safeHomePoint(clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,24,82,58)),anchorX=anchor.x,anchorY=anchor.y;
     const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?9:17;
     const hydrateInteraction=ordered.some(characterId=>contexts?.[characterId]?.animateMovement===false);

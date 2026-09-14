@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {needsAt,advanceNeeds,relationshipPolicy,furnitureMeetingKey} from '../life-needs.js';
+const c={id:'a'};const now=1000000;advanceNeeds(c,{title:'쉬는 중'},now);
+assert.equal(needsAt(c,now+3600000).hunger,71);
+c.needsFixed=true;assert.equal(needsAt(c,now+3600000).hunger,80);
+advanceNeeds(c,{title:'식사 중'},now+3600000);assert.equal(c.lifeNeeds.hunger,80);
+c.needsFixed=false;advanceNeeds(c,{title:'식사 중'},now+3660000);assert(c.lifeNeeds.hunger>80);
+const snapshot=structuredClone(c.lifeNeeds);advanceNeeds(c,{},now);assert.deepEqual(c.lifeNeeds,snapshot);
+for(const value of Object.values(needsAt(c,now+1000000000)))assert(value>=0&&value<=100);
+assert.equal(relationshipPolicy([{},{}]),'dynamic');assert.equal(relationshipPolicy([{relationshipChangeMode:'score'},{}]),'score');assert.equal(relationshipPolicy([{relationshipChangeMode:'score'},{relationshipChangeMode:'fixed'}]),'fixed');
+const home={rooms:{living:{furniturePlacements:[{id:'seat',item:'의자',tableId:'table'}]}}};
+assert.equal(furnitureMeetingKey(home,{phase:'using',furnitureId:'seat',roomKey:'living'}),'living:table');assert.equal(furnitureMeetingKey(home,{phase:'walking',furnitureId:'seat',roomKey:'living'}),'');
+console.log('PASS life388: needs decay/recovery/freeze/time reversal/bounds, relationship policy precedence, shared table identity');

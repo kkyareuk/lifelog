@@ -32,7 +32,7 @@ export function applyAutonomousPolicy(character,scene,characters={},language='ko
  const participants=[character,...[...(scene.withIds||[]),scene.withId].filter(Boolean).map(id=>characters[id]).filter(Boolean)];
  if(participants.every(person=>autonomousAllowed(person,scene)))return scene;
  const copy={ko:['잠시 쉬는 중','하던 일을 멈추고 자기 자리에서 잠시 숨을 돌리고 있어요.'],en:['Taking a short break','They stop what they were doing and take a moment in their own space.'],ja:['少し休憩しているところ','していたことをやめ、自分の場所でひと息ついています。']}[language]||['잠시 쉬는 중','하던 일을 멈추고 잠시 쉬고 있어요.'];
- return {...scene,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],activityFamily:null,sleeping:false,actionKind:undefined,mood:'평온',groupInteraction:false,withId:undefined,withIds:[],participantOrder:[],interactionId:undefined,sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined,autonomyAdjusted:true};
+ return {...scene,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],activityFamily:null,sleeping:false,actionKind:undefined,mood:'평온',groupInteraction:false,withId:undefined,withIds:[],participantOrder:[],interactionId:undefined,sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined,sharedFurnitureKey:undefined,autonomyAdjusted:true};
 }
 
 export function applyEatingSleepSetting(c,scene,language='ko'){

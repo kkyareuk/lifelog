@@ -1,7 +1,8 @@
+import {furnitureMeetingKey,advanceNeeds} from './life-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
-import {autonomousAllowed,applyAutonomousPolicy,applyEatingSleepSetting} from './autonomous-activities.js?v=20260909dev305';
+import {autonomousActivity,autonomousAllowed,applyAutonomousPolicy,applyEatingSleepSetting} from './autonomous-activities.js?v=20260909dev305';
 import {interactionPriority,strangerScene} from "./stranger-interactions.js?v=20260909dev305";
 import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
 import {automaticConversation} from "./automatic-activities.js?v=20260909dev305";
@@ -1957,6 +1958,9 @@ const homeActivityPoolFor=(c,date=new Date(),minute=nowMin(date))=>{
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL,...localizedHomeActivities()].filter(([title,description])=>{
     if(!autonomousAllowed(c,{title,desc:description}))return false;
+    const hobbyFamily=autonomousActivity({title});
+    const required={art:/그림|드로잉|미술|공예|창작|뜨개|재봉|목공|도예|만들기/,games:/게임|퍼즐/,collecting:/수집|피규어|우표|레코드/,gardening:/식물|원예|정원/}[hobbyFamily];
+    if(required&&!likes(required))return false;
     if(!mealActivityAllowed(c,`${title} ${description}`,minute,date))return false;
     if(/액세서리|악세서리|accessor|アクセサリー/i.test(title))return c.accessoryUse==="착용함";
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
@@ -1978,33 +1982,7 @@ const homeActivityPoolFor=(c,date=new Date(),minute=nowMin(date))=>{
     if(title.includes("게임 한 판")||title.includes("게임 기록"))return likes(/게임|e스포츠|보드게임/);
     return true;
   });
-  const housemates=state.order.map(id=>state.characters[id]).filter(other=>other&&other.id!==c.id&&other.homeId===c.homeId);
-  const ownerFor=pattern=>housemates.find(other=>[...(other.hobbies||[]),...(other.interests||[])].some(value=>pattern.test(String(value))));
-  const scentOwner=!likes(/향수|향수 시향|조향|향기/)&&ownerFor(/향수|향수 시향|조향|향기/);
-  if(scentOwner)pool.push([
-    `${scentOwner.name}의 향수들을 낯설게 살펴보는 중`,
-    `방 한쪽에 놓인 향수병을 조심스럽게 들여다보다 왜 이렇게 비슷해 보이는 향을 여러 개 두는지 이해하지 못한 채 다시 제자리에 놓았어요.`,
-    usableSleepRoom(scentOwner.sleepRoomId)||"bedroom"
-  ]);
-  const gameOwner=!likes(/게임|e스포츠|보드게임/)&&ownerFor(/게임|e스포츠|보드게임/);
-  const home=state.homes[c.homeId],homePets=home?.pets||[],hasGameMachine=Object.values(home?.rooms||{}).some(room=>(room.furniture||[]).includes("게임기"));
-  if(gameOwner&&hasGameMachine)pool.push([
-    "거실 게임기를 잠깐 만져 보는 중",
-    `${gameOwner.name}가 자주 쓰는 게임기의 메뉴를 몇 번 넘겨 봤지만 무엇이 재미있는지 잘 모르겠다는 표정으로 조작기를 내려놓았어요.`,
-    "living"
-  ]);
-  const artOwner=!likes(/그림|드로잉|미술|공예|도예|재봉|뜨개|목공/)&&ownerFor(/그림|드로잉|미술|공예|도예|재봉|뜨개|목공/);
-  if(artOwner)pool.push([
-    `${artOwner.name}의 작업 도구를 구경하는 중`,
-    `용도가 다른 도구가 너무 많아 어느 것을 어디에 쓰는지 가늠하지 못하고, 흐트러뜨리지 않도록 손대지 않은 채 모양만 살펴봤어요.`,
-    "study"
-  ]);
-  const instrumentOwner=!likes(/음악|악기|연주|기타|피아노|드럼|바이올린/)&&ownerFor(/악기|연주|기타|피아노|드럼|바이올린/);
-  if(instrumentOwner)pool.push([
-    `${instrumentOwner.name}의 악기를 바라보는 중`,
-    `손가락을 어디에 놓아야 소리가 나는지도 몰라 괜히 건드렸다 망가뜨릴까 봐 가까이에서 생김새만 살펴보고 있어요.`,
-    "study"
-  ]);
+  const home=state.homes[c.homeId],homePets=home?.pets||[];
   homePets.forEach(pet=>{
     const roomKey=home.rooms?.[pet.room]?pet.room:(home.rooms?.living?"living":Object.keys(home.rooms||{})[0]||"living");
     const species=pet.species==="기타"?(pet.customSpecies?.trim()||"함께 사는 존재"):pet.species;
@@ -4537,7 +4515,7 @@ function isProtectedSoloActivity(value){
 function soloSceneFrom(value){
   const base=baseSceneFrom(value)||value;
   if(!base)return base;
-  return {...base,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined,forcedCompanionId:undefined,stayTogetherScene:false,sharedActionText:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
+  return {...base,sharedFurnitureKey:undefined,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined,forcedCompanionId:undefined,stayTogetherScene:false,sharedActionText:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
 }
 function sameLiveLocation(first,second){
   if(!first||!second)return false;
@@ -4892,6 +4870,22 @@ function privateLifeEvent(c,date){
  const target=others.find(other=>!other.autonomousActivityBlocks?.includes('affection')&&other.lastPrivateBlock!==block&&contactAllowed(c,other,'affection')&&isAdultAge(c.ageGroup)&&isAdultAge(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
  if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
 }
+function sharedFurnitureScene(c,current,date){
+ if(!current?.home||current.groupInteraction||current.manualDirective||current.routineId||isHomeSleepScene(current)||current.transit)return current;
+ const home=state.homes[current.visitHomeId||c.homeId],agents=home?.lifeSimulation?.agents||{},agent=agents[c.id];
+ const key=furnitureMeetingKey(home,agent);
+ if(!key||agent.roomKey!==current.room||agent.endsAt<date.getTime())return current;
+ const peers=Object.values(agents).filter(a=>a.characterId!==c.id&&furnitureMeetingKey(home,a)===key&&a.endsAt>=date.getTime()).map(a=>state.characters[a.characterId]).filter(Boolean).filter(other=>{
+  const scene=baseEventFor(other,date);
+  return scene?.home&&(scene.visitHomeId||other.homeId)===home.id&&scene.room===current.room&&!scene.manualDirective&&!scene.routineId&&!isHomeSleepScene(scene)&&!scene.transit&&!other.autonomousActivityBlocks?.includes('talk');
+ });
+ if(!peers.length||c.autonomousActivityBlocks?.includes('talk'))return current;
+ const people=[c,...peers].sort((a,b)=>a.id.localeCompare(b.id)),ids=people.map(p=>p.id),names=people.map(p=>p.name).join(' · ');
+ const awkward=people.some((p,i)=>people.slice(i+1).some(other=>!Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&[r.a,r.b].includes(p.id)&&[r.a,r.b].includes(other.id))));
+ const copy=awkward?{ko:['조금 어색하게 함께 앉아 있는 중','같은 자리에 앉아 조심스럽게 말을 건네며 서로를 알아가고 있어요.'],en:['Sharing a slightly awkward moment','Sitting together, they cautiously start talking and get to know each other.'],ja:['少しぎこちなく一緒に座っている','同じ場所に座り、慎重に声をかけて互いを知ろうとしています。']}:{ko:['함께 앉아 이야기를 나누는 중','같은 자리에 앉아 편하게 안부를 나누고 있어요.'],en:['Sitting and talking together','They are sitting together and catching up.'],ja:['一緒に座って話している','同じ場所に座って近況を話しています。']};
+ const [title,desc]=copy[state.uiLanguage]||copy.ko,interactionId=['furniture',home.id,key,ids.join('~'),Math.floor(date.getTime()/1800000)].join(':');
+ return {...current,title,desc:names+' · '+desc,baseTitle:current.baseTitle||current.title,baseDesc:current.baseDesc||current.desc,activityFamily:'talk',sharedFurnitureKey:key,withId:ids.find(id=>id!==c.id),withIds:ids.filter(id=>id!==c.id),participantOrder:ids,interactionId,groupInteraction:true,sharedCanonicalTitle:title,sharedCanonicalDesc:desc,sharedPerspectives:Object.fromEntries(people.map(p=>[p.id,{title,desc:people.filter(o=>o.id!==p.id).map(o=>o.name).join(' · ')+' · '+desc}]))};
+}
 export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
 }
@@ -4985,6 +4979,7 @@ function calculateEventFor(c,date){
     // 만남이 생기던 오류를 이 경계에서 차단한다.
     if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,soloSceneFrom(baseEventFor(c,date)));
   }
+  current=sharedFurnitureScene(c,current,date);
   current=applyAutonomousPolicy(c,current,state.characters,state.uiLanguage);
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
@@ -5012,13 +5007,14 @@ function calculateEventFor(c,date){
       // 상대 관점의 문장만 다시 만든다. 화면을 여는 순서에 따라 만남이 갈라지지 않는다.
       timeline(other,date);
       const otherBase=baseEventFor(other,date);
-      const synchronizedCounterpart={...otherBase,...sharedLocation,title:current.sharedPerspectives?.[other.id]?.title||current.sharedCanonicalTitle||current.title,desc:current.sharedPerspectives?.[other.id]?.desc||current.sharedCanonicalDesc||current.desc,sharedPerspectives:current.sharedPerspectives,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
+      const synchronizedCounterpart={...otherBase,...sharedLocation,sharedFurnitureKey:current.sharedFurnitureKey,title:current.sharedPerspectives?.[other.id]?.title||current.sharedCanonicalTitle||current.title,desc:current.sharedPerspectives?.[other.id]?.desc||current.sharedCanonicalDesc||current.desc,sharedPerspectives:current.sharedPerspectives,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
       synchronizedCounterpart.minute=sharedMinute;
       synchronizedCounterpart.time=clock(sharedMinute);
       synchronizedCounterpart.interactionStartedMinute=sharedMinute;
       commitLiveEntry(other,date,synchronizedCounterpart);
     });
   }
+  if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,current,date.getTime()))save(false,false);
   return localizeLifeLog({...current,coLocatedIds:coLocatedCharacterIds(c,current,date)},state.uiLanguage,state,c.id);
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}

@@ -1,6 +1,26 @@
 // One batched geometry read after layout/placement, never an animation loop.
 let root=null,observer=null,frame=0;
 const actors='.room-furniture-item,.home-person,.room-pet,.room-couple-bed-overlay,.chair-frame-overlay';
+const alphaBounds=new Map();
+function paintedRect(image){
+ const r=image.getBoundingClientRect();if(!r.width||!r.height||!image.naturalWidth)return r;
+ let a=alphaBounds.get(image.currentSrc||image.src);
+ if(!a){try{const canvas=document.createElement('canvas');canvas.width=96;canvas.height=96;const ctx=canvas.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,96,96);const data=ctx.getImageData(0,0,96,96).data;let left=96,top=96,right=0,bottom=0;for(let y=0;y<96;y++)for(let x=0;x<96;x++)if(data[(y*96+x)*4+3]>24){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x+1);bottom=Math.max(bottom,y+1)}a=right?[left/96,top/96,right/96,bottom/96]:[0,0,1,1]}catch{a=[0,0,1,1]}alphaBounds.set(image.currentSrc||image.src,a)}
+ const host=image.closest('.room-furniture-item,.room-couple-bed-overlay');
+ if(Math.abs(parseFloat(host&&getComputedStyle(host).getPropertyValue('--furniture-rotation'))||0)%360)return r;
+ const scale=Math.min(r.width/image.naturalWidth,r.height/image.naturalHeight),w=image.naturalWidth*scale,h=image.naturalHeight*scale;
+ const left=r.left+(r.width-w)/2+w*a[0],top=r.top+(r.height-h)/2+h*a[1],right=r.left+(r.width-w)/2+w*a[2],bottom=r.top+(r.height-h)/2+h*a[3];
+ return {left,top,right,bottom,width:right-left,height:bottom-top};
+}
+function furnitureRect(scene,furniture){
+ const art=furniture.querySelector('.room-furniture-art')||furniture;
+ const overlay=[...scene.querySelectorAll('.room-couple-bed-overlay')].find(el=>el.dataset.bedOverlay===furniture.dataset.furniturePlacement)||
+  (scene.querySelectorAll('.is-couple-bed').length===1?scene.querySelector('.room-couple-bed-overlay'):null);
+ const images=[...art.querySelectorAll('img'),...(overlay?[...overlay.querySelectorAll('img')]:[])];
+ const rects=images.map(paintedRect).filter(r=>r.width&&r.height);
+ if(rects.length){const left=Math.min(...rects.map(r=>r.left)),right=Math.max(...rects.map(r=>r.right)),top=Math.min(...rects.map(r=>r.top)),bottom=Math.max(...rects.map(r=>r.bottom));return {left,right,top,bottom,width:right-left,height:bottom-top}}
+ return art.getBoundingClientRect();
+}
 export function scheduleSceneDepth(){
   if(frame||!root)return;
   frame=requestAnimationFrame(()=>{
@@ -39,7 +59,7 @@ export function scheduleSceneDepth(){
         const occupants=seated.filter(el=>el.dataset.seatId===person.dataset.seatId).sort((a,b)=>Number(a.dataset.seatOrder||0)-Number(b.dataset.seatOrder||0)||(a.dataset.characterId||'').localeCompare(b.dataset.characterId||''));
         const slot=occupants.indexOf(person),sideSofa=sofa&&['left','right'].includes(chair.dataset.seatDirection);
         const x=baseLeft+pull+r.width*(sofa&&!sideSofa?(slot===0?.32:.68):.5);
-        const y=sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66);
+        const y=(sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66))-(side==='north'?width*.16:0);
         person.dataset.seatSlot=String(slot);
         seats.push([person,(x-container.left)/container.width*100,(y-container.top)/container.height*100,width]);
         const row=bounds.find(row=>row.element===person),chairRow=bounds.find(row=>row.element===chair);
@@ -61,14 +81,19 @@ export function scheduleSceneDepth(){
         if(bed)overlay.bottom=bed.bottom+.2;
       }
       const sceneRect=scene.getBoundingClientRect();
-      for(const person of items.filter(el=>el.dataset.usingFurniture)){
-        const furniture=items.find(el=>el.dataset.furniturePlacement===person.dataset.usingFurniture);
+      for(const person of items.filter(el=>el.matches('.home-person'))){
+        const furniture=items.find(el=>el.dataset.furniturePlacement&&el.dataset.furniturePlacement===(person.dataset.usingFurniture||person.dataset.seatId));
         const status=person.querySelector('.home-person-status')||person.sceneStatus;
-        if(!furniture||!status)continue;
-        const art=furniture.querySelector('.furniture-sprite,.couple-bed-layer')||furniture.querySelector('.room-furniture-art')||furniture;
-        const r=art.getBoundingClientRect(),height=art.naturalWidth?Math.min(r.height,r.width*art.naturalHeight/art.naturalWidth):r.height;
-        const personBottom=bounds.find(row=>row.element===person)?.bottom||0;
-        labels.push({scene,furniture,person,status,x:r.left+r.width/2-sceneRect.left,y:Math.max(r.top+(r.height+height)/2,personBottom)-sceneRect.top+6,z:20+bounds.length*3});
+        if(!status)continue;
+        const art=furniture?(furniture.querySelector('.room-furniture-art')||furniture):person.querySelector('.home-person-visual')||person;
+        const r=furniture?furnitureRect(scene,furniture):art.getBoundingClientRect();
+        labels.push({scene,furniture,person,status,x:r.left+r.width/2-sceneRect.left,y:r.bottom-sceneRect.top+6,anchorTop:r.top-sceneRect.top,z:20+bounds.length*3});
+      }
+      for(const status of scene.querySelectorAll('.home-bed-foreground-status')){
+        const furniture=items.find(el=>el.dataset.furniturePlacement&&el.dataset.furniturePlacement===status.dataset.bedStatusFor);
+        if(!furniture)continue;
+        const r=furnitureRect(scene,furniture);
+        labels.push({scene,furniture,status,x:r.left+r.width/2-sceneRect.left,y:r.bottom-sceneRect.top+6,anchorTop:r.top-sceneRect.top,z:20+bounds.length*3});
       }
       bounds.sort((a,b)=>a.bottom-b.bottom);
       bounds.forEach(({element},index)=>updates.push([element,10+index*3]));
@@ -97,13 +122,29 @@ export function scheduleSceneDepth(){
       marker.style.cssText=`position:absolute;left:${x}%;top:${y}%;transform:translate(-50%,-50%);font-size:clamp(18px,4vw,24px)!important;line-height:1!important;pointer-events:none`;const surface=table.querySelector('.room-furniture-art')||table;if(surface!==table)surface.style.position='relative';surface.append(marker);
     }
     for(const label of labels){
-      const {scene,furniture,person,status,x,y,z}=label;
-      const group=labels.filter(other=>other.furniture===furniture),offset=(group.indexOf(label)-(group.length-1)/2)*124;
+      const {scene,person,status,z}=label;
+      const key=status.dataset.sharedFurniture,interaction=status.dataset.interactionId;
+      const peers=key?labels.filter(l=>l.scene===scene&&l.status.dataset.sharedFurniture===key&&l.status.dataset.interactionId===interaction):[label];
+      if(peers[0]!==label){status.hidden=true;continue}status.hidden=false;
+      if(key&&status.querySelector('b'))status.querySelector('b').textContent=peers.map(l=>l.status.dataset.personName).join(' · ');
       let layer=scene.querySelector(':scope > .room-activity-labels');
-      if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';layer.style.cssText='position:absolute;inset:0;pointer-events:none;overflow:visible';scene.append(layer)}
+      if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';scene.append(layer)}
       layer.style.zIndex=String(z);
-      if(status.parentElement!==layer){person.sceneStatus=status;layer.append(status);status.addEventListener('click',()=>person.click());}
-      status.style.cssText=`position:absolute;left:${x+offset}px;top:${y}px;transform:translateX(-50%);width:max-content;max-width:120px;font-size:10px;line-height:1.2;pointer-events:auto;text-align:center`;
+      if(status.parentElement!==layer){if(person){person.sceneStatus=status;status.addEventListener('click',()=>person.click())}layer.append(status)}
+      status.style.cssText='position:absolute;transform:translateX(-50%);pointer-events:auto;text-align:center';
+    }
+    // Measure after reparenting, with the final card styles. Clamp to the room
+    // and visible viewport, including transformed/scaled house canvases.
+    for(const label of labels){
+      if(label.status.hidden)continue;
+      const {scene,status,x,y,anchorTop}=label,r=scene.getBoundingClientRect(),sx=r.width/scene.clientWidth||1,sy=r.height/scene.clientHeight||1;
+      const card=status.getBoundingClientRect(),half=card.width/2,pad=4;
+      const left=Math.max(pad,-r.left+pad),right=Math.min(r.width-pad,innerWidth-r.left-pad);
+      const top=Math.max(pad,-r.top+pad),bottom=Math.min(r.height-pad,innerHeight-r.top-pad);
+      const cx=Math.max(left+half,Math.min(right-half,x));
+      let cy=y;if(cy+card.height>bottom)cy=anchorTop-card.height-6;
+      cy=Math.max(top,Math.min(bottom-card.height,cy));
+      status.style.left=cx/sx+'px';status.style.top=cy/sy+'px';
     }
     for(const [element,z] of updates)element.style.zIndex=String(z);
     for(const [person,x,y,width] of seats){
@@ -112,10 +153,13 @@ export function scheduleSceneDepth(){
   });
 }
 export function bindSceneDepth(nextRoot){
+  root?.removeEventListener('load',scheduleSceneDepth,true);
   observer?.disconnect();if(frame)cancelAnimationFrame(frame);frame=0;
   root=nextRoot;
   if(!root?.querySelector('.room,.world.town-environment'))return;
   observer=new ResizeObserver(scheduleSceneDepth);
   root.querySelectorAll('.room,.world.town-environment,.room-furniture-art,.home-person-visual').forEach(el=>observer.observe(el));
+  root.addEventListener('load',scheduleSceneDepth,true);
+  window.removeEventListener('scroll',scheduleSceneDepth,true);window.addEventListener('scroll',scheduleSceneDepth,true);
   scheduleSceneDepth();
 }

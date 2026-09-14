@@ -1,3 +1,4 @@
+import {lifeSettingsFields} from './life-settings.js';
 import {state,save,updateCharacter} from './state.js?v=20260909dev305';
 import {AUTONOMOUS_ACTIVITIES,ACTIVITY_SECTIONS} from './autonomous-activities.js?v=20260909dev305';
 import {sharedDiscoveryCharacter} from './character-discovery.js?v=20260909dev305';
@@ -15,5 +16,6 @@ document.addEventListener('click',e=>{
   for(const key of section.keys){const row=document.createElement('label');row.className='discovery-group-lock';const box=document.createElement('input');box.type='checkbox';box.value=key;box.checked=selected.has(key);box.onchange=()=>box.checked?selected.add(key):selected.delete(key);row.append(box,document.createTextNode(AUTONOMOUS_ACTIVITIES[key][languageIndex]));group.append(row)}
   d.append(group);
  }
- const status=document.createElement('p'),done=document.createElement('button'),close=document.createElement('button');done.textContent=text[2];close.textContent=text[3];close.onclick=()=>d.close();done.onclick=async()=>{done.disabled=true;try{if(uid!==window.ParallelCityAuth?.getInfo?.()?.user?.uid||!current())throw Error();const patch={autonomousActivityBlocks:[...selected]};if(groupId)await window.DrawerVillageGroups.saveResident({groupId,id,profile:{...current(),...patch}});else{const before=current().autonomousActivityBlocks;updateCharacter(id,patch,false);if(!save(true)){current().autonomousActivityBlocks=before;throw Error();}}d.close()}catch{status.textContent=text[4]}finally{done.disabled=false}};d.append(status,done,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
+ const life=lifeSettingsFields(c,state.uiLanguage);d.prepend(life.root);
+ const status=document.createElement('p'),done=document.createElement('button'),close=document.createElement('button');done.textContent=text[2];close.textContent=text[3];close.onclick=()=>d.close();done.onclick=async()=>{done.disabled=true;try{if(uid!==window.ParallelCityAuth?.getInfo?.()?.user?.uid||!current())throw Error();const patch={...life.patch(current()),autonomousActivityBlocks:[...selected]};if(groupId)await window.DrawerVillageGroups.saveResident({groupId,id,profile:{...current(),...patch}});else{const before=Object.fromEntries(Object.keys(patch).map(key=>[key,current()[key]]));updateCharacter(id,patch,false);if(!save(true)){Object.assign(current(),before);throw Error();}}d.close()}catch{status.textContent=text[4]}finally{done.disabled=false}};d.append(status,done,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
 });

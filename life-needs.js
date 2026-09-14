@@ -1,0 +1,36 @@
+export const NEEDS={sleep:['수면','Sleep','睡眠'],hunger:['허기','Hunger','空腹'],toilet:['용변','Toilet','排泄'],hygiene:['청결','Hygiene','清潔'],social:['사교','Social','交流']};
+export const needLabel=(key,lang='ko')=>NEEDS[key][{ko:0,en:1,ja:2}[lang]||0];
+const clamp=n=>Math.max(0,Math.min(100,Number.isFinite(Number(n))?Number(n):80));
+export function needsAt(c,now=Date.now()){
+ const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
+ const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
+ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]))]));
+}
+export function advanceNeeds(c,scene,now=Date.now()){
+ const old=c.lifeNeeds,values=needsAt(c,now);
+ if(old&&now<=old.updatedAt)return false;
+ // Attribute elapsed time only to the previously observed action. Never give a
+ // newly started action credit for an offline interval.
+ const minutes=old?Math.max(0,Math.min(10,(now-old.updatedAt)/60000)):0;
+ if(!c.needsFixed){for(const key of old?.recovering||[])if(key in values)values[key]=clamp(values[key]+minutes*({sleep:.8,hunger:4,toilet:12,hygiene:4,social:2}[key]));}
+ const title=String(scene?.baseTitle||scene?.title||''),recovering=[];
+ if(scene?.sleeping||/자는 중|잠드는|Sleeping|nap|眠って|昼寝/i.test(title))recovering.push('sleep');
+ if(/식사|먹는 중|eating|meal|食事|食べ/i.test(title))recovering.push('hunger');
+ if(scene?.lifeTaskId==='toilet'||/화장실|용변|toilet|トイレ|用を足/i.test(title))recovering.push('toilet');
+ if(/씻|샤워|목욕|wash|shower|bath|洗|シャワー|入浴/i.test(title))recovering.push('hygiene');
+ if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
+ if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering))return false;
+ c.lifeNeeds={...values,updatedAt:now,recovering};return true;
+}
+export function relationshipPolicy(characters){
+ const modes=characters.map(c=>c?.relationshipChangeMode||'dynamic');
+ return modes.includes('fixed')?'fixed':modes.includes('score')?'score':'dynamic';
+}
+export function furnitureMeetingKey(home,agent){
+ if(agent?.phase!=='using'||!agent.furnitureId)return '';
+ const p=home?.rooms?.[agent.roomKey]?.furniturePlacements?.find(p=>p.id===agent.furnitureId);
+ if(!p)return '';
+ if(p.tableId)return `${agent.roomKey}:${p.tableId}`;
+ if(/소파|쇼파|침대|식탁|탁자|sofa|bed|table/i.test(p.item))return `${agent.roomKey}:${p.id}`;
+ return '';
+}

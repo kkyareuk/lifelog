@@ -1,3 +1,4 @@
+import {advanceNeeds,relationshipPolicy} from './life-needs.js';
 import {recordSaveFailure,clearSaveFailure,saveFailureMessage} from './save-status.js?v=20260909dev305';
 import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
@@ -1610,6 +1611,8 @@ const AUTO_RELATION_STAGES=[[4,"아는 사이"],[8,"편한 친구"],[15,"가까�
 export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1,persist=true){
   const ids=[...new Set((characterIds||[]).map(String).filter(id=>state.characters?.[id]))].slice(0,2);
   if(ids.length!==2||ids[0]===ids[1]||!momentId)return false;
+  const policy=relationshipPolicy(ids.map(id=>state.characters[id]));
+  if(policy==="fixed")return false;
   const key=[...ids].sort().join("~");
   state.relationshipDevelopment=state.relationshipDevelopment&&typeof state.relationshipDevelopment==="object"?state.relationshipDevelopment:{};
   const record=state.relationshipDevelopment[key]||{points:0,moments:[],updatedAt:0};
@@ -1619,15 +1622,16 @@ export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1
   record.updatedAt=Date.now();
   state.relationshipDevelopment[key]=record;
   let relation=Object.values(state.relationships||{}).find(item=>item?.temporalStatus!=="past"&&[item.a,item.b].sort().join("~")===key);
-  if(!relation&&record.points>=4){
+  if(!relation&&record.points>=4&&policy==="dynamic"){
     const id=uid();
     relation={id,a:ids[0],b:ids[1],name:"",type:"친구",stage:"아는 사이",temporalStatus:"current",cohabit:false,stayTogether:false,interactions:[],interactionsAll:false,tags:[],intimacy:35,conflict:12,autoDeveloped:true,autoManagedStage:true,developmentPoints:record.points};
     state.relationships[id]=relation;
   }else if(relation){
     relation.developmentPoints=record.points;
-    if(!relation.stage||relation.stage==="관계 단계 미설정")relation.autoManagedStage=true;
+    relation.intimacy=Math.min(100,(Number(relation.intimacy)||0)+Math.max(1,Number(points)||1));
+    if(policy==="dynamic"&&(!relation.stage||relation.stage==="관계 단계 미설정"))relation.autoManagedStage=true;
     if(relation.autoManagedStage&&!(["혐관","라이벌"].includes(relation.type))){
-      relation.stage=(AUTO_RELATION_STAGES.filter(([threshold])=>record.points>=threshold).at(-1)||[0,"알아가는 사이"])[1];
+      if(policy==="dynamic")relation.stage=(AUTO_RELATION_STAGES.filter(([threshold])=>record.points>=threshold).at(-1)||[0,"알아가는 사이"])[1];
       relation.intimacy=Math.max(Number(relation.intimacy)||0,Math.min(88,28+record.points*3));
     }
   }
@@ -1986,7 +1990,9 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
 export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
   const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
+  const needsChanged=characterIds.map(id=>state.characters[id]&&advanceNeeds(state.characters[id],contexts[id]?.scene,now)).some(Boolean);
   const result=advanceLifeSimulation(home,characterIds,seatingContexts,now);
+  result.changed ||= needsChanged;
   home.lifeSimulation=result.simulation;
   if(result.changed&&persist)save(false,false);
   return result;

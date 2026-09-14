@@ -8,7 +8,7 @@ export function automaticConversation(world,c,target,kind,seed){
  const random=seededChoice(seed),pick=a=>a[Math.floor(random()*a.length)],others=Object.values(world.characters||{}).filter(x=>x.id!==c.id&&x.id!==target.id&&x.townId===c.townId),disliked=others.filter(x=>dislikesPerson(world,c,x));
  if(!ignoresOthers(c)&&disliked.length&&(kind==='gossip'||kind==='talk'&&random()<.25)){const subject=pick(disliked);return {kind:'gossip',subjectId:subject.id,topic:subject.name}}
  const catalog=Object.values(world.catalog||{}).flat().filter(x=>x&&typeof x.name==='string');const liked=new Set(Object.values(c.favorites||{}).flat());const preferred=catalog.filter(x=>liked.has(x.id));
- const themes=[...values(c.hobbies),...values(c.interests),...(preferred.length?preferred:catalog).map(x=>x.name)];
+ const themes=[...values(c.hobbies),...values(c.interests),...preferred.map(x=>x.name)];
  if(!ignoresOthers(c)&&others.length&&random()<.5){const subject=pick(others);return {kind:kind==='gossip'?'talk':kind,subjectId:subject.id,topic:subject.name}}
  return {kind:kind==='gossip'?'talk':kind,subjectId:'',topic:themes.length?pick(themes):'오늘 하루'};
 }

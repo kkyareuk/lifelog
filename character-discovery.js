@@ -16,7 +16,7 @@ export function sharedDiscoveryCharacter(groupId,id){
  const s=window.DrawerVillageGroups?.getSnapshot?.();if(!uid()||s?.activeGroupId!==groupId)return null;
  const r=s.residents?.find(r=>r.id===id);if(!r||r.ownerUid!==uid())return null;
  let profile;try{profile=typeof r.profileJson==='string'?JSON.parse(r.profileJson):r.profileJson||{}}catch{return null;}
- let life;try{life=JSON.parse(r.lifeJson||'{}')}catch{life={}}return {...profile,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,id:r.id,name:r.name,ownerUid:r.ownerUid};
+ let life;try{life=JSON.parse(r.lifeJson||'{}')}catch{life={}}return {...profile,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,id:r.id,name:r.name,ownerUid:r.ownerUid};
 }
 export async function applyDiscoveryChoice(c,question,index,context={}){
  const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];
