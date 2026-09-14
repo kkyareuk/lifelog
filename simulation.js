@@ -2412,7 +2412,7 @@ function relationshipCombinationScenePool(c,relationship,date){
     scene("neutral-check",`${name}와 오늘 필요한 일을 확인하는 중`,"친한 척하거나 적대하지 않고 각자 맡을 부분과 끝낼 시각만 분명히 정했어요.",`Checking today's necessary task with ${name}`,"Without pretending closeness or hostility, they clarified each person's part and the finish time.",`${name}と今日必要なことを確認するところ`,"親しいふりも敵対もせず、それぞれの担当と終える時刻だけ明確にしました。","study");
     scene("neutral-return",`${name}에게 빌린 물건을 돌려주는 중`,"상태가 달라진 곳이 없는지 함께 확인하고 원래 있던 자리에 직접 놓았어요.",`Returning something borrowed from ${name}`,"They checked its condition together and put it back exactly where it belonged.",`${name}に借りた物を返すところ`,"状態が変わった所がないか一緒に確かめ、元の場所に戻しました。","living");
   }
-  return raw.map((item,index)=>({...item,desc:`${item.desc} ${modifiers[(hash(`${c.id}:${relationship.other.id}:${item.category}:${dayKey(date)}`)+index)%modifiers.length]}`}));
+  return raw.map((item,index)=>({...item,...(['annoyed-request','annoyed-break','conflict-example','conflict-rules','distant-business','close-honest','neutral-check','neutral-return','role-roommate','role-coworker','role-hostile','ending-contact','mixed-care'].includes(item.category)?{withId:relationship.other.id,withIds:[relationship.other.id]}:{}),desc:`${item.desc} ${modifiers[(hash(`${c.id}:${relationship.other.id}:${item.category}:${dayKey(date)}`)+index)%modifiers.length]}`}));
 }
 function profileSettingScenePool(c,date){
   const language=state.uiLanguage||"ko";
@@ -2582,7 +2582,7 @@ function profileSettingEvents(c,times,date){
   if(!pool.length)return [];
   const firstIndex=hash(`${c.id}:${dayKey(date)}:profile-first`)%pool.length,first=pool[firstIndex];
   const remaining=pool.filter(scene=>scene.category!==first.category),second=remaining.length?remaining[hash(`${c.id}:${dayKey(date)}:profile-second`)%remaining.length]:null;
-  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true,withId:scene.withId}));
+  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true,withId:scene.withId,withIds:scene.withIds||[]}));
 }
 function financialStressEvent(c,time,date){
   const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
@@ -4365,7 +4365,7 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
   if(hash(topicSeed+':topic')%3===0){
     const choice=automaticConversation(state,first,second,'talk',topicSeed),subject=state.characters[choice.subjectId],views={relationships:state.relationships,characterViews:{[first.id]:{[second.id]:a,...(subject?{[subject.id]:characterViewFor(first.id,subject.id)}:{})},[second.id]:{[first.id]:b,...(subject?{[subject.id]:characterViewFor(second.id,subject.id)}:{})}}};
     const options={allowConflict:automaticConflictAllowed(first,second,a,b,date,state)},story=subject?personConversation(views,first,second,subject,state.uiLanguage,options):topicConversation(views,first,second,choice.topic,state.uiLanguage,options);
-    if(story){const title=state.uiLanguage==='en'?'Exchanging their views':state.uiLanguage==='ja'?'互いの考えを話すところ':'서로의 생각을 나누는 중';return {title,firstTitle:title,secondTitle:title,first:story.speakerText,second:story.listenerText,relationshipContext:true,relationshipCues:{[first.id]:'topic:'+story.mode,[second.id]:'topic:'+story.mode},automaticConflict:story.mode==='argument'}}
+    if(story){const title=story.title||(state.uiLanguage==='en'?`Talking about ${choice.topic}`:state.uiLanguage==='ja'?`${choice.topic}について話すところ`:`${choice.topic}에 대해 대화하는 중`);return {title,firstTitle:title,secondTitle:title,first:story.speakerText,second:story.listenerText,relationshipContext:true,relationshipCues:{[first.id]:'topic:'+story.mode,[second.id]:'topic:'+story.mode},automaticConflict:story.mode==='argument'}}
   }
   const hasContext=relation||Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
   const safeView=view=>{const v=viewSignals(view);return !v.afraid&&!v.distrust&&!v.hostile&&!v.guarded&&!v.uncomfortable&&!v.annoyed&&!v.unaware&&v.conflict<=0&&v.urge<=0};

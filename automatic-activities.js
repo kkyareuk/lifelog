@@ -1,3 +1,4 @@
+import {CONVERSATION_SUBJECTS} from './conversation-subjects.js';
 import {isAdultAge} from "./age-groups.js?v=20260909dev305";
 import {matchingHobbyTasks} from './concrete-life.js?v=20260909dev305';
 export const seededChoice=seed=>{let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}};
@@ -10,7 +11,7 @@ export function automaticConversation(world,c,target,kind,seed){
  const catalog=Object.values(world.catalog||{}).flat().filter(x=>x&&typeof x.name==='string');const liked=new Set(Object.values(c.favorites||{}).flat());const preferred=catalog.filter(x=>liked.has(x.id));
  const themes=[...values(c.hobbies),...values(c.interests),...preferred.map(x=>x.name)];
  if(!ignoresOthers(c)&&others.length&&random()<.5){const subject=pick(others);return {kind:kind==='gossip'?'talk':kind,subjectId:subject.id,topic:subject.name}}
- return {kind:kind==='gossip'?'talk':kind,subjectId:'',topic:themes.length?pick(themes):'오늘 하루'};
+ return {kind:kind==='gossip'?'talk':kind,subjectId:'',topic:themes.length&&random()<.65?pick(themes):pick(CONVERSATION_SUBJECTS)[0]};
 }
 export function hobbyNames(world,c){return [...new Set([...values(c?.hobbies),...(world?.catalog?.hobby||[]).filter(item=>(c?.favorites?.hobby||[]).includes(item.id)).map(item=>item.name)].filter(name=>typeof name==='string'&&name.trim()).map(name=>name.trim()))]}
 export function hobbyChoice(world,c,seed){const random=seededChoice(seed),list=hobbyNames(world,c);if(!list.length)return null;const name=list[Math.floor(random()*list.length)],kind=/요리|제빵|베이킹/.test(name)?'meal':/원예|식물|정원|수집/.test(name)?'chores':/독서|책|만화/.test(name)?'read':/음악|노래|악기|연주/.test(name)?'music':/게임/.test(name)?'game':/운동|수영|요가|축구|농구|헬스/.test(name)?'exercise':/산책|여행|등산/.test(name)?'walk':'art';const concrete=matchingHobbyTasks(name);if(concrete.length)return {...concrete[Math.floor(random()*concrete.length)],hobby:true};return {id:'hobby_auto',kind,room:kind==='meal'?'kitchen':kind==='exercise'||/원예|식물|정원/.test(name)?'living':'study',minutes:60,labels:[name,name,name],hobby:true}}

@@ -1,0 +1,18 @@
+<ko-KR>
+대화 주제 18종을 추가하고, 두 캐릭터의 제목과 로그가 같은 주제로 이어지도록 다듬었어요.
+냉정하고 과묵한 캐릭터의 포옹은 들뜬 웃음 대신 절제된 행동으로 표현해요.
+말을 끊지 말라고 따지는 등 상대에게 직접 하는 행동에 상대 정보를 연결해 로그에 아이콘을 표시해요.
+공유코드 불러오기는 저장 완료 후 성공을 안내하며, 실패한 불러오기가 캐릭터를 남기지 않도록 수정했어요. 슬롯 부족 안내와 복사한 코드 인식도 개선했어요.
+</ko-KR>
+<en-US>
+Added 18 conversation topics, with matching subjects in both characters’ titles and logs.
+Reserved characters now hug with restrained gestures instead of an excited smile.
+Direct actions such as confronting someone about interruptions now link the other character’s icon in the log.
+Sharing-code imports now wait for saving to finish and remove unfinished imports after failure. Improved slot-limit messages and pasted-code recognition.
+</en-US>
+<ja-JP>
+会話の話題を18種類追加し、二人のタイトルとログが同じ話題につながるようにしました。
+冷静で寡黙な人物の抱擁は、はしゃいだ笑顔ではなく控えめな仕草で表現します。
+話を遮らないよう注意するなど、相手に直接働きかける行動のログに相手のアイコンを表示します。
+共有コードの読み込みは保存完了後に成功を案内し、失敗した人物が残らないよう修正しました。空き枠の案内と貼り付けたコードの認識も改善しました。
+</ja-JP>

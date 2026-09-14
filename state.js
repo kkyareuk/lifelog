@@ -1,3 +1,4 @@
+import {repairProfileInteractionTargets} from './profile-interaction-targets.js';
 import {queueRelationshipLetter} from './relationship-letters.js';
 import {relationMetrics,changeRelationMetrics} from './relationship-metrics.js';
 import {advanceNeeds,relationshipPolicy} from './life-needs.js';
@@ -931,7 +932,7 @@ function normalizeHomes(x){
     const resident=Object.values(x.characters).find(c=>(c.residences||[]).some(item=>item.homeId===home.id));
     home.townId=resident?.townId||x.activeTownId||"";
   });
-  return renameBrand(x);
+  return renameBrand(repairProfileInteractionTargets(x));
 }
 function load(){
   const parse=raw=>{try{return raw?replayAnswerDeltas(localStorage,migrate(JSON.parse(raw))):null}catch{return null}};
@@ -1480,7 +1481,7 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
 
   const copy=baseSocialDirectiveCopy(kind,actor,target,subject,topic,options);
   if(subject&&['talk','gossip','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=personConversation(state,speaker,listener,subject,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'person-topic:'+story.mode}}return copy;}
-  if(!subject&&topic&&['talk','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=topicConversation(state,speaker,listener,topic,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'topic:'+story.mode}}return copy;}
+  if(!subject&&topic&&['talk','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=topicConversation(state,speaker,listener,topic,language);if(story)copy[language]={...copy[language],title:story.title||copy[language].title,desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'topic:'+story.mode}}return copy;}
   if(!copy||(!SOCIAL_ACTIVITIES[kind]?.contextual&&!['talk','hangout','dine','tea','drinks','cook_together','debate','custom_social'].includes(kind)))return copy;
   const date=new Date(options.now??Date.now()),minute=date.getHours()*60+date.getMinutes();
   const key=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;

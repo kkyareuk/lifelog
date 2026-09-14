@@ -33,7 +33,7 @@ try{
  const id=game.state.order[0],c=game.state.characters[id];c.inventory.fashion=['shirt'];c.savedOutfits=[{name:'Daily',itemIds:['shirt']}];
  game.state.catalog.fashion=[{id:'shirt',name:'Blue shirt',ownerId:id},{id:'unowned',name:'Unowned'}];
  const file=transfer.characterSettingsFile(c),imported=transfer.importCharacterSettings(file,30),ic=game.state.characters[imported];
- const code=codes.importCodeCharacter({...file.character,photo:''},30),cc=game.state.characters[code];
+ const code=await codes.importCodeCharacter({...file.character,photo:''},30),cc=game.state.characters[code];
  const snapshot={activeGroupId:'group',group:{id:'group'},residents:[{id:'resident',ownerUid:'owner',name:'Resident',profileJson:JSON.stringify({name:'Resident'})}],catalog:[],homes:[],towns:[]};
  window.ParallelCityAuth={getInfo:()=>({ready:true,user:{uid:'owner'}})};window.DrawerVillageGroups={getSnapshot:()=>snapshot};
  const editor=await import('/shared-characters.js?v=20260909dev305');game.state.activeTab='character';editor.syncSharedCharacterEditor();
