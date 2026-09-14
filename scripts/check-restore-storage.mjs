@@ -25,7 +25,9 @@ const game=await import('../state.js');
 const before=game.cloneState();store.setItem('parallel-city-game-v2',a);deny=true;
 assert.throws(()=>game.replaceState(JSON.parse(next)),{code:'backup-storage-full'});
 assert.deepEqual(game.cloneState(),before);assert.equal(store.getItem(primary),a);assert.equal(store.getItem('parallel-city-game-v2'),a);
-deny=false;limit=30000;game.replaceState(JSON.parse(next));
+// Current migrated defaults are larger than the old 30 KB fixture budget.
+// The earlier bounded-quota assertions still verify lossless compression.
+deny=false;limit=200000;game.replaceState(JSON.parse(next));
 assert.deepEqual(game.state.order,['Restored']);assert.equal(JSON.parse(store.getItem(primary)).characters.Restored.name,'Restored');
 // Corrupt packed data is retained verbatim rather than erased during recovery.
 limit=Infinity;localStorage.setItem('drawer-account:A:'+backup,'drawer-gzip-v1:broken');
