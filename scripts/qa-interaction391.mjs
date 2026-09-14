@@ -27,5 +27,3 @@ try{const page=await browser.newPage({viewport:{width:384,height:820},deviceScal
  console.log('PASS391: interaction popup remains character, notice photo isolation, softened cached mail, 4 speech styles and alias migration, relationship selector');
  console.log('PASS occupant389: own needs, other relationship/actions, no old command/log, crown switches actor, 3-language geometry, differentiated relationship deltas and freeze');
 }finally{await browser.close();server.close()}
-
-

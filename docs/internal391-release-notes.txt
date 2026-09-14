@@ -6,7 +6,7 @@
 업데이트 공지에 사용자 사진이 나오지 않도록 수정하고 관계탭의 마을 선택창을 정리했어요.
 </ko-KR>
 <en-US>
-Refined classical and old-fashioned voices; removed startup and internet-novel labels. Regional voices now use Scottish and Southern US wording, with Osaka and Hiroshima dialects in Japanese. Softened coarse dialogue, including older character mail. Fixed furniture menus opening when tapping characters during interactions. Shared seats, tables and sofas have a joint status card while personal logs keep individual activities. Seated characters are larger. Fixed notice photos and the village selector.
+Updated classical voices and removed startup/internet-novel labels. Regional voices use Scottish and Southern US English, or Osaka and Hiroshima Japanese. Softened coarse dialogue and older character mail. Fixed character taps opening furniture menus during interactions. Shared seating has one status card; personal logs retain individual activities. Seated characters are larger. Removed user photos from update notices and refined the village selector.
 </en-US>
 <ja-JP>
 古風な丁寧口調と語り口を整理し、スタートアップ語・ネット小説風の名称を選択肢から外しました。地域の口調は日本語では大阪弁・広島弁、英語ではスコットランド・米国南部の表現にしました。

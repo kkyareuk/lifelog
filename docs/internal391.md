@@ -15,4 +15,4 @@ SHA256: 5673EC3067F6769A97C7D6C439AB6AE71BBDFD12F235D05F00E681B1BE01DBD0
 EN/JA: 100% of changed scope; whole-app coverage not remeasured.
 
 ## Deployment
-Awaiting final Play Console availability verification.
+2026-09-14 18:16 Asia/Seoul: Play Console shows 391 (1.0.339), 내부 테스터에게 제공됨. Release288. No supported-device losses; only the existing missing deobfuscation-map warning. Implementation bde4cdb pushed to dev.
