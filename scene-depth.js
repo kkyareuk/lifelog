@@ -46,7 +46,7 @@ export function scheduleSceneDepth(){
         const prior=Number(chair.dataset.seatPull)||0,baseLeft=r.left-prior;
         const table=items.find(el=>el.dataset.furniturePlacement===chair.dataset.tableId);
         const side=chair.dataset.seatSide,sideChair=!sofa&&['left','right'].includes(chair.dataset.seatDirection);
-        const width=sofa?Math.min(60,Math.max(36,(r.width>r.height?r.width:r.height)*.42)):Math.min(60,Math.max(46,52*(Number(chair.dataset.placementScale)||1)));
+        const width=sofa?Math.min(68,Math.max(42,(r.width>r.height?r.width:r.height)*.48)):Math.min(68,Math.max(52,58*(Number(chair.dataset.placementScale)||1)));
         let pull=0;
         if(table&&sideChair){
           const tr=(table.querySelector('.furniture-sprite')||table).getBoundingClientRect();
@@ -123,10 +123,13 @@ export function scheduleSceneDepth(){
     }
     for(const label of labels){
       const {scene,person,status,z}=label;
-      const key=status.dataset.sharedFurniture,interaction=status.dataset.interactionId;
-      const peers=key?labels.filter(l=>l.scene===scene&&l.status.dataset.sharedFurniture===key&&l.status.dataset.interactionId===interaction):[label];
+      const seat=label.furniture,table=seat?.dataset.tableId;
+      const key=seat&&['chair','sofa'].includes(seat.dataset.furnitureKind)?(table?'table:'+table:seat.dataset.furniturePlacement):status.dataset.sharedFurniture;label.groupKey=key;
+      for(const other of labels){const f=other.furniture;other.groupKey=f&&['chair','sofa'].includes(f.dataset.furnitureKind)?(f.dataset.tableId?'table:'+f.dataset.tableId:f.dataset.furniturePlacement):other.status.dataset.sharedFurniture}
+      const peers=key?labels.filter(l=>l.scene===scene&&l.groupKey===key):[label];
       if(peers[0]!==label){status.hidden=true;continue}status.hidden=false;
       if(key&&status.querySelector('b'))status.querySelector('b').textContent=peers.map(l=>l.status.dataset.personName).join(' · ');
+      const activity=status.querySelector('small');if(activity){status.dataset.soloActivity??=activity.textContent;const lang=document.documentElement.lang?.slice(0,2)||'ko',talking=peers.length>1&&peers.every(p=>p.status.dataset.interactionId&&p.status.dataset.interactionId===status.dataset.interactionId);activity.textContent=peers.length>1?({ko:talking?'함께 앉아 대화하는 중':'함께 앉아 각자 할 일을 하는 중',en:talking?'Sitting and talking together':'Sitting together, each doing their own thing',ja:talking?'一緒に座って話している':'一緒に座って、それぞれのことをしている'}[lang]||'함께 앉아 각자 할 일을 하는 중'):status.dataset.soloActivity;}
       let layer=scene.querySelector(':scope > .room-activity-labels');
       if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';scene.append(layer)}
       layer.style.zIndex=String(z);

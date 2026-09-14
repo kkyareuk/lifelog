@@ -1,3 +1,4 @@
+import {softenCharacterSpeech} from './speech-soften.js';
 import {reviewedStyle,reviewedPush,REVIEWED_STYLE_NAMES} from './speech-reviewed.js';
 export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "자동 · 성격에 맞춤",
@@ -11,7 +12,6 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "냉정한 격식체",
   "기계적인 말투",
   "사무적인 말투 · 직장 메일체",
-  "판교어 · 스타트업 업무체",
   "다정하고 부드러운 말투",
   "소심하고 머뭇거리는 말투",
   "열정적인 말투",
@@ -25,8 +25,7 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "경상도 사투리",
   "전라도 사투리",
   "하오체",
-  "풍류 선비체",
-  "재상 선비체",
+  "하게체",
   "군인식 말투",
   "마왕의 말투",
   "군주의 말투",
@@ -90,7 +89,7 @@ export function characterQuestionPrompt(character,{kind="everyday",target="",lan
     "능글맞고 여유로운 말투":`${subject} 말이지? 당신이라면 재밌는 걸 고를 것 같은데.`,
     "냉소적인 말투":`${subject}이라. 뭘 고르든 세상은 굴러가겠지만, 일단 골라 봐.`,
     "걸걸한 아저씨 말투":`${subject} 말이야, 뭐가 좋겠어? 시원하게 하나 골라 보자고.`,
-    "거칠고 상스러운 말투":`${subject}, 씨발 뭐가 이렇게 많아. 너는 뭐 할래?`,
+    "거칠고 상스러운 말투":`${subject}, 젠장 뭐가 이렇게 많아. 너는 뭐 할래?`,
     "중2병 말투":`봉인이 느슨해지고 있다… ${subject}의 운명을 네 손으로 선택하라.`,
     "귀여니체 · 2000년대 인터넷소설체":`${subject} 머할까아…? 나 진짜 못 고르겠눈뎅 ㅠ_ㅠ`,
     "하드보일드 누아르체":`${subject}이라… 이 도시에서는 선택 하나에도 흔적이 남지.`,
@@ -169,7 +168,7 @@ export function characterContactTitle(character,base,{language="ko"}={}){
   return localized[style]||text;
 }
 
-export function characterContactSpeech(character,base,{language="ko"}={}){
+function rawCharacterContactSpeech(character,base,{language="ko"}={}){
   if(effectiveSpeechStyle(character)==="초성 쓰는 반말")return language==="en"?`hey, ${base} lol`:language==="ja"?`ねえ、${base}w`:`야 ${koreanCasual(String(base||""))} ㅋㅋ`;
   const text=String(base||"").trim(),style=effectiveSpeechStyle(character);
   if(!text)return text;
@@ -204,7 +203,7 @@ export function characterContactSpeech(character,base,{language="ko"}={}){
     "능글맞고 여유로운 말투":value=>`뭐, 급한 건 아닌데 말이지. ${koreanCasual(value)}`,
     "냉소적인 말투":value=>`세상이 답을 대신 골라 주진 않으니까. ${koreanCasual(value)}`,
     "걸걸한 아저씨 말투":value=>`어이, 잠깐 얘기 좀 해 보자고. ${koreanCasual(value)}`,
-    "거칠고 상스러운 말투":value=>`씨발, 복잡하게 굴 것 없이 들어 봐. ${koreanCasual(value)}`,
+    "거칠고 상스러운 말투":value=>`젠장, 복잡하게 굴 것 없이 들어 봐. ${koreanCasual(value)}`,
     "중2병 말투":value=>`봉인의 틈에서 전언이 도착했다… ${koreanPlain(value)}`,
     "귀여니체 · 2000년대 인터넷소설체":value=>`있자나… 갑자기 니 생각나서 연락했오 ㅠ_ㅠ ${koreanCasual(value)}`,
     "하드보일드 누아르체":value=>`${koreanPlain(value)} 이 도시의 하루는 늘 그런 식으로 흘렀다.`,
@@ -237,7 +236,7 @@ export function characterPlanSpeech(character,language="ko"){
 
 export function canonicalSpeechStyle(value){
  value=reviewedStyle(value);
- return ({'귀여니체 · 2000년대 인터넷소설체':'반말','거칠고 상스러운 말투 · 순화':'거칠고 상스러운 말투','상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
+ return ({'판교어 · 스타트업 업무체':'사무적인 말투 · 직장 메일체','귀여니체 · 2000년대 인터넷소설체':'반말','거칠고 상스러운 말투 · 순화':'거칠고 상스러운 말투','상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
 }
 
 // The native select remains the source of truth for existing save/draft handlers.
@@ -286,3 +285,5 @@ export function speechStyleExample(character,options={}){
  if(examples[style]&&(lang==='en'||lang==='ja'))return examples[style][lang==='en'?0:1];
  return characterQuestionPrompt(character,options);
 }
+
+export function characterContactSpeech(...args){return softenCharacterSpeech(rawCharacterContactSpeech(...args))}

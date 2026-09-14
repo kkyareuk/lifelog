@@ -4979,7 +4979,7 @@ function calculateEventFor(c,date){
     // 만남이 생기던 오류를 이 경계에서 차단한다.
     if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,soloSceneFrom(baseEventFor(c,date)));
   }
-  current=sharedFurnitureScene(c,current,date);
+  // Co-located furniture labels are grouped by the renderer; keep individual actions.
   current=applyAutonomousPolicy(c,current,state.characters,state.uiLanguage);
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한

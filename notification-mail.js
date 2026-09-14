@@ -1,13 +1,14 @@
+import {softenCharacterSpeech} from './speech-soften.js';
 // The OS notification and inbox share one immutable envelope. Kept per account
 // and per device: future local notifications are not imported from another phone.
 export function mailEnvelope(item,owner){
   const at=new Date(item.at||item.extra?.scheduledAt).getTime();
   const id=`${item.id}:${at}`;
-  return {...item,extra:{...item.extra,mailId:id,mailOwner:owner,mailTitle:String(item.title||''),mailBody:String(item.body||''),scheduledAt:new Date(at).toISOString()}};
+  item={...item,title:softenCharacterSpeech(item.title),body:softenCharacterSpeech(item.body)};return {...item,extra:{...item.extra,mailId:id,mailOwner:owner,mailTitle:String(item.title||''),mailBody:String(item.body||''),scheduledAt:new Date(at).toISOString()}};
 }
 export function createContactMailbox(storage){
   const key='drawer-village-contact-mail-v1',deletedKey='drawer-village-contact-mail-deleted-v1',answeredKey='drawer-village-contact-mail-answered-v1';let cachedOwner,cachedRaw,cached=[];
-  function read(){const raw=storage.getItem(key)||'[]';if(cachedOwner!==storage.scope||cachedRaw!==raw){cachedOwner=storage.scope;cachedRaw=raw;try{cached=JSON.parse(raw)}catch{cached=[]}if(!Array.isArray(cached))cached=[];}const fresh=cached.filter(m=>m.at>Date.now()-30*86400000);return fresh}
+  function read(){const raw=storage.getItem(key)||'[]';if(cachedOwner!==storage.scope||cachedRaw!==raw){cachedOwner=storage.scope;cachedRaw=raw;try{cached=JSON.parse(raw)}catch{cached=[]}if(!Array.isArray(cached))cached=[];}const fresh=cached.filter(m=>m.at>Date.now()-30*86400000).map(m=>({...m,title:softenCharacterSpeech(m.title),body:softenCharacterSpeech(m.body)}));return fresh}
   function write(messages){const raw=JSON.stringify(messages);if(storage.getItem(key)!==raw)storage.setItem(key,raw);cachedRaw=raw;cached=messages;cachedOwner=storage.scope;return messages}
   function readDeleted(){let deleted;try{deleted=JSON.parse(storage.getItem(deletedKey)||'[]')}catch{deleted=[]}return Array.isArray(deleted)?deleted.filter(Boolean).map(String):[]}
   function writeDeleted(ids){const next=[...new Set(ids.map(String))].slice(-500);storage.setItem(deletedKey,JSON.stringify(next));return next}

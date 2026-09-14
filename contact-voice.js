@@ -36,7 +36,7 @@ const TOPIC_LINES={
   }
 };
 
-export const CONTACT_VOICE_VERSION=3;
+export const CONTACT_VOICE_VERSION=4;
 export function characterMomentSpeech(character,neutral,{topic='moments',context={},language='ko',seed=0}={}){
   const style=effectiveSpeechStyle(character);
   const key={checkins:['식사 안부','하루 안부'],worries:['지금','오후'],comfort:['휴식','잘 자','내일 응원','자신감','수고'],work:['일하기 싫음','쌓인 일']}[topic];const reviewed=key&&reviewedPush({...character,speechStyle:style},key[Math.abs(seed)%key.length],{language,target:context.target,item:context.item});if(reviewed)return reviewed;

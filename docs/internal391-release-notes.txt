@@ -1,0 +1,16 @@
+<ko-KR>
+말투를 하오체·하게체로 정리하고 판교어·귀여니체 표기를 선택 목록에서 제외했어요. 지역 말투는 영어의 스코틀랜드·미국 남부, 일본어의 오사카·히로시마 말투로 현지화했어요.
+거친 대사는 젠장·망할 같은 표현으로 순화했어요. 이전 캐릭터 편지도 순화해 표시해요.
+상호작용 중 캐릭터를 다시 눌렀을 때 가구 메뉴가 뜨던 오류를 수정했어요.
+같은 좌석·탁자·소파의 상황표는 함께 표시하고, 개인 로그는 각자의 행동을 유지해요. 앉은 캐릭터를 조금 키웠어요.
+업데이트 공지에 사용자 사진이 나오지 않도록 수정하고 관계탭의 마을 선택창을 정리했어요.
+</ko-KR>
+<en-US>
+Refined classical and old-fashioned voices; removed startup and internet-novel labels. Regional voices now use Scottish and Southern US wording, with Osaka and Hiroshima dialects in Japanese. Softened coarse dialogue, including older character mail. Fixed furniture menus opening when tapping characters during interactions. Shared seats, tables and sofas have a joint status card while personal logs keep individual activities. Seated characters are larger. Fixed notice photos and the village selector.
+</en-US>
+<ja-JP>
+古風な丁寧口調と語り口を整理し、スタートアップ語・ネット小説風の名称を選択肢から外しました。地域の口調は日本語では大阪弁・広島弁、英語ではスコットランド・米国南部の表現にしました。
+荒い台詞を穏やかな表現に調整し、過去のキャラクターの手紙にも適用します。
+交流中の人物を押すと家具メニューが開く不具合を修正しました。同じ座席・テーブル・ソファでは状況をまとめて表示し、個別ログは各自の行動を保ちます。座った人物を少し大きくしました。
+更新のお知らせに利用者の写真が出ないよう修正し、関係画面の村選択を整えました。
+</ja-JP>

@@ -1059,9 +1059,12 @@ function multiplayerTabletObserveMap(snapshot,town,residents){
   }).join("");
   return `<section class="tablet-observe-map multiplayer-observe-map" aria-label="${esc(town?.name||multiplayerObserveCopy("location"))}"><div class="tablet-observe-world town-environment">${townBackgroundMarkup(background)}<div class="multiplayer-map-residents">${people}</div></div></section>`;
 }
-function groupJump(){
+function groupJump(context="hud"){
   const snapshot=window.DrawerVillageGroups?.getSnapshot?.()||{};
-  return `<button type="button" data-multiplayer-select="">${({ko:"내 마을로 돌아가기",en:"Return to my village",ja:"自分の村へ戻る"})[state.uiLanguage]||"내 마을로 돌아가기"}</button><label class="game-hud-town-jump"><span>${t('다른 그룹으로 이동','다른 그룹으로 이동')}</span><select data-multiplayer-dropdown aria-label="${t('다른 그룹으로 이동','다른 그룹으로 이동')}"><option value="">${esc(state.personalTownLabel||t('내 마을','내 마을'))}</option>${(snapshot.groups||[]).map(g=>`<option value="${esc(g.id)}" ${g.id===snapshot.activeGroupId?'selected':''}>${esc(g.name)}</option>`).join('')}</select></label>`;
+  const relationship=context==='relationship',personal=state.personalTownLabel||t('내 마을','내 마을');
+  const label=({ko:'마을 선택',en:'Village',ja:'村を選択'})[state.uiLanguage]||'마을 선택';
+  return `<nav class="${relationship?'relationship-group-jump':'game-hud-town-switch'}" aria-label="${label}"><label><span>${label}</span><select data-multiplayer-dropdown aria-label="${label}"><option value="">${esc(personal)}</option>${(snapshot.groups||[]).map(g=>`<option value="${esc(g.id)}" ${g.id===snapshot.activeGroupId?'selected':''}>${esc(g.name)}</option>`).join('')}</select></label>${snapshot.activeGroupId?`<button type="button" data-multiplayer-select="" aria-label="${({ko:'내 마을로 돌아가기',en:'Return to my village',ja:'自分の村へ戻る'})[state.uiLanguage]}"><span aria-hidden="true">⌂</span> ${esc(personal)}</button>`:''}</nav>`;
+
 }
 function multiplayerObserve(snapshot,nativeHome){
   return withSharedWorld(snapshot,()=>{
@@ -3573,7 +3576,7 @@ const characterViewEditor=()=>{
   };
   if(!source||!target){
     const emptyCopy=({ko:{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"},en:{title:"A story to share",hint:"Add a second character to set their relationship and feelings toward each other.",create:"Create character"},ja:{title:"一緒に紡ぐ物語を待っています",hint:"キャラクターが2人以上になると、関係や相手への気持ちを設定できます。",create:"キャラクターを作る"}})[state.uiLanguage]||{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"};
-    return `<section class="relationship-empty"><button type="button" class="relationship-empty-back" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>${groupJump().replace('class="game-hud-town-jump"','class="relationship-group-jump"')}<div class="relationship-empty-card"><img src="./assets/home-ui/relationship.png" alt=""><h2>${emptyCopy.title}</h2><p>${emptyCopy.hint}</p><button type="button" data-tab="character">${emptyCopy.create}</button></div></section>`;
+    return `<section class="relationship-empty"><button type="button" class="relationship-empty-back" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>${groupJump('relationship')}<div class="relationship-empty-card"><img src="./assets/home-ui/relationship.png" alt=""><h2>${emptyCopy.title}</h2><p>${emptyCopy.hint}</p><button type="button" data-tab="character">${emptyCopy.create}</button></div></section>`;
   }
   const official=Object.values(state.relationships||{}).filter(relation=>{const members=relation.groupMembers?.length?relation.groupMembers:[relation.a,relation.b];return members.includes(sourceId)&&members.includes(targetId)});
   const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
@@ -3592,7 +3595,7 @@ const characterViewEditor=()=>{
   const sourceParticle=subjectText(source.name).slice(source.name.length);
   const targetParticle=objectText(target.name).slice(target.name.length);
   return `<section class="character-view-editor relationship-stage relationship-motion-${relationshipMotion}" style="--relationship-own:${esc(sourceColor)};--relationship-own-secondary:${esc(source.theme?.secondary||sourceColor)};--relationship-target:${esc(targetColor)};--relationship-left:${esc(heroLeft.theme?.primary||sourceColor)};--relationship-right:${esc(heroRight.theme?.primary||targetColor)}">
-    <button type="button" class="relationship-back-button" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>${groupJump().replace('class="game-hud-town-jump"','class="relationship-group-jump"')}
+    <button type="button" class="relationship-back-button" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>${groupJump('relationship')}
     <div class="relationship-choice-row">
       ${characterSelector("source",state.order,sourceId,source)}
       <span class="relationship-choice-arrow" aria-hidden="true"></span>
