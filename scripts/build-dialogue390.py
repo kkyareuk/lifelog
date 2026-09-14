@@ -27,7 +27,7 @@ for name in d['REVIEWED_STYLE_NAMES']:
   for i,key in enumerate(keys):
    block=[p(f'{i+1:02d}  {key}',sub)]
    for lang in ['ko','en','ja']:
-    block+=[p({'ko':'한국어','en':'English','ja':'日本語'}[lang],small),p(d[typ][name][lang][i],styles[lang])]
+    block+=[p({'ko':'한국어','en':'English','ja':'日本語'}[lang],small),p(d[typ][name][lang][i] if lang!='ja' else d[typ][name][lang][i].replace('{상대}','{相手}').replace('{물건}','{品物}').replace('{음식}','{料理}').replace('{음료}','{飲み物}'),styles[lang])]
    story.append(KeepTogether(block));story.append(Spacer(1,8))
  story.append(PageBreak())
 story=story[:-1]

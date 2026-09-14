@@ -15,5 +15,3 @@ assert.deepEqual(await check(),{actorOverlap:false,labelOverlap:false,onscreen:t
 await page.setViewportSize({width:384,height:600});await page.waitForTimeout(150);assert.deepEqual(await check(),{actorOverlap:false,labelOverlap:false,onscreen:true});
 console.log('PASS390 collision: stacked characters and two cards do not intersect at 384x832 or 384x600');
 }finally{await browser.close();server.close()}
-
-

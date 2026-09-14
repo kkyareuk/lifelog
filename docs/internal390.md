@@ -1,6 +1,6 @@
-# 1.0.338 / 390 内部测试
+# 1.0.338 / 390 내부 테스트
 
-- Branch: dev. Release 287 uploading to internal test; final availability recorded below after Console confirmation.
+- Branch: dev. Release 287 is available to internal testers, verified in Play Console.
 - Report 94f4aa14-09d5-4e68-9859-dea14c1ff2d4: valid discovery answer can have no trait delta when its affected axes are locked. Keep locked traits and record the answer; stale answers no longer masquerade as storage failures.
 - Name cards: removed conflicting relative-position rule from detached UI labels; screen-space placement avoids actor art and earlier cards. Offscreen actors are not pulled to viewport edges. Seat positions are measured before label placement. When a room has no collision-free space, chooses least overlap.
 - Relationship scores continue according to selected policy; formal relationships change only after a proposal response. Pending/declined/later states persist; policy, age and family guards rechecked. Housing/family proposals require the existing editor, not silent home or registry mutations. The 16-text catalogue is not a claim that all 16 triggers are enabled.
@@ -15,4 +15,4 @@ Android bundleRelease successful; jarsigner verified; 369 prepared assets match 
 SHA256: ACF0DB2C42B9680901A1B4C58ED9BF0E581F8A5F4F1046B25FDFA01D85626975
 
 ## Deployment
-Pending final Console availability verification.
+2026-09-14 17:36 Asia/Seoul: Play Console shows 390 (1.0.338), 내부 테스터에게 제공됨. Release287. No supported-device loss. Only existing missing deobfuscation-map warning (minification disabled). Game implementation commit 265296e pushed to dev.
