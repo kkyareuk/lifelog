@@ -1,0 +1,15 @@
+<ko-KR>
+수면·허기·용변·청결·사교, 욕구 5종을 추가했어요. 기준 캐릭터를 누르면 충족도를 확인하고 전체설정에서 현재 값으로 고정할 수 있어요.
+상대를 누르면 관계 수치와 상호작용을 선택하고, 왕관으로 기준 캐릭터를 바꿔요. 친밀도·애정도·신뢰·편안함·갈등도가 행동에 따라 달라지며, 관계 변화는 우편으로 결정해요.
+함께 앉은 상황표는 묶고 개인 로그는 각자 유지해요. 가구·캐릭터에 가리거나 화면 밖으로 나가는 표시, 질문 저장 실패, 상호작용 중 잘못 열리는 메뉴를 수정했어요.
+프로필·슬롯·마을 선택 UI와 응원자 명단을 정리했어요. 말투를 하오체·하게체 및 언어별 지역 말투로 다듬고 거친 표현을 순화했어요. 설정과 무관한 취미 행동과 공지 사진도 수정했어요.
+</ko-KR>
+<en-US>
+Five needs: sleep, hunger, toilet, hygiene and social. Tap your character to view them; freeze values in settings. Tap others for relationship meters and interactions; switch viewpoint with the crown. Relationship changes arrive as letters. Shared seating has joint cards and individual logs. Fixed question saves, obscured/off-screen labels and incorrect interaction menus. Improved profile, slots, village selector, credits and localized voices; softened dialogue and fixed notice photos.
+</en-US>
+<ja-JP>
+睡眠・空腹・トイレ・清潔・社交の5つの欲求を追加しました。基準キャラクターを押すと充足度を確認でき、全体設定で現在の値に固定できます。
+相手を押すと関係の数値と交流を選べ、王冠で基準を切り替えられます。親密度・愛情度・信頼・安心感・葛藤度が行動で変化し、関係の変更は手紙で決めます。
+同じ座席では表示をまとめ、個別ログは各自の行動を保ちます。表示の重なり・画面外へのはみ出し、質問の保存失敗、交流中の誤ったメニューを修正しました。
+プロフィール・使用枠・村選択・応援者名簿を改善し、古風な口調と地域の表現を調整して荒い台詞を和らげました。未設定の趣味の行動とお知らせの写真も修正しました。
+</ja-JP>
