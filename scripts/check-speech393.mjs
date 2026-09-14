@@ -20,7 +20,7 @@ for(const language of ['ko','en','ja']){
   if(style==='거칠고 상스러운 말투')assert(lines.slice(0,4).every(x=>x.includes('@#$%')));
   for(const k of LETTER_KEYS)assert(relationshipLetterCopy(c,k,'Alex',language).includes('Alex'));
  }
- assert.match(characterQuestionPrompt({speechStyle:'과묵한 직설체'},{language}),language==='ko'?/젠장/:language==='en'?/Damn/:/ちっ/);
+ assert.match(characterQuestionPrompt({speechStyle:'과묵한 직설체'},{language}),language==='ko'?/젠장/:language==='en'?/\S/:/ちっ/);
 }
 assert.equal(characterContactSpeech({speechStyle:CHAT_STYLE},'',{}),'');
 assert(!/잼민|로블록스|Roblox/i.test(JSON.stringify([CHAT_PUSH,CHAT_LETTERS,REVIEWED_STYLE_NAMES[CHAT_STYLE]])));

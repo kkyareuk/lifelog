@@ -1,3 +1,5 @@
+import {authoredSelf,ownerLogTemplate} from './character-language.js';
+import {characterLanguageFields,bindCharacterLanguageFields} from './character-language-ui.js';
 import {startIntroTour,introTourActive} from './intro-tour.js';
 import {installLogOrder} from './log-order.js';
 import {saveFailureMessage,saveFailureDiagnostic} from './save-status.js?v=20260909dev305';
@@ -955,6 +957,7 @@ function enhanceDynamicForms(){
       if(sleep&&sleepHabit)sleep.after(sleepHabit);
       const job=labelOf('[data-field="job"]'),jobTitle=labelOf('[data-field="jobTitle"]'),workplace=labelOf('[data-field="workplaceId"]'),income=labelOf('[data-field="income"]'),gender=labelOf('[data-field="gender"]'),speech=labelOf('[data-field="speechStyle"]'),orientation=labelOf('[data-field="attractionTarget"]'),wealth=labelOf('[data-field="wealth"]');
       if(job&&gender&&orientation)job.before(gender,...(speech?[speech]:[]),orientation);
+      if(gender&&!fields.querySelector(".character-language-settings"))gender.insertAdjacentHTML("afterend",characterLanguageFields(active(),state.uiLanguage));
       if(job&&jobTitle)job.after(jobTitle);
       if(income&&wealth)income.before(wealth);
       const license=profile.querySelector('input[data-character-check][data-field="driverLicense"]')?.closest("label");
@@ -3743,6 +3746,7 @@ function bind(){
     el.classList.toggle("on",(active()?.[mode]?.[kind]||[]).includes(itemId));
     refreshCharacterSelectionSummaries();
   });
+  bindCharacterLanguageFields(document,active());
   $$("[data-field]").forEach(el=>{
     if(isDeferredMobileTextControl(el)){
       // 모바일 자유 입력은 DOM이 단 하나의 진실 공급원이다. 천지인 조합
@@ -6068,7 +6072,7 @@ function buildQuestionNotification(character,at,seed){
 }
 function buildMomentNotification(character,topic,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),phrases=CHARACTER_CONTACT_PHRASES[topic]||CHARACTER_CONTACT_PHRASES.moments;
-  const action=fillNotificationText(notificationText(phrases.actions[seed%phrases.actions.length],language),context),ending=fillNotificationText(notificationText(phrases.endings[Math.floor(seed/7)%phrases.endings.length],language),context);
+  const action=fillNotificationText(authoredSelf(notificationText(phrases.actions[seed%phrases.actions.length],language),character,language),context),ending=fillNotificationText(authoredSelf(notificationText(phrases.endings[Math.floor(seed/7)%phrases.endings.length],language),character,language),context);
   const titles={
     checkins:{ko:["오늘은 어땠어요?","밥은 챙겼어요?","잠깐 안부를 물어요"],en:["How was your day?","Did you eat?","A quick check-in"],ja:["今日はどうでしたか？","食事はできましたか？","ちょっと様子を聞かせて"]},
     worries:{ko:["작은 고민이 있어요","당신 생각이 궁금해요","같이 골라 줄래요?"],en:["I have a small worry","What do you think?","Will you help me choose?"],ja:["少し悩んでいます","あなたの考えを聞かせて","一緒に選んでくれますか？"]},
@@ -6091,7 +6095,7 @@ function buildLifeLogNotification(character,at,seed){
     {title:{ko:"{target}에게 안부를 보내는 중",en:"Checking in with {target}",ja:"{target}に近況を尋ねているところ"},body:{ko:"부담스럽지 않게 짧은 문장을 고른 뒤 전송했어요.",en:"They chose a short, low-pressure message and sent it.",ja:"負担にならない短い文を選んで送信しました。"}},
     {title:{ko:"잠깐 바깥 공기를 쐬는 중",en:"Stepping out for some air",ja:"少し外の空気を吸っているところ"},body:{ko:"휴대폰을 주머니에 넣고 가까운 길을 천천히 걷고 있어요.",en:"They put the phone away and are walking slowly along a nearby path.",ja:"スマートフォンをポケットに入れ、近くの道をゆっくり歩いています。"}},
     {title:{ko:"내일 쓸 물건을 챙기는 중",en:"Preparing things for tomorrow",ja:"明日使う物を準備しているところ"},body:{ko:"가방 옆에 필요한 물건을 하나씩 모아 두었어요.",en:"They gathered the things they'll need beside their bag, one by one.",ja:"必要な物を一つずつ鞄のそばにまとめました。"}}
-  ],entry=logs[seed%logs.length],title=fillNotificationText(notificationText(entry.title,language),context),body=fillNotificationText(notificationText(entry.body,language),context);
+  ],entry=logs[seed%logs.length],title=fillNotificationText(notificationText(entry.title,language),context),body=fillNotificationText(ownerLogTemplate(notificationText(entry.body,language),character,language),context);
   const label={ko:"생활로그",en:"Life log",ja:"生活ログ"}[language]||"생활로그";
   return {title:`${character.name} · ${label} · ${title}`,body,signature:`lifeLog:${seed%logs.length}:${character.id}:${context.targetId}`,extra:{mode:"lifeLog",characterId:character.id,topic:"lifeLogs",scheduledAt:at.toISOString()}};
 }

@@ -1,3 +1,5 @@
+import {ENGLISH_PUSH_DRAFTS,ENGLISH_PUSH_NAMES,ENGLISH_PUSH_STYLE_MAP} from './speech-english394.js';
+import {authoredSelf} from './character-language.js';
 import {CHAT_STYLE,CHAT_PUSH,CHAT_LETTERS} from './speech-chat.js';
 import {softenCharacterSpeech} from './speech-soften.js';
 import {SOURCE_RELATION_LETTERS} from './speech-letter-source.js';
@@ -596,11 +598,12 @@ export const REVIEWED_PUSH={
  }
 };
 export function reviewedPush(character,key,{language='ko',target='',item='',food='',drink=''}={}){
- const pool=REVIEWED_PUSH[reviewedStyle(character?.speechStyle)];if(!pool)return '';
+ const style=reviewedStyle(character?.speechStyle),sourceKey=Object.keys(ENGLISH_PUSH_STYLE_MAP).find(k=>ENGLISH_PUSH_STYLE_MAP[k]===style);
+ const pool=language==='en'&&sourceKey?{en:ENGLISH_PUSH_DRAFTS[sourceKey]}:REVIEWED_PUSH[style];if(!pool)return '';
  const index=PUSH_KEYS.indexOf(key);if(index<0)return '';
- return (pool[language]||pool.ko)[index].replaceAll('{상대}',target||'…').replaceAll('{물건}',item||'…').replaceAll('{음식}',food||item||'…').replaceAll('{음료}',drink||item||'…');
+ return softenCharacterSpeech(authoredSelf((pool[language]||pool.ko)[index],character,language),style).replaceAll('{상대}',target||'…').replaceAll('{물건}',item||'…').replaceAll('{음식}',food||item||'…').replaceAll('{음료}',drink||item||'…');
 }
-export function relationshipLetterCopy(character,kind,target,lang='ko'){
+function rawRelationshipLetterCopy(character,kind,target,lang='ko'){
  const style=reviewedStyle(character?.speechStyle),sourceStyle=({'인터넷소설 감성체':'귀여니체','스타트업 업무체':'판교어 · 스타트업 업무체'})[style]||style;
  if(lang==='ko'&&!REVIEWED_LETTERS[style]&&SOURCE_RELATION_LETTERS[sourceStyle]?.[kind])return softenCharacterSpeech(SOURCE_RELATION_LETTERS[sourceStyle][kind].replaceAll('{상대}',target||'…'),style);
  if(['인터넷소설 감성체','스타트업 업무체','과묵한 직설체','거칠고 상스러운 말투'].includes(style)){
@@ -613,3 +616,14 @@ export function relationshipLetterCopy(character,kind,target,lang='ko'){
  const pool=REVIEWED_LETTERS[style]||REVIEWED_LETTERS['하오체'];
  return (pool[lang]||pool.ko)[Math.max(0,LETTER_KEYS.indexOf(kind))].replaceAll('{상대}',target||'…');
 }
+
+for(const [id,style] of Object.entries(ENGLISH_PUSH_STYLE_MAP)){const prior=REVIEWED_STYLE_NAMES[style];REVIEWED_STYLE_NAMES[style]=prior?[prior[0],ENGLISH_PUSH_NAMES[id],prior[2]]:[style,ENGLISH_PUSH_NAMES[id],null];}
+
+export function relationshipLetterCopy(character,kind,target,lang='ko'){
+ const token='⟦RELATION_TARGET⟧';
+ return authoredSelf(rawRelationshipLetterCopy(character,kind,token,lang),character,lang).replaceAll(token,target||'…');
+}
+
+// English regional slots use the approved genre expressions, not imitated accents.
+REVIEWED_LETTERS["경상도 사투리"].en=["I'd like to be friends with {상대}. Best start with a hello.", "I can count on {상대}. I'd like us to be best friends.", "I've fallen for {상대}. Time to say it plain.", "I'd like to share a home with {상대}. What do you think?", "I'd like to get engaged to {상대}. I've given this real thought.", "I'd like to marry {상대}. I want to build a life together.", "Living with {상대} isn't working. I need a home of my own.", "I want to break up with {상대}. Staying won't put things right.", "I want a divorce from {상대}. This is a decision I've thought through.", "I want to end my friendship with {상대}. We've hurt each other enough.", "I need to cut ties with {상대}. Being family doesn't make this bearable.", "I'd like to make peace with {상대}. I'll take the first step.", "I'd like another chance with {상대}. There's still something worth tending.", "I need some distance from {상대}. Time to get my thoughts straight.", "I'd like to be rivals with {상대}. Give each other a reason to improve.", "I'd like to welcome {상대} as family. We've come a long way together."];
+REVIEWED_LETTERS["전라도 사투리"].en=["I'd like to be friends with {상대}. Shall I send a greeting?", "{상대} feels like a safe harbor. I'd like us to be best friends.", "My thoughts keep turning to {상대}. I'd like to say how I feel.", "I'd like to share a home with {상대}. A place to return to together.", "I'd like to get engaged to {상대}. I've taken time to chart this course.", "I'd like to marry {상대}. I want to share the journey ahead.", "Living with {상대} has become too hard. I want us to live apart.", "I want to break up with {상대}. Our paths need to part here.", "I want a divorce from {상대}. I've thought carefully about what comes next.", "I want to end my friendship with {상대}. We keep hurting each other.", "I need to cut ties with {상대}. I cannot keep weathering this.", "I'd like to make peace with {상대}. Shall I open a way back?", "I'd like to try again with {상대}. Perhaps we can find a better course.", "I need some distance from {상대}. A little room to find my bearings.", "I'd like to be rivals with {상대}. We could help each other reach further.", "I'd like to welcome {상대} as family. A shared home port means a great deal."];

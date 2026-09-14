@@ -1,3 +1,4 @@
+import {ownerLogTemplate} from './character-language.js';
 import {drinkLogCopy} from "./drink-log.js?v=20260909dev305";
 const hangul=/[가-힣]/;
 const japanese=/[\u3040-\u30ff\u31f0-\u31ff]/;
@@ -61,14 +62,14 @@ const actionCopy={
 // Some of the simulation pool predates multilingual scene objects. Keep its
 // detailed Korean copy intact in Korean, and provide a localized semantic
 // fallback for every remaining generated entry in English and Japanese.
-export function localizeLifeLog(entry,language,world,characterId=""){
+function rawLocalizeLifeLog(entry,language,world,characterId=""){
   if((entry?.manualDirective||entry?.careRoutine==='morning-care')&&!entry.transit&&entry.localizedCopy?.[language]?.desc)return {...entry,...entry.localizedCopy[language],displayLanguage:language};
   if(entry.mentorScene&&language!=="ko"){
     const name=companionFor(entry,world,characterId)?.name||"",teaching=entry.mentorTeaching;
     const [title,desc]=language==="ja"?(teaching?[`${name}に教えた内容を振り返っているところ`,`${name}の説明を聞き、理解できた点ともう一度練習する点を確認しました。`]:[`${name}に習った内容を質問しているところ`,`${name}に行き詰まった箇所を見せ、説明を聞いてもう一度試しました。`]):(teaching?[`Reviewing a lesson with ${name}`,`They listened to ${name}'s explanation and identified what was understood and what needed more practice.`]:[`Asking ${name} about a lesson`,`They showed ${name} where they got stuck and tried again with guidance.`]);
     return {...entry,title,desc,displayLanguage:language};
   }
-  if(entry.drinkExperience)return {...entry,...drinkLogCopy(entry.drinkExperience,language,companionFor(entry,world,characterId)?.name||""),displayLanguage:language};
+  if(entry.drinkExperience)return {...entry,...drinkLogCopy(entry.drinkExperience,language,companionFor(entry,world,characterId)?.name||"",world.characters?.[characterId]),displayLanguage:language};
   const target=["ko","en","ja"].includes(language)?language:"ko",names=entityNames(world),title=String(entry.title||""),desc=String(entry.desc||"");
   const canonicalTitle=String(entry.canonicalTitleKo||""),canonicalDesc=String(entry.canonicalDescKo||""),sourceCopy=`${canonicalTitle||title} ${canonicalDesc||desc}`;
   const sourceLanguage=entry.sourceLanguage||detectedLanguage(sourceCopy,names);
@@ -76,13 +77,20 @@ export function localizeLifeLog(entry,language,world,characterId=""){
   if(target==="ko"&&(canonicalTitle||canonicalDesc))return {...entry,title:canonicalTitle||title,desc:canonicalDesc||desc,displayLanguage:"ko"};
   if(!sourceLanguage||target===sourceLanguage)return entry;
   const copy=sourceCopy,kind=actionKind(copy),base=actionCopy[target][kind],place=placeFor(entry,world),home=entry.home?world.homes?.[entry.visitHomeId||world.characters?.[characterId]?.homeId]:null,companion=companionFor(entry,world,characterId),room=target==="ko"?({living:"거실",kitchen:"주방",study:"서재",bedroom:"침실",bath:"욕실",entry:"현관",storage:"창고"}[entry.room]||""):roomCopy[target][entry.room]||"";
-  let localizedTitle=base[0],localizedDesc=base[1];
+  let localizedTitle=base[0],localizedDesc=ownerLogTemplate(base[1],world.characters?.[characterId],target);
   if(entry.giftExchange&&companion){
     localizedTitle=target==="en"?`Exchanging a gift with ${companion.name}`:target==="ja"?`${companion.name}と贈り物をやり取りしているところ`:`${companion.name}와 선물을 주고받는 중`;
-    localizedDesc=target==="en"?"They are giving or receiving the chosen gift and watching the other person's response.":target==="ja"?"選んだ贈り物を渡したり受け取ったりしながら、相手の反応を見ています。":"고른 선물을 건네거나 받으며 상대의 반응을 살피고 있어요.";
+    localizedDesc=target==="en"?ownerLogTemplate("They are giving or receiving the chosen gift and watching the other person's response.",world.characters?.[characterId],target):target==="ja"?"選んだ贈り物を渡したり受け取ったりしながら、相手の反応を見ています。":"고른 선물을 건네거나 받으며 상대의 반응을 살피고 있어요.";
   }
   else if(companion&&kind==="talk")localizedTitle=target==="en"?`Spending time with ${companion.name}`:target==="ja"?`${companion.name}と過ごしているところ`:`${companion.name}와 시간을 보내는 중`;
   else if(place)localizedTitle=target==="en"?`${base[0]} at ${place.name}`:target==="ja"?`${place.name}で${base[0]}`:`${place.name}에서 ${base[0]}`;
   else if(home&&room)localizedTitle=target==="en"?`${base[0]} in the ${room}`:target==="ja"?`${room}で${base[0]}`:`${room}에서 ${base[0]}`;
   return {...entry,title:localizedTitle,desc:localizedDesc,sourceLanguage:sourceLanguage||entry.sourceLanguage,canonicalTitleKo:canonicalTitle||(sourceLanguage==="ko"?title:undefined),canonicalDescKo:canonicalDesc||(sourceLanguage==="ko"?desc:undefined),displayLanguage:target,localizedFallback:true};
+}
+
+export function localizeLifeLog(entry,language,world,characterId=''){
+ const result=rawLocalizeLifeLog(entry,language,world,characterId);
+ // Recognize only our exact authored fallback text; do not rewrite user copy.
+ if(language==='en'&&Object.values(actionCopy.en).some(([,desc])=>desc===result.desc))return {...result,desc:ownerLogTemplate(result.desc,world.characters?.[characterId],language)};
+ return result;
 }

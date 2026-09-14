@@ -1,3 +1,4 @@
+import {authoredSelf} from './character-language.js';
 import {softenCharacterSpeech} from './speech-soften.js';
 import {reviewedStyle,reviewedPush,REVIEWED_STYLE_NAMES} from './speech-reviewed.js';
 export const SPEECH_STYLE_OPTIONS=Object.freeze([
@@ -57,7 +58,7 @@ function questionSubject(kind,target,language){
   return kind==="weekend"?"이번 주말 일정":kind==="work"?"다음 업무 우선순위":kind==="gift"?`${target||"상대"}의 선물`:"오늘 남는 시간의 일정";
 }
 
-export function characterQuestionPrompt(character,{kind="everyday",target="",language="ko",base=""}={}){
+function rawCharacterQuestionPrompt(character,{kind="everyday",target="",language="ko",base=""}={}){
   const style=effectiveSpeechStyle(character),subject=questionSubject(kind,target,language);
   if(style==="인터넷소설 감성체")return language==="en"?`${subject}… help me choose? my brain just went blank >_<`:language==="ja"?`${subject}…一緒に決めてくれる？ もぉ迷っちゃう >_<`:`${subject}… 같이 골라줄꼬지? 나 혼자선 못 고르겠어 >_<`;
   if(style==="거칠고 상스러운 말투")return language==="en"?`@#$%, too many choices for ${subject}. Pick one.`:language==="ja"?`@#$%、${subject}の候補が多すぎる。さっさと一つ決めようぜ。`:`@#$%, ${subject} 뭐가 이렇게 많아. 하나 골라 봐.`;
@@ -227,7 +228,7 @@ function rawCharacterContactSpeech(character,base,{language="ko"}={}){
   return (wrappers[style]||((value)=>value))(text);
 }
 
-export function characterPlanSpeech(character,language="ko"){
+function rawCharacterPlanSpeech(character,language="ko"){
   const style=effectiveSpeechStyle(character);
   if(style==="거칠고 상스러운 말투")return language==="en"?"@#$%, enough waiting. I’m getting this done.":language==="ja"?"@#$%、待つのは終わりだ。順に片づけるぞ。":"@#$%, 더 끌지 말고 이 순서대로 끝내겠어.";
   if(style==="인터넷소설 감성체")return language==="en"?"okay… this is the plan >_< wish me luck?":language==="ja"?"よし…この順番でやってみるね >_<":"오늘은 이 순서대루 해볼꺼야… 응원해줄꼬지 >_<";
@@ -256,7 +257,7 @@ export function bindSpeechStylePickers(root,character,language='ko'){
  for(const select of root.querySelectorAll('select[data-field="speechStyle"]')){
   if(select.dataset.speechPicker)continue;
   select.dataset.speechPicker='1';select.value=canonicalSpeechStyle(character?.speechStyle)||SPEECH_STYLE_OPTIONS[0];
-  for(const option of select.options){const label=REVIEWED_STYLE_NAMES[option.value];if(label)option.textContent=label[{ko:0,en:1,ja:2}[language]||0]}
+  for(const option of select.options){const label=REVIEWED_STYLE_NAMES[option.value];if(label?.[{ko:0,en:1,ja:2}[language]||0])option.textContent=label[{ko:0,en:1,ja:2}[language]||0]}
   const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');
   const update=()=>{trigger.textContent=(select.selectedOptions[0]?.textContent||select.value)+' ▾'};update();select.hidden=true;select.setAttribute("aria-hidden","true");select.tabIndex=-1;select.style.setProperty("display","none","important");select.after(trigger);
   trigger.addEventListener('click',()=>{
@@ -297,4 +298,7 @@ export function speechStyleExample(character,options={}){
  return characterQuestionPrompt(character,options);
 }
 
-export function characterContactSpeech(...args){return softenCharacterSpeech(rawCharacterContactSpeech(...args),effectiveSpeechStyle(args[0]))}
+export function characterContactSpeech(...args){return softenCharacterSpeech(authoredSelf(rawCharacterContactSpeech(...args),args[0],args[2]?.language||"ko"),effectiveSpeechStyle(args[0]))}
+
+export function characterQuestionPrompt(character,options={}){const token='⟦QUESTION_TARGET⟧';return authoredSelf(rawCharacterQuestionPrompt(character,{...options,target:options.target?token:''}),character,options.language||'ko').replaceAll(token,options.target||'');}
+export function characterPlanSpeech(character,language='ko'){return authoredSelf(rawCharacterPlanSpeech(character,language),character,language)}

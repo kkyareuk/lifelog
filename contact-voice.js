@@ -1,3 +1,4 @@
+import {authoredSelf} from './character-language.js';
 import {reviewedPush} from './speech-reviewed.js';
 import {effectiveSpeechStyle,characterContactSpeech} from './speech-styles.js?v=20260909dev305';
 
@@ -36,14 +37,14 @@ const TOPIC_LINES={
   }
 };
 
-export const CONTACT_VOICE_VERSION=5;
+export const CONTACT_VOICE_VERSION=6;
 export function characterMomentSpeech(character,neutral,{topic='moments',context={},language='ko',seed=0}={}){
   const style=effectiveSpeechStyle(character);
   const key={checkins:['식사 안부','하루 안부'],worries:['지금','오후'],comfort:['휴식','잘 자','내일 응원','자신감','수고'],work:['일하기 싫음','쌓인 일']}[topic];const reviewed=key&&reviewedPush({...character,speechStyle:style},key[Math.abs(seed)%key.length],{language,target:context.target,item:context.item});if(reviewed)return reviewed;
   if(style==='과묵한 직설체'||style==='냉정한 격식체'){
     const topics=TOPIC_LINES[language]||TOPIC_LINES.ko;
     const pool=(topics[topic]||topics.moments)[style==='냉정한 격식체'?1:0];
-    return pool[Math.abs(seed)%pool.length].replace(/\{(\w+)\}/g,(_,key)=>String(context[key]||''));
+    return authoredSelf(pool[Math.abs(seed)%pool.length],character,language).replace(/\{(\w+)\}/g,(_,key)=>String(context[key]||''));
   }
   // Both the action and the ending pass through the same full-body transform.
   return characterContactSpeech(character,neutral,{language});

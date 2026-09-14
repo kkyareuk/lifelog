@@ -1,3 +1,4 @@
+import {ownerLogTemplate} from './character-language.js';
 // Only explicit dictionary values become observations; do not infer health effects.
 const copy={
  cold:["차가운 잔을 쥐고 시원하게 한 모금 마셨어요.","They held the cold glass and took a refreshing sip.","冷たいグラスを持ち、ひんやりした一口を飲みました。"],
@@ -28,9 +29,9 @@ export function drinkExperience(drink,character,seed=0){
  const start=cues.length?Math.abs(seed)%cues.length:0;
  return {name:String(drink.name||''),cues:cues.length?[cues[start],...(cues.length>1?[cues[(start+1)%cues.length]]:[])]:[]};
 }
-export function drinkLogCopy(experience,language='ko',companion=''){
+export function drinkLogCopy(experience,language='ko',companion='',character=null){
  const index=language==='en'?1:language==='ja'?2:0,name=String(experience.name||''),sentences=(experience.cues||[]).filter(key=>copy[key]).slice(0,2).map(key=>copy[key][index]);
  const title=index===1?`Drinking ${name}${companion?` with ${companion}`:''}`:index===2?`${companion?`${companion}と`:''}${name}を飲んでいるところ`:`${companion?`${companion}와 `:''}${name} 마시는 중`;
  const fallback=["음료를 한 모금씩 마시며 잠깐 쉬고 있어요.","They are taking a short break and sipping their drink.","飲み物を少しずつ飲みながら、ひと休みしています。"][index];
- return {title,desc:sentences.join(' ')||fallback};
+ return {title,desc:character?ownerLogTemplate(sentences.join(' ')||fallback,character,language):sentences.join(' ')||fallback};
 }

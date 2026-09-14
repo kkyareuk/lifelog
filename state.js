@@ -1,3 +1,4 @@
+import {normalizeLanguageFields} from './character-language.js';
 import {repairProfileInteractionTargets} from './profile-interaction-targets.js';
 import {queueRelationshipLetter} from './relationship-letters.js';
 import {relationMetrics,changeRelationMetrics} from './relationship-metrics.js';
@@ -878,6 +879,7 @@ function normalizeHomes(x){
     c.thinkingFeeling=Number.isFinite(+c.thinkingFeeling)?Math.max(0,Math.min(6,+c.thinkingFeeling)):3;
     c.perceivingJudging=Number.isFinite(+c.perceivingJudging)?Math.max(0,Math.min(6,+c.perceivingJudging)):3;
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
+    normalizeLanguageFields(c);
     c.gender=["설정하지 않음","남성","여성","그외"].includes(c.gender)?c.gender:"설정하지 않음";
     if(c.wealth==="대단히 부유함")c.wealth="대부호";
     c.attractedGenders=Array.isArray(c.attractedGenders)?[...new Set(c.attractedGenders)]:[];
@@ -1236,6 +1238,7 @@ export function saveDiscoveryPatch(id,patch){
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
+  normalizeLanguageFields(c);
   if(Object.hasOwn(patch,"accessories"))c.accessoryUse=c.accessories?.length?"착용함":"착용하지 않음";
   if(patch.homeId&&state.homes[patch.homeId]){
     c.residences=Array.isArray(c.residences)?c.residences:[];
