@@ -64,4 +64,4 @@ export function relationshipMailRows(w,now=Date.now()){
  const lang=w.uiLanguage||'ko';return relationshipLetters(w).filter(p=>!p.snoozedUntil||p.snoozedUntil<=now).map(p=>({...p,relationshipLetter:true,sourceId:p.a,sourceName:w.characters[p.a].name,subject:({ko:'관계에 관해 하고 싶은 말',en:'About our relationship',ja:'二人の関係について'})[lang],body:letterText(w.characters[p.a],p.kind,w.characters[p.b].name,lang),answered:p.status!=='pending'}));
 }
 
-function letterText(c,kind,target,lang){const style=effectiveSpeechStyle(c),copy=relationshipLetterCopy({...c,speechStyle:style},kind,target,lang);return lang==='ko'||REVIEWED_STYLE_NAMES[reviewedStyle(style)]?copy:characterContactSpeech({...c,speechStyle:style},copy,{language:lang})}
+function letterText(c,kind,target,lang){const style=effectiveSpeechStyle(c),copy=relationshipLetterCopy({...c,speechStyle:style},kind,target,lang);return lang==='ko'||REVIEWED_STYLE_NAMES[reviewedStyle(style)]||['과묵한 직설체','거칠고 상스러운 말투'].includes(style)?copy:characterContactSpeech({...c,speechStyle:style},copy,{language:lang})}

@@ -290,8 +290,8 @@ select[data-speech-picker="1"]{display:none}
 .speech-picker-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .speech-picker-dialog h2{font-size:1.2rem;margin:0}
 .speech-picker-dialog header button{min-width:44px;min-height:44px}
-.speech-picker-options{display:grid;gap:8px;overflow:auto;max-height:60dvh;margin-top:14px}
-.speech-picker-options button{text-align:left;padding:12px;border:1px solid #cbb799;border-radius:12px;background:#fffdf7;color:inherit}
+.speech-picker-options{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;overflow:auto;max-height:60dvh;margin-top:14px}
+.speech-picker-options button{min-width:0;overflow-wrap:anywhere;word-break:normal;text-align:left;padding:12px;border:1px solid #cbb799;border-radius:12px;background:#fffdf7;color:inherit}
 .speech-picker-options button[aria-pressed=true]{border:2px solid #896035;background:#f6e4b8}
 .speech-picker-options b,.speech-picker-options small{display:block;white-space:normal}
 .speech-picker-options small{margin-top:6px;line-height:1.5;font-size:.9rem}

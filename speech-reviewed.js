@@ -1,6 +1,11 @@
+import {CHAT_STYLE,CHAT_PUSH,CHAT_LETTERS} from './speech-chat.js';
+import {softenCharacterSpeech} from './speech-soften.js';
 import {SOURCE_RELATION_LETTERS} from './speech-letter-source.js';
-export const reviewedStyle=value=>({'고풍스러운 말투':'하오체','사극 선비 말투':'하오체','선비체':'하게체','풍류 선비체':'하게체','재상 선비체':'하게체'})[value]||value;
+export const reviewedStyle=value=>({'귀여니체':'인터넷소설 감성체','귀여니체 · 2000년대 인터넷소설체':'인터넷소설 감성체','판교어':'스타트업 업무체','판교어 · 스타트업 업무체':'스타트업 업무체','고풍스러운 말투':'하오체','사극 선비 말투':'하오체','선비체':'하게체','풍류 선비체':'하게체','재상 선비체':'하게체'})[value]||value;
 export const REVIEWED_STYLE_NAMES={
+ "인터넷소설 감성체":["인터넷소설 감성체","Nostalgic web-romance chat","懐かしのケータイ小説風"],
+ "스타트업 업무체":["스타트업 업무체","Startup office jargon","スタートアップ業務口調"],
+ [CHAT_STYLE]:[CHAT_STYLE,"Playful gaming chat","ノリのいいゲームチャット口調"],
  "경상도 사투리": [
   "경상도 사투리",
   "Scottish accent",
@@ -65,6 +70,7 @@ export const PUSH_KEYS=[
  "음료"
 ];
 export const REVIEWED_LETTERS={
+ [CHAT_STYLE]:CHAT_LETTERS,
  "경상도 사투리": {
   "ko": [
    "{상대}랑 친구 하고 싶다. 먼저 말 걸어 봐도 되겠나?",
@@ -291,6 +297,7 @@ export const REVIEWED_LETTERS={
  }
 };
 export const REVIEWED_PUSH={
+ [CHAT_STYLE]:CHAT_PUSH,
  "경상도 사투리": {
   "ko": [
    "지금 뭐 하면 좋겠노? 니가 하나 골라 봐라.",
@@ -594,6 +601,15 @@ export function reviewedPush(character,key,{language='ko',target='',item='',food
  return (pool[language]||pool.ko)[index].replaceAll('{상대}',target||'…').replaceAll('{물건}',item||'…').replaceAll('{음식}',food||item||'…').replaceAll('{음료}',drink||item||'…');
 }
 export function relationshipLetterCopy(character,kind,target,lang='ko'){
- const style=reviewedStyle(character?.speechStyle);if(lang==='ko'&&!REVIEWED_LETTERS[style]&&SOURCE_RELATION_LETTERS[style]?.[kind])return SOURCE_RELATION_LETTERS[style][kind].replaceAll('{상대}',target||'…');const pool=REVIEWED_LETTERS[style]||REVIEWED_LETTERS['하오체'];
+ const style=reviewedStyle(character?.speechStyle),sourceStyle=({'인터넷소설 감성체':'귀여니체','스타트업 업무체':'판교어 · 스타트업 업무체'})[style]||style;
+ if(lang==='ko'&&!REVIEWED_LETTERS[style]&&SOURCE_RELATION_LETTERS[sourceStyle]?.[kind])return softenCharacterSpeech(SOURCE_RELATION_LETTERS[sourceStyle][kind].replaceAll('{상대}',target||'…'),style);
+ if(['인터넷소설 감성체','스타트업 업무체','과묵한 직설체','거칠고 상스러운 말투'].includes(style)){
+  const index=Math.max(0,LETTER_KEYS.indexOf(kind)),base=(CHAT_LETTERS[lang]||CHAT_LETTERS.ko)[index].replaceAll('{상대}',target||'…');
+  if(style==='거칠고 상스러운 말투')return '@#$%, '+base;
+  if(style==='인터넷소설 감성체')return lang==='en'?base.replace(/lol|ngl/g,'>_<')+' …tell me what u think?':base.replace(/w/g,'＞＜')+' …どう思う？';
+  if(style==='스타트업 업무체')return lang==='en'?'Quick relationship check-in: '+base.replace(/wanna/g,'I would like to').replace(/gotta/g,'We need to').replace(/lol/g,'')+' Let’s align on the next step.':'関係について相談です。'+base.replace(/w/g,'')+' 次のステップをすり合わせたいです。';
+  return lang==='en'?base.replace(/lol|ngl/g,'').replace(/wanna/g,'I want to'):base.replace(/w/g,'');
+ }
+ const pool=REVIEWED_LETTERS[style]||REVIEWED_LETTERS['하오체'];
  return (pool[lang]||pool.ko)[Math.max(0,LETTER_KEYS.indexOf(kind))].replaceAll('{상대}',target||'…');
 }
