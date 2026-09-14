@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-14-production387-save-photo-single-slots",
-  "version": "1.0.335",
-  "build": 387,
+  "request": "2026-09-14-public391-needs-relations",
+  "version": "1.0.339",
+  "build": 391,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

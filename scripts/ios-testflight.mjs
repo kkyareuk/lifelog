@@ -115,7 +115,7 @@ try{
   stage='upload';
   run('xcrun',['altool','--upload-app','--file',ipa,'--type','ios',...auth],{env:uploadEnv});
   uploadAccepted=true;
-  saveStatus('upload',{appId,version:release.version,build:release.build,internalOnly:!storeRelease,uploadAccepted:true,submittedForReview:false,source:env.GITHUB_SHA});
+  saveStatus('upload',{appId,version:release.version,build:release.build,internalOnly:!storeRelease,uploadAccepted:true,submittedForReview:false,source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim()});
   console.log('Apple accepted the upload. Checking processing status (bounded wait).');
   stage='processing';
   let build=null;
