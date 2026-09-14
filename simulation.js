@@ -3372,7 +3372,7 @@ function commitLiveEntry(c,date,item){
       return !shadowedBase;
     });
     const changed=applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
-    if(changed&&item.interactionId&&recordAutomaticRelationshipMoment([c.id,...(item.withIds||[]),item.withId],`scene:${item.interactionId}`,1,false)){
+    if(changed&&item.interactionId&&!item.manualDirective&&recordAutomaticRelationshipMoment([c.id,...(item.withIds||[]),item.withId],`scene:${item.interactionId}`,1,false)){
       if(sceneBatch)sceneBatch.relationshipRevision++;
       save(false,true);
     }

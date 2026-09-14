@@ -13,6 +13,7 @@ import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';
 import {frameTask} from './frame-task.js?v=20260909dev305';
 import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 import './activity-settings.js?v=20260909dev305';
+import {occupantPanel} from './occupant-panel.js';
 import {installContextMenu} from './context-menu.js?v=20260909dev305';
 import {createNotificationOpenQueue} from './notification-open-queue.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
@@ -241,6 +242,7 @@ document.addEventListener("keydown",event=>{
   if(key==="y"||(key==="z"&&event.shiftKey))redoTownPlacement();else undoTownPlacement();
 });
 const closeHomeOccupantSheet=()=>{
+  document.querySelector("[data-home-occupant-sheet]")?._occupantObserver?.disconnect();
   document.querySelector("[data-home-occupant-sheet]")?.remove();
   document.querySelector("[data-home-occupant-dismiss]")?.remove();
 };
@@ -2030,14 +2032,11 @@ function openHomeOccupantSheet(button){
   const dialog=document.createElement("aside");
   dialog.className="home-occupant-sheet home-occupant-popover";
   dialog.dataset.homeOccupantSheet="";
-  dialog.setAttribute("role","status");
+  dialog.setAttribute("role","dialog");
   const character=button.dataset.characterId?state.characters[button.dataset.characterId]:null,now=new Date(),minute=now.getHours()*60+now.getMinutes();
-  const recent=character?timeline(character,now).filter(entry=>Number(entry?.minute)<=minute).slice(-3).reverse():[];
   const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko;
   const contextLabel=button.dataset.homeOccupant==="pet"?copy.pet:button.dataset.homeOccupant==="town"?copy.town:copy.who;
-  const sleeping=/자는 중|잠든|수면|sleep|眠/.test(`${button.dataset.occupantTitle||""} ${button.dataset.occupantDesc||""}`);
-  const commandMarkup=character&&(!state.sharedContext||character.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?`<button type="button" class="primary occupant-command-open" data-open-command>${sleeping?copy.sleepCommand:copy.command}</button>`:"";
-  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="닫기">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${contextLabel} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div>${commandMarkup}${character?`<section class="home-occupant-recent"><h3>${copy.recent}</h3>${recent.length?`<ol>${recent.map(entry=>`<li><time>${htmlEsc(entry.time||"")}</time><span><b>${htmlEsc(entry.title||"")}</b><small>${htmlEsc(entry.desc||"")}</small></span></li>`).join("")}</ol>`:`<p>${copy.empty}</p>`}</section>`:""}`;
+  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="${({ko:'닫기',en:'Close',ja:'閉じる'})[state.uiLanguage]||'닫기'}">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${contextLabel} · ${htmlEsc(button.dataset.occupantRoom||'')}</small><h2></h2><b></b><p></p></span></div>`;
   const sourceVisual=button.querySelector(".avatar,.sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji")||document.querySelector(".game-hud-current-profile");
   if(sourceVisual)dialog.querySelector(".home-occupant-visual").append(sourceVisual.cloneNode(true));
   dialog.querySelector("h2").textContent=button.dataset.occupantName||"이름 없음";
@@ -2046,7 +2045,7 @@ function openHomeOccupantSheet(button){
   const close=()=>closeHomeOccupantSheet();
   const dismiss=document.createElement("button");
   dismiss.type="button";dismiss.className="home-occupant-dismiss-layer";dismiss.dataset.homeOccupantDismiss="";
-  dismiss.setAttribute("aria-label",state.uiLanguage==="en"?"Close character log":state.uiLanguage==="ja"?"キャラクターログを閉じる":"캐릭터 로그 닫기");
+  dismiss.setAttribute("aria-label",state.uiLanguage==="en"?"Close character details":state.uiLanguage==="ja"?"キャラクター情報を閉じる":"캐릭터 정보 닫기");
   dismiss.onclick=close;
   document.body.append(dismiss);
   document.body.append(dialog);
@@ -2060,7 +2059,17 @@ function openHomeOccupantSheet(button){
   dialog.style.top=Math.max(12,Math.min(vh-height-12,beside?anchor.top:anchor.bottom+height+12<=vh?anchor.bottom+8:anchor.top-height-8))+'px';
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
-  if(character)dialog.querySelector("[data-open-command]")?.addEventListener("click",()=>{close();openDirectCommandDialog(character,sleeping)});
+  if(character){
+    const groupId=state.sharedContext?.groupId||'',uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,actor=state.characters[state.activeId];
+    const owned=!groupId||character.ownerUid===uid;
+    dialog.append(occupantPanel({world:state,character,actor:!groupId||actor?.ownerUid===uid?actor:null,canSelect:owned,close,
+      onSelect:id=>{if(groupId){window.DrawerVillageGroups.selectResident(id)}else{const homeId=state.activeHomeId;setActive(id);state.activeHomeId=homeId;save()}close();render();requestAnimationFrame(()=>{const next=document.querySelector('[data-home-occupant][data-character-id="'+CSS.escape(id)+'"]');if(next)openHomeOccupantSheet(next)})},
+      execute:(id,action,target)=>executeContextActivity(id,action,target,{groupId,uid})
+    }));
+    // Content is inserted before fitting again; menus expand within the same scrollable card.
+    const fit=()=>{if(!dialog.isConnected)return;const h=dialog.getBoundingClientRect().height;dialog.style.top=Math.max(12,Math.min(parseFloat(dialog.style.top)||12,(window.visualViewport?.height||innerHeight)-h-12))+'px'};
+    const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;fit();
+  }
   clearTimeout(openHomeOccupantSheet.timer);
 }
 
@@ -6240,11 +6249,12 @@ window.addEventListener('drawer-village-auth-busy',()=>notificationOpenQueue.flu
 window.addEventListener("drawer-village-character-notification-received",event=>{
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
+async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target,...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
 installContextMenu({
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
- execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target,...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
+ execute:executeContextActivity,
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;

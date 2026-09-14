@@ -1,3 +1,4 @@
+import {relationMetrics,changeRelationMetrics} from './relationship-metrics.js';
 import {advanceNeeds,relationshipPolicy} from './life-needs.js';
 import {recordSaveFailure,clearSaveFailure,saveFailureMessage} from './save-status.js?v=20260909dev305';
 import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
@@ -1600,7 +1601,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     if(kind==="gift"&&!options.giftSource)state.characterDirectives[target.id].copy={ko:{title:`${character.name}에게 선물을 받는 중`,desc:`${options.topic||"선물"}을 받고 고마운 마음을 전하고 있어요.`},en:{title:`Receiving a gift from ${character.name}`,desc:"They are accepting the gift and saying thanks."},ja:{title:`${character.name}から贈り物を受け取るところ`,desc:"贈り物を受け取り、お礼を伝えています。"}};
     target.timelineResetAt=startedAt;
     delete state.dailyPlans?.[target.id];
-    if(!contactRejected&&!SOCIAL_ACTIVITIES[kind]?.negative)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,kind==="kiss"||kind==="hug"?2:1,false);
+    if(!contactRejected)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,SOCIAL_ACTIVITIES[kind]?.negative?-1:1,false,kind);
   }
 
   save();
@@ -1608,7 +1609,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
 }
 
 const AUTO_RELATION_STAGES=[[4,"아는 사이"],[8,"편한 친구"],[15,"가까운 친구"],[25,"서로 의지하는 친구"]];
-export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1,persist=true){
+export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1,persist=true,kind="talk"){
   const ids=[...new Set((characterIds||[]).map(String).filter(id=>state.characters?.[id]))].slice(0,2);
   if(ids.length!==2||ids[0]===ids[1]||!momentId)return false;
   const policy=relationshipPolicy(ids.map(id=>state.characters[id]));
@@ -1618,7 +1619,8 @@ export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1
   const record=state.relationshipDevelopment[key]||{points:0,moments:[],updatedAt:0};
   if(record.moments.includes(String(momentId)))return false;
   record.moments=[...record.moments,String(momentId)].slice(-40);
-  record.points=Math.max(0,Number(record.points)||0)+Math.max(1,Number(points)||1);
+  record.metrics=changeRelationMetrics(relationMetrics(state,ids[0],ids[1]),kind,points);
+  record.points=Math.max(0,(Number(record.points)||0)+(Number(points)||1));
   record.updatedAt=Date.now();
   state.relationshipDevelopment[key]=record;
   let relation=Object.values(state.relationships||{}).find(item=>item?.temporalStatus!=="past"&&[item.a,item.b].sort().join("~")===key);
@@ -1635,6 +1637,7 @@ export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1
       relation.intimacy=Math.max(Number(relation.intimacy)||0,Math.min(88,28+record.points*3));
     }
   }
+  if(relation){relation.metrics={...record.metrics};relation.intimacy=record.metrics.closeness;relation.conflict=record.metrics.tension;}
   ids.forEach(id=>{state.characters[id].timelineResetAt=Date.now()});
   if(persist)save(true);
   return true;
@@ -2235,6 +2238,15 @@ export function updateRelationship(id,data){
   if(Object.prototype.hasOwnProperty.call(data||{},"stage")&&!(data?._automatic))relation.autoManagedStage=false;
   if(data.type&&data.type!==relation.type&&!Object.prototype.hasOwnProperty.call(data,"details"))relation.details={};
   Object.assign(relation,data);
+  // Manual relationship edits remain authoritative over accumulated metrics.
+  const pairChanged=previousCharacterIds.slice().sort().join('~')!==[relation.a,relation.b].sort().join('~');
+  if(pairChanged)delete relation.metrics;
+  const metricKey=[relation.a,relation.b].sort().join('~');
+  const metrics=relationMetrics(state,relation.a,relation.b);
+  if(Object.prototype.hasOwnProperty.call(data,'intimacy'))metrics.closeness=Math.max(0,Math.min(100,Number(data.intimacy)||0));
+  if(Object.prototype.hasOwnProperty.call(data,'conflict'))metrics.tension=Math.max(0,Math.min(100,Number(data.conflict)||0));
+  relation.metrics=metrics;
+  if(state.relationshipDevelopment?.[metricKey])state.relationshipDevelopment[metricKey].metrics={...metrics};
   relation.details=normalizeRelationshipDetails(relation.type,relation.details);
   delete relation._automatic;
   relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,relation.legalStatus);

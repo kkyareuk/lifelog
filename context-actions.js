@@ -1,3 +1,4 @@
+import {relationMetrics} from './relationship-metrics.js';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {characterMood} from './character-mood.js?v=20260909dev305';
 import {SOCIAL_ACTIVITIES} from './social-activities.js?v=20260909dev305';
@@ -69,6 +70,6 @@ export function recommendedContextActions(target,world,actor){
  const groups=contextGroups(target,actor);if(target.type!=='person')return contextActions(target);
  if(target.id===actor?.id)return groups[0].actions.filter(a=>a.lifeTask==='hair'||a.kind==='walk'||a.kind==='rest').slice(0,4);
  const view=(world.characterViews||{})[actor?.id]?.[target.id]||{},signals=viewSignals(view),relation=relationshipBetween(world,actor?.id,target.id);
- const mood=characterMood(actor,actor?.sharedScene||{},world),all=groups.flatMap(g=>g.actions),score=a=>{let n=a.kind==='talk'?6:0;if(mood.score<-10){if(a.remote)n+=4;if(a.kind==='hug')n-=3;}if(/외향|활발/.test(actor?.socialStyle||'')&&['talk','hangout'].includes(a.kind))n+=3;if(a.kind==='hug')n+=signals.romantic?10:signals.caring?6:relation?2:-4;if(signals.hostile||signals.guarded){if(a.kind==='hug'||a.kind==='kiss')n-=20;if(a.negative)n+=/충동|즉흥/.test(actor?.impulseControl||'')?7:1;if(a.remote)n+=3;}if(a.kind==='hangout')n+=relation?5:1;if(a.kind==='comfort')n+=/공감|이타|배려/.test([actor?.decisionStyle,...(actor?.characterTraits||[])].join(' '))?5:0;return n};
+ const mood=characterMood(actor,actor?.sharedScene||{},world),all=groups.flatMap(g=>g.actions),score=a=>{const metrics=relationMetrics(world,actor.id,target.id);let n=a.kind==='talk'?6:0;if(a.kind==='comfort')n+=metrics.trust/20;if(a.kind==='hangout')n+=metrics.comfort/20;if(a.kind==='hug')n+=metrics.affection/20-metrics.tension/10;if(mood.score<-10){if(a.remote)n+=4;if(a.kind==='hug')n-=3;}if(/외향|활발/.test(actor?.socialStyle||'')&&['talk','hangout'].includes(a.kind))n+=3;if(a.kind==='hug')n+=signals.romantic?10:signals.caring?6:relation?2:-4;if(signals.hostile||signals.guarded){if(a.kind==='hug'||a.kind==='kiss')n-=20;if(a.negative)n+=/충동|즉흥/.test(actor?.impulseControl||'')?7:1;if(a.remote)n+=3;}if(a.kind==='hangout')n+=relation?5:1;if(a.kind==='comfort')n+=/공감|이타|배려/.test([actor?.decisionStyle,...(actor?.characterTraits||[])].join(' '))?5:0;return n};
  return all.filter((a,i,arr)=>arr.findIndex(b=>b.kind===a.kind)===i).sort((a,b)=>score(b)-score(a)).slice(0,4);
 }
