@@ -84,7 +84,8 @@ export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
   tattooIndex=0;if(!marks.length)marks.push({name:'문신 1',location:'기타 위치',type:'설정하지 않음',attitude:choice.tattoo});else marks[0].attitude=choice.tattoo;
   patch.bodyProfile={...c.bodyProfile,tattoos:marks};known['bodyProfile.tattoos']=true;
  }
- if(!Object.keys(patch).length&&!q.form)return null;
+ // A valid answer can intentionally leave every locked trait unchanged.
+ // Persist its history instead of treating a no-op trait patch as save failure.
  if(q.story)patch.storyResponses=[...(c.storyResponses||[]),{id:q.id,at:now,targetId:q.targetId||'',question:q.question,text:choice.text,intent:choice.intent}].slice(-120);
  patch.discovery={...c.discovery,version:c.discovery?.version||0,scores,affinities,known,tattooIndex,answered:[...discoveryAnswered(c),q.id],lastPromptAt:now,recent:[...(c.discovery?.recent||[]).filter(id=>id!==q.id),q.id].slice(-6),answerCount:(c.discovery?.answerCount||0)+1};return patch;
 }

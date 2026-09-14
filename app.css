@@ -7918,6 +7918,8 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html[data-color-mode].native-app[data-active-tab="character"] .character-setting-choice>span>*{color:#fff!important;-webkit-text-fill-color:#fff!important}
   html.native-app[data-active-tab="character"] .character-setting-choice>span>b{font:inherit!important;font-weight:400!important}
   html.native-app[data-active-tab="character"] .character-quick-choice>span{transform:translate(-5.7cqw,3.25dvh)!important}
+  html[data-color-mode].native-app[data-active-tab="character"] .character-quick-choice>span>b{padding:8px 12px!important;border:2px solid #8d6740!important;border-radius:15px!important;background:#f4dfac!important;color:#382817!important;-webkit-text-fill-color:#382817!important;-webkit-text-stroke:0!important;text-shadow:none!important;box-shadow:0 3px 0 #8d6740!important}
+  .tablet-character-setting-actions [data-open-quick-character-settings]{border:2px solid #a77a38;background:#f4dfac}
   html.native-app[data-active-tab="character"] .character-full-choice>span{transform:translate(-3.6cqw,3dvh)!important}
   html.native-app[data-active-tab="character"] .character-setting-choice small{color:#fff!important;-webkit-text-fill-color:#fff!important;max-width:145px!important;font:400 12px/1.45 "KCCHanbit",sans-serif!important}
   html.native-app[data-active-tab="character"] .character-favorite-preview{position:absolute!important;z-index:6!important;inset:0!important;display:block!important;pointer-events:none!important}

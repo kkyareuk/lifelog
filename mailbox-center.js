@@ -1,3 +1,4 @@
+import {relationshipMailRows,respondRelationshipLetter} from './relationship-letters.js';
 import {bindGiftReceipt,giftError} from './mail-gifts.js?v=20260909dev305';
 const MAIL_GIFT_KINDS=['food','drink','flower','misc','fashion','perfume','book','toy','idol','hobby'];
 import {proposalCopy} from './proposal-copy.js?v=20260909dev305';
@@ -37,7 +38,7 @@ export function mailboxRows(selectedFolder='inbox'){
  const s=snapshot(),shared=!!s.activeGroupId,uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,proposals=folder==='sent'?s.outgoingProposals||[]:[...(s.incomingProposals||[]).filter(p=>!p.appliedByAuthority),...(s.outgoingProposals||[]).filter(p=>p.respondedAt&&!p.awaitingOthers).map(p=>({...p,asResponse:true,createdAt:p.respondedAt}))],letters=folder==='sent'?[...(s.outgoingMail||[]),...localLetters()]:(s.incomingMail||[]).filter(p=>p.senderUid!==uid);
  const contacts=folder==='inbox'?createContactMailbox(accountStorage).due(null).map(m=>({...m,contact:true,subject:m.title,createdAt:m.at,sourceId:m.extra.characterId,sourceName:state.characters[m.extra.characterId]?.name})):[];
  const q=state.dailyQuestion;if(folder==='inbox'&&q&&!q.answered&&!q.mailId)contacts.push({id:'daily',daily:true,subject:mt('도착한 편지','A letter for you','届いた手紙'),sourceId:q.characterId,sourceName:state.characters[q.characterId]?.name,createdAt:Date.now()});
- const rows=[...(folder==='notices'?[]:proposals.map(p=>({...p,proposal:true}))),...contacts,...letters.filter(p=>folder==='sent'||(folder==='notices'?isAnnouncement(p):!isAnnouncement(p))).filter((p,i,rows)=>!p.announcement||!p.dispatchId||rows.findIndex(x=>x.dispatchId===p.dispatchId)===i)].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));return rows.filter(p=>isAnnouncement(p)||(!p.hiddenFor?.includes(uid)&&!hiddenMail().includes(mailIdentity(p))));
+ const rows=[...(folder==='notices'?[]:proposals.map(p=>({...p,proposal:true}))),...contacts,...(folder==='inbox'?relationshipMailRows(state):[]),...letters.filter(p=>folder==='sent'||(folder==='notices'?isAnnouncement(p):!isAnnouncement(p))).filter((p,i,rows)=>!p.announcement||!p.dispatchId||rows.findIndex(x=>x.dispatchId===p.dispatchId)===i)].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));return rows.filter(p=>isAnnouncement(p)||(!p.hiddenFor?.includes(uid)&&!hiddenMail().includes(mailIdentity(p))));
 }
 export function unreadMailCount(){return [...mailboxRows('inbox'),...mailboxRows('notices')].filter(p=>!mailWasRead(p)&&!p.answered).length}
 export function renderMailbox(){
@@ -84,6 +85,7 @@ export function bindMailbox(render,toast){
  });});
 }
 function openLetter(id,proposal,render,toast,groupId){
+ const local=relationshipMailRows(state).find(p=>p.id===id);if(local)return openRelationshipLetter(local,render,toast);
  const s=snapshot(),found=(proposal?[...(s.incomingProposals||[]).filter(p=>!p.appliedByAuthority),...(s.outgoingProposals||[])]:[...(s.incomingMail||[]),...(s.outgoingMail||[]),...localLetters()]).find(p=>p.id===id&&(!groupId||p.groupId===groupId||!p.groupId&&s.activeGroupId===groupId));if(!found)return;const p={...returnMail(found)};if(proposal)p.asResponse=folder==='inbox'&&p.senderUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid&&!!p.respondedAt;
  const markRead=folder==='inbox'||folder==='notices',readScope=accountStorage.scope;
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,dialog=document.createElement('dialog');dialog.className='mail-reader mail-letter';
@@ -95,4 +97,11 @@ function openLetter(id,proposal,render,toast,groupId){
  dialog.querySelector('[data-accept-mail]')?.addEventListener('click',()=>respond(true));dialog.querySelector('[data-decline-mail]')?.addEventListener('click',()=>{dialog.querySelector('[data-decline-form]').hidden=false;dialog.querySelector('textarea').focus()});dialog.querySelector('form')?.addEventListener('submit',e=>{e.preventDefault();respond(false,new FormData(e.currentTarget).get('reason'))});dialog.showModal();
  // Display the letter before a full-device receipt write can trigger snapshot compression.
  if(markRead)requestAnimationFrame(()=>setTimeout(()=>{if(accountStorage.scope===readScope)markMailRead(p)},0));
+}
+
+function openRelationshipLetter(p,render,toast){
+ const scope=accountStorage.scope,d=document.createElement('dialog');d.className='mail-reader mail-letter';
+ d.innerHTML='<div class="mail-letter-content"><div class="mail-reader-heading"><h2>'+esc(p.subject)+'</h2><button type="button" data-close-mail aria-label="'+mt('닫기','Close','閉じる')+'">×</button></div><p>'+esc(p.sourceName)+'</p><p class="mail-body">'+esc(p.body)+'</p><p>'+mt('답하기 전에는 관계가 바뀌지 않아요. 닫아도 답변은 저장되지 않아요.','The relationship stays as it is until you decide. Closing does not submit an answer.','返答するまで関係は変わりません。閉じるだけでは返答になりません。')+'</p><div class="mail-response"></div></div>';
+ if(p.status==='pending')for(const [choice,label] of [['accept',mt('그렇게 해','Go ahead','そうしよう')],['later',mt('나중에','Later','後で')],['decline',mt('유지하기','Keep as is','今のまま')]]){const b=document.createElement('button');b.type='button';b.dataset.relationshipReply=choice;b.textContent=label;b.onclick=()=>{if(scope!==accountStorage.scope){d.close();return}const result=respondRelationshipLetter(state,p.id,choice);if(!result.ok){if(result.reason==='editor'){d.close();state.activeId=p.a;location.hash='tab=relationship';toast(mt('관계 설정에서 거주지와 세부 내용을 확인해 주세요.','Review the home and details in relationship settings.','関係設定で住まいと詳細をご確認ください。'));return}toast(mt('설정이나 관계가 바뀌어 지금은 진행할 수 없어요.','Settings or the relationship changed; this cannot proceed now.','設定や関係が変わったため、今は進められません。'));save(true);return}save(true);d.close()};d.querySelector('.mail-response').append(b)}
+ d.querySelector('[data-close-mail]').onclick=()=>d.close();d.onclose=()=>{d.remove();render()};document.body.append(d);d.showModal();markMailRead(p);
 }

@@ -133,23 +133,28 @@ export function scheduleSceneDepth(){
       if(status.parentElement!==layer){if(person){person.sceneStatus=status;status.addEventListener('click',()=>person.click())}layer.append(status)}
       status.style.cssText='position:absolute;transform:translateX(-50%);pointer-events:auto;text-align:center';
     }
-    // Measure after reparenting, with the final card styles. Clamp to the room
-    // and visible viewport, including transformed/scaled house canvases.
-    for(const label of labels){
-      if(label.status.hidden)continue;
-      const {scene,status,x,y,anchorTop}=label,r=scene.getBoundingClientRect(),sx=r.width/scene.clientWidth||1,sy=r.height/scene.clientHeight||1;
-      const card=status.getBoundingClientRect(),half=card.width/2,pad=4;
-      const left=Math.max(pad,-r.left+pad),right=Math.min(r.width-pad,innerWidth-r.left-pad);
-      const top=Math.max(pad,-r.top+pad),bottom=Math.min(r.height-pad,innerHeight-r.top-pad);
-      const cx=Math.max(left+half,Math.min(right-half,x));
-      let cy=y;if(cy+card.height>bottom)cy=anchorTop-card.height-6;
-      cy=Math.max(top,Math.min(bottom-card.height,cy));
-      status.style.left=cx/sx+'px';status.style.top=cy/sy+'px';
-    }
-    for(const [element,z] of updates)element.style.zIndex=String(z);
+    // Position seats before measuring their artwork and all label obstacles.
     for(const [person,x,y,width] of seats){
       person.classList.add('is-seated');person.style.left=x+'%';person.style.top=y+'%';person.style.setProperty('--seat-person-width',width+'px');
     }
+    const occupied=[...root.querySelectorAll('.home-person-visual')].map(el=>{
+      const images=[...el.querySelectorAll('img')].map(paintedRect);
+      return images.length?images: [el.getBoundingClientRect()];
+    }).flat();
+    for(const label of labels){
+      if(label.status.hidden)continue;
+      const {scene,status,person,furniture}=label,r=scene.getBoundingClientRect(),layer=status.parentElement,origin=layer.getBoundingClientRect(),sx=origin.width/layer.clientWidth||1,sy=origin.height/layer.clientHeight||1;
+      const anchor=furniture?furnitureRect(scene,furniture):(person?.querySelector('.home-person-visual')||person||status).getBoundingClientRect();
+      const card=status.getBoundingClientRect(),pad=4;
+      // Offscreen actors retain their room position, instead of all labels
+      // being pulled onto the viewport edge during scrolling.
+      const visible=anchor.bottom>0&&anchor.top<innerHeight;
+      const area={left:Math.max(r.left+pad,pad),right:Math.min(r.right-pad,innerWidth-pad),top:visible?Math.max(r.top+pad,pad):r.top+pad,bottom:visible?Math.min(r.bottom-pad,innerHeight-pad):r.bottom-pad};
+      const placed=placeSceneLabel(anchor,card,area,occupied.filter(o=>o.right>area.left&&o.left<area.right&&o.bottom>area.top&&o.top<area.bottom));
+      status.style.left=(placed.left+card.width/2-origin.left)/sx+'px';status.style.top=(placed.top-origin.top)/sy+'px';
+      occupied.push(placed);
+    }
+    for(const [element,z] of updates)element.style.zIndex=String(z);
   });
 }
 export function bindSceneDepth(nextRoot){
@@ -162,4 +167,23 @@ export function bindSceneDepth(nextRoot){
   root.addEventListener('load',scheduleSceneDepth,true);
   window.removeEventListener('scroll',scheduleSceneDepth,true);window.addEventListener('scroll',scheduleSceneDepth,true);
   scheduleSceneDepth();
+}
+
+// Screen-space candidate placement: keep cards near their owner, but prefer
+// free space over covering any character or an already placed name card.
+export function placeSceneLabel(anchor,card,area,occupied){
+ const w=card.width,h=card.height,gap=6;
+ const clamp=(v,lo,hi)=>Math.max(lo,Math.min(Math.max(lo,hi),v));
+ const preferred={left:(anchor.left+anchor.right-w)/2,top:anchor.bottom+gap};
+ const xs=[preferred.left,anchor.left-w-gap,anchor.right+gap,area.left,area.right-w];
+ const ys=[preferred.top,anchor.top-h-gap,area.top,area.bottom-h];
+ for(const o of occupied){xs.push(o.left-w-gap,o.right+gap);ys.push(o.top-h-gap,o.bottom+gap)}
+ let best,score=Infinity;
+ for(const x of xs)for(const y of ys){
+   const left=clamp(x,area.left,area.right-w),top=clamp(y,area.top,area.bottom-h),r={left,top,right:left+w,bottom:top+h};
+   const overlap=occupied.reduce((sum,o)=>sum+Math.max(0,Math.min(r.right,o.right)-Math.max(left,o.left))*Math.max(0,Math.min(r.bottom,o.bottom)-Math.max(top,o.top)),0);
+   const value=overlap*100000+Math.hypot(left-preferred.left,top-preferred.top);
+   if(value<score){score=value;best=r}
+ }
+ return best;
 }

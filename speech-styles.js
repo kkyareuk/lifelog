@@ -1,3 +1,4 @@
+import {reviewedStyle,reviewedPush,REVIEWED_STYLE_NAMES} from './speech-reviewed.js';
 export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "자동 · 성격에 맞춤",
   "반말",
@@ -21,8 +22,11 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "중2병 말투",
   "초성 쓰는 반말",
   "하드보일드 누아르체",
-  "고풍스러운 말투",
-  "사극 선비 말투",
+  "경상도 사투리",
+  "전라도 사투리",
+  "하오체",
+  "풍류 선비체",
+  "재상 선비체",
   "군인식 말투",
   "마왕의 말투",
   "군주의 말투",
@@ -53,6 +57,7 @@ function questionSubject(kind,target,language){
 
 export function characterQuestionPrompt(character,{kind="everyday",target="",language="ko",base=""}={}){
   const style=effectiveSpeechStyle(character),subject=questionSubject(kind,target,language);
+  const reviewed=reviewedPush({...character,speechStyle:style},kind==='weekend'?'주말':kind==='gift'?'선물 선택':kind==='work'?'지금':'지금',{language,target});if(reviewed)return reviewed;
   if(style==="초성 쓰는 반말")return language==="en"?`${subject}, u in? lol`:language==="ja"?`${subject}どうする？ 行く？w`:`야 ${subject} 뭐 할래? ㄱ?`;
   if(style==="과묵한 직설체")return language==="en"?`${subject}. Choose what works. No need to dress it up.`:language==="ja"?`${subject}か。役に立つほうを選べ。飾った言葉はいらない。`:`${subject}, 어느 쪽으로 할래.`;
   if(style==="냉정한 격식체")return language==="en"?`Regarding ${subject}, which option serves the purpose? I would like a clear reason.`:language==="ja"?`${subject}について、目的に合うのはどちらですか。理由も明確にしてください。`:`${subject}에 관해 묻겠습니다. 목적에 맞는 쪽은 무엇입니까? 이유도 명확히 해 주십시오.`;
@@ -231,6 +236,7 @@ export function characterPlanSpeech(character,language="ko"){
 
 
 export function canonicalSpeechStyle(value){
+ value=reviewedStyle(value);
  return ({'귀여니체 · 2000년대 인터넷소설체':'반말','거칠고 상스러운 말투 · 순화':'거칠고 상스러운 말투','상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
 }
 
@@ -240,6 +246,7 @@ export function bindSpeechStylePickers(root,character,language='ko'){
  for(const select of root.querySelectorAll('select[data-field="speechStyle"]')){
   if(select.dataset.speechPicker)continue;
   select.dataset.speechPicker='1';select.value=canonicalSpeechStyle(character?.speechStyle)||SPEECH_STYLE_OPTIONS[0];
+  for(const option of select.options){const label=REVIEWED_STYLE_NAMES[option.value];if(label)option.textContent=label[{ko:0,en:1,ja:2}[language]||0]}
   const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');
   const update=()=>{trigger.textContent=(select.selectedOptions[0]?.textContent||select.value)+' ▾'};update();select.hidden=true;select.setAttribute("aria-hidden","true");select.tabIndex=-1;select.style.setProperty("display","none","important");select.after(trigger);
   trigger.addEventListener('click',()=>{
@@ -259,7 +266,7 @@ export function bindSpeechStylePickers(root,character,language='ko'){
 }
 
 export function speechStyleExample(character,options={}){
- const style=canonicalSpeechStyle(character?.speechStyle),lang=options.language;
+ const style=canonicalSpeechStyle(character?.speechStyle),lang=options.language;const reviewed=reviewedPush({...character,speechStyle:style},'주말',options);if(reviewed)return reviewed;
  const examples={
  '반말':['What do you wanna do this weekend?','週末、何しよっか？'],
  '했다체 · 건조한 서술':['It was time to decide how to spend the weekend.','週末の過ごし方を決める時だった。'],

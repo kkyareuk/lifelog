@@ -1,3 +1,4 @@
+import {queueRelationshipLetter} from './relationship-letters.js';
 import {relationMetrics,changeRelationMetrics} from './relationship-metrics.js';
 import {advanceNeeds,relationshipPolicy} from './life-needs.js';
 import {recordSaveFailure,clearSaveFailure,saveFailureMessage} from './save-status.js?v=20260909dev305';
@@ -435,7 +436,7 @@ function normalizeHomes(x){
     :{};
   x.relationshipDevelopment=x.relationshipDevelopment&&typeof x.relationshipDevelopment==="object"&&!Array.isArray(x.relationshipDevelopment)
     ?Object.fromEntries(Object.entries(x.relationshipDevelopment).map(([key,value])=>[key,{
-      points:Math.max(0,Number(value?.points)||0),moments:[...new Set((Array.isArray(value?.moments)?value.moments:[]).map(String).filter(Boolean))].slice(-40),updatedAt:Number(value?.updatedAt)||0
+      metrics:value?.metrics&&typeof value.metrics==='object'?value.metrics:{},letters:Array.isArray(value?.letters)?value.letters.filter(p=>p&&typeof p.id==='string'&&x.characters[p.a]&&x.characters[p.b]).slice(-40):[],points:Math.max(0,Number(value?.points)||0),moments:[...new Set((Array.isArray(value?.moments)?value.moments:[]).map(String).filter(Boolean))].slice(-40),updatedAt:Number(value?.updatedAt)||0
     }]))
     :{};
   x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
@@ -1624,20 +1625,8 @@ export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1
   record.updatedAt=Date.now();
   state.relationshipDevelopment[key]=record;
   let relation=Object.values(state.relationships||{}).find(item=>item?.temporalStatus!=="past"&&[item.a,item.b].sort().join("~")===key);
-  if(!relation&&record.points>=4&&policy==="dynamic"){
-    const id=uid();
-    relation={id,a:ids[0],b:ids[1],name:"",type:"친구",stage:"아는 사이",temporalStatus:"current",cohabit:false,stayTogether:false,interactions:[],interactionsAll:false,tags:[],intimacy:35,conflict:12,autoDeveloped:true,autoManagedStage:true,developmentPoints:record.points};
-    state.relationships[id]=relation;
-  }else if(relation){
-    relation.developmentPoints=record.points;
-    relation.intimacy=Math.min(100,(Number(relation.intimacy)||0)+Math.max(1,Number(points)||1));
-    if(policy==="dynamic"&&(!relation.stage||relation.stage==="관계 단계 미설정"))relation.autoManagedStage=true;
-    if(relation.autoManagedStage&&!(["혐관","라이벌"].includes(relation.type))){
-      if(policy==="dynamic")relation.stage=(AUTO_RELATION_STAGES.filter(([threshold])=>record.points>=threshold).at(-1)||[0,"알아가는 사이"])[1];
-      relation.intimacy=Math.max(Number(relation.intimacy)||0,Math.min(88,28+record.points*3));
-    }
-  }
   if(relation){relation.metrics={...record.metrics};relation.intimacy=record.metrics.closeness;relation.conflict=record.metrics.tension;}
+  queueRelationshipLetter(state,ids[0],ids[1]);
   ids.forEach(id=>{state.characters[id].timelineResetAt=Date.now()});
   if(persist)save(true);
   return true;

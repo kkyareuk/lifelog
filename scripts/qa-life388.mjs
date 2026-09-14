@@ -23,7 +23,7 @@ try{const page=await browser.newPage({viewport:{width:384,height:820},deviceScal
   const fixed=Object.keys(g.state.relationshipDevelopment).length;
   c.relationshipChangeMode='score';for(let i=0;i<6;i++)g.recordAutomaticRelationshipMoment([c.id,other.id],'score:'+i,1,false);
   const scoreRelations=Object.keys(g.state.relationships).length,points=Object.values(g.state.relationshipDevelopment)[0].points;
-  c.relationshipChangeMode='dynamic';g.recordAutomaticRelationshipMoment([c.id,other.id],'dynamic',1,false);const relation=Object.values(g.state.relationships)[0];
+  c.relationshipChangeMode='dynamic';g.recordAutomaticRelationshipMoment([c.id,other.id],'dynamic',1,false);const letters=await import('/relationship-letters.js');letters.respondRelationshipLetter(g.state,letters.relationshipLetters(g.state).find(p=>p.status==='pending').id,'accept');const relation=Object.values(g.state.relationships)[0];
   c.relationshipChangeMode='score';const stage=relation.stage,oldScore=relation.intimacy;for(let i=0;i<10;i++)g.recordAutomaticRelationshipMoment([c.id,other.id],'more:'+i,1,false);const stageFixed=stage===relation.stage,scoreChanged=relation.intimacy>oldScore;
   const count=Object.values(g.state.relationshipDevelopment)[0].points;g.recordAutomaticRelationshipMoment([other.id,c.id],'more:9',1,false);const duplicate=Object.values(g.state.relationshipDevelopment)[0].points===count;
   other.relationshipChangeMode='fixed';g.recordAutomaticRelationshipMoment([c.id,other.id],'partner-fixed',1,false);const partnerFixed=Object.values(g.state.relationshipDevelopment)[0].points===count;

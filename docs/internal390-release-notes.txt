@@ -1,0 +1,17 @@
+<ko-KR>
+캐릭터 질문 답변 시 성향 고정 때문에 저장 실패가 나오던 오류를 수정했어요.
+이름상황표가 다른 캐릭터와 이름표를 피하도록 배치하고, 위치 계산에 간섭하던 스타일을 수정했어요.
+관계는 자동 확정 대신 우편으로 제안하며 수락·나중에·유지하기를 선택해요.
+캐릭터 프로필을 더 강조하고 전체설정은 선택 사항으로 안내해요.
+응원자 명단을 복원하고 새 신청자를 반영했어요. 불필요한 상품 문구를 정리했어요.
+경상도·전라도 말투를 다듬고 하오체·풍류 선비체·재상 선비체를 구분했어요. 영어·일본어 문구도 함께 적용했어요.
+</ko-KR>
+<en-US>
+Fixed question saving when affected traits are locked. Name cards now avoid nearby characters and cards; corrected conflicting positioning styles. Relationship changes arrive as letters: accept, later, or keep things as they are. Highlighted Character Profile and clarified optional detailed settings. Restored supporter credits and added new names. Refined regional voices and added distinct classical, scholar and statesman voices, with English and Japanese text. Simplified shop wording.
+</en-US>
+<ja-JP>
+性格の固定により質問の回答が保存できない不具合を修正しました。名前表示が周囲の人物や表示を避けるよう配置し、位置計算に干渉するスタイルを修正しました。
+関係の変化は自動確定せず、手紙で提案します。承諾・後で・今のままを選べます。
+キャラクタープロフィールを強調し、詳細設定は任意と案内します。応援者の名前を復元し、新しい申請を反映しました。
+地域の口調を調整し、古風な丁寧口調・風流な文人・思慮深い宰相を区別しました。英語・日本語も対応しています。商品説明の不要な文を整理しました。
+</ja-JP>
