@@ -1,3 +1,4 @@
+import {bindSharedHomeDeletion} from './shared-home-delete.js';
 import {bindFurnitureDrag} from './furniture-drag.js';
 import {latestSaveQueue} from './latest-save-queue.js?v=20260909dev305';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
@@ -29,7 +30,8 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});
  // Unconnected personal-world actions must never write into the private world.
  bindSharedHomeMembers(root,s,world,canEdit,render,toast);
- root.querySelectorAll('[data-delete-home],[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
+ root.querySelectorAll('[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
+ bindSharedHomeDeletion(root,s,render,toast,async id=>{const queueKey=uid+':'+s.activeGroupId+':'+id;await (queues.get(queueKey)?.done||Promise.resolve());queues.delete(queueKey)});
  root.querySelectorAll('[data-home-floor-count]').forEach(b=>b.disabled=!canEdit);
  root.addEventListener('change',e=>{if(e.target.matches('[data-home-floor-count]')){stop(e);if(canEdit){change(()=>setHomeFloorCount(home.id,e.target.value));render()}}},true);
  root.addEventListener('click',e=>{

@@ -1210,7 +1210,9 @@ async function removeGroupHome(homeId){
   const account=requireGroupUser(),home=groupState.homes.find(item=>item.id===homeId);
   if(!home)throw Object.assign(new Error("Home missing"),{code:"groups/home-missing"});
   if(home.ownerUid!==account.uid&&!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
-  await deleteDoc(doc(db,"groups",groupState.activeGroupId,"homes",homeId));
+  const groupId=groupState.activeGroupId;
+  await deleteDoc(doc(db,"groups",groupId,"homes",homeId));
+  if(user?.uid===account.uid&&groupState.activeGroupId===groupId){groupState={...groupState,homes:groupState.homes.filter(item=>item.id!==homeId),visitingHomeId:groupState.visitingHomeId===homeId?"":groupState.visitingHomeId};emitGroupState()}
 }
 
 async function updateGroupMemberRole(uid,role){

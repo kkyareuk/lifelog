@@ -1,3 +1,4 @@
+import {bindSharedHomeDeletion} from './shared-home-delete.js';
 import {showSharedResidentCreator} from './shared-create-resident.js?v=20260909dev305';
 import {runBackgroundAction} from './background-actions.js?v=20260909dev305';
 import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev305';
@@ -22,6 +23,7 @@ function applyTown(s,result){if(result.town&&activeShared()?.activeGroupId===s.a
 export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPanel,setPlacement,openMap,openShape,openRelation,openGroup,openRoutine,openMonthly,newRoutine,newMonthly}){
  const toast=value=>notify(value==='character-slot-required'?residentText('남은 캐릭터 슬롯이 없어요.','No character slots available.','空きキャラクタースロットがありません。'):value==='resident-limit'?residentText('이 그룹의 캐릭터 정원에 도달했어요.','This group’s character limit has been reached.','このグループのキャラクター上限に達しました。'):tr(value));
  const s=activeShared();if(!s)return;const root=document.querySelector('.relationship-page,.mobile-town-shell,.home-page,.routine-shell');if(!root)return;
+ const removeSharedHome=root.matches('.home-page')?null:bindSharedHomeDeletion(root,s,render,toast);
  if(root.matches('.home-page'))bindSharedHome(root,s,render,toast,bindRoomGeometry);
  if(root.matches('.mobile-town-shell')&&townEditDraft(s)){const cancel=document.createElement('button');cancel.type='button';cancel.disabled=!!townEditDraft(s).saving;cancel.className='home-native-pill';cancel.innerHTML='<span>'+residentText('편집 취소','Cancel edits','編集を取り消す')+'</span>';cancel.onclick=()=>{if(!discardTownEdit(s))return;setMode('');setPlacement();render()};root.querySelector('[data-mobile-town-decoration-mode]')?.parentElement.append(cancel)}
  const select=sharedSelection(s),owned=id=>canEditShared(s)||s.residents?.find(r=>r.id===id)?.ownerUid===uid();
@@ -82,7 +84,7 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
    if(command==='done'){setPlacement();render();return}
    if(command==='undo'||command==='redo'){const from=history[command],entry=from.at(-1);if(entry)saveItem(entry.kind,entry.id,command==='undo'?entry.before:entry.after).then(ok=>{if(ok!==false){from.pop();history[command==='undo'?'redo':'undo'].push(entry);render()}});return}
    const [kind,item]=itemFor(root.querySelector('.placement-selected'));if(!item)return;
-   if(command==='delete'){if(kind!=='home'&&confirm(tr('삭제할까요?')))saveItem(kind,item.id,{}, {remove:true});return}
+   if(command==='delete'){if(kind==='home')removeSharedHome?.(item.id,el);else if(confirm(tr('삭제할까요?')))saveItem(kind,item.id,{}, {remove:true});return}
    const scale=kind==='home'?'mapScale':kind==='place'?'imageScale':'scale',flip=kind==='home'?'mapFlipX':'flipX';
    const patch=command==='smaller'||command==='larger'?{[scale]:Math.max(.1,Math.min(4,(item[scale]||1)+(command==='larger'?.1:-.1)))}:command==='flip'?{[flip]:!item[flip]}:command==='front'||command==='back'?{mapZ:Math.max(-100,Math.min(1000,(item.mapZ||10)+(command==='front'?1:-1)))}:null;
    if(patch)moveItem(kind,item,patch);return

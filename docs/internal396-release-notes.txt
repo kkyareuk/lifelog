@@ -1,0 +1,9 @@
+<ko-KR>
+캐릭터 프로필에 ‘대명사 설정’ 버튼을 두고, 누르면 설정 팝업이 열리도록 바꿨어요. 멀티플레이에서 방장·관리자·집 주인이 공유 집을 삭제할 수 있도록 수정했어요. 삭제에 실패하면 다시 시도할 수 있어요.
+</ko-KR>
+<en-US>
+Character Profile now opens pronoun settings in a popup from a dedicated button. Fixed shared-home deletion for group owners, managers and home owners in multiplayer. Failed deletions can be retried.
+</en-US>
+<ja-JP>
+キャラクタープロフィールの「代名詞の設定」ボタンから、設定ポップアップが開くようにしました。マルチプレイでグループのオーナー・管理者・家の所有者が共有の家を削除できるよう修正しました。削除に失敗した場合は再試行できます。
+</ja-JP>
