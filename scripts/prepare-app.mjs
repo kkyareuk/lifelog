@@ -1,3 +1,4 @@
+import './build-local-mafia.mjs';
 import {mkdir, readFile, readdir, rename, rm, writeFile} from "node:fs/promises";
 import {execFile} from "node:child_process";
 import {relative,join,dirname} from "node:path";

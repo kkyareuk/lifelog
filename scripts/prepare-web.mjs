@@ -1,3 +1,4 @@
+import './build-local-mafia.mjs';
 import {access,mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
 import {execFile} from "node:child_process";
 import {relative} from "node:path";
@@ -133,7 +134,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260915web409";
+const expectedModuleCache="20260915web410";
 for(const entry of await readdir(output)){if(!/\.(js|css|html)$/.test(entry))continue;const url=new URL(entry,output),source=await readFile(url,"utf8");await writeFile(url,source.replace(/202609(?:09|10)dev305/g,expectedModuleCache))}
 const relativeImports=source=>{
   const found=[];
@@ -187,7 +188,7 @@ if(!index.includes(expectedModuleCache))throw new Error("최신 웹 UI 캐시 �
 if(!app.includes(expectedModuleCache))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
 if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
-if(!serviceWorker.includes("drawer-village-web409-20260915"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-web410-20260915"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 if(process.env.DRAWER_WEBP!=='0')await prepareGameWebp(output);
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

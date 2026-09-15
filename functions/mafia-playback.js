@@ -60,11 +60,12 @@ module.exports=base=>{
   }else if(g.phase==='debate')base.resolveDebate(g);
   else if(g.phase==='vote'){base.resolveVote(g);if(g.status==='playing'){g.phase='move';g.period=0;g.actionTick=0}}
   g.phaseIndex++;g.submissions={};g.deadlineAt=now+({walk:3500,perform:6000,claim:7000}[g.phase]||45000);
+  if(g.drama&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
   g.history=g.history.slice(-200);g.board=g.board.slice(-120);return g;
  }
  function view(g,uid){
   const out=base.view(g,uid),p=g.players.find(p=>p.ownerUid===uid&&!p.delegated);
-  out.rulesVersion=3;out.openingDrafts={};out.winner=g.status==='finished'?g.winner||null:null;
+  out.drama=!!g.drama;out.rulesVersion=3;out.openingDrafts={};out.winner=g.status==='finished'?g.winner||null:null;
   if(g.phase==='perform')out.history=out.history.filter(h=>h.kind!=='result');
   out.alibiOptions=p&&g.phase==='alibi'?options(g,p):[];
   out.currentClaim=['claim','challenge'].includes(g.phase)?g.currentClaim:null;

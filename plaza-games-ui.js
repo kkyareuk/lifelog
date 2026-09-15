@@ -1,3 +1,4 @@
+import {localGames,personalGameGroups} from './mafia-local.js?v=20260909dev305';
 import {renderMafiaRecruitment} from './mafia-recruitment.js?v=20260909dev305';
 import {renderMafiaPlayback} from './mafia-playback-ui.js?v=20260909dev305';
 import {renderMafiaStage} from './mafia-stage-ui.js?v=20260909dev305';
@@ -6,8 +7,8 @@ import {state} from './state.js?v=20260909dev305';
 import {characterContactSpeech} from './speech-styles.js?v=20260909dev305';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label=kind=>({rest:t('휴식','Rest','休憩'),move:t('이동','Move','移動'),task:t('임무','Task','任務'),investigate:t('조사','Investigate','調査'),sabotage:t('방해','Sabotage','妨害'),tag:t('술래 지목','Tag','指名'),plan:t('이동 계획','Movement plan','移動計画'),debate:t('카드 토론','Card discussion','カード討論'),vote:t('투표','Vote','投票'),citizen:t('시민','Citizen','市民'),mafia:t('마피아','Mafia','マフィア'),recruiting:t('모집 중','Recruiting','募集中'),playing:t('진행 중','Playing','進行中'),cancelled:t('취소됨','Cancelled','中止'),finished:t('종료','Finished','終了'),card:t('카드 공개','Reveal card','カード公開'),accuse:t('의심','Accuse','疑う'),defend:t('옹호','Defend','擁護'),pass:t('보류','Pass','保留'),forge:t('카드 위조','Forge card','カード偽造')}[kind]||kind);
-const uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
-const call=(action,data)=>window.DrawerVillageGroups.games(action,data);
+const uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid||'local-player';
+const call=(action,data)=>data.groupId?.startsWith('local:')?localGames(action,data,uid()):window.DrawerVillageGroups.games(action,data);
 const periodName=i=>[t('아침','Morning','朝'),t('점심','Afternoon','昼'),t('저녁','Evening','夕方'),t('밤','Night','夜')][i];
 function statementText(g,s){const place=g.locations.find(l=>l.id===s.place)?.name||'',period=periodName(s.period);const actions={move:t('이동했어요','moved there','そこへ移動しました'),task:t('임무를 했어요','worked on a task','任務をしていました'),investigate:t('조사했어요','investigated','調査していました'),rest:t('쉬었어요','rested','休んでいました'),unknown:t('무엇을 했는지 잘 기억나지 않아요',"cannot quite remember what I did",'何をしていたか、よく覚えていません')};return t(`${period}에는 ${place}에서 ${actions[s.action]||actions.unknown}.`,`${period}: at ${place}, I ${actions[s.action]||actions.unknown}.`,`${period}は${place}で、${actions[s.action]||actions.unknown}。`)}
 const plazaAvailable=()=>globalThis.DRAWER_VILLAGE_PLAZA_ENABLED===true;
@@ -15,12 +16,12 @@ const cached=new Map();
 let homeTimer,homeRevision=0;
 export async function refreshHomeGames(){
  clearTimeout(homeTimer);const revision=++homeRevision;
- const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),groupId=snapshot?.activeGroupId,owner=uid(),slot=document.querySelector('[data-home-games]');
+ const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),groupId=snapshot?.activeGroupId||personalGameGroups()[0]?.id,owner=uid(),slot=document.querySelector('[data-home-games]');
  if(!slot)return;if(!plazaAvailable()||!groupId||!owner){slot.replaceChildren();return}
  const key=owner+':'+groupId;let entry=cached.get(key);
  try{
   if(!entry||Date.now()-entry.at>60000){const data=await call('readGames',{groupId});entry={at:Date.now(),games:data.games};cached.set(key,entry)}
-  if(revision!==homeRevision||!slot.isConnected||uid()!==owner||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId!==groupId)return;
+  if(revision!==homeRevision||!slot.isConnected||uid()!==owner||(window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId||personalGameGroups()[0]?.id)!==groupId)return;
   slot.innerHTML=entry.games.filter(g=>g.status==='playing'&&g.players.some(p=>p.ownerUid===owner&&!p.delegated)).map(g=>{
    const host=(snapshot.members||[]).find(m=>(m.uid||m.id)===g.hostUid),name=host?.displayName||t('방장','Host','ホスト'),photo=host?.photoURL||'';
    const image=/^(https?:|data:image\/(png|jpeg|webp);)/i.test(photo)?`<img src="${esc(photo)}" alt="" referrerpolicy="no-referrer">`:'';
@@ -29,7 +30,7 @@ export async function refreshHomeGames(){
   slot.querySelectorAll('img').forEach(img=>{img.onerror=()=>img.remove()});
   if(!slot.children.length)return;
   function tick(){
-   if(revision!==homeRevision||!slot.isConnected||uid()!==owner||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId!==groupId)return;
+   if(revision!==homeRevision||!slot.isConnected||uid()!==owner||(window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId||personalGameGroups()[0]?.id)!==groupId)return;
    if(Date.now()-entry.at>60000){refreshHomeGames();return}
    const hud=slot.closest('.game-observe-hud'),profile=hud?.querySelector('.game-hud-profile-frame');
    if(hud&&profile)slot.style.setProperty('--home-games-top',Math.ceil(profile.getBoundingClientRect().bottom-hud.getBoundingClientRect().top+18)+'px');
@@ -46,13 +47,13 @@ export function openPlazaGames(groupId='',gameId=''){
  if(!plazaAvailable()){d.dataset.plazaScreen='coming-soon';body.innerHTML=`<section class="plaza-coming-soon"><img src="./world-assets/building-types/park-handdrawn.png" alt=""><h3>${t('준비 중입니다','Coming soon','準備中です')}</h3><p>${t('함께 즐길 수 있는 활동을 준비하고 있어요.','We are preparing activities to enjoy together.','みんなで楽しめる遊びを準備しています。')}</p></section>`;return;}
  async function run(action,input,callback=()=>load()){const status=body.querySelector('[data-game-status]');try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const result=await call(action,{groupId,...input});if(current())await callback(result)}catch(error){if(current()){if(status)status.textContent=errorText(error);else body.textContent=errorText(error);body.querySelectorAll('button').forEach(b=>b.disabled=false)}}}
  async function load(){const revision=++loadRevision;clearTimeout(timer);clearInterval(clockTimer);if(!current())return;if(!body.querySelector('.mafia-playback'))body.textContent=t('불러오는 중…','Loading…','読み込み中…');try{
-  if(!gameId){d.dataset.plazaScreen='lobby';await gameLobby(body,{groups:window.DrawerVillageGroups?.getSnapshot?.()?.groups||[],selected:groupId,call,current:()=>current()&&revision===loadRevision,open:(group,game)=>{groupId=group;gameId=game;load()},setup:setupGame,join:async code=>{groupId=await window.DrawerVillageGroups.join(code);if(current())load()},manage:()=>{d.close();window.DrawerVillageNavigation.go('groups')}});return}
+  if(!gameId){d.dataset.plazaScreen='lobby';await gameLobby(body,{groups:[...personalGameGroups(),...(window.DrawerVillageGroups?.getSnapshot?.()?.groups||[])],selected:groupId,call,current:()=>current()&&revision===loadRevision,open:(group,game)=>{groupId=group;gameId=game;load()},setup:setupGame,join:async code=>{groupId=await window.DrawerVillageGroups.join(code);if(current())load()},manage:()=>{d.close();window.DrawerVillageNavigation.go('groups')}});return}
   const data=await call('readGames',{groupId});if(!current()||revision!==loadRevision)return;const g=await call('advanceGame',{groupId,gameId});if(current()&&revision===loadRevision){d.dataset.plazaScreen=g.mode==='live'&&g.phase==='plan'?'action':'game';showGame(g,data)}
  }catch(error){if(current()){body.textContent=errorText(error);const retry=document.createElement('button');retry.textContent=t('다시 시도','Retry','再試行');retry.onclick=load;body.append(retry)}}}
  async function setupGame(id){
   if(!id){d.close();window.DrawerVillageNavigation.go('groups');return}groupId=id;const revision=++loadRevision;body.textContent=t('불러오는 중…','Loading…','読み込み中…');
   try{const data=await call('readGames',{groupId});if(!current()||revision!==loadRevision)return;d.dataset.plazaScreen='setup';gameSetup(body,data,{saveConsent:characters=>call('setGameConsent',{groupId,characters}),back:()=>{gameId='';load()},submit:async f=>{
-   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(f.has('start')){const started=await call('startGame',{groupId,gameId});if(current())showGame(started,data)}else if(current())load()}
+   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,drama:true,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(current())load()}
    catch(e){if(current()){if(gameId){await load();const status=body.querySelector('[data-game-status]');if(status)status.textContent=errorText(e)}else{body.querySelector('[data-game-status]').textContent=errorText(e);body.querySelectorAll('button').forEach(b=>b.disabled=false)}}}
   }});
   }catch(e){if(current())body.textContent=errorText(e)}

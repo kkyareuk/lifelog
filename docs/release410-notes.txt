@@ -1,0 +1,15 @@
+<ko-KR>
+내 마을에서도 마피아 게임을 열 수 있습니다. 설정의 즉시 시작 항목을 없애고 모집 화면에서 NPC를 충원합니다.
+새 게임의 일과를 아침·저녁 모임·밤으로 줄였습니다. 회의에서 ‘이상한데?’로 확인할 점을 고르고, 지적 장면에서 근거를 확인한 뒤 제출할 수 있습니다.
+전체 기록은 내 기록 보드에 정리하고 손에는 최대 3장의 카드를 보여줍니다. NPC 개입과 반박에 따른 의심 변화를 추가했습니다.
+</ko-KR>
+<en-US>
+Host Mafia in your own village. NPC filling now stays on the recruitment screen.
+New games use morning, an evening gathering and night. Choose a suggested question with “Wait a moment…” and review evidence before submitting an objection.
+Your record board keeps all available records, while your hand shows up to three cards. NPCs can intervene, and challenges and rebuttals affect suspicion.
+</en-US>
+<ja-JP>
+自分の村でもマフィアゲームを開けます。NPCの補充は募集画面で行います。
+新しいゲームの一日を朝・夕方の集まり・夜に短縮しました。「あれ、おかしくない？」で確認する点を選び、指摘の場面で根拠を確認して提出できます。
+記録は自分のボードに整理し、手元には最大3枚のカードを表示します。NPCの介入と反論による疑いの変化を追加しました。
+</ja-JP>

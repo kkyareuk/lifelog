@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal409-mafia-conversation",
-  "version": "1.0.357",
-  "build": 409,
+  "request": "2026-09-15-internal410-mafia-conversation",
+  "version": "1.0.358",
+  "build": 410,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

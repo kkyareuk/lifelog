@@ -32,7 +32,7 @@ function start(g){
  return g;
 }
 function canHit(g,p){return p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
-function allowedPlaces(g,p){return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
+function allowedPlaces(g,p){if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
  if(!a||typeof a!=='object')return false;
@@ -49,7 +49,7 @@ function validateAction(g,p,a){
  return false;
 }
 function auto(g,p){
- if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.period>=3?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
+ if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
  if(!awake(g,p))return {kind:'stay'};
  if(canHit(g,p)&&old.random(g.seed,'hit',g.day,g.period,p.id)>.4)return {kind:'hit',targetId:peers(g,p)[0].id};
  const task=(g.tasks[p.id]||[]).find(t=>t.place===p.place&&t.done<t.required);
@@ -84,7 +84,7 @@ function act(g){
   if(a.kind==='task'){
    if(p.role==='citizen'){
     if(a.taskId==='common'){if(!g.commonTask.contributors.includes(p.id))g.commonTask.contributors.push(p.id)}
-    else {const t=g.tasks[p.id].find(t=>t.id===a.taskId);if(t.required===2&&t.done===1&&(t.lastDay!==g.day||t.lastPeriod!==g.period-1))t.done=0;t.done=Math.min(t.required,t.done+1);t.lastDay=g.day;t.lastPeriod=g.period}
+    else {const t=g.tasks[p.id].find(t=>t.id===a.taskId);if(!g.drama&&t.required===2&&t.done===1&&(t.lastDay!==g.day||t.lastPeriod!==g.period-1))t.done=0;t.done=Math.min(t.required,t.done+1);t.lastDay=g.day;t.lastPeriod=g.period}
    }
    g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'task'});
    card(g,p,{kind:'alibi',subject:p.id,action:'task'});
@@ -107,8 +107,8 @@ function act(g){
  for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
  progress(g);g.traces=g.traces.slice(-120);
  if(old.finish(g))return;
- if(g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
- g.period++;g.actionTick=tick(g);g.phase='move';
+ if(g.drama&&g.period===3||g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
+ g.period+=g.drama&&g.period===0?2:1;g.actionTick=tick(g);g.phase='move';
 }
 function advance(g,now){
  if(![2,3,4].includes(g.rulesVersion))return old.advance(g,now);

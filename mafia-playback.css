@@ -25,3 +25,11 @@
 .mafia-playback [data-building][aria-pressed="true"]{filter:drop-shadow(0 0 8px #fff8ad)}
 
 .mp-meeting-record{position:relative;font-size:11px;color:#fff1d6}.mp-meeting-record[open]{position:absolute;bottom:100%;left:8px;right:8px;max-height:38vh;overflow:auto;border:2px solid #ab8965;border-radius:12px;background:#30231e;padding:10px;z-index:10}.mp-meeting-record p{font-size:12px;line-height:1.5;border-bottom:1px solid #8a6c52;padding:6px 0}
+
+/* The challenge is a distinct, bounded meeting phase; keep the selectable hand accessible. */
+.mp-focus .mp-world{background:#211a18!important}
+.mp-focus .mp-world>.mp-participants,.mp-focus .mp-world>.mp-speaker,.mp-focus .mp-world>.mp-speech,.mp-focus .mp-world>.mp-interjection{visibility:hidden}
+.mp-challenge-focus{position:absolute;inset:15% 5% 28%;overflow:auto;padding:18px;border:2px solid #e7d2ae;border-radius:16px;background:#32231e;color:#fff4df;text-align:center;box-shadow:0 8px 30px #0009;animation:mp-focus-enter .22s ease-out}
+.mp-challenge-focus b{font-size:1.3rem}.mp-challenge-focus blockquote{margin:12px 0;padding:12px;border-left:3px solid #c67455;background:#fff1}.mp-challenge-focus button{padding:9px 12px;margin:4px;border-radius:12px;background:#f5e6cd;color:#39281f;border:1px solid #b69770}
+@keyframes mp-focus-enter{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){.mp-challenge-focus{animation:none}}
