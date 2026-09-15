@@ -1,0 +1,32 @@
+{
+  "version": "1.0.358",
+  "code": 410,
+  "clientCommit": "fe1b4d1",
+  "serverCommit": "d2679b1",
+  "android": {
+    "status": "available to internal testers",
+    "release": 303,
+    "publishedKst": "2026-09-15 22:20",
+    "aabSha256": "9dde48004b16decf774f55cc67e2d5d56b3ae0e67b5e78c3ba50584e73779667"
+  },
+  "web": {
+    "deployment": "4d6cdec9",
+    "moduleVersion": "20260915web410",
+    "productionPlazaEnabled": false
+  },
+  "ios": {
+    "run": 34973923354,
+    "status": "TestFlight ready; existing internal group available",
+    "buildId": "50051258-112e-4582-aee4-41db1ed35454",
+    "uploadAccepted": true
+  },
+  "newCopyTranslations": {
+    "en": 100,
+    "ja": 100,
+    "wholeAppMeasured": false
+  },
+  "server": {
+    "status": "deployed",
+    "commit": "d2679b1"
+  }
+}
