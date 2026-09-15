@@ -15,8 +15,8 @@ const db={collection:col,runTransaction:async fn=>{const writes=[];const tx={get
 const service=require('../functions/plaza-games')({db,clock:()=>now});
 
 (async()=>{
- data.set('groups/g',{ownerUid:'u0',towns:[{id:'t',places:['a','b','c'].map(id=>({id,name:id}))}]});const q=make('live');for(const p of q.players){data.set('groups/g/members/'+p.ownerUid,{role:'member'});data.set('groups/g/residents/'+p.id,{name:p.name,ownerUid:p.ownerUid})}data.set('groups/g/games/live',q);
- const created=await service.createGame('u0',{groupId:'g',gameId:'new',name:'Live',mode:'live',capacity:5,hours:6,locations:['t:a','t:b','t:c']});assert.equal(created.mode,'live');assert.equal(data.get('groups/g/games/new').durationMs,60000);
+ data.set('groups/g',{ownerUid:'u0',towns:[{id:'t',places:['a','b','c','d'].map(id=>({id,name:id}))}]});const q=make('live');for(const p of q.players){data.set('groups/g/members/'+p.ownerUid,{role:'member'});data.set('groups/g/residents/'+p.id,{name:p.name,ownerUid:p.ownerUid})}data.set('groups/g/games/live',q);
+ const created=await service.createGame('u0',{groupId:'g',gameId:'new',name:'Live',mode:'live',capacity:5,hours:6,locations:['t:a','t:b','t:c','t:d']});assert.equal(created.mode,'live');assert.equal(data.get('groups/g/games/new').durationMs,60000);
  await service.submitGame('u0',{groupId:'g',gameId:'live',characterId:'p0',phaseIndex:0,action:{plan:Array(6).fill({kind:'investigate',place:q.players[0].place})}});assert.equal(data.get('groups/g/games/live').submissions.p0.plan.length,1);
  console.log('PASS401 service creates live mode and accepts a safe first action from older six-step clients');
 })().catch(e=>{console.error(e);process.exitCode=1});

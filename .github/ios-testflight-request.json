@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal406-profile-layout-final",
-  "version": "1.0.354",
-  "build": 406,
+  "request": "2026-09-15-internal407-presence-mafia",
+  "version": "1.0.355",
+  "build": 407,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

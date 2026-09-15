@@ -1,0 +1,15 @@
+<ko-KR>
+실제 장소와 맞지 않던 생활 로그를 수정했습니다. 일정으로 자리를 비운 동거인과 함께 있는 듯한 표현과, 만나기 전부터 함께 행동하는 문구를 바로잡았습니다.
+광장 준비 중 안내를 밝은 미색으로 바꿨습니다.
+내부 마피아는 마을에서 이동 선택 60초, 건물 안 행동 15초로 바뀝니다. 임무, 동석자, 카드 교환, 흔적 조사와 첫 진술을 새 흐름에 맞췄습니다.
+</ko-KR>
+<en-US>
+Fixed life logs that did not match a character’s location, including absent housemates and interactions shown before arrival.
+The plaza’s coming-soon notice now uses light cream text.
+Internal Mafia games now use 60-second destination selection and 15-second actions inside buildings, with tasks, occupants, card exchanges, traces and opening statements.
+</en-US>
+<ja-JP>
+現在地と合わない生活ログを修正しました。予定で不在の同居人と一緒にいる表現や、到着前から一緒に行動する表示を直しました。
+広場の準備中案内を明るいクリーム色にしました。
+内部テストのマフィアは、村で移動先を選ぶ60秒と建物内で行動する15秒に分かれます。任務、同席者、カード交換、痕跡調査、最初の証言を新しい流れに合わせました。
+</ja-JP>

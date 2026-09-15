@@ -2572,17 +2572,21 @@ function profileSettingScenePool(c,date){
   const hobbies=settingList(c.hobbies).join(' ');
   for(const task of CONCRETE_LIFE_TASKS)if(!task.hobbyPattern||new RegExp(task.hobbyPattern).test(hobbies))add('concrete:'+task.id,task.labels[0],task.details[0],task.labels[1],task.details[1],task.labels[2],task.details[2],task.room,['hobbies']);
   if(relationship)for(const scene of pool)if(scene.category.startsWith("relationship")&&!/메모|note|メモ/.test(scene.title))scene.withId=relationship.other.id;
+  for(const scene of pool){
+    // Authored social wording must have an actual participant, not just a trait.
+    scene.requiresCompany=Boolean(scene.withId)||/상대|대답|대화|건네|전했|같은 방|함께 확인/.test(scene.title+' '+scene.desc);
+  }
   return pool;
 }
 export function personalSceneChoices(c,date=new Date()){
- return profileSettingScenePool(c,date).filter(scene=>scene.copy&&scene.category!=='speech'&&!scene.category.startsWith('relationship')).map(scene=>({id:'ambient:'+scene.category,kind:'relax',room:scene.room,minutes:20,labels:['ko','en','ja'].map(lang=>scene.copy[lang].title),copy:scene.copy}));
+ return profileSettingScenePool(c,date).filter(scene=>scene.copy&&!scene.requiresCompany&&scene.category!=='speech'&&!scene.category.startsWith('relationship')).map(scene=>({id:'ambient:'+scene.category,kind:'relax',room:scene.room,minutes:20,labels:['ko','en','ja'].map(lang=>scene.copy[lang].title),copy:scene.copy}));
 }
 function profileSettingEvents(c,times,date){
   const pool=profileSettingScenePool(c,date).filter(scene=>autonomousAllowed(c,scene));
   if(!pool.length)return [];
   const firstIndex=hash(`${c.id}:${dayKey(date)}:profile-first`)%pool.length,first=pool[firstIndex];
   const remaining=pool.filter(scene=>scene.category!==first.category),second=remaining.length?remaining[hash(`${c.id}:${dayKey(date)}:profile-second`)%remaining.length]:null;
-  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true,withId:scene.withId,withIds:scene.withIds||[]}));
+  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true,requiresCompany:scene.requiresCompany,withId:scene.withId,withIds:scene.withIds||[]}));
 }
 function financialStressEvent(c,time,date){
   const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
@@ -2990,7 +2994,7 @@ function buildScene(c,date){
   return list.filter(item=>autonomousAllowed(c,item)).map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260902-language-scene-203";
+const ENGINE_VERSION="20260915-presence407";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new WeakMap();
@@ -3280,7 +3284,21 @@ function calculateTimeline(c,date=new Date()){
 export function visibleTimeline(c,date=new Date()){
   return timeline(c,date)
     .filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))
-    .map(item=>localizeLifeLog(item,state.uiLanguage,state,c.id));
+    .filter(item=>{
+      const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,Number(item.minute));
+      const scheduled=activeScheduledRoutine(c,at);
+      // Generated home filler is not a visit during an explicit outside schedule.
+      return !scheduled||item.manualDirective||item.routineId===scheduled.id||item.giftExchange;
+    })
+    .map(item=>{
+      if(item.manualDirective||item.remote||item.remoteContact)return item;
+      const ids=[...new Set([item.withId,...(item.withIds||[])].filter(Boolean))];
+      if(!ids.length&&!needsCompany(item))return item;
+      const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,Number(item.minute));
+      const located=withResidenceLocation(c,item,at);
+      const here=ids.length?ids.every(id=>state.characters[id]&&sameLiveLocation(located,baseEventFor(state.characters[id],at))):coLocatedCharacterIds(c,located,at).length>0;
+      return here?item:soloSceneFrom(item);
+    }).map(item=>localizeLifeLog(item,state.uiLanguage,state,c.id));
 }
 
 export function nextSceneRefreshDelay(c,date=new Date()){
@@ -4512,19 +4530,24 @@ function baseSceneFrom(value){
 function isProtectedSoloActivity(value){
   return isHomeSleepScene(value)||!value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
 }
+function needsCompany(value){return Boolean(value?.requiresCompany||value?.profileScene&&/상대|대답|대화|건네|전했|같은 방|함께 확인/.test((value.title||'')+' '+(value.desc||'')))}
 function soloSceneFrom(value){
-  const base=baseSceneFrom(value)||value;
+  let base=baseSceneFrom(value)||value;
   if(!base)return base;
+  if(needsCompany(value)||((value.withId||value.withIds?.length||value.groupInteraction)&&!value.remoteContact&&!value.remote)){
+    const copy={ko:['혼자 잠시 쉬는 중','자기 자리에서 숨을 고르며 다음 할 일을 생각하고 있어요.'],en:['Taking a quiet break','Resting in their own space and thinking about what to do next.'],ja:['ひとりで少し休憩中','自分の場所でひと息つき、次にすることを考えています。']}[state.uiLanguage]||['혼자 잠시 쉬는 중','자기 자리에서 잠시 쉬고 있어요.'];
+    base={...base,title:copy[0],desc:copy[1],requiresCompany:false,baseTitle:undefined,baseDesc:undefined,copy:undefined,localizedCopy:undefined};
+  }
   return {...base,sharedFurnitureKey:undefined,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined,forcedCompanionId:undefined,stayTogetherScene:false,sharedActionText:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
 }
 function sameLiveLocation(first,second){
-  if(!first||!second)return false;
+  if(!first||!second||first.transit||second.transit)return false;
   if(Boolean(first.home)!==Boolean(second.home))return false;
   if(first.home){
-    return (first.visitHomeId||first.homeId||"")===(second.visitHomeId||second.homeId||"")
+    return Boolean(first.visitHomeId||first.homeId)&&Boolean(first.room)&&(first.visitHomeId||first.homeId||"")===(second.visitHomeId||second.homeId||"")
       &&(first.room||"")===(second.room||"");
   }
-  return (first.placeId||"")===(second.placeId||"")
+  return Boolean(first.placeId)&&(first.placeId||"")===(second.placeId||"")
     &&(first.townId||"")===(second.townId||"");
 }
 function coLocatedCharacterIds(c,current,date){
@@ -4895,7 +4918,7 @@ export function resolveHomeEncounter(c,current,otherScene,date){
   const targetHome=otherScene?.visitHomeId||other?.homeId;
   const lang=state.uiLanguage||'ko',line=(ko,en,ja)=>({ko,en,ja}[lang]||ko);
   const unavailable=!otherScene?.home||targetHome!==home?.id||!roomAllowsCharacter(c,home,home?.rooms?.[otherScene?.room])||isHomeSleepScene(otherScene);
-  if(unavailable)return {...current,title:line('혼자 잠시 쉬는 중','Taking a quiet break','ひとりで少し休憩中'),desc:line('지금은 상대를 방해하지 않고 자기 자리에서 쉬고 있어요.','They are resting in their own space without disturbing the other person.','今は相手を邪魔せず、自分の場所で休んでいます。'),withId:undefined,withIds:[],homeEncounter:null,encounterBlocked:true};
+  if(unavailable)return {...current,title:line('혼자 잠시 쉬는 중','Taking a quiet break','ひとりで少し休憩中'),desc:line('자기 자리에서 숨을 고르며 다음 할 일을 생각하고 있어요.','They are resting in their own space and thinking about what to do next.','自分の場所でひと息つき、次にすることを考えています。'),withId:undefined,withIds:[],homeEncounter:null,encounterBlocked:true};
   const pending=current.homeEncounter;
   if(pending&&pending.room===otherScene.room){
     if(date.getTime()<pending.arrivesAt)return current;
@@ -4911,6 +4934,12 @@ function calculateEventFor(c,date){
     const aligned=resolveHomeEncounter(c,rawCurrent,other?baseEventFor(other,date):null,date);
     if(aligned!==rawCurrent){rawCurrent=commitLiveEntry(c,date,aligned)}
     if(rawCurrent.encounterBlocked||rawCurrent.homeEncounter&&!rawCurrent.homeEncounter.arrived)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
+  }
+  if(needsCompany(rawCurrent)&&!rawCurrent.manualDirective){
+    const available=coLocatedCharacterIds(c,rawCurrent,date);
+    const wanted=[rawCurrent.withId,...(rawCurrent.withIds||[])].filter(Boolean);
+    if(!available.length||wanted.some(id=>!available.includes(id)))rawCurrent=soloSceneFrom(rawCurrent);
+    else if(!wanted.length)rawCurrent={...rawCurrent,withId:available[0],withIds:[available[0]]};
   }
   if(rawCurrent.sceneUnavailable)return rawCurrent;
   if(rawCurrent.manualDirective)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
