@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-public405-profile-layout-final",
-  "version": "1.0.353",
-  "build": 405,
+  "request": "2026-09-16-public411-hotfix",
+  "version": "1.0.359",
+  "build": 411,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

@@ -1,6 +1,6 @@
 // One batched geometry read after layout/placement, never an animation loop.
 let root=null,observer=null,frame=0;
-const actors='.room-furniture-item,.home-person,.room-pet,.room-couple-bed-overlay,.chair-frame-overlay';
+const actors='.room-furniture-item,.home-person,.home-life-interaction,.room-pet,.room-couple-bed-overlay,.chair-frame-overlay';
 const alphaBounds=new Map();
 function paintedRect(image){
  const r=image.getBoundingClientRect();if(!r.width||!r.height||!image.naturalWidth)return r;
@@ -37,6 +37,7 @@ export function scheduleSceneDepth(){
       });
       const seated=items.filter(el=>el.dataset.seatId),usedSeats=new Set(seated.map(el=>el.dataset.seatId));
       for(const chair of items.filter(el=>el.dataset.furniturePlacement)){
+        if(chair.dataset.furnitureKind==='chair'&&!scene.closest('.is-editing')){const cr=(chair.querySelector('.furniture-sprite')||chair).getBoundingClientRect(),rr=scene.getBoundingClientRect(),outside=cr.left<rr.left||cr.right>rr.right||cr.top<rr.top||cr.bottom>rr.bottom;chair.style.visibility=outside?'hidden':'';const cf=items.find(el=>el.dataset.chairFrame===chair.dataset.furniturePlacement);if(cf)cf.style.visibility=outside?'hidden':'';}
         if(!usedSeats.has(chair.dataset.furniturePlacement)){pulls.push([chair,0]);const frame=items.find(el=>el.dataset.chairFrame===chair.dataset.furniturePlacement);if(frame)pulls.push([frame,0])}
       }
       for(const person of seated){
@@ -60,6 +61,20 @@ export function scheduleSceneDepth(){
         const slot=occupants.indexOf(person),sideSofa=sofa&&['left','right'].includes(chair.dataset.seatDirection);
         const x=baseLeft+pull+r.width*(sofa&&!sideSofa?(slot===0?.32:.68):.5);
         const y=(sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66))-(side==='north'?width*.16:0);
+        const roomBounds=scene.getBoundingClientRect();
+        const fits=x-width/2>=roomBounds.left+4&&x+width/2<=roomBounds.right-4&&y-width>=roomBounds.top+24&&y+width*.35<=roomBounds.bottom-4;
+        if(!fits){
+          // A narrow room cannot borrow its neighbour's seat space. Keep the
+          // actor standing fully inside this room and do not pull the chair out.
+          pulls.push([chair,0]);if(frame)pulls.push([frame,0]);
+          const cx=Math.max(roomBounds.left+width/2+4,Math.min(roomBounds.right-width/2-4,x));
+          const cy=Math.max(roomBounds.top+width+24,Math.min(roomBounds.bottom-width*.35-4,y));
+          person.classList.remove('is-seated');person.dataset.seatId='';person.dataset.usingFurniture='';
+          person.style.left=(cx-container.left)/container.width*100+'%';person.style.top=(cy-container.top)/container.height*100+'%';
+          chair.dataset.seatUnavailable='true';
+          continue;
+        }
+        delete chair.dataset.seatUnavailable;
         person.dataset.seatSlot=String(slot);
         seats.push([person,(x-container.left)/container.width*100,(y-container.top)/container.height*100,width]);
         const row=bounds.find(row=>row.element===person),chairRow=bounds.find(row=>row.element===chair);
@@ -81,11 +96,11 @@ export function scheduleSceneDepth(){
         if(bed)overlay.bottom=bed.bottom+.2;
       }
       const sceneRect=scene.getBoundingClientRect();
-      for(const person of items.filter(el=>el.matches('.home-person'))){
+      for(const person of items.filter(el=>el.matches('.home-person,.home-life-interaction'))){
         const furniture=items.find(el=>el.dataset.furniturePlacement&&el.dataset.furniturePlacement===(person.dataset.usingFurniture||person.dataset.seatId));
-        const status=person.querySelector('.home-person-status')||person.sceneStatus;
+        const status=person.querySelector('.home-person-status,.home-interaction-status')||person.sceneStatus;
         if(!status)continue;
-        const art=furniture?(furniture.querySelector('.room-furniture-art')||furniture):person.querySelector('.home-person-visual')||person;
+        const art=furniture?(furniture.querySelector('.room-furniture-art')||furniture):person.querySelector('.home-person-visual,.home-interaction-visual')||person;
         const r=furniture?furnitureRect(scene,furniture):art.getBoundingClientRect();
         labels.push({scene,furniture,person,status,x:r.left+r.width/2-sceneRect.left,y:r.bottom-sceneRect.top+6,anchorTop:r.top-sceneRect.top,z:20+bounds.length*3});
       }
@@ -133,21 +148,21 @@ export function scheduleSceneDepth(){
       let layer=scene.querySelector(':scope > .room-activity-labels');
       if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';scene.append(layer)}
       layer.style.zIndex=String(z);
-      if(status.parentElement!==layer){if(person){person.sceneStatus=status;status.addEventListener('click',()=>person.click())}layer.append(status)}
+      if(status.parentElement!==layer){if(person){person.sceneStatus=status;status.addEventListener('click',()=>{const target=person.matches('[data-home-occupant]')?person:person.querySelector('[data-home-occupant]');target?.click()})}layer.append(status)}
       status.style.cssText='position:absolute;transform:translateX(-50%);pointer-events:auto;text-align:center';
     }
     // Position seats before measuring their artwork and all label obstacles.
     for(const [person,x,y,width] of seats){
       person.classList.add('is-seated');person.style.left=x+'%';person.style.top=y+'%';person.style.setProperty('--seat-person-width',width+'px');
     }
-    const occupied=[...root.querySelectorAll('.home-person-visual')].map(el=>{
+    const occupied=[...root.querySelectorAll('.home-person-visual,.home-interaction-visual')].map(el=>{
       const images=[...el.querySelectorAll('img')].map(paintedRect);
       return images.length?images: [el.getBoundingClientRect()];
     }).flat();
     for(const label of labels){
       if(label.status.hidden)continue;
       const {scene,status,person,furniture}=label,r=scene.getBoundingClientRect(),layer=status.parentElement,origin=layer.getBoundingClientRect(),sx=origin.width/layer.clientWidth||1,sy=origin.height/layer.clientHeight||1;
-      const anchor=furniture?furnitureRect(scene,furniture):(person?.querySelector('.home-person-visual')||person||status).getBoundingClientRect();
+      const anchor=furniture?furnitureRect(scene,furniture):(person?.querySelector('.home-person-visual,.home-interaction-visual')||person||status).getBoundingClientRect();
       const card=status.getBoundingClientRect(),pad=4;
       // Offscreen actors retain their room position, instead of all labels
       // being pulled onto the viewport edge during scrolling.

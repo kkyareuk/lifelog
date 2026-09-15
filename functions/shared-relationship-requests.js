@@ -12,6 +12,16 @@ module.exports=({db,membership,notify,clock,id})=>{
   if(request.kind==='relationship')tx.set(root.collection('declarations').doc(key),{participantIds:request.participantIds,sourceName:request.sourceName,targetName:request.targetName,type:request.patch.type,at:clock(),until:clock()+120000});
  }
  return {
+  deleteRelationship:async(uid,input)=>db.runTransaction(async tx=>{
+   const gid=id(input.groupId),target=id(input.targetId),kind=input.kind==='characterGroup'?'characterGroup':'relationship';
+   const {root,group,member}=await membership(tx,gid,uid),ref=root.collection(collection(kind)).doc(target),record=await tx.get(ref);
+   if(!record.exists)return {deleted:true};
+   const participantIds=members(record.data(),kind).filter(Boolean);
+   const residents=await Promise.all(participantIds.map(cid=>tx.get(root.collection('residents').doc(id(cid)))));
+   const present=residents.filter(r=>r.exists),privileged=group.ownerUid===uid||['owner','manager','operator'].includes(member.role);
+   if(!privileged&&(!present.length||present.some(r=>r.data().ownerUid!==uid)))fail('character-owner-required',403);
+   tx.delete(ref);tx.update(root,{lifeUpdatedAt:0});return {deleted:true};
+  }),
   propose:async(uid,input)=>db.runTransaction(async tx=>{
    const gid=id(input.groupId),key=id(input.requestId),kind=['characterGroup','schedule'].includes(input.kind)?input.kind:'relationship';
    if(!input.patch||typeof input.patch!=='object'||Array.isArray(input.patch)||JSON.stringify(input.patch).length>50000)fail('invalid-relationship');

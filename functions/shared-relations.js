@@ -87,6 +87,6 @@ function createService({db,clock=Date.now,engine}){
     const ref=db.collection('pushDevices').doc(crypto.createHash('sha256').update(bounded(input.token,2000)).digest('hex'));
     await db.runTransaction(async tx=>{const snap=await tx.get(ref);if(snap.exists&&snap.data().uid===uid)tx.delete(ref)});return {removed:true};
   }
-  return {respondMailGift:require('./mail-gift-receipts').create({db,clock,id}),sendMail:require('./shared-mail')({db,membership,notify,clock,id,engine}),propose,respond,saveView,registerDevice,unregisterDevice,readMoveCandidates:residency.readMoveCandidates,requestResidence:residency.requestResidence};
+  return {deleteRelationship:requests.deleteRelationship,respondMailGift:require('./mail-gift-receipts').create({db,clock,id}),sendMail:require('./shared-mail')({db,membership,notify,clock,id,engine}),propose,respond,saveView,registerDevice,unregisterDevice,readMoveCandidates:residency.readMoveCandidates,requestResidence:residency.requestResidence};
 }
 module.exports={createService};

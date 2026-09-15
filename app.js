@@ -1,3 +1,4 @@
+import {notificationCharacters} from './notification-characters.js';
 import {refreshHomeGames} from './home-social-ui.js?v=20260909dev305';
 import {authoredSelf,ownerLogTemplate} from './character-language.js';
 import {characterLanguageFields,bindCharacterLanguageFields} from './character-language-ui.js';
@@ -245,6 +246,7 @@ document.addEventListener("keydown",event=>{
   if(key==="y"||(key==="z"&&event.shiftKey))redoTownPlacement();else undoTownPlacement();
 });
 const closeHomeOccupantSheet=()=>{
+  document.querySelector("[data-home-occupant-sheet]")?._occupantCleanup?.();
   document.querySelector("[data-home-occupant-sheet]")?._occupantObserver?.disconnect();
   document.querySelector("[data-home-occupant-sheet]")?.remove();
   document.querySelector("[data-home-occupant-dismiss]")?.remove();
@@ -1551,7 +1553,7 @@ function prepareActiveHomeLife(now=new Date()){
     // 제목을 sceneKey에 넣으면 화면 재진입 때마다 새 행동으로 오인해 두 사람이
     // 다시 서로에게 달려가는 문제가 생기므로 안정적인 interactionId를 쓴다.
     const sceneKey=interactionId?`interaction:${interactionId}`:`${sceneMinute}:${scene.title||""}:${scene.room||""}:${scene.withId||""}`;
-    contexts[characterId]={scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey,interactionId,partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000,animateMovement};
+    contexts[characterId]={blockedFurnitureIds:[...document.querySelectorAll("[data-seat-unavailable]")].filter(el=>el.dataset.homeId===homeId).map(el=>el.dataset.furniturePlacement),scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey,interactionId,partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000,animateMovement};
     return true;
   });
   return advanceHomeLifeSimulation(homeId,characterIds,contexts,now.getTime(),true);
@@ -2056,12 +2058,20 @@ function openHomeOccupantSheet(button){
   document.body.append(dialog);
   // Anchor the information card next to its resident, falling below/above on
   // narrow screens, while keeping the whole card inside the visible viewport.
-  const anchor=button.getBoundingClientRect(),vw=window.visualViewport?.width||innerWidth,vh=window.visualViewport?.height||innerHeight;
-  const width=Math.min(320,vw-24);dialog.style.width=width+'px';dialog.style.right='auto';dialog.style.bottom='auto';
-  const height=dialog.getBoundingClientRect().height;
-  const beside=anchor.right+12+width<=vw-12;
-  dialog.style.left=Math.max(12,Math.min(vw-width-12,beside?anchor.right+12:anchor.left))+'px';
-  dialog.style.top=Math.max(12,Math.min(vh-height-12,beside?anchor.top:anchor.bottom+height+12<=vh?anchor.bottom+8:anchor.top-height-8))+'px';
+  const fit=()=>{
+    if(!dialog.isConnected)return;
+    const viewport=window.visualViewport,left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0,vw=viewport?.width||innerWidth,vh=viewport?.height||innerHeight;
+    const anchor=button.getBoundingClientRect(),width=Math.min(320,vw-24);
+    dialog.style.width=width+'px';dialog.style.maxHeight=Math.max(80,vh-24)+'px';dialog.style.right='auto';dialog.style.bottom='auto';
+    const height=dialog.offsetHeight,beside=anchor.right+12+width<=left+vw-12;
+    dialog.style.left=Math.max(left+12,Math.min(left+vw-width-12,beside?anchor.right+12:anchor.left))+'px';
+    const desired=beside?anchor.top:anchor.bottom+height+20<=top+vh?anchor.bottom+8:anchor.top-height-8;
+    dialog.style.top=Math.max(top+12,Math.min(top+vh-height-12,desired))+'px';
+  };
+  const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;
+  window.visualViewport?.addEventListener('resize',fit);window.visualViewport?.addEventListener('scroll',fit);window.addEventListener('resize',fit);
+  dialog._occupantCleanup=()=>{window.visualViewport?.removeEventListener('resize',fit);window.visualViewport?.removeEventListener('scroll',fit);window.removeEventListener('resize',fit)};
+  fit();
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
   if(character){
@@ -2072,8 +2082,7 @@ function openHomeOccupantSheet(button){
       execute:(id,action,target)=>executeContextActivity(id,action,target,{groupId,uid})
     }));
     // Content is inserted before fitting again; menus expand within the same scrollable card.
-    const fit=()=>{if(!dialog.isConnected)return;const h=dialog.getBoundingClientRect().height;dialog.style.top=Math.max(12,Math.min(parseFloat(dialog.style.top)||12,(window.visualViewport?.height||innerHeight)-h-12))+'px'};
-    const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;fit();
+    fit();
   }
   clearTimeout(openHomeOccupantSheet.timer);
 }
@@ -4082,7 +4091,7 @@ function bind(){
   });
   $$('[data-character-notification-character]').forEach(input=>input.onchange=async()=>{
     const restoreScroll=preserveSelectionScroll(input);
-    const settings=state.characterNotificationSettings,all=state.order.filter(id=>state.characters[id]);
+    const settings=state.characterNotificationSettings,all=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid).map(c=>c.id);
     let selected=settings.characterIds?.length?[...settings.characterIds]:[...all];
     selected=input.checked?[...new Set([...selected,input.dataset.characterNotificationCharacter])]:selected.filter(id=>id!==input.dataset.characterNotificationCharacter);
     if(!selected.length){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
@@ -6057,12 +6066,12 @@ function notificationContextFor(character,seed){
   return {home:home?.name||"집",target:target?.name||"가까운 사람",targetId:target?.id||"",item:item?.name||"좋아하는 것",job:character.jobTitle||character.job||"오늘의"};
 }
 function notificationSelectedCharacters(){
-  const chosen=state.characterNotificationSettings?.characterIds||[],ids=chosen.length?chosen:state.order;
-  return ids.map(id=>state.characters[id]).filter(Boolean);
+  const chosen=state.characterNotificationSettings?.characterIds||[],characters=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid);
+  return characters.filter(c=>!chosen.length||chosen.includes(c.id));
 }
 function notificationTopicsFor(character){
   const wanted=state.characterNotificationSettings?.contentKinds||["questions","checkins","comfort","lifeLogs"],context=notificationContextFor(character,1);
-  return wanted.filter(kind=>kind!=="relationships"||context.targetId).filter(kind=>kind!=="work"||character.job||character.jobTitle);
+  return wanted.filter(kind=>!character.notificationGroupId||!["questions","lifeLogs"].includes(kind)).filter(kind=>kind!=="relationships"||context.targetId).filter(kind=>kind!=="work"||character.job||character.jobTitle);
 }
 function buildQuestionNotification(character,at,seed){
   const language=state.uiLanguage||"ko",copy=questionCopy(language),context=notificationContextFor(character,seed),kinds=availableDailyQuestionKinds(character);
@@ -6146,7 +6155,7 @@ function buildCharacterContactSchedule(now=new Date()){
       const daySerial=Math.floor(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())/86400000);
       let character=characters[(daySerial+slot)%characters.length];
       if(generated.at(-1)?.extra?.characterId===character.id&&characters.length>1)character=characters[(characters.indexOf(character)+1)%characters.length];
-      const topics=notificationTopicsFor(character),fallbackTopics=topics.length?topics:["questions","moments"];
+      const topics=notificationTopicsFor(character),fallbackTopics=topics.length?topics:character.notificationGroupId?["checkins"]:["questions","moments"];
       let topic=fallbackTopics[(daySeed+slot*5)%fallbackTopics.length],seed=daySeed+dayOffset*31+slot*17,item;
       for(let attempt=0;attempt<12;attempt+=1){
         topic=fallbackTopics[(daySeed+slot*5+attempt)%fallbackTopics.length];
@@ -6173,7 +6182,7 @@ async function syncCharacterNotificationSchedule(){
   const owner=localStorage.scope;
   const items=buildCharacterContactSchedule().map(item=>mailEnvelope(item,owner)),icons=new Map();
   await Promise.all(items.map(async item=>{
-    const character=state.characters[item.extra?.characterId],source=character?.icon||character?.photo||"";
+    const character=notificationSelectedCharacters().find(c=>c.id===item.extra?.characterId),source=character?.icon||character?.photo||"";
     if(!icons.has(source))icons.set(source,characterNotificationLargeIcon(source));
     item.largeIcon=await icons.get(source);
   }));

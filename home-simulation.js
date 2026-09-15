@@ -175,10 +175,12 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if((watching||resting)&&!pinned&&sofas.length)candidates=sofas;
     if(context.interactionId&&!scene.sharedFurnitureKey&&!pinned&&sofas.length)candidates=sofas;
     if(sleeping){
+      const preferred=roomKeys.includes(context.sleepRoomId)?context.sleepRoomId:"";
+      if(!pinned)candidates=placements.filter(item=>/침대/.test(item.item)&&(!preferred||item.roomKey===preferred)&&(!context.allowedRoomKeys||context.allowedRoomKeys.includes(item.roomKey)));
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
     }
-    candidates=candidates.filter(item=>(occupied.get(item.id)||0)<item.capacity);
+    candidates=candidates.filter(item=>!(context.blockedFurnitureIds||[]).includes(item.id)&&(occupied.get(item.id)||0)<item.capacity);
     const previous=current.agents[characterId];
     // Midnight, translated descriptions and reloads do not start a new walk or
     // pick another bed while the same sleep continues. Deleted/reassigned beds
@@ -206,7 +208,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       // reserved for a scene change observed while this home remains on screen.
       const shouldWalk=Boolean(target&&old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
-      current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+      current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey:destination.roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
     const agent=current.agents[characterId];
     if(!context.interactionId){agent.interactionId="";agent.approachingInteraction=false}
