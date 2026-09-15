@@ -1,0 +1,26 @@
+{
+  "version": "1.0.355",
+  "build": 407,
+  "clientSource": "1e37674",
+  "serverSource": "cc81827",
+  "android": {
+    "track": "internal",
+    "release": 300,
+    "state": "available to internal testers",
+    "observed": "2026-09-15 18:25 KST"
+  },
+  "web": {
+    "version": "web407",
+    "deployment": "11df3f77",
+    "plaza": "coming-soon",
+    "actualColor": "rgb(255,241,214)"
+  },
+  "apple": {
+    "run": 34952166788,
+    "buildId": "7e861bfb-1087-4ec7-9dda-0f7ecd22f354",
+    "state": "ready to test; existing internal group shows installed407",
+    "internalOnly": true
+  },
+  "publicApps": "405 review submissions retained",
+  "translation": "New screen input/help copy EN/JA included; whole-app percentage not measured"
+}
