@@ -36,6 +36,7 @@ Android1.0.347 / code399 / Build20260915dev399. dev 개발, 게임 main 유지.
 ## 배포
 - 공개웹 최종5fef745f / web399b, 앞서 UI만 먼저 복구 후 마피아 포함본 재배포.
 - sharedTownApi / accountDeletionApi 서버 배포 성공.
+- Play 내부 테스트 release296, 2026-09-15 12:57 KST 내부 테스터에게 제공됨 확인.
 
 ## Play 출시노트
 <ko-KR>
