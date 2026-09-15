@@ -4,3 +4,6 @@ for(let n=0;n<30;n++){const g=make(String(n));let discussions=0;for(let k=0;k<80
 const g=make();g.phase='discussion';g.meetingEndsAt=300000;g.deadlineAt=20000;g.claims=[];g.claimCursor=0;e.submitPlayback(g,g.players[0],{kind:'accuse',targetId:'p1'},1000);assert.equal(g.currentClaim.speaker,'p1');assert.equal(g.phase,'claim');assert.throws(()=>e.submitPlayback(g,g.players[2],{kind:'alibi',optionId:'unknown'},1001));
 g.cards.p0=[{id:'w',kind:'witness',day:1,tick:0,subject:'p2',place:'l1',action:'stay'}];e.submitPlayback(g,g.players[0],{kind:'testify',cardId:'w'},1002);assert(g.history.some(h=>h.kind==='testify'));assert.throws(()=>e.submitPlayback(g,g.players[3],{kind:'testify',cardId:'w'},1003));
 console.log('PASS413 30 complete games, no forced alibi round, private evidence, accused-only response and testimony authorization');
+
+const talk=make('talk');talk.phase='act';talk.players.forEach(p=>{p.place='l0';p.delegated=false});talk.submissions=Object.fromEntries(talk.players.map(p=>[p.id,{kind:'stay'}]));talk.submissions.p0={kind:'talk',targetId:'p1'};e.advance(talk,talk.deadlineAt);assert(talk.cards.p0.some(c=>c.kind==='exchange'&&c.subject==='p1'));assert(!talk.cards.p0.some(c=>c.kind==='declined'));
+console.log('PASS414 card-free talk creates a firsthand conversation record');

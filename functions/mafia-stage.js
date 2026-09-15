@@ -97,6 +97,7 @@ function act(g){
   else if(a.kind==='cover'){const i=g.traces.findLastIndex(t=>t.place===p.place);if(i>=0)g.traces.splice(i,1);g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'wiped'})}
   else if(a.kind==='drop')g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'object',subject:null});
   else if(a.kind==='talk'){
+   if(g.notebook){card(g,p,{kind:'exchange',subject:a.targetId,action:'talk'});continue;}
    const q=others.find(q=>q.id===a.targetId),other=q&&actions[q.id];
    const mine=copies[p.id].find(c=>c.id===a.cardId),theirs=q&&copies[q.id].find(c=>c.id===other?.cardId);
    if(other?.kind==='talk'&&other.targetId===p.id&&mine&&theirs){
