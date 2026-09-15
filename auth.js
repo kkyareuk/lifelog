@@ -1379,6 +1379,7 @@ window.DrawerVillageAccountImages={
  }
 };
 window.ParallelCityAuth={
+  friends:(action,input={})=>{if(!["readFriends","findFriend","requestFriend","respondFriend"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
   deleteOwnAccount,
   login,upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
   setAppleSandboxEntitlements:(value,uid)=>{if(!uid||uid!==user?.uid||!window.Capacitor?.isNativePlatform?.()||window.Capacitor?.getPlatform?.()!=="ios")return;appleSandboxEntitlements=normalizeEntitlements(value);appleSandboxUid=uid;window.ParallelCity?.setEntitlements?.(effectiveEntitlements())},

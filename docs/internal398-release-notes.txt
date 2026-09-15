@@ -1,0 +1,9 @@
+<ko-KR>
+홈 하단을 집·마을·광장·서랍·상점으로 정리했어요. 캐릭터·관계·사전·일정·기록·통계를 서랍에서 열 수 있어요. 우편함 아래에 친구를 추가하고, 친구 코드 검색과 요청·수락·거절·취소를 지원해요. 심리테스트와 남은 시간을 생활 카드로 옮겼어요.
+</ko-KR>
+<en-US>
+Reorganized the home dock into Home, Town, Plaza, Drawer and Shop. Open character settings, relationships, the dictionary, schedules, records and stats from the Drawer. Added Friends below Mail, with friend codes and requests you can accept, decline or cancel. Moved the personality test and countdown to the activity card.
+</en-US>
+<ja-JP>
+ホーム下部を家・村・広場・引き出し・店に整理しました。キャラクター・関係・辞典・予定・記録・統計は引き出しから開けます。郵便の下にフレンドを追加し、コード検索と申請・承認・辞退・取消に対応しました。心理テストと残り時間を生活カードに移動しました。
+</ja-JP>

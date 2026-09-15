@@ -12,6 +12,8 @@ function createAccountDeletion({db,auth,bucket,clock=Date.now}){
   // data while cleanup runs. Repeated requests safely resume partial cleanup.
   await db.collection('deletedAccounts').doc(uid).set({requestedAt:clock()},{merge:true});
   await eraseQuery(db.collection('moderationReports').where('reporterUid','==',uid));await eraseQuery(db.collection('moderationReports').where('targetUid','==',uid));await db.collection('moderationRateLimits').doc(uid).delete();
+  const friendRef=db.collection('playerFriends').doc(uid),friendBook=await friendRef.get();
+  if(friendBook.exists){const friends=friendBook.data();for(const other of new Set(['friends','incoming','outgoing'].flatMap(k=>(friends[k]||[]).map(p=>p.uid))))await db.runTransaction(async tx=>{const ref=db.collection('playerFriends').doc(other),snapshot=await tx.get(ref);if(snapshot.exists)tx.update(ref,Object.fromEntries(['friends','incoming','outgoing'].map(k=>[k,(snapshot.data()[k]||[]).filter(p=>p.uid!==uid)])))});await db.collection('playerFriendCodes').doc(friends.code).delete();await friendRef.delete();}
   const owned=await db.collection('groups').where('ownerUid','==',uid).get();
   for(const group of owned.docs){
    const members=await group.ref.collection('members').get();

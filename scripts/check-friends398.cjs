@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict');
+const data=new Map(),clone=v=>v===undefined?v:structuredClone(v);
+const ref=path=>({path,id:path.split('/').at(-1),collection:k=>col(path+'/'+k),get:async()=>({exists:data.has(path),data:()=>clone(data.get(path))})});
+const col=path=>({doc:k=>ref(path+'/'+k)});
+const db={collection:col,runTransaction:async fn=>{const writes=[];const tx={get:async r=>{assert.equal(writes.length,0,'Firestore reads must precede writes');return r.get()},create:(r,v)=>writes.push(()=>{assert(!data.has(r.path));data.set(r.path,clone(v))}),update:(r,v)=>writes.push(()=>{assert(data.has(r.path));data.set(r.path,{...data.get(r.path),...clone(v)})})};const result=await fn(tx);writes.forEach(f=>f());return result}};
+const service=require('../functions/player-friends')({db,clock:()=>100000000});
+(async()=>{
+ for(const uid of ['a','b','c'])data.set('users/'+uid,{profile:{name:'Name '+uid}});
+ const a=await service.readFriends('a'),b=await service.readFriends('b');await service.readFriends('c');assert.match(a.code,/^[A-F0-9]{16}$/);assert.equal((await service.readFriends('a')).code,a.code);assert.notEqual(a.code,b.code);
+ assert.equal((await service.findFriend('a',{code:b.code})).uid,'b');await assert.rejects(service.findFriend('a',{code:a.code}),/friend-self/);await assert.rejects(service.findFriend('a',{code:'x'}),/friend-code-invalid/);
+ await service.requestFriend('a',{targetUid:'b'});await service.requestFriend('a',{targetUid:'b'});assert.equal((await service.readFriends('b')).incoming.length,1);assert.equal((await service.readFriends('a')).friends.length,0);
+ await assert.rejects(service.respondFriend('c',{targetUid:'a',action:'accept'}),/friend-request-missing/);await assert.rejects(service.requestFriend('b',{targetUid:'a'}),/friend-request-received/);
+ await service.respondFriend('b',{targetUid:'a',action:'accept'});assert.equal((await service.readFriends('a')).friends[0].uid,'b');assert.equal((await service.readFriends('b')).friends[0].uid,'a');assert.equal((await service.readFriends('b')).incoming.length,0);
+ await service.respondFriend('a',{targetUid:'b',action:'remove'});assert.equal((await service.readFriends('b')).friends.length,0);
+ await service.requestFriend('a',{targetUid:'b'});await service.respondFriend('a',{targetUid:'b',action:'cancel'});assert.equal((await service.readFriends('b')).incoming.length,0);
+ await service.requestFriend('a',{targetUid:'b'});await service.respondFriend('b',{targetUid:'a',action:'decline'});assert.equal((await service.readFriends('a')).outgoing.length,0);
+ data.set('users/b/safety/settings',{blocked:[{uid:'a'}]});await assert.rejects(service.requestFriend('a',{targetUid:'b'}),/contact-unavailable/);await assert.rejects(service.findFriend('a',{code:b.code}),/contact-unavailable/);
+ data.delete('users/b/safety/settings');data.get('playerFriends/a').times=Array(30).fill(100000000);await assert.rejects(service.requestFriend('a',{targetUid:'b'}),/friend-rate-limit/);
+ console.log('PASS398 friend code isolation, duplicate request, recipient-only acceptance, bilateral friendship/removal, cancel/decline, blocks, rate limits, transaction read ordering');
+})().catch(e=>{console.error(e);process.exitCode=1});

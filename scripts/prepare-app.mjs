@@ -37,7 +37,7 @@ const includedFiles=new Set([
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js","furniture-drag.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
-  "town-fit.css"
+  "town-fit.css","home-social-ui.css"
 ]);
 const relativeModuleImports=source=>{
   const found=[];
@@ -173,7 +173,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260915dev397";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260915dev398";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){
