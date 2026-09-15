@@ -1,0 +1,29 @@
+{
+  "version": "1.0.357",
+  "code": 409,
+  "clientSource": "adf6e76",
+  "serverSource": "14b1996",
+  "android": {
+    "track": "internal",
+    "release": 302,
+    "status": "available",
+    "verifiedAt": "2026-09-15T21:23:00+09:00"
+  },
+  "web": {
+    "deployment": "70b8e5e7",
+    "cache": "20260915web409",
+    "plazaEnabled": false
+  },
+  "server": "deployed",
+  "apple": {
+    "run": 34968177686,
+    "status": "ready_for_testing",
+    "buildId": "74a7b5f5-59df-4f9f-ab8d-a36d07c4c48f",
+    "group": "existing_internal_group",
+    "uploadAccepted": true
+  },
+  "aab": {
+    "sha256": "97a3a329b9ea475670b5bc451fcfe3e8e62ce80aed1700b1423ee8f5d9c7d9a8",
+    "bytes": 75240990
+  }
+}

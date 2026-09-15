@@ -16,6 +16,8 @@ runIsolatedWorld(buildSharedWorld(snapshot),()=>{
  assert(!eventFor(a,date).withIds?.includes('r1'),'absent housemate must not be an interaction');
  const logs=visibleTimeline(b,date);assert(logs.filter(x=>x.minute>=540&&x.minute<960).every(x=>x.routineId==='care-r1'),'hospital interval contains home filler');
  assert(!visibleTimeline(a,date).some(x=>x.withId==='r1'&&x.minute===660),'home log has absent partner');
+ a.days['2026-9-14'].entries.push({...row,manualDirective:true,minute:659});
+ assert(!visibleTimeline(a,date).some(x=>x.withId==='r1'&&x.manualDirective),'stale direct interaction has absent partner');
  delete S.state.characters.r1;S.state.order=['r0'];a.days['2026-9-14'].entries.push({...row,withId:undefined,withIds:[],profileScene:true});
  for(const lang of ['ko','en','ja']){S.state.uiLanguage=lang;assert(!/상대와|상대에게/.test(eventFor(a,date).title+' '+eventFor(a,date).desc));}
 });
