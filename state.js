@@ -627,6 +627,10 @@ function normalizeHomes(x){
   Object.keys(defaultsCatalog).forEach(kind=>{
     x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).map(item=>({...item,id:String(item.id||uid()),kind:item.kind||kind})):[];
   });
+  // Migrate the retired starter only; keep custom entries and stable references.
+  for(const items of Object.values(x.catalog))for(const item of items){
+    if(item.id==='food-malatang'&&item.name==='마라탕')Object.assign(item,{name:'김밥',description:'밥과 속재료를 김으로 말아 썬 음식',image:'',emoji:'🍙',translations:{en:{name:'Gimbap',description:'Rice and fillings rolled in seaweed.'},ja:{name:'キンパ',description:'ご飯と具材を海苔で巻いた料理。'}}});
+  }
   x.catalog.fashion.forEach(item=>{
     item.materials=Array.isArray(item.materials)?item.materials:(item.material?[item.material]:[]);
     item.colors=Array.isArray(item.colors)?item.colors:(item.color?[item.color]:[]);

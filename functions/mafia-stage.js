@@ -9,13 +9,13 @@ const card=(g,p,{id,...data})=>old.addCard(g,p,{day:g.day,tick:tick(g),place:p.p
 const hour=p=>Number(String(p.sleep||'23:00').split(':')[0]);
 const late=p=>hour(p)<5||hour(p)>=24;
 const awake=(g,p)=>g.period!==4||late(p);
-const targetCount=n=>Math.max(4,Math.min(8,n-2));
+const targetCount=(n,version=2)=>version>=4?Math.max(3,Math.ceil(n/2)):Math.max(4,Math.min(8,n-2));
 const taskTypes=[['dishes','주방|식당|음식|요리|싱크'],['books','서재|도서|책|독서'],['garden','공원|광장|꽃|원예'],['boxes','창고|상점|짐']];
 function start(g){
- if(![2,3].includes(g.rulesVersion))return old.start(g);
- if(g.locations.filter(l=>l.selected!==false).length<targetCount(g.players.length))throw Error('game-locations');
+ if(![2,3,4].includes(g.rulesVersion))return old.start(g);
+ if(g.locations.filter(l=>l.selected!==false).length<targetCount(g.players.length,g.rulesVersion))throw Error('game-locations');
  old.start(g);g.phase='move';g.period=0;g.tasks={};g.traces=[];g.bodies=[];g.cardSequence=0;
- const count=targetCount(g.players.length),all=g.locations;
+ const count=targetCount(g.players.length,g.rulesVersion),all=g.locations;
  const selected=all.filter(l=>l.selected!==false),square=selected.find(l=>l.square)||selected[0];
  const stage=[square,...selected.filter(l=>l.id!==square.id)].slice(0,count);
  g.openPlaces=stage.map(l=>l.id);g.squareId=square.id;
@@ -49,7 +49,7 @@ function validateAction(g,p,a){
  return false;
 }
 function auto(g,p){
- if(g.phase==='move'){const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.period>=3?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
+ if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.period>=3?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
  if(!awake(g,p))return {kind:'stay'};
  if(canHit(g,p)&&old.random(g.seed,'hit',g.day,g.period,p.id)>.4)return {kind:'hit',targetId:peers(g,p)[0].id};
  const task=(g.tasks[p.id]||[]).find(t=>t.place===p.place&&t.done<t.required);
@@ -111,7 +111,7 @@ function act(g){
  g.period++;g.actionTick=tick(g);g.phase='move';
 }
 function advance(g,now){
- if(![2,3].includes(g.rulesVersion))return old.advance(g,now);
+ if(![2,3,4].includes(g.rulesVersion))return old.advance(g,now);
  let steps=0;
  while(g.status==='playing'&&g.deadlineAt<=now&&steps++<50){
   if(g.phase==='move')move(g);
@@ -123,7 +123,7 @@ function advance(g,now){
  return g;
 }
 function view(g,uid){
- if(![2,3].includes(g.rulesVersion))return old.view(g,uid);
+ if(![2,3,4].includes(g.rulesVersion))return old.view(g,uid);
  const result=old.view(g,uid),mine=g.players.find(p=>p.ownerUid===uid&&!p.delegated),inside=g.phase==='act'&&mine?.alive;
  result.players=result.players.map(({hitDay,homePlace,emergencyUsed,hobbies,homeId,...p})=>({...p,...(g.status==='playing'&&p.id!==mine?.id&&g.bodies?.some(b=>b.id===p.id&&!b.reported)?{alive:true}:{})}));
  result.rulesVersion=g.rulesVersion;result.period=g.period||0;result.openPlaces=g.openPlaces||[];result.squareId=g.squareId||'';
@@ -141,5 +141,7 @@ function view(g,uid){
  result.map=g.map||null;
  return result;
 }
-const playback=require('./mafia-playback')({...old,view,move,act,auto,validateAction});
-module.exports={...old,start,advance:(g,n)=>g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:playback.submit,validateAction,targetCount};
+const primitives={...old,view,move,act,auto,validateAction};
+const playback=require('./mafia-playback')(primitives);
+const conversation=require('./mafia-conversation')(primitives,playback);
+module.exports={...old,start,advance:(g,n)=>g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};

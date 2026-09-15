@@ -1,0 +1,15 @@
+<ko-KR>
+멀티 생활로그에서 자리에 없는 상대와 행동하거나 외출 중 집 활동이 나오던 경로를 수정했습니다.
+새 마피아 회의는 상대의 확인·부인, 증거 개입, 반박·동의로 이어지며 최대300초 진행됩니다. 6명 게임은 활동 장소3곳을 사용합니다.
+모집 화면과 바로 시작하기, 선택 즉시 표시, 건물 외관과 기본 실내를 개선했습니다. 이전 기본 사전의 마라탕을 김밥으로 정정했습니다.
+</ko-KR>
+<en-US>
+Fixed multiplayer logs showing absent companions or home activities during scheduled outings.
+New Mafia meetings connect named replies, evidence, rebuttals and agreement within 300 seconds. Six-player games use three active venues.
+Updated recruitment, direct starting, selection feedback, building images and default interiors. Corrected the old starter food entry to Gimbap.
+</en-US>
+<ja-JP>
+マルチの生活記録で、不在の相手との行動や外出中の家の行動が表示される経路を修正しました。
+新しいマフィア会議は相手の確認・否定、証拠、反論・同意がつながり、最大300秒です。6人のゲームでは活動場所を3か所に絞ります。
+募集画面、直接開始、選択表示、建物画像と標準の室内を改善しました。旧初期辞典の食べ物をキンパに訂正しました。
+</ja-JP>

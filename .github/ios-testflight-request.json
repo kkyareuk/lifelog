@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal408-mafia-playback",
-  "version": "1.0.356",
-  "build": 408,
+  "request": "2026-09-15-internal409-mafia-conversation",
+  "version": "1.0.357",
+  "build": 409,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

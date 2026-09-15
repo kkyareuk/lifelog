@@ -178,6 +178,8 @@ const sleepScene=(c,d=new Date())=>{
 };
 const wakeScene=(c,d=new Date())=>{
   const habit=c.wakeHabit||"알람을 듣고 천천히 일어남";
+  if(habit==='누가 깨워 줘야 일어남'&&state.uiLanguage==='en')return 'Wishing someone would wake them, they lingered in bed, checked the time, and finally got up.';
+  if(habit==='누가 깨워 줘야 일어남'&&state.uiLanguage==='ja')return '誰かに起こしてほしいと思いながら寝返りを打ち、時間を確かめてようやく起き上がりました。';
   const scenes={
     "알람을 듣고 천천히 일어남":"알람을 끄고 잠깐 눈을 감았다가 이불을 걷어 내며 천천히 몸을 일으켰어요.",
     "알람이 울리기 전에 눈을 뜸":"알람이 울리기 전에 먼저 눈을 떠 조용한 방 안을 살피고 침대에서 일어났어요.",
@@ -188,7 +190,7 @@ const wakeScene=(c,d=new Date())=>{
     "일어나자마자 물을 마심":"침대에서 일어난 뒤 미리 둔 물을 천천히 마시며 잠을 깨고 있어요.",
     "침대에서 오늘 일정을 확인함":"이불을 정리하기 전에 오늘의 일정과 약속부터 차분히 확인했어요.",
     "비몽사몽한 채 방을 돌아다님":"아직 잠이 덜 깬 얼굴로 방 안을 서성이다 필요한 물건을 하나씩 챙겼어요.",
-    "누가 깨워 줘야 일어남":"혼자서는 쉽게 눈을 뜨지 못하다가 동거인의 인기척과 부름에 겨우 몸을 일으켰어요."
+    "누가 깨워 줘야 일어남":"누군가 깨워 주기를 바라며 한참 뒤척이다가, 시간을 확인하고 겨우 몸을 일으켰어요."
   };
   return scenes[habit]||scenes["알람을 듣고 천천히 일어남"];
 };
@@ -2574,7 +2576,7 @@ function profileSettingScenePool(c,date){
   if(relationship)for(const scene of pool)if(scene.category.startsWith("relationship")&&!/메모|note|メモ/.test(scene.title))scene.withId=relationship.other.id;
   for(const scene of pool){
     // Authored social wording must have an actual participant, not just a trait.
-    scene.requiresCompany=Boolean(scene.withId)||/상대|대답|대화|건네|전했|같은 방|함께 확인/.test(scene.title+' '+scene.desc);
+    scene.requiresCompany=Boolean(scene.withId)||/상대|대답|대화|건네|전했|같은 방|함께 확인|동거인|룸메이트|서로 눈|마주 앉|다른 사람과|옆 사람|맞장구|말을 섞|인사를 건네/.test(scene.title+' '+scene.desc);
   }
   return pool;
 }
@@ -3291,7 +3293,7 @@ export function visibleTimeline(c,date=new Date()){
       return !scheduled||item.manualDirective||item.routineId===scheduled.id||item.giftExchange;
     })
     .map(item=>{
-      if(item.manualDirective||item.remote||item.remoteContact)return item;
+      if(item.remote||item.remoteContact||item.transit)return item;
       const ids=[...new Set([item.withId,...(item.withIds||[])].filter(Boolean))];
       if(!ids.length&&!needsCompany(item))return item;
       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,Number(item.minute));
@@ -4530,7 +4532,7 @@ function baseSceneFrom(value){
 function isProtectedSoloActivity(value){
   return isHomeSleepScene(value)||!value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
 }
-function needsCompany(value){return Boolean(value?.requiresCompany||value?.profileScene&&/상대|대답|대화|건네|전했|같은 방|함께 확인/.test((value.title||'')+' '+(value.desc||'')))}
+function needsCompany(value){return Boolean(/동거인의 인기척|룸메이트와|with (?:a |their )?roommate|同居人と/.test((value?.title||'')+' '+(value?.desc||''))||value?.requiresCompany||value?.profileScene&&/상대|대답|대화|건네|전했|같은 방|함께 확인|동거인|룸메이트|서로 눈|마주 앉|다른 사람과|옆 사람|맞장구|말을 섞|인사를 건네/.test((value.title||'')+' '+(value.desc||'')))}
 function soloSceneFrom(value){
   let base=baseSceneFrom(value)||value;
   if(!base)return base;
@@ -4942,7 +4944,11 @@ function calculateEventFor(c,date){
     else if(!wanted.length)rawCurrent={...rawCurrent,withId:available[0],withIds:[available[0]]};
   }
   if(rawCurrent.sceneUnavailable)return rawCurrent;
-  if(rawCurrent.manualDirective)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
+  if(rawCurrent.manualDirective){
+    const ids=[rawCurrent.withId,...(rawCurrent.withIds||[])].filter(Boolean);
+    if(ids.length&&!rawCurrent.remote&&!rawCurrent.remoteContact&&!rawCurrent.transit&&ids.some(id=>!state.characters[id]||!sameLiveLocation(rawCurrent,baseEventFor(state.characters[id],date))))return localizeLifeLog(soloSceneFrom(rawCurrent),state.uiLanguage,state,c.id);
+    return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
+  }
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];
     if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
