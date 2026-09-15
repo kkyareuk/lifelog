@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-public403-layout-roster-pronouns-plaza-coming-soon",
-  "version": "1.0.351",
-  "build": 403,
+  "request": "2026-09-15-public405-profile-layout-final",
+  "version": "1.0.353",
+  "build": 405,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

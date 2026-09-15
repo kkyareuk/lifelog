@@ -1,8 +1,8 @@
 {
-  "version": "1.0.352",
-  "build": 404,
-  "sourceAndroidCode": 404,
+  "version": "1.0.353",
+  "build": 405,
+  "sourceAndroidCode": 405,
   "stage": "testing",
   "appStoreReady": false,
-  "channel": "internal"
+  "channel": "public"
 }

@@ -35,6 +35,11 @@ try{
   const dialog=page.locator('.character-language-dialog[open]');assert(await dialog.isVisible());assert(await dialog.evaluate(d=>d.getBoundingClientRect().top>=0&&d.scrollWidth<=d.clientWidth+1));
   await dialog.locator('[data-close-language-settings]').click();await page.screenshot({path:output+'/basic-'+lang+'-'+width+'.png'});
   const metrics=await form.evaluate(f=>{const b=f.querySelector('.overview-pronouns').getBoundingClientRect(),g=f.querySelector('.overview-gender').getBoundingClientRect();return {below:b.top>=g.bottom-1,display:getComputedStyle(f).display}});assert(metrics.below,JSON.stringify(metrics));assert.equal(metrics.display,'grid');
+  await page.evaluate(()=>window.DrawerVillageNavigation.go('character'));await page.waitForTimeout(200);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.locator('[data-open-quick-character-settings]:visible').first().click();
+  const quick=page.locator('[data-mobile-character-editor-dialog][open]');await quick.locator('[data-open-language-settings]').click();
+  const nested=page.locator('.character-language-dialog[open]');assert(await nested.isVisible());assert(await nested.evaluate(d=>d.scrollWidth<=d.clientWidth+1));await nested.locator('[data-close-language-settings]').click();
+  assert(await quick.locator('.character-language-control').evaluate(c=>getComputedStyle(c).position==='static'&&!c.closest('.overview-field')));await page.screenshot({path:output+'/quick-'+lang+'-'+width+'.png'});await quick.evaluate(d=>d.close());
+
  }
  await page.evaluate(()=>window.DrawerVillageNavigation.go('observe'));await page.waitForTimeout(400);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.locator('[data-home-social=plaza]').click();assert(await page.locator('.plaza-coming-soon').isVisible());assert.equal(await page.locator('[data-game-create]').count(),0);
  console.log('PASS403 pronoun dialog, gender ordering, responsive form KO/EN/JA; public plaza gated');
