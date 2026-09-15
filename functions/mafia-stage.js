@@ -67,7 +67,7 @@ function move(g){
  if(found){meeting(g,'discovery',found[0].id);return}
  g.phase='act';
 }
-function progress(g){const citizens=g.players.filter(p=>p.role==='citizen'),tasks=citizens.flatMap(p=>g.tasks[p.id]||[]),total=tasks.reduce((n,t)=>n+t.required,0)+g.commonTask.required,done=tasks.reduce((n,t)=>n+t.done,0)+Math.min(g.commonTask.required,g.commonTask.contributors.length);g.progress=Math.floor(done/total*100)}
+function progress(g){const citizens=alive(g).filter(p=>p.role==='citizen');g.commonTask.required=Math.min(3,citizens.length);const tasks=citizens.flatMap(p=>g.tasks[p.id]||[]),total=tasks.reduce((n,t)=>n+t.required,0)+g.commonTask.required,done=tasks.reduce((n,t)=>n+t.done,0)+Math.min(g.commonTask.required,g.commonTask.contributors.length);g.progress=Math.floor(done/total*100)}
 function act(g){
  const people=alive(g),actions=Object.fromEntries(people.map(p=>[p.id,g.submissions[p.id]||auto(g,p)]));
  const emergency=people.find(p=>actions[p.id].kind==='emergency'&&validateAction(g,p,actions[p.id]));
