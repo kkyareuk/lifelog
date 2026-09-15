@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-13-build381-home-birthday-effects-internal",
-  "version": "1.0.332",
-  "build": 381,
+  "request": "2026-09-15-internal404-plaza-enabled-layout-roster",
+  "version": "1.0.352",
+  "build": 404,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
