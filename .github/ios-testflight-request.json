@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal404-plaza-enabled-layout-roster",
-  "version": "1.0.352",
-  "build": 404,
+  "request": "2026-09-15-internal406-profile-layout-final",
+  "version": "1.0.354",
+  "build": 406,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

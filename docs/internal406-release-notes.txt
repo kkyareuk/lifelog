@@ -1,0 +1,18 @@
+<ko-KR>
+공개용 405의 대명사 설정·전체 설정 배치, 마을 선택 버튼, 우편 전체 읽음 버튼 개선을 반영했어요.
+광장과 서랍 위치를 바꾸고, 과묵한 직설체에서 ‘젠장’을 뺐어요.
+멀티 캐릭터 생성 시 불필요한 클라우드 저장 대기를 줄였어요.
+내부 테스트에서는 광장 활동과 마피아 놀이를 계속 이용할 수 있어요. 일과 60초, 진술·추리·투표 45초 규칙을 유지해요.
+</ko-KR>
+<en-US>
+Includes public 405's pronoun popup, detailed profile layout, town selector and Mark all as read improvements.
+Swapped Plaza and Drawer and removed “damn” from the blunt voice.
+Reduced unnecessary cloud-saving waits when creating multiplayer characters.
+Plaza activities and Mafia remain available in internal testing, with 60-second actions and 45-second statement, discussion and voting turns.
+</en-US>
+<ja-JP>
+公開用405の代名詞ポップアップ、詳細設定、村の選択ボタン、郵便の一括既読ボタンの改善を反映しました。
+広場と引き出しを入れ替え、口数の少ない直接的な口調の表現を調整しました。
+マルチでキャラクターを作る際の不要なクラウド保存待ちを減らしました。
+内部テストでは広場とマフィアを引き続き利用できます。行動60秒、最初の証言・推理・投票45秒のルールを維持しています。
+</ja-JP>
