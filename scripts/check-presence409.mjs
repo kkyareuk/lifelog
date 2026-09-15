@@ -27,3 +27,5 @@ const outside=JSON.parse(records.find(r=>r.id==='r1').lifeJson);
 assert(outside.days['2026-9-14'].entries.filter(e=>e.minute>=540&&e.minute<=660).every(e=>e.routineId==='care-r1'),'wire payload exposed unfiltered home filler');
 assert.equal(outside.scene.routineId,'care-r1');
 console.log('PASS409 shared server persistence excludes home filler during hospital routine');
+
+assert(outside.days['2026-9-14'].entries.some(e=>e.minute>660),'server must retain future schedule entries for next transitions');
