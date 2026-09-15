@@ -1,6 +1,7 @@
 /* The mailbox owns its screen and scroll container; no nested app header. */
 html.native-app[data-active-tab="mailbox"] #app>main{padding:0!important;margin:0!important;width:100%!important;max-width:none!important;height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;display:block!important;overscroll-behavior:contain}
 html[data-active-tab="mailbox"] #app>main{padding:0;max-width:none}
+.mail-read-actions{display:flex;justify-content:flex-end;padding:8px 4px 0;flex:none}.mail-read-actions button{display:flex;align-items:center;gap:6px;min-height:36px;max-width:100%;padding:7px 14px;border:1px solid #bca181;border-radius:20px;background:#f7eddb;color:#5b4330;font:inherit;font-size:12px;line-height:1.4;box-shadow:0 2px 0 #30201755}.mail-read-actions button::before{content:"✓";font-size:16px}.mail-read-actions button:disabled{opacity:.5;box-shadow:none}
 .mail-address{display:flex;gap:24px;padding:12px 0;margin-bottom:12px;border-bottom:1px solid #dfcfb4}.mail-address>span{display:grid;gap:4px;font-size:11px;color:#8d785e}.mail-address b{font-size:15px;color:#56432f}
 /* Mail folders and paper follow the supplied 412 × 917 drawings. Content flows
    naturally so long titles, translation and the keyboard never overlap fields. */

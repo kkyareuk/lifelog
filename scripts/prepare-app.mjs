@@ -9,6 +9,8 @@ import {prepareGameWebp} from './prepare-game-webp.mjs';
 const root=new URL("../",import.meta.url);
 const platform=process.argv.includes("--ios")?"ios":"android";
 const iosRelease=platform==="ios"?JSON.parse(await readFile(new URL("../ios-release.json",import.meta.url),"utf8")):null;
+const releaseChannel=process.env.DRAWER_RELEASE_CHANNEL||iosRelease?.channel||"public";
+if(!["public","internal"].includes(releaseChannel))throw Error("Unknown release channel");
 const output=new URL("../www/",import.meta.url);
 const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
 const androidGradle=await readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8");
@@ -173,7 +175,8 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260915dev402";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260915${releaseChannel}${appVersionCode}";
+    window.DRAWER_VILLAGE_PLAZA_ENABLED=${releaseChannel==="internal"};
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

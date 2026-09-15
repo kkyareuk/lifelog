@@ -64,7 +64,7 @@ function rawCharacterQuestionPrompt(character,{kind="everyday",target="",languag
   if(style==="거칠고 상스러운 말투")return language==="en"?`@#$%, too many choices for ${subject}. Pick one.`:language==="ja"?`@#$%、${subject}の候補が多すぎる。さっさと一つ決めようぜ。`:`@#$%, ${subject} 뭐가 이렇게 많아. 하나 골라 봐.`;
   const reviewed=reviewedPush({...character,speechStyle:style},kind==='weekend'?'주말':kind==='gift'?'선물 선택':kind==='work'?'지금':'지금',{language,target});if(reviewed)return reviewed;
   if(style==="초성 쓰는 반말")return language==="en"?`${subject}, u in? lol`:language==="ja"?`${subject}どうする？ 行く？w`:`야 ${subject} 뭐 할래? ㄱ?`;
-  if(style==="과묵한 직설체")return language==="en"?`Damn. ${subject}. Pick what works.`:language==="ja"?`ちっ、${subject}か。使えるほうを選べ。`:`젠장, ${subject}인가. 어느 쪽으로 할래.`;
+  if(style==="과묵한 직설체")return language==="en"?`${subject}. Pick what works.`:language==="ja"?`${subject}か。使えるほうを選べ。`:`${subject}인가. 어느 쪽으로 할래.`;
   if(style==="냉정한 격식체")return language==="en"?`Regarding ${subject}, which option serves the purpose? I would like a clear reason.`:language==="ja"?`${subject}について、目的に合うのはどちらですか。理由も明確にしてください。`:`${subject}에 관해 묻겠습니다. 목적에 맞는 쪽은 무엇입니까? 이유도 명확히 해 주십시오.`;
   if(language==="en"){
     const lines={

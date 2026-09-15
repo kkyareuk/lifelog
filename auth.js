@@ -859,7 +859,12 @@ async function createSharedResidentOnce(input){
  requireGroupUser();const session=captureSession(),groupId=input.groupId||groupState.activeGroupId,key=session.uid+':'+groupId+':'+input.id;
  let result=createdResidents.get(key);
  if(!result){
-  if(!await upload({silent:true,reason:'멀티 캐릭터 생성',metadataOnly:true}))throw Error('Cloud upload failed');assertSession(session);
+  const core=await getDoc(doc(db,'users',session.uid,'sync','core'));assertSession(session);
+  const local=window.ParallelCity.getState(),remote=core.data()?.state;
+  const roster=value=>JSON.stringify({order:[...new Set(value?.order||[])].sort(),towns:(value?.towns||[]).map(t=>t.id).sort(),transfers:value?.characterTransferVersions||{}});
+  if(!remote||roster(local)!==roster(remote)){
+   if(!await upload({silent:true,reason:'멀티 캐릭터 생성',metadataOnly:true}))throw Error('Cloud upload failed');assertSession(session);
+  }
   result=await sharedTownRequest('createResident',{...input,groupId,profile:sharedProfile(input.profile)});createdResidents.set(key,result);if(result.resident&&result.home&&groupState.activeGroupId===groupId){groupState.residents=[...groupState.residents.filter(r=>r.id!==result.id),result.resident];groupState.homes=[...groupState.homes.filter(h=>h.id!==result.home.id),result.home];emitGroupState()}void refreshSlotUsage().catch(()=>{});
  }
  return result;

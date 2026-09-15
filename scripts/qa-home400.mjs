@@ -25,7 +25,7 @@ const origin=`http://127.0.0.1:${server.address().port}`,browser=process.argv.in
 
 try{
  const page=await browser.newPage({viewport:{width:400,height:960},serviceWorkers:'block'});
- await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin+'?native-preview');await page.waitForFunction(()=>window.DrawerVillageNavigation&&window.ParallelCityAuth);
+ await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.addInitScript(()=>{window.DRAWER_VILLAGE_PLAZA_ENABLED=true});await page.goto(origin+'?native-preview');await page.waitForFunction(()=>window.DrawerVillageNavigation&&window.ParallelCityAuth);
  await page.evaluate(async()=>{window.g=await import('/state.js?v='+document.querySelector('script[type=module][src]').src.split('v=')[1]);g.createCharacter(30);window.DrawerVillageNavigation.go('observe')});
  for(const lang of ['ko','en','ja'])for(const width of [360,412]){
   await page.setViewportSize({width,height:892});await page.evaluate(lang=>{g.state.uiLanguage=lang;window.DrawerVillageNavigation.go('observe')},lang);await page.waitForTimeout(200);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));

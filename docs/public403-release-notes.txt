@@ -1,0 +1,24 @@
+<ko-KR>
+대명사 설정을 버튼과 팝업으로 정리하고 전체 설정의 겹침을 수정했어요.
+홈 메뉴를 새로 배치하고 광장과 서랍 위치를 바꿨어요. 자아만들기, 친구 코드와 요청·수락, 우편 전체 읽음을 이용할 수 있어요.
+마을 선택 버튼과 지도 화면, 이름표·착석 표시를 다듬었어요. 멀티 캐릭터 생성 시 불필요한 저장 대기를 줄였어요.
+공유코드 불러오기와 멀티 집 삭제를 수정하고, 성격에 맞는 포옹과 같은 주제의 대화를 보강했어요.
+언어별 말투·대명사 표현을 추가하고 과묵한 직설체에서 ‘젠장’을 뺐어요.
+공개 버전의 광장 활동은 준비 중입니다.
+</ko-KR>
+<en-US>
+Pronoun settings open in a popup; detailed profile layout is clearer.
+Reorganized home menus, friend codes and requests, Self-discovery and Mark all as read.
+Improved town selectors, map sizing and name cards. Reduced unnecessary saving waits for multiplayer character creation.
+Fixed shared-code imports and multiplayer home deletion. Added shared conversation topics and personality-aware hugs.
+Updated voices and removed “damn” from the blunt voice.
+Plaza activities are coming soon.
+</en-US>
+<ja-JP>
+代名詞の設定をボタンとポップアップに整理し、詳細設定の表示崩れを修正しました。
+ホームメニューを整理し、広場と引き出しの位置を入れ替えました。自分づくり、フレンドコード・申請・承認、郵便の一括既読を利用できます。
+村の選択ボタン、地図、名前表示を調整し、マルチでキャラクターを作る際の不要な保存待ちを減らしました。
+共有コードの読み込みとマルチの家の削除を修正。共通の話題での会話や性格に合うハグを充実させました。
+言語別の口調と代名詞表現を更新しました。
+公開版の広場の遊びは準備中です。
+</ja-JP>
