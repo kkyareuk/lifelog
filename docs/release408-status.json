@@ -1,0 +1,24 @@
+{
+  "version": "1.0.356",
+  "code": 408,
+  "source": "af39291",
+  "android": {
+    "track": "internal",
+    "release": 301,
+    "status": "available",
+    "verifiedAt": "2026-09-15T20:34:00+09:00"
+  },
+  "web": {
+    "deployment": "b9aaaf79",
+    "cache": "20260915web408",
+    "plazaEnabled": false
+  },
+  "server": "deployed",
+  "apple": {
+    "run": 34963559344,
+    "status": "ready_for_testing",
+    "buildId": "3c22ea0f-209b-4293-b25e-641bf6a00649",
+    "existingInternalGroupVerified": true,
+    "submittedForReview": false
+  }
+}

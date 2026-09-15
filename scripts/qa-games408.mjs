@@ -35,5 +35,14 @@ try{
   raw.phase='alibi';await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));await page.locator('[data-alibi]').click();await page.locator('[data-option="0"]').click();assert.equal(await page.evaluate(()=>sent.kind),'alibi');
   raw.phase='claim';raw.currentClaim={speaker:'p0',kind:'together',partner:'p1',place:'l0',tick:0,day:1};await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('[data-statement-place]').count(),0);assert(await page.evaluate(()=>{const d=document.querySelector('.mafia-playback');return d.scrollWidth<=d.clientWidth+1&&d.getBoundingClientRect().height===innerHeight}));await page.screenshot({path:output+'/meeting-'+lang+'.png'});
  }
+ raw.phase='move';raw.phaseIndex=0;raw.deadlineAt=Date.now()+45000;
+ await page.evaluate(async game=>{
+  document.querySelectorAll('dialog').forEach(d=>d.remove());window.DRAWER_VILLAGE_PLAZA_ENABLED=true;window.ParallelCityAuth={getInfo:()=>({user:{uid:'qa'}})};
+  window.qaGame=game;window.DrawerVillageGroups={games:async(action)=>{if(action==='readGames')return {games:[qaGame]};if(action==='submitGame')qaGame.players[0].submitted=true;return structuredClone(qaGame)}};
+  const api=await import('/plaza-games-ui.js?v=20260909dev305');await api.openPlazaGames('group','g');window.qaStage=document.querySelector('.mafia-playback');
+ },engine.view(raw,'qa'));
+ await page.locator('.mafia-playback').waitFor();await page.evaluate(()=>window.qaStage=document.querySelector('.mafia-playback'));await page.locator('[data-building=l1]').click();await page.locator('[data-option="0"]').click();await page.waitForTimeout(1300);
+ assert(await page.evaluate(()=>qaStage===document.querySelector('.mafia-playback')),'submission/poll replaced the stage');assert.equal(await page.locator('.mp-popover[hidden]').count(),0);
+ await page.evaluate(()=>document.querySelector('[data-social-dialog]').close());
  console.log('PASS408 KO EN JA full-screen map, object choices, real room furniture, generated alibis, SVG meeting layout');
 }finally{await browser.close();server.closeAllConnections();server.close()}
