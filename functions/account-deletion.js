@@ -27,6 +27,8 @@ function createAccountDeletion({db,auth,bucket,clock=Date.now}){
    for(const kind of ['residents','homes','mail','proposals','relationshipRequests','mailDispatches','devices']){
     for(const field of ['ownerUid','senderUid','recipientUid','uid'])await eraseQuery(root.collection(kind).where(field,'==',uid));
    }
+   const games=await root.collection('games').get();
+   for(const record of games.docs){const g=record.data(),affected=(g.players||[]).filter(p=>p.ownerUid===uid);if(!affected.length&&g.hostUid!==uid)continue;g.players=(g.players||[]).map(p=>p.ownerUid===uid?{...p,ownerUid:'',name:'',traits:'',speechStyle:'',personalityTypes:[],alive:false}:p);for(const p of affected){if(g.cards)delete g.cards[p.id];if(g.submissions)delete g.submissions[p.id]}if(g.hostUid===uid)g.hostUid='';await record.ref.set(g);}
    await root.collection('members').doc(uid).delete();
   }
   for(const [kind,field] of [['characterCodes','ownerUid'],['feedback','uid'],['notificationOutbox','uid'],['groupInvites','ownerUid']])await eraseQuery(db.collection(kind).where(field,'==',uid));

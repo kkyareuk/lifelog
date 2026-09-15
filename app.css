@@ -7091,7 +7091,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   align-content:start!important;gap:0!important;width:16.75vw!important;height:34.35dvh!important;overflow:visible!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:2.91vw!important;top:12.87dvh!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{right:max(10px,env(safe-area-inset-right))!important;top:calc(env(safe-area-inset-top) + 96px)!important;gap:12px!important;width:44px!important;height:auto!important;grid-template-rows:repeat(3,44px)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{right:max(10px,env(safe-area-inset-right))!important;top:calc(env(safe-area-inset-top) + 96px)!important;gap:12px!important;width:44px!important;height:auto!important;grid-template-rows:repeat(4,50px)!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button{
   position:relative!important;display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;padding:0!important;
@@ -7105,26 +7105,26 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left :is(button>span,.game-hud-menu-art){width:15.29vw!important;height:6.87dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right :is(button>span,.game-hud-menu-art){width:34px!important;height:34px!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side,.game-hud-dock) button>small{
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side-left,.game-hud-dock) button>small{
   --label-cap:calc(var(--hud-label-h) * .484);position:absolute!important;z-index:3!important;display:grid!important;grid-template-columns:var(--label-cap) minmax(0,1fr) var(--label-cap)!important;align-items:stretch!important;box-sizing:border-box!important;height:var(--hud-label-h)!important;margin:0!important;padding:0!important;
   overflow:visible!important;border:0!important;background:transparent!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;
   font-family:var(--home-ui-font)!important;font-size:clamp(9px,2.75vw,12px)!important;font-weight:400!important;line-height:1!important;text-align:center!important;text-overflow:ellipsis!important;
   white-space:nowrap!important;text-shadow:none!important;box-shadow:none!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side,.game-hud-dock) button>small::before{
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side-left,.game-hud-dock) button>small::before{
   display:block!important;content:""!important;background:var(--home-ui-pill-left,url("./assets/home-ui/pill-left.png")) right center/auto 100% no-repeat!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side,.game-hud-dock) button>small::after{
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side-left,.game-hud-dock) button>small::after{
   display:block!important;content:""!important;background:var(--home-ui-pill-right,url("./assets/home-ui/pill-right.png")) left center/auto 100% no-repeat!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side,.game-hud-dock) button>small>span{
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side-left,.game-hud-dock) button>small>span{
   display:grid!important;place-items:center!important;min-width:0!important;margin:0 -1px!important;padding:0 2px!important;overflow:hidden!important;background:var(--home-ui-pill-middle,url("./assets/home-ui/pill-middle.png")) center/100% 100% repeat-x!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;text-overflow:ellipsis!important;white-space:nowrap!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button>small{
   left:50%!important;width:clamp(70px,20.4vw,94px)!important;transform:translateX(-50%)!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left button>small{top:5.56dvh!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right button>small{display:none!important;top:27px!important;width:58px!important;height:21px!important;--label-cap:10px;font-size:9px!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right button>small{display:block!important;position:absolute!important;top:27px!important;width:76px!important;height:auto!important;font-size:11px!important;line-height:1.15!important;white-space:normal!important;color:white!important;-webkit-text-fill-color:white!important;-webkit-text-stroke:3px #241b15;paint-order:stroke fill;text-shadow:0 1px 2px #241b15;background:none!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{
   position:absolute!important;z-index:27!important;left:7.04vw!important;top:auto!important;bottom:15.38dvh!important;width:85.19vw!important;height:21.26dvh!important;max-height:none!important;max-width:none!important;
   box-sizing:border-box!important;margin:0!important;padding:2.45dvh 7.28vw 2.1dvh!important;overflow:visible!important;border:1.5px solid #000!important;border-radius:30px!important;

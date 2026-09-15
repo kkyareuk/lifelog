@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-web398-20260915";
+const CACHE_VERSION="drawer-village-web399b-20260915";
 const CORE=[
   "./relationship-roles.js?v=20260909dev305","./relationship-roles-editor.js?v=20260909dev305","./relationship-housing.js?v=20260909dev305",
   "./personality-observation.js?v=20260909dev305", "./shared-create-resident.js?v=20260909dev305",
@@ -133,7 +133,7 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(event.request,{cache:"no-store"}));
     return;
   }
-  if(/\.(?:png|jpe?g|webp|gif|svg|woff2?|ttf)$/i.test(url.pathname)||(/\.(?:js|css)$/.test(url.pathname)&&url.searchParams.get("v")==="20260915web398")){
+  if(/\.(?:png|jpe?g|webp|gif|svg|woff2?|ttf)$/i.test(url.pathname)||(/\.(?:js|css)$/.test(url.pathname)&&url.searchParams.get("v")==="20260915web399b")){
     event.respondWith(caches.match(event.request).then(cached=>cached||fetch(event.request).then(response=>{
       if(response.ok){const copy=response.clone();caches.open(CACHE_VERSION).then(cache=>cache.put(event.request,copy));}
       return response;

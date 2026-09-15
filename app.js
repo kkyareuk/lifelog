@@ -1,3 +1,4 @@
+import {refreshHomeGames} from './home-social-ui.js?v=20260909dev305';
 import {authoredSelf,ownerLogTemplate} from './character-language.js';
 import {characterLanguageFields,bindCharacterLanguageFields} from './character-language-ui.js';
 import {startIntroTour,introTourActive} from './intro-tour.js';
@@ -1711,6 +1712,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
     if(!selectionOnly)afterScreenRender(scheduleMeetingRefresh);
     afterScreenRender(()=>syncMovementAudio(state));
     afterScreenRender(bindRelationshipRoulette);
+    afterScreenRender(refreshHomeGames);
     afterScreenRender(restoreMobileCharacterDialogs);
     afterScreenRender(showSetupCoach);
     afterScreenRender(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));

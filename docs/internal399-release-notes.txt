@@ -1,0 +1,9 @@
+<ko-KR>
+서랍 메뉴가 큰 아이콘으로 깨지던 문제를 수정했어요. 심리테스트를 오른쪽 맨 위로 옮기고 새 편지 그림과 메뉴 이름을 적용했어요. 광장에 마피아 놀이 첫 버전을 추가했어요. 방장 개설, 참가와 허용된 NPC 충원, 이동·임무·조사 계획, 목격 카드 토론과 투표를 지원해요.
+</ko-KR>
+<en-US>
+Fixed oversized icons in the Drawer. Moved the personality test above Mail and added the new letter artwork with menu labels. Added the first Mafia game in the Plaza: host a game, join with a character, fill seats with opted-in NPCs, submit movement and task plans, reveal witness cards, discuss and vote.
+</en-US>
+<ja-JP>
+引き出しのアイコンが大きく崩れる問題を修正しました。心理テストを郵便の上に移し、新しい手紙の絵とメニュー名を表示しました。広場にマフィアゲームの初期版を追加しました。ホストによる開設、参加と許可済みNPCの補充、移動・任務・調査の計画、目撃カードでの討論と投票に対応しました。
+</ja-JP>

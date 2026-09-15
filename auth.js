@@ -1229,6 +1229,7 @@ async function removeGroupMember(uid){return sharedTownRequest('removeMember',{u
 let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
+  games:(action,input={})=>{if(!["cancelGame","leaveGame","readGames","setGameConsent","createGame","joinGame","startGame","submitGame","advanceGame"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
   previewMemberProfile:async rawCode=>{
     const account=requireGroupUser(),invite=await getDoc(doc(db,'groupInvites',cleanInviteCode(rawCode)));
     if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(Error('Invite not found'),{code:'groups/code-not-found'});

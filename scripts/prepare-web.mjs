@@ -46,7 +46,7 @@ const includedFiles=new Set([
   "payment-fail.html",
   "manifest.webmanifest",
   "social-preview.png",
-  "app.css",
+  "app.css","home-social-ui.css","intro-tour.css",
   "character-book.css",
   "shop.css",
   "font-preferences.css",
@@ -133,7 +133,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260915web398";
+const expectedModuleCache="20260915web399b";
 for(const entry of await readdir(output)){if(!/\.(js|css|html)$/.test(entry))continue;const url=new URL(entry,output),source=await readFile(url,"utf8");await writeFile(url,source.replace(/202609(?:09|10)dev305/g,expectedModuleCache))}
 const relativeImports=source=>{
   const found=[];
@@ -175,13 +175,19 @@ while(moduleQueue.length){
 }
 
 const index=await readFile(new URL("index.html",output),"utf8");
+for(const tag of index.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi)){
+ const href=tag[0].match(/href=["']([^"']+)["']/i)?.[1];
+ if(!href||/^(https?:|data:)/i.test(href))continue;
+ const file=new URL(href,output);file.search="";file.hash="";
+ try{await access(file)}catch{throw new Error(`배포 스타일 파일이 없습니다: ${href}`)}
+}
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
 if(!index.includes(expectedModuleCache))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
 if(!app.includes(expectedModuleCache))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
 if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
-if(!serviceWorker.includes("drawer-village-web398-20260915"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-web399b-20260915"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 if(process.env.DRAWER_WEBP!=='0')await prepareGameWebp(output);
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);
