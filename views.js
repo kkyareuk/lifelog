@@ -840,7 +840,7 @@ const backgroundOptions=()=>"";
 const TOWN_BACKGROUND="";
 const townBackgroundMarkup=(src,className="world-bg")=>src?`<img src="${imageEsc(src)}" class="${className}" alt="">${className==="world-bg"?`<span class="town-sky-wash" aria-hidden="true"></span><span class="town-clock" aria-label="${esc(t("현실 시간","현실 시간"))}"></span>`:""}`:"";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
-const BUILDING_PRESET_SOURCES={"cafe":"world-assets/building-types/cafe-handdrawn.png","type-cafe":"world-assets/building-types/cafe-handdrawn.png","hospital":"world-assets/building-types/hospital-handdrawn.png","type-hospital":"world-assets/building-types/hospital-handdrawn.png","type-piano-hall":"world-assets/building-types/piano-hall-handdrawn.png","theater":"world-assets/building-types/piano-hall-handdrawn.png","type-dress-shop":"world-assets/building-types/dress-shop-handdrawn.png","type-stadium":"world-assets/building-types/stadium-handdrawn.png","type-office":"world-assets/building-types/office-handdrawn.png","type-graduation-school":"world-assets/building-types/graduation-school-handdrawn.png","type-suitcase-hotel":"world-assets/building-types/suitcase-hotel-handdrawn.png","type-clock-school":"world-assets/building-types/clock-school-handdrawn.png","type-library":"world-assets/building-types/library-handdrawn.png","type-generic-building":"world-assets/building-types/office-handdrawn.png","type-park":"world-assets/building-types/park-handdrawn.png","park":"world-assets/building-types/park-handdrawn.png","red-roof-home":"world-assets/building-types/red-roof-home-handdrawn.png","type-restaurant":"world-assets/building-types/restaurant-handdrawn.png","drawer-building":"world-assets/building-types/office-handdrawn.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
+export const BUILDING_PRESET_SOURCES={"cafe":"world-assets/building-types/cafe-handdrawn.png","type-cafe":"world-assets/building-types/cafe-handdrawn.png","hospital":"world-assets/building-types/hospital-handdrawn.png","type-hospital":"world-assets/building-types/hospital-handdrawn.png","type-piano-hall":"world-assets/building-types/piano-hall-handdrawn.png","theater":"world-assets/building-types/piano-hall-handdrawn.png","type-dress-shop":"world-assets/building-types/dress-shop-handdrawn.png","type-stadium":"world-assets/building-types/stadium-handdrawn.png","type-office":"world-assets/building-types/office-handdrawn.png","type-graduation-school":"world-assets/building-types/graduation-school-handdrawn.png","type-suitcase-hotel":"world-assets/building-types/suitcase-hotel-handdrawn.png","type-clock-school":"world-assets/building-types/clock-school-handdrawn.png","type-library":"world-assets/building-types/library-handdrawn.png","type-generic-building":"world-assets/building-types/office-handdrawn.png","type-park":"world-assets/building-types/park-handdrawn.png","park":"world-assets/building-types/park-handdrawn.png","red-roof-home":"world-assets/building-types/red-roof-home-handdrawn.png","type-restaurant":"world-assets/building-types/restaurant-handdrawn.png","drawer-building":"world-assets/building-types/office-handdrawn.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
 const BUILDING_LIGHT_SOURCES={
   "world-assets/building-types/cafe-handdrawn.png":"world-assets/building-types/cafe-light.png",
   "world-assets/building-types/hospital-handdrawn.png":"world-assets/building-types/hospital-light.png",
@@ -2137,7 +2137,7 @@ function packedRoomLayout(roomKeys,roomData,columnCount=4){
   });
   return {items:result,rows:Math.max(1,occupied.length)};
 }
-function mobileRoomLayout(roomKeys,roomData){
+export function mobileRoomLayout(roomKeys,roomData){
   const result={};
   const items=roomKeys.map(key=>({
     key,
@@ -2172,7 +2172,7 @@ function mobileRoomLayout(roomKeys,roomData){
   split(items,{x:0,y:0,w:100,h:100});
   return result;
 }
-function roomStyle(h,key,layout,mobileLayout){
+export function roomStyle(h,key,layout,mobileLayout){
   const room=h.rooms?.[key]||{},manual=room.layout&&typeof room.layout==="object"?room.layout:null;
   const resolvedMobile=manual||mobileLayout||{x:0,y:0,w:100,h:100};
   const floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
@@ -2210,7 +2210,7 @@ const COUPLE_BED_ASSET_ROOT="assets/furniture/couple-bed";
 const COUPLE_BED_ART_SCALE=1.05;
 const furniturePlacementStyle=(placement,footprint)=>`--sprite-width:${furnitureSprite(placement)?furnitureSprite(placement).width/527*2/footprint.columns*furnitureSprite(placement).scale:1};--sprite-ratio:${furnitureSprite(placement)?furnitureSprite(placement).width/furnitureSprite(placement).height:1};--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${furnitureSprite(placement)?0:placement.item==="커플 침대"?bedPerspective(placement).artRotation:placement.rotation}deg;--furniture-layer:${placement.layer};--furniture-flip:${furnitureSprite(placement)?.flip??(placement.item==="커플 침대"?bedPerspective(placement).artFlip:placement.flipped?-1:1)};--furniture-grid-width:${footprint.columns};--furniture-grid-height:${footprint.rows}`;
 const coupleBedImage=(layer,extra="",placement={})=>`<img class="couple-bed-layer couple-bed-${layer} ${extra}" src="${COUPLE_BED_ASSET_ROOT}/couple-bed-${bedPerspective(placement).side?"side-":""}${layer}.${bedPerspective(placement).side?"svg":"png"}" alt="" aria-hidden="true">`;
-function roomFurnitureMarkup(homeId,roomKey,room,edit,bedStates=new Map()){
+export function roomFurnitureMarkup(homeId,roomKey,room,edit,bedStates=new Map()){
   const placements=normalizeFurniturePlacements(room.furniturePlacements);
   if(!placements.length&&!edit)return "";
   return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{

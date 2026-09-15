@@ -1,0 +1,15 @@
+<ko-KR>
+캐릭터 창이 화면 위로 밀리던 문제를 수정했습니다.
+새 마피아 게임은 이동·행동 선택 각각45초와 별도의 연출 단계로 진행됩니다. 모두 선택하면 바로, 혼자 NPC와 플레이하면 선택2초 후 넘어갑니다.
+실제 마을·집에서 직접 선택하고, 추리 화면과 카드 획득 연출을 바꿨습니다. 알리바이는 목록에서 고르며 지적은 선착순으로 예약합니다. 마피아 전용 인원 정보를 추가하고 첫날 습격을 허용했습니다.
+</ko-KR>
+<en-US>
+Fixed character popups moving off-screen.
+New Mafia games have 45-second movement and action choices with separate playback. All players ready advances immediately; solo play with NPCs advances after 2 seconds.
+Choose directly in village and home scenes. Updated the deduction screen, card collection, suggested alibis and first-come objections. Mafia players receive anonymous occupancy hints and can strike on day one.
+</en-US>
+<ja-JP>
+キャラクターのウィンドウが画面外にずれる問題を修正しました。
+新しいマフィアは移動先・行動の選択が各45秒、演出は別の段階です。全員選択で即進行、NPCとの1人プレイは選択2秒後に進みます。
+村・家で直接選ぶ画面、推理画面、カード入手演出を更新しました。アリバイは候補から選び、指摘は先着で予約します。マフィア専用の匿名人数情報を追加し、初日の襲撃を可能にしました。
+</ja-JP>

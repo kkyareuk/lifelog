@@ -12,7 +12,7 @@ const awake=(g,p)=>g.period!==4||late(p);
 const targetCount=n=>Math.max(4,Math.min(8,n-2));
 const taskTypes=[['dishes','주방|식당|음식|요리|싱크'],['books','서재|도서|책|독서'],['garden','공원|광장|꽃|원예'],['boxes','창고|상점|짐']];
 function start(g){
- if(g.rulesVersion!==2)return old.start(g);
+ if(![2,3].includes(g.rulesVersion))return old.start(g);
  if(g.locations.filter(l=>l.selected!==false).length<targetCount(g.players.length))throw Error('game-locations');
  old.start(g);g.phase='move';g.period=0;g.tasks={};g.traces=[];g.bodies=[];g.cardSequence=0;
  const count=targetCount(g.players.length),all=g.locations;
@@ -31,7 +31,7 @@ function start(g){
  }
  return g;
 }
-function canHit(g,p){return p.alive&&g.phase==='act'&&g.day>1&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
+function canHit(g,p){return p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
 function allowedPlaces(g,p){return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
@@ -111,7 +111,7 @@ function act(g){
  g.period++;g.actionTick=tick(g);g.phase='move';
 }
 function advance(g,now){
- if(g.rulesVersion!==2)return old.advance(g,now);
+ if(![2,3].includes(g.rulesVersion))return old.advance(g,now);
  let steps=0;
  while(g.status==='playing'&&g.deadlineAt<=now&&steps++<50){
   if(g.phase==='move')move(g);
@@ -123,10 +123,10 @@ function advance(g,now){
  return g;
 }
 function view(g,uid){
- if(g.rulesVersion!==2)return old.view(g,uid);
+ if(![2,3].includes(g.rulesVersion))return old.view(g,uid);
  const result=old.view(g,uid),mine=g.players.find(p=>p.ownerUid===uid&&!p.delegated),inside=g.phase==='act'&&mine?.alive;
  result.players=result.players.map(({hitDay,homePlace,emergencyUsed,hobbies,homeId,...p})=>({...p,...(g.status==='playing'&&p.id!==mine?.id&&g.bodies?.some(b=>b.id===p.id&&!b.reported)?{alive:true}:{})}));
- result.rulesVersion=2;result.period=g.period||0;result.openPlaces=g.openPlaces||[];result.squareId=g.squareId||'';
+ result.rulesVersion=g.rulesVersion;result.period=g.period||0;result.openPlaces=g.openPlaces||[];result.squareId=g.squareId||'';
  result.submittedCount=alive(g).filter(p=>g.submissions?.[p.id]).length;
  result.meetingReason=g.meetingReason||'';
  // During movement no opponent locations, bodies, private tasks, or traces leave the server.
@@ -141,4 +141,5 @@ function view(g,uid){
  result.map=g.map||null;
  return result;
 }
-module.exports={...old,start,advance,view,validateAction,targetCount};
+const playback=require('./mafia-playback')({...old,view,move,act,auto,validateAction});
+module.exports={...old,start,advance:(g,n)=>g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:playback.submit,validateAction,targetCount};

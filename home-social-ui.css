@@ -1,3 +1,4 @@
+@import url('./mafia-playback.css?v=20260909dev305');
 .mafia-stage{position:relative}
 .mafia-role-reveal{position:absolute;inset:80px 12px auto;padding:30px 22px;text-align:center;background:#fff0d5;color:#483527;border:4px double #80603f;border-radius:18px;box-shadow:0 10px 50px #000a;z-index:5}
 .mafia-role-reveal img{width:100px;height:110px;object-fit:contain}

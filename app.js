@@ -245,6 +245,7 @@ document.addEventListener("keydown",event=>{
   if(key==="y"||(key==="z"&&event.shiftKey))redoTownPlacement();else undoTownPlacement();
 });
 const closeHomeOccupantSheet=()=>{
+  document.querySelector("[data-home-occupant-sheet]")?._occupantCleanup?.();
   document.querySelector("[data-home-occupant-sheet]")?._occupantObserver?.disconnect();
   document.querySelector("[data-home-occupant-sheet]")?.remove();
   document.querySelector("[data-home-occupant-dismiss]")?.remove();
@@ -2056,12 +2057,20 @@ function openHomeOccupantSheet(button){
   document.body.append(dialog);
   // Anchor the information card next to its resident, falling below/above on
   // narrow screens, while keeping the whole card inside the visible viewport.
-  const anchor=button.getBoundingClientRect(),vw=window.visualViewport?.width||innerWidth,vh=window.visualViewport?.height||innerHeight;
-  const width=Math.min(320,vw-24);dialog.style.width=width+'px';dialog.style.right='auto';dialog.style.bottom='auto';
-  const height=dialog.getBoundingClientRect().height;
-  const beside=anchor.right+12+width<=vw-12;
-  dialog.style.left=Math.max(12,Math.min(vw-width-12,beside?anchor.right+12:anchor.left))+'px';
-  dialog.style.top=Math.max(12,Math.min(vh-height-12,beside?anchor.top:anchor.bottom+height+12<=vh?anchor.bottom+8:anchor.top-height-8))+'px';
+  const fit=()=>{
+    if(!dialog.isConnected)return;
+    const viewport=window.visualViewport,left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0,vw=viewport?.width||innerWidth,vh=viewport?.height||innerHeight;
+    const anchor=button.getBoundingClientRect(),width=Math.min(320,vw-24);
+    dialog.style.width=width+'px';dialog.style.maxHeight=Math.max(80,vh-24)+'px';dialog.style.right='auto';dialog.style.bottom='auto';
+    const height=dialog.offsetHeight,beside=anchor.right+12+width<=left+vw-12;
+    dialog.style.left=Math.max(left+12,Math.min(left+vw-width-12,beside?anchor.right+12:anchor.left))+'px';
+    const desired=beside?anchor.top:anchor.bottom+height+20<=top+vh?anchor.bottom+8:anchor.top-height-8;
+    dialog.style.top=Math.max(top+12,Math.min(top+vh-height-12,desired))+'px';
+  };
+  const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;
+  window.visualViewport?.addEventListener('resize',fit);window.visualViewport?.addEventListener('scroll',fit);window.addEventListener('resize',fit);
+  dialog._occupantCleanup=()=>{window.visualViewport?.removeEventListener('resize',fit);window.visualViewport?.removeEventListener('scroll',fit);window.removeEventListener('resize',fit)};
+  fit();
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
   if(character){
@@ -2072,8 +2081,7 @@ function openHomeOccupantSheet(button){
       execute:(id,action,target)=>executeContextActivity(id,action,target,{groupId,uid})
     }));
     // Content is inserted before fitting again; menus expand within the same scrollable card.
-    const fit=()=>{if(!dialog.isConnected)return;const h=dialog.getBoundingClientRect().height;dialog.style.top=Math.max(12,Math.min(parseFloat(dialog.style.top)||12,(window.visualViewport?.height||innerHeight)-h-12))+'px'};
-    const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;fit();
+    fit();
   }
   clearTimeout(openHomeOccupantSheet.timer);
 }

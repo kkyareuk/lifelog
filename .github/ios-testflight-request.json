@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal407-presence-mafia",
-  "version": "1.0.355",
-  "build": 407,
+  "request": "2026-09-15-internal408-mafia-playback",
+  "version": "1.0.356",
+  "build": 408,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
