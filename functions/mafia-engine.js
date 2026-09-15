@@ -9,6 +9,16 @@ function neighbours(g,place){const i=g.locations.findIndex(p=>p.id===place);retu
 function autoPlan(g,p){let place=p.place;return Array.from({length:6},(_,tick)=>{const next=choose(g,neighbours(g,place),'move',g.day,p.id,tick);const kind=next!==place?'move':p.role==='mafia'&&random(g.seed,'sabotage',g.day,p.id,tick)>.55?'sabotage':random(g.seed,'investigate',g.day,p.id,tick)>.6?'investigate':'task';place=next;return {place,kind}})}
 function validatePlan(g,p,plan){if(!Array.isArray(plan)||plan.length!==6)return false;let place=p.place;for(const step of plan){if(!step||!neighbours(g,place).includes(step.place)||!['move','task','investigate',...(p.role==='mafia'?['sabotage','tag']:[])].includes(step.kind))return false;if(step.place!==place&&step.kind!=='move')return false;place=step.place}return true}
 function addCard(g,p,data){const list=g.cards[p.id]||(g.cards[p.id]=[]);list.push({id:`${g.day}-${p.id}-${list.length}`,...data});if(list.length>60)list.shift()}
+function openingStatement(g,p){
+ // A public claim, never a dump of private evidence or secret roles.
+ const cards=(g.cards?.[p.id]||[]).filter(c=>c.kind==='alibi'&&c.day===g.day);
+ return [0,1,2,3].map(period=>{
+  const matches=cards.filter(c=>Math.min(3,Math.floor(c.tick/2))===period),last=matches.at(-1);
+  if(period===3){const day=cards.filter(c=>c.tick<6).at(-1);return {period,place:day?.place||p.place,action:last?'rest':'unknown'}}
+  return {period,place:last?.place||p.place,action:last?(['tag','sabotage'].includes(last.action)?'task':last.action):'unknown'};
+ });
+}
+function validateStatement(g,segments){return Array.isArray(segments)&&segments.length===4&&segments.every((s,i)=>s&&s.period===i&&g.locations.some(l=>l.id===s.place)&&['move','task','investigate','rest','unknown'].includes(s.action))}
 function resolvePlan(g){g.cards={};g.traces=[];const plans=Object.fromEntries(alive(g).map(p=>[p.id,g.submissions[p.id]?.plan||autoPlan(g,p)]));
  for(let tick=0;tick<6;tick++){
   const people=alive(g);for(const p of people)p.place=plans[p.id][tick].place;
@@ -21,8 +31,10 @@ function resolvePlan(g){g.cards={};g.traces=[];const plans=Object.fromEntries(al
  }
  // Night: citizens rest. The late sleepers can witness the first night slot.
  for(let night=0;night<3;night++){
+  for(const p of alive(g).filter(p=>p.role==='citizen'))addCard(g,p,{kind:'alibi',day:g.day,tick:6+night,place:p.place,subject:p.id,action:'rest'});
   for(const hunter of alive(g).filter(p=>p.role==='mafia')){
    hunter.place=choose(g,neighbours(g,hunter.place),'night-move',g.day,night,hunter.id);
+   addCard(g,hunter,{kind:'alibi',day:g.day,tick:6+night,place:hunter.place,subject:hunter.id,action:'move'});
    const targets=alive(g).filter(p=>p.role==='citizen'&&p.place===hunter.place);
    if(night===0)for(const witness of targets.filter(p=>Number(String(p.sleep||'23:00').split(':')[0])<5))addCard(g,witness,{kind:'witness',day:g.day,tick:6+night,place:hunter.place,subject:hunter.id,action:'move'});
    if(targets.length===1){targets[0].alive=false;g.history.push({kind:'out',target:targets[0].id,day:g.day,tick:6+night});}
@@ -32,10 +44,19 @@ function resolvePlan(g){g.cards={};g.traces=[];const plans=Object.fromEntries(al
 }
 function conflicts(board,card){if(!card.subject)return [];return board.filter(old=>old.subject===card.subject&&old.day===card.day&&old.tick===card.tick&&old.place!==card.place).map(c=>c.id)}
 function publish(g,p,card){const visible={...card,id:`board-${g.phaseIndex}-${p.id}-${g.board.length}`,speaker:p.id};delete visible.forged;visible.conflicts=conflicts(g.board,visible);g.board.push(visible);g.history.push({kind:'card',speaker:p.id,card:visible,day:g.day});}
-function suspicion(g,p,target){const evidence=g.board.filter(c=>c.subject===target.id);const conflictsCount=evidence.reduce((n,c)=>n+c.conflicts.length,0);const own=(g.cards[p.id]||[]).filter(c=>c.subject===target.id);return Number(g.bias?.[p.id+':'+target.id]||0)+conflictsCount*20+own.filter(c=>['tag','sabotage'].includes(c.action)).length*12+g.history.filter(h=>h.kind==='accuse'&&h.speaker===target.id&&h.target===p.id).length*3+random(g.seed,'suspect',g.phaseIndex,p.id,target.id)*4}
+function suspicion(g,p,target){const evidence=g.board.filter(c=>c.subject===target.id);const conflictsCount=evidence.reduce((n,c)=>n+c.conflicts.length,0);const own=(g.cards?.[p.id]||[]).filter(c=>c.subject===target.id);return Number(g.bias?.[p.id+':'+target.id]||0)+conflictsCount*20+own.filter(c=>['tag','sabotage'].includes(c.action)).length*12+g.history.filter(h=>h.kind==='accuse'&&h.speaker===target.id&&h.target===p.id).length*3+random(g.seed,'suspect',g.phaseIndex,p.id,target.id)*4}
 function suspect(g,p){const candidates=alive(g).filter(q=>q.id!==p.id);return candidates.sort((a,b)=>suspicion(g,p,b)-suspicion(g,p,a))[0]}
 function autoDebate(g,p){const cards=g.cards[p.id]||[];if(p.role==='mafia'&&p.forgedDay!==g.day){const card=cards.find(c=>c.kind==='alibi'&&['tag','sabotage'].includes(c.action));if(card&&random(g.seed,'forge',g.phaseIndex,p.id)>.3)return {kind:'forge',cardId:card.id,place:choose(g,g.locations.filter(l=>l.id!==card.place),'false-place',g.phaseIndex,p.id).id}}const precise=/사고|분석|냉정|정리/.test(p.traits||'');const conflict=cards.find(c=>conflicts(g.board,c).length);if(conflict&&precise)return {kind:'card',cardId:conflict.id};if(cards.length&&random(g.seed,'reveal',g.phaseIndex,p.id)>.35)return {kind:'card',cardId:choose(g,cards,'card',g.phaseIndex,p.id).id};return {kind:'accuse',targetId:suspect(g,p)?.id}}
-function resolveDebate(g){for(const p of alive(g)){
+function resolveDebate(g){
+ if(g.debateRound===0){
+  for(const p of alive(g)){
+   const submitted=g.submissions[p.id];
+   const segments=submitted?.kind==='statement'&&validateStatement(g,submitted.segments)?submitted.segments:openingStatement(g,p);
+   g.history.push({kind:'statement',speaker:p.id,day:g.day,segments:segments.map(({period,place,action})=>({period,place,action}))});
+  }
+  g.debateRound=1;return;
+ }
+ for(const p of alive(g)){
  const action=g.submissions[p.id]||autoDebate(g,p),cards=g.cards[p.id]||[];
  if(action.kind==='card'||action.kind==='forge'){const original=cards.find(c=>c.id===action.cardId);if(original){let card={...original};if(action.kind==='forge'&&p.role==='mafia'&&p.forgedDay!==g.day){card.place=action.place;card.forged=true;p.forgedDay=g.day}publish(g,p,card)}}
  else if(action.kind==='accuse'||action.kind==='defend'){const target=alive(g).find(q=>q.id===action.targetId&&q.id!==p.id);if(target){g.history.push({kind:action.kind,speaker:p.id,target:target.id,day:g.day});if(action.kind==='accuse'){const response=(g.cards[target.id]||[]).find(c=>c.kind==='alibi'&&!['tag','sabotage'].includes(c.action));if(response){publish(g,target,response);g.history.push({kind:'rebut',speaker:target.id,target:p.id,day:g.day})}}}}
@@ -44,5 +65,5 @@ function resolveDebate(g){for(const p of alive(g)){
 }
 function resolveVote(g){const tally={};for(const p of alive(g)){const target=g.submissions[p.id]?.targetId||suspect(g,p)?.id;if(target&&alive(g).some(q=>q.id===target&&q.id!==p.id))tally[target]=(tally[target]||0)+1}const sorted=Object.entries(tally).sort((a,b)=>b[1]-a[1]);if(sorted.length&&sorted[0][1]>(sorted[1]?.[1]||0)){const target=g.players.find(p=>p.id===sorted[0][0]);target.alive=false;g.history.push({kind:'voted',target:target.id,day:g.day})}else g.history.push({kind:'tie',day:g.day});if(!finish(g)){g.day++;g.phase='plan'}}
 function advance(g,now){let count=0;while(g.status==='playing'&&g.deadlineAt<=now&&count++<50){if(g.phase==='plan')resolvePlan(g);else if(g.phase==='debate')resolveDebate(g);else resolveVote(g);g.phaseIndex++;g.submissions={};g.deadlineAt+=g.durationMs;g.history=g.history.slice(-200);g.board=g.board.slice(-120)}return g}
-function view(g,uid){const mine=g.players.filter(p=>p.ownerUid===uid&&!p.delegated);return {id:g.id,name:g.name,status:g.status,hostUid:g.hostUid,phase:g.phase,phaseIndex:g.phaseIndex,day:g.day,deadlineAt:g.deadlineAt,capacity:g.capacity,locations:g.locations,progress:g.progress||0,winner:g.winner||null,players:g.players.map(({role,place,traits,sleep,forgedDay,...p})=>({...p,...(g.status==='finished'||mine.some(m=>m.id===p.id)?{role}:{}),...(mine.some(m=>m.id===p.id)?{place,submitted:!!g.submissions?.[p.id]}:{})})),board:g.board||[],history:g.history||[],privateCards:Object.fromEntries(mine.map(p=>[p.id,g.cards?.[p.id]||[]]))}}
-module.exports={random,start,advance,view,validatePlan,neighbours,conflicts,autoPlan,suspicion};
+function view(g,uid){const mine=g.players.filter(p=>p.ownerUid===uid&&!p.delegated);return {id:g.id,name:g.name,status:g.status,hostUid:g.hostUid,phase:g.phase,phaseIndex:g.phaseIndex,debateRound:g.debateRound??null,day:g.day,deadlineAt:g.deadlineAt,capacity:g.capacity,locations:g.locations,progress:g.progress||0,winner:g.winner||null,players:g.players.map(({role,place,traits,sleep,forgedDay,...p})=>({...p,...(g.status==='finished'||mine.some(m=>m.id===p.id)?{role}:{}),...(mine.some(m=>m.id===p.id)?{place,submitted:!!g.submissions?.[p.id]}:{})})),board:g.board||[],history:g.history||[],openingDrafts:g.phase==='debate'?Object.fromEntries(mine.map(p=>[p.id,openingStatement(g,p)])):{},privateCards:Object.fromEntries(mine.map(p=>[p.id,g.cards?.[p.id]||[]]))}}
+module.exports={random,start,advance,view,validatePlan,neighbours,conflicts,autoPlan,suspicion,openingStatement,validateStatement};

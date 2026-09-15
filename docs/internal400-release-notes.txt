@@ -1,0 +1,9 @@
+<ko-KR>
+참여 중인 놀이를 프로필 아래로 옮겼어요. 방장 프로필 사진과 남은 시간·참여 인원을 표시하고 네모 배경을 없앴어요. 심리테스트 이름을 자아만들기로 바꾸고 날짜·시간 아래에 마을 선택을 추가했어요. 마피아 회의 첫 차례에 아침·점심·저녁·밤의 행동을 진술하고, 모두의 진술을 목격 카드와 비교할 수 있어요.
+</ko-KR>
+<en-US>
+Moved joined games below your profile. Game shortcuts show the host’s portrait, time remaining and player count without a square background. Renamed the personality test to Self-discovery and added a village selector below the clock. Mafia meetings now start with statements about the morning, afternoon, evening and night, ready to compare with witness cards.
+</en-US>
+<ja-JP>
+参加中のゲームをプロフィールの下へ移しました。四角い背景をなくし、ホストの写真・残り時間・参加人数を表示します。心理テストの名称を「自分づくり」に変更し、時計の下に村の選択を追加しました。マフィアの会議では最初に朝・昼・夕方・夜の行動を証言し、全員の証言を目撃カードと比較できます。
+</ja-JP>
