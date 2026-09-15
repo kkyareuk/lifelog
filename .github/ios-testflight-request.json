@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-16-internal412-public-hotfix-backport",
-  "version": "1.0.360",
-  "build": 412,
+  "request": "2026-09-16-internal413-mafia-notebook",
+  "version": "1.0.361",
+  "build": 413,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

@@ -32,7 +32,7 @@ function start(g){
  return g;
 }
 function canHit(g,p){return p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
-function allowedPlaces(g,p){if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
+function allowedPlaces(g,p){if(g.notebook)return g.openPlaces;if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
  if(!a||typeof a!=='object')return false;
@@ -43,13 +43,13 @@ function validateAction(g,p,a){
  if(a.kind==='task')return a.taskId==='common'?g.commonTask.place===p.place:(g.tasks[p.id]||[]).some(t=>t.id===a.taskId&&t.place===p.place&&t.done<t.required);
  if(a.kind==='look')return near(g,p).includes(a.place);
  if(['investigate','cover','drop'].includes(a.kind))return true;
- if(a.kind==='talk')return peers(g,p).some(q=>q.id===a.targetId)&&(g.cards[p.id]||[]).some(c=>c.id===a.cardId);
+ if(a.kind==='talk')return peers(g,p).some(q=>q.id===a.targetId)&&(g.notebook||(g.cards[p.id]||[]).some(c=>c.id===a.cardId));
  if(a.kind==='hit')return canHit(g,p)&&peers(g,p)[0].id===a.targetId;
  if(a.kind==='emergency')return p.place===g.squareId&&!p.emergencyUsed;
  return false;
 }
 function auto(g,p){
- if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
+ if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&!g.notebook&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
  if(!awake(g,p))return {kind:'stay'};
  if(canHit(g,p)&&old.random(g.seed,'hit',g.day,g.period,p.id)>.4)return {kind:'hit',targetId:peers(g,p)[0].id};
  const task=(g.tasks[p.id]||[]).find(t=>t.place===p.place&&t.done<t.required);
@@ -89,7 +89,8 @@ function act(g){
    g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'task'});
    card(g,p,{kind:'alibi',subject:p.id,action:'task'});
   }else if(a.kind==='investigate'){
-   const traces=g.traces.filter(t=>t.place===p.place).slice(-2);
+   const known=new Set((g.cards[p.id]||[]).map(c=>c.originId).filter(Boolean));
+   const traces=g.traces.filter(t=>t.place===p.place&&!known.has(t.id)).sort((a,b)=>Number(['blood','object','wiped'].includes(b.action))-Number(['blood','object','wiped'].includes(a.action))||b.tick-a.tick).slice(0,3);
    for(const trace of traces)card(g,p,{...trace,kind:'trace',subject:null,originId:trace.id});
    if(!traces.length)card(g,p,{kind:'empty',subject:null,action:'no-trace'});
   }else if(a.kind==='look')card(g,p,{kind:'presence',subject:null,place:a.place,count:people.filter(q=>q.place===a.place).length,action:'presence'});
@@ -104,7 +105,7 @@ function act(g){
    }else card(g,p,{kind:'declined',subject:a.targetId,action:'declined'});
   }
  }
- for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
+ for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,day:g.day,tick:tick(g),reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
  progress(g);g.traces=g.traces.slice(-120);
  if(old.finish(g))return;
  if(g.drama&&g.period===3||g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
@@ -144,4 +145,5 @@ function view(g,uid){
 const primitives={...old,view,move,act,auto,validateAction};
 const playback=require('./mafia-playback')(primitives);
 const conversation=require('./mafia-conversation')(primitives,playback);
-module.exports={...old,start,advance:(g,n)=>g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};
+const notebook=require('./mafia-notebook')(primitives,conversation,playback);
+module.exports={...old,start,advance:(g,n)=>g.notebook?notebook.advance(g,n):g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.notebook?notebook.view(g,u):g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.notebook?notebook.submit(g,p,a,n):g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};

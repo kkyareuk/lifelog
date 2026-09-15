@@ -60,7 +60,7 @@ module.exports=base=>{
   }else if(g.phase==='debate')base.resolveDebate(g);
   else if(g.phase==='vote'){base.resolveVote(g);if(g.status==='playing'){g.phase='move';g.period=0;g.actionTick=0}}
   g.phaseIndex++;g.submissions={};g.deadlineAt=now+({walk:3500,perform:6000,claim:7000}[g.phase]||45000);
-  if(g.drama&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
+  if(g.drama&&!g.notebook&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
   g.history=g.history.slice(-200);g.board=g.board.slice(-120);return g;
  }
  function view(g,uid){
@@ -72,7 +72,7 @@ module.exports=base=>{
   out.challengeOwner=g.challengeOwner||'';
   out.challengeCards=p&&p.alive&&['claim','challenge'].includes(g.phase)?opposing(g,p).map(c=>c.id):[];
   const room=['act','perform'].includes(g.phase),here=p?.place;
-  out.occupants=room?g.players.filter(q=>q.place===here&&q.alive).map(({id,name,photo})=>({id,name,photo})):[];
+  out.occupants=room?g.players.filter(q=>q.place===here&&q.alive).map(({id,name,photo,icon})=>({id,name,photo,icon:icon||''})):[];
   out.bodies=room?g.bodies.filter(b=>b.place===here).map(b=>({id:b.id,place:b.place})):[];
   out.playback=g.playback&&p?{kind:g.playback.kind,from:g.playback.from?.[p.id]||'',action:g.playback.actions?.[p.id]?.kind||'',hits:(g.playback.hits||[]).filter(id=>g.bodies.some(b=>b.id===id&&b.place===here)),cards:g.playback.cards?.[p.id]||[]}:null;
   if(p?.alive&&p.role==='mafia')out.intel={counts:Object.fromEntries((g.openPlaces||[]).map(id=>[id,living(g).filter(q=>q.place===id).length])),hubs:[...new Set(Object.values(g.tasks||{}).flat().filter(t=>t.done<t.required).map(t=>t.place))],lonely:Object.keys(g.lastCounts||{}).filter(id=>g.lastCounts[id]===1)};

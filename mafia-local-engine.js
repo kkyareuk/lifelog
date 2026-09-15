@@ -107,7 +107,7 @@ function start(g){
  return g;
 }
 function canHit(g,p){return p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
-function allowedPlaces(g,p){if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
+function allowedPlaces(g,p){if(g.notebook)return g.openPlaces;if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
  if(!a||typeof a!=='object')return false;
@@ -118,13 +118,13 @@ function validateAction(g,p,a){
  if(a.kind==='task')return a.taskId==='common'?g.commonTask.place===p.place:(g.tasks[p.id]||[]).some(t=>t.id===a.taskId&&t.place===p.place&&t.done<t.required);
  if(a.kind==='look')return near(g,p).includes(a.place);
  if(['investigate','cover','drop'].includes(a.kind))return true;
- if(a.kind==='talk')return peers(g,p).some(q=>q.id===a.targetId)&&(g.cards[p.id]||[]).some(c=>c.id===a.cardId);
+ if(a.kind==='talk')return peers(g,p).some(q=>q.id===a.targetId)&&(g.notebook||(g.cards[p.id]||[]).some(c=>c.id===a.cardId));
  if(a.kind==='hit')return canHit(g,p)&&peers(g,p)[0].id===a.targetId;
  if(a.kind==='emergency')return p.place===g.squareId&&!p.emergencyUsed;
  return false;
 }
 function auto(g,p){
- if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
+ if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&!g.notebook&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
  if(!awake(g,p))return {kind:'stay'};
  if(canHit(g,p)&&old.random(g.seed,'hit',g.day,g.period,p.id)>.4)return {kind:'hit',targetId:peers(g,p)[0].id};
  const task=(g.tasks[p.id]||[]).find(t=>t.place===p.place&&t.done<t.required);
@@ -164,7 +164,8 @@ function act(g){
    g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'task'});
    card(g,p,{kind:'alibi',subject:p.id,action:'task'});
   }else if(a.kind==='investigate'){
-   const traces=g.traces.filter(t=>t.place===p.place).slice(-2);
+   const known=new Set((g.cards[p.id]||[]).map(c=>c.originId).filter(Boolean));
+   const traces=g.traces.filter(t=>t.place===p.place&&!known.has(t.id)).sort((a,b)=>Number(['blood','object','wiped'].includes(b.action))-Number(['blood','object','wiped'].includes(a.action))||b.tick-a.tick).slice(0,3);
    for(const trace of traces)card(g,p,{...trace,kind:'trace',subject:null,originId:trace.id});
    if(!traces.length)card(g,p,{kind:'empty',subject:null,action:'no-trace'});
   }else if(a.kind==='look')card(g,p,{kind:'presence',subject:null,place:a.place,count:people.filter(q=>q.place===a.place).length,action:'presence'});
@@ -179,7 +180,7 @@ function act(g){
    }else card(g,p,{kind:'declined',subject:a.targetId,action:'declined'});
   }
  }
- for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
+ for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,day:g.day,tick:tick(g),reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
  progress(g);g.traces=g.traces.slice(-120);
  if(old.finish(g))return;
  if(g.drama&&g.period===3||g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
@@ -219,7 +220,8 @@ function view(g,uid){
 const primitives={...old,view,move,act,auto,validateAction};
 const playback=require('./mafia-playback')(primitives);
 const conversation=require('./mafia-conversation')(primitives,playback);
-module.exports={...old,start,advance:(g,n)=>g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};
+const notebook=require('./mafia-notebook')(primitives,conversation,playback);
+module.exports={...old,start,advance:(g,n)=>g.notebook?notebook.advance(g,n):g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.notebook?notebook.view(g,u):g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.notebook?notebook.submit(g,p,a,n):g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};
 
 },"./mafia-playback":function(module,exports,require){
 // Rules v3: choice deadlines and playback are independent server phases.
@@ -284,7 +286,7 @@ module.exports=base=>{
   }else if(g.phase==='debate')base.resolveDebate(g);
   else if(g.phase==='vote'){base.resolveVote(g);if(g.status==='playing'){g.phase='move';g.period=0;g.actionTick=0}}
   g.phaseIndex++;g.submissions={};g.deadlineAt=now+({walk:3500,perform:6000,claim:7000}[g.phase]||45000);
-  if(g.drama&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
+  if(g.drama&&!g.notebook&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
   g.history=g.history.slice(-200);g.board=g.board.slice(-120);return g;
  }
  function view(g,uid){
@@ -296,7 +298,7 @@ module.exports=base=>{
   out.challengeOwner=g.challengeOwner||'';
   out.challengeCards=p&&p.alive&&['claim','challenge'].includes(g.phase)?opposing(g,p).map(c=>c.id):[];
   const room=['act','perform'].includes(g.phase),here=p?.place;
-  out.occupants=room?g.players.filter(q=>q.place===here&&q.alive).map(({id,name,photo})=>({id,name,photo})):[];
+  out.occupants=room?g.players.filter(q=>q.place===here&&q.alive).map(({id,name,photo,icon})=>({id,name,photo,icon:icon||''})):[];
   out.bodies=room?g.bodies.filter(b=>b.place===here).map(b=>({id:b.id,place:b.place})):[];
   out.playback=g.playback&&p?{kind:g.playback.kind,from:g.playback.from?.[p.id]||'',action:g.playback.actions?.[p.id]?.kind||'',hits:(g.playback.hits||[]).filter(id=>g.bodies.some(b=>b.id===id&&b.place===here)),cards:g.playback.cards?.[p.id]||[]}:null;
   if(p?.alive&&p.role==='mafia')out.intel={counts:Object.fromEntries((g.openPlaces||[]).map(id=>[id,living(g).filter(q=>q.place===id).length])),hubs:[...new Set(Object.values(g.tasks||{}).flat().filter(t=>t.done<t.required).map(t=>t.place))],lonely:Object.keys(g.lastCounts||{}).filter(id=>g.lastCounts[id]===1)};
@@ -330,7 +332,7 @@ module.exports=(base,playback)=>{
   g.finalSpeaker=suspects[0]?.p.id||'';g.currentClaim={speaker:g.finalSpeaker,kind:'final'};
   log(g,{kind:'finalSpeaker',speaker:g.finalSpeaker,score:suspects[0]?.score||0});phase(g,'finalSpeech',now,20);
  }
- function next(g,now){g.challengeOwner='';g.challengeQuestion=null;g.lastChallengeCard=null;g.lastChallenger='';g.defendedAtRevision=null;g.npcIntervened=false;g.currentClaim=g.claims[g.claimCursor++]||null;if(!g.currentClaim)return final(g,now);log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,5)}
+ function next(g,now){g.challengeOwner='';g.challengeQuestion=null;g.lastChallengeCard=null;g.lastChallenger='';g.defendedAtRevision=null;g.npcIntervened=false;g.currentClaim=g.claims[g.claimCursor++]||null;if(!g.currentClaim)return final(g,now);log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,g.notebook?8:5)}
  function answer(g,p,value,now){
   log(g,{kind:'reply',speaker:p.id,target:g.currentClaim.speaker,value});
   const id=g.currentClaim.speaker;g.claimIssues[id]=(g.claimIssues[id]||0)+(value==='deny'?2:value==='unknown'?1:-1);
@@ -418,6 +420,77 @@ module.exports=(base,playback)=>{
   return out;
  }
  return {advance,submit,view};
+};
+
+},"./mafia-notebook":function(module,exports,require){
+// Opt-in rules for new games. Records describe observed events, never hidden roles.
+module.exports=(base,conversation,playback)=>{
+ const living=g=>g.players.filter(p=>p.alive);
+ const log=(g,h)=>{g.history.push({...h,day:g.day});g.meetingRevision=(g.meetingRevision||0)+1};
+ const phase=(g,name,now,seconds)=>{g.phase=name;g.phaseIndex++;g.submissions={};g.deadlineAt=Math.min(now+seconds*1000,g.meetingEndsAt)};
+ function open(g,now){g.meetingEndsAt||=now+300000;g.currentClaim=null;g.claims=[];g.claimCursor=0;g.challengeOwner='';phase(g,'discussion',now,20)}
+ function report(g){
+  g.sceneReports||=[];
+  for(const b of g.bodies.filter(b=>b.reported&&!g.sceneReports.some(r=>r.bodyId===b.id))){
+   const traces=g.traces.filter(t=>t.place===b.place&&t.day===(b.day||g.day));
+   const clues=[{kind:'time',day:b.day||g.day,tick:b.tick??traces.find(t=>t.action==='blood')?.tick??0},...traces.filter(t=>['blood','object','wiped'].includes(t.action)).slice(-2).map(t=>({kind:t.action,day:t.day,tick:t.tick}))];
+   g.sceneReports.push({id:'scene:'+b.id,bodyId:b.id,day:g.day,place:b.place,clues});
+   log(g,{kind:'discovery',target:b.id,place:b.place});
+  }
+ }
+ function submit(g,p,a,now){
+  if(['discussion','claim','floor','rebuttal'].includes(g.phase)&&['accuse','testify','agree','alibi'].includes(a.kind)){
+   if(g.phase!=='discussion'&&a.kind==='accuse')throw Error('game-invalid-action');
+   if(a.kind==='accuse'){
+    if(!living(g).some(q=>q.id===a.targetId&&q.id!==p.id))throw Error('game-invalid-target');
+    const accused=g.players.find(q=>q.id===a.targetId);
+    log(g,{kind:'accuse',speaker:p.id,target:accused.id});
+    g.currentClaim={kind:'questioned',speaker:accused.id,accuser:p.id};g.challengeOwner='';g.claimIssues||={};
+    phase(g,'claim',now,12);return;
+   }
+   if(a.kind==='alibi'){
+    if(p.id!==g.currentClaim?.speaker||g.currentClaim.kind!=='questioned')throw Error('game-invalid-action');
+    const c=playback.options(g,p).find(c=>c.id===a.optionId);if(!c)throw Error('game-private-card');
+    g.currentClaim={...c,speaker:p.id};log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,8);return;
+   }
+   if(g.submissions[p.id]?.kind===a.kind)throw Error('game-invalid-action');
+   if(a.kind==='testify'){
+    const c=(g.cards?.[p.id]||[]).find(c=>c.id===a.cardId&&['witness','exchange'].includes(c.kind)&&c.subject!==p.id&&!c.heardFrom);
+    if(!c)throw Error('game-private-card');
+    base.publish(g,p,c);const {forged,sourceChain,...publicCard}=c;log(g,{kind:'testify',speaker:p.id,target:c.subject,card:publicCard});
+   }else{
+    const latest=g.history.filter(h=>['accuse','testify','challenge','rebuttal','claim'].includes(h.kind)&&h.day===g.day).at(-1);
+    if(!latest||latest.speaker===p.id)throw Error('game-invalid-action');
+    log(g,{kind:'agree',speaker:p.id,target:latest.speaker});
+   }
+   g.submissions[p.id]={kind:a.kind};return;
+  }
+  return conversation.submit(g,p,a,now);
+ }
+ function advance(g,now){
+  if(g.status!=='playing')return g;
+  if(g.phase==='discussion'){
+   if(now>=g.meetingEndsAt){g.phase='vote';g.phaseIndex++;g.submissions={};g.deadlineAt=now+45000;delete g.meetingEndsAt;return g}
+   if(now<g.deadlineAt)return g;
+   const npcs=living(g).filter(p=>p.delegated),npc=npcs[Math.floor(base.random(g.seed,'floor',g.phaseIndex)*npcs.length)];
+   if(npc){const witnesses=(g.cards[npc.id]||[]).filter(c=>c.kind==='witness'&&!c.heardFrom&&c.day===g.day);const others=living(g).filter(p=>p.id!==npc.id);
+    if(!g.submissions[npc.id]&&witnesses.length&&base.random(g.seed,'testify',g.phaseIndex)>.5){submit(g,npc,{kind:'testify',cardId:witnesses.at(-1).id},now);g.deadlineAt=Math.min(now+8000,g.meetingEndsAt)}
+    else if(others.length){const target=others.sort((a,b)=>(g.claimIssues?.[b.id]||0)+(g.bias?.[npc.id+':'+b.id]||0)-(g.claimIssues?.[a.id]||0)-(g.bias?.[npc.id+':'+a.id]||0))[0];submit(g,npc,{kind:'accuse',targetId:target.id},now)}
+   }else g.deadlineAt=Math.min(now+20000,g.meetingEndsAt);
+   return g;
+  }
+  if(g.phase==='claim'&&g.currentClaim?.kind==='questioned'){
+   const p=g.players.find(p=>p.id===g.currentClaim.speaker);
+   if(p?.delegated&&g.deadlineAt-now<=8000){submit(g,p,{kind:'alibi',optionId:playback.options(g,p)[0].id},now);return g}
+  }
+  if(g.phase==='claim'&&now>=g.deadlineAt&&now<g.meetingEndsAt){phase(g,g.challengeOwner?'challenge':'floor',now,12);return g}
+  const before=g.phase;conversation.advance(g,now);report(g);
+  if(g.phase==='alibi')open(g,now);
+  else if(g.phase==='finalSpeech'&&before!=='finalSpeech'&&now<g.meetingEndsAt-20000)open(g,now);
+  return g;
+ }
+ function view(g,uid){const out=conversation.view(g,uid),p=g.players.find(p=>p.ownerUid===uid&&!p.delegated);out.notebook=true;out.searchAvailable=!!p&&g.phase==='act'&&g.traces.some(t=>t.place===p.place&&!(g.cards?.[p.id]||[]).some(c=>c.originId===t.id));out.sceneReports=g.sceneReports||[];out.currentClaim=['discussion','claim','floor','challenge','rebuttal','finalSpeech'].includes(g.phase)?g.currentClaim||null:null;out.alibiOptions=p&&g.currentClaim?.speaker===p.id?playback.options(g,p):[];out.testimonyCards=p?(g.cards?.[p.id]||[]).filter(c=>['witness','exchange'].includes(c.kind)&&!c.heardFrom&&c.subject!==p.id).map(c=>c.id):[];return out}
+ return {advance,view,submit};
 };
 
 }},cache={};function require(id){if(id==='node:crypto')return cryptoShim;if(!cache[id]){const m=cache[id]={exports:{}};modules[id](m,m.exports,require)}return cache[id].exports}

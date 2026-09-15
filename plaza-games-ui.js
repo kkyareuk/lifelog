@@ -53,7 +53,7 @@ export function openPlazaGames(groupId='',gameId=''){
  async function setupGame(id){
   if(!id){d.close();window.DrawerVillageNavigation.go('groups');return}groupId=id;const revision=++loadRevision;body.textContent=t('불러오는 중…','Loading…','読み込み中…');
   try{const data=await call('readGames',{groupId});if(!current()||revision!==loadRevision)return;d.dataset.plazaScreen='setup';gameSetup(body,data,{saveConsent:characters=>call('setGameConsent',{groupId,characters}),back:()=>{gameId='';load()},submit:async f=>{
-   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,drama:true,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(current())load()}
+   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,drama:true,notebook:true,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(current())load()}
    catch(e){if(current()){if(gameId){await load();const status=body.querySelector('[data-game-status]');if(status)status.textContent=errorText(e)}else{body.querySelector('[data-game-status]').textContent=errorText(e);body.querySelectorAll('button').forEach(b=>b.disabled=false)}}}
   }});
   }catch(e){if(current())body.textContent=errorText(e)}

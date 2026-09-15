@@ -22,7 +22,7 @@ module.exports=(base,playback)=>{
   g.finalSpeaker=suspects[0]?.p.id||'';g.currentClaim={speaker:g.finalSpeaker,kind:'final'};
   log(g,{kind:'finalSpeaker',speaker:g.finalSpeaker,score:suspects[0]?.score||0});phase(g,'finalSpeech',now,20);
  }
- function next(g,now){g.challengeOwner='';g.challengeQuestion=null;g.lastChallengeCard=null;g.lastChallenger='';g.defendedAtRevision=null;g.npcIntervened=false;g.currentClaim=g.claims[g.claimCursor++]||null;if(!g.currentClaim)return final(g,now);log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,5)}
+ function next(g,now){g.challengeOwner='';g.challengeQuestion=null;g.lastChallengeCard=null;g.lastChallenger='';g.defendedAtRevision=null;g.npcIntervened=false;g.currentClaim=g.claims[g.claimCursor++]||null;if(!g.currentClaim)return final(g,now);log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,g.notebook?8:5)}
  function answer(g,p,value,now){
   log(g,{kind:'reply',speaker:p.id,target:g.currentClaim.speaker,value});
   const id=g.currentClaim.speaker;g.claimIssues[id]=(g.claimIssues[id]||0)+(value==='deny'?2:value==='unknown'?1:-1);

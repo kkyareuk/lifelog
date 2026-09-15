@@ -12,15 +12,16 @@ export async function localGames(action,input,owner){
  const stored=s.personalMafia||{},bucket=stored[townId]||{games:[],consent:people.map(c=>c.id)};
  // Work on a clone: invalid actions must not leave half-written save state.
  const data=copy(bucket),now=Date.now(),view=g=>engine.view(g,owner);
+ for(const game of data.games){for(const player of game.players){const source=people.find(c=>c.id===player.id);if(source)player.icon=source.icon||source.iconImage||'';}for(const location of game.locations){const source=locations.find(l=>l.id===location.id);if(source)for(const key of ['image','iconPreset','rooms','interior'])location[key]=source[key]|| (key==='rooms'?{}:'');}}
  if(action==='readGames')return {manager:true,games:data.games.map(view),characters:people.map(c=>({id:c.id,name:c.name})),towns:[{id:townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'}],locations,consent:data.consent};
  let g=data.games.find(g=>g.id===input.gameId);
- const participant=(c,delegated)=>({id:c.id,name:c.name,ownerUid:owner,photo:c.iconImage||c.photo||'',speechStyle:c.speechStyle||'',personalityTypes:c.personalityTypes||[],traits:JSON.stringify([c.personalityTypes,c.personality,c.temperament,c.emotionalBaseline,c.angerResponse]),hobbies:JSON.stringify(c.hobbies||[]),homeId:c.homeId||'',sleep:c.sleep||'23:00',alive:true,delegated});
+ const participant=(c,delegated)=>({id:c.id,name:c.name,ownerUid:owner,icon:c.icon||c.iconImage||'',photo:c.photo||'',speechStyle:c.speechStyle||'',personalityTypes:c.personalityTypes||[],traits:JSON.stringify([c.personalityTypes,c.personality,c.temperament,c.emotionalBaseline,c.angerResponse]),hobbies:JSON.stringify(c.hobbies||[]),homeId:c.homeId||'',sleep:c.sleep||'23:00',alive:true,delegated});
  if(action==='setGameConsent'){if(input.characters.some(id=>!people.some(c=>c.id===id)))throw Error('character-owner-required');data.consent=[...new Set(input.characters)];}
  else if(action==='createGame'){
   if(data.games.filter(g=>['playing','recruiting'].includes(g.status)).length>=3)throw Error('game-limit');
   if(!Number.isInteger(input.capacity)||input.capacity<4||input.capacity>10)throw Error('game-invalid-input');
   const selected=new Set(input.locations);if(selected.size<engine.targetCount(input.capacity,4)||selected.size>8||[...selected].some(id=>!locations.some(l=>l.id===id)))throw Error('game-locations');
-  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
+  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,notebook:true,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
  }else{
   if(!g)throw Error('game-missing');engine.advance(g,now);
   if(action==='joinGame'){const c=people.find(c=>c.id===input.characterId);if(g.status!=='recruiting'||!c)throw Error('game-invalid-action');if(g.players.some(p=>!p.delegated))throw Error('game-one-character');g.players.push(participant(c,false));}

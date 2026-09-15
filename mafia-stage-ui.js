@@ -7,7 +7,7 @@ const words=()=>({stay:t('머무르기','Stay','留まる'),move:t('이동','Mov
 const taskName=k=>({dishes:t('식기 정리','Arrange the dishes','食器を片づける'),books:t('책과 자료 정리','Sort books and notes','本と資料を整理する'),garden:t('화단 돌보기','Tend the garden','花壇の手入れ'),boxes:t('물품 정리','Sort supplies','物品の整理')}[k]||t('공동 준비','Community preparations','共同準備'));
 const seenRoles=new Set();
 const buildingArt=l=>{const files={'type-park':'park','park':'park','type-library':'library','type-hospital':'hospital','hospital':'hospital','type-cafe':'cafe','cafe':'cafe','type-restaurant':'restaurant','type-piano-hall':'piano-hall','type-office':'office','type-stadium':'stadium'};return safe(l.image)||(files[l.iconPreset]?'./world-assets/building-types/'+files[l.iconPreset]+'-handdrawn.png':l.square?'./world-assets/building-types/park-handdrawn.png':'./world-assets/building-types/red-roof-home-handdrawn.webp')};
-const portrait=p=>`<img src="${esc(safe(p?.photo)||'./assets/home-ui/profile-placeholder.png')}" alt="">`;
+const portrait=p=>`<img src="${esc(safe(p?.icon)||'./assets/home-ui/profile-placeholder.png')}" alt="">`;
 export function renderMafiaStage(body,g,p,{submit,back,refresh,historyLine}){
  const place=id=>g.locations.find(l=>l.id===id),name=id=>g.players.find(q=>q.id===id)?.name||t('누군가','Someone','誰か');
  const cards=g.privateCards[p?.id]||[],opening=g.phase==='debate'&&g.debateRound===0,active=g.status==='playing'&&p?.alive;
