@@ -1875,7 +1875,9 @@ function townTravelersMarkup(homeId=""){
     const routeStyle=villageWalk?routePoints.map((point,routeIndex)=>`--route-x${routeIndex}:${point[0]}%;--route-y${routeIndex}:${point[1]}%`).join(";"):"";
     const movementClass=conversation?"is-conversation":decoration?"is-decoration-visit":villageWalk?"is-village-walk":scene.movementKind==="jog"?"is-jogging":scene.transit?"is-transit":"is-roaming";
     const routeDuration=(56+(seed%13))*gait.routeDurationFactor,travelDuration=(20+(seed%7))*gait.routeDurationFactor;
-    return `<button type="button" class="town-traveler town-action-${action.kind} ${movementClass} ${walkClass}" data-person="${esc(character.id)}" data-walking-style="${esc(character.walkingStyle||"보통 속도로 자연스럽게")}" style="left:${x}%;top:${y}%;--traveler-delay:${-(index%7)*1.15}s;--route-duration:${routeDuration.toFixed(2)}s;--travel-duration:${travelDuration.toFixed(2)}s;--town-step-duration:${gait.stepDuration}s;${routeStyle}" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}</span></button>`;
+    // An absolute phase survives DOM replacement on multiplayer snapshot updates.
+    const motionDuration=villageWalk?routeDuration:travelDuration,motionDelay=-((Date.now()/1000+seed%97)%motionDuration);
+    return `<button type="button" class="town-traveler town-action-${action.kind} ${movementClass} ${walkClass}" data-person="${esc(character.id)}" data-walking-style="${esc(character.walkingStyle||"보통 속도로 자연스럽게")}" style="left:${x}%;top:${y}%;--traveler-delay:${motionDelay.toFixed(3)}s;--route-duration:${routeDuration.toFixed(2)}s;--travel-duration:${travelDuration.toFixed(2)}s;--town-step-duration:${gait.stepDuration}s;${routeStyle}" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}</span></button>`;
   }).join("");
 }
 export function buildingDetailDialogs(selectedKey=""){

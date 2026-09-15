@@ -1,0 +1,9 @@
+<ko-KR>
+광장에 함께하는 활동 화면을 새롭게 꾸몄어요. 게임 카드 목록, 체크무늬 설정 화면, 지도 위 장소·행동 선택을 추가했어요. 새 마피아 게임은 일과 60초, 진술·추리·투표 45초로 진행돼요. 기존 게임의 시간은 유지돼요. 멀티마을 화면이 갱신될 때 산책하던 캐릭터가 출발점으로 튀던 문제를 수정했어요.
+</ko-KR>
+<en-US>
+Redesigned Plaza activities with game cards, a checkered setup screen and map-based location and action choices. New Mafia games use 60-second action turns and 45-second statement, discussion and voting turns. Existing games keep their timing. Fixed walking characters jumping back when the multiplayer town view refreshed.
+</en-US>
+<ja-JP>
+広場の活動画面を一新しました。ゲームカード一覧、チェック柄の設定画面、地図上での場所・行動選択を追加しました。新しいマフィアゲームは行動60秒、証言・推理・投票45秒で進行します。既存ゲームの時間は変わりません。マルチの村の画面更新時に、散歩中のキャラクターが出発点へ戻る問題を修正しました。
+</ja-JP>
