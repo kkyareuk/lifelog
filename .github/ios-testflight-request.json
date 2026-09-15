@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-internal410-mafia-conversation",
-  "version": "1.0.358",
-  "build": 410,
+  "request": "2026-09-16-internal412-public-hotfix-backport",
+  "version": "1.0.360",
+  "build": 412,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

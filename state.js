@@ -376,7 +376,7 @@ function normalizeHomes(x){
   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
   const notificationDefaults=defaultCharacterNotificationSettings(),notificationSource=x.characterNotificationSettings&&typeof x.characterNotificationSettings==="object"&&!Array.isArray(x.characterNotificationSettings)?x.characterNotificationSettings:{};
   x.characterNotificationSettings={
-    characterIds:Array.isArray(notificationSource.characterIds)?[...new Set(notificationSource.characterIds.map(String).filter(id=>x.characters[id]))]:[],
+    characterIds:Array.isArray(notificationSource.characterIds)?[...new Set(notificationSource.characterIds.map(String).filter(id=>id&&id.length<=180))]:[],
     frequencyMode:["perDay","interval"].includes(notificationSource.frequencyMode)?notificationSource.frequencyMode:"perDay",
     timesPerDay:Math.max(1,Math.min(6,Number(notificationSource.timesPerDay)||({light:1,daily:1,lively:2}[notificationSource.frequency]||notificationDefaults.timesPerDay))),
     intervalHours:Math.max(2,Math.min(12,Number(notificationSource.intervalHours)||notificationDefaults.intervalHours)),
@@ -1989,7 +1989,7 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
 }
 export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
-  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
+  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],sleepRoomId:(state.characters[cid]?.residences||[]).find(r=>r.homeId===homeId)?.sleepRoomId||state.characters[cid]?.sleepRoomId||"",allowedRoomKeys:Object.keys(home.rooms||{}).filter(key=>roomEntryAllowed(state.characters[cid],home,home.rooms[key])),seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
   const needsChanged=characterIds.map(id=>state.characters[id]&&advanceNeeds(state.characters[id],contexts[id]?.scene,now)).some(Boolean);
   const result=advanceLifeSimulation(home,characterIds,seatingContexts,now);
   result.changed ||= needsChanged;

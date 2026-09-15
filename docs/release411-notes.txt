@@ -1,0 +1,24 @@
+<ko-KR>
+• 홈 화면에 할 일 정하기를 복원했습니다.
+• 캐릭터 팝업이 화면 밖으로 밀리는 문제를 수정했습니다.
+• 멀티 캐릭터의 금지행동 저장과 연락받을 캐릭터 목록을 개선했습니다.
+• 삭제된 구성원이 남은 그룹을 정리할 수 있도록 수정했습니다.
+• 방 지정이 없으면 빈 침대를 찾아 사용합니다.
+• 이름표의 가구 가림·중복 표시와 좁은 방의 의자 배치를 개선했습니다.
+</ko-KR>
+<en-US>
+• Restored Choose activity on the home screen.
+• Fixed character popups extending off-screen.
+• Improved saved activity restrictions and the notification character list in multiplayer.
+• Enabled cleanup of groups with deleted residents.
+• Characters can use a vacant bed when no room is assigned.
+• Improved name-label visibility, duplicate labels, and seating in narrow rooms.
+</en-US>
+<ja-JP>
+• ホーム画面の「行動を決める」を復元しました。
+• キャラクターのポップアップが画面外に出る問題を修正しました。
+• マルチの禁止行動の保存と通知キャラクター一覧を改善しました。
+• 削除済みの住民が残るグループを整理できるようにしました。
+• 部屋の指定がなければ空いているベッドを使います。
+• 名前表示の家具による隠れ・重複と狭い部屋の座席配置を改善しました。
+</ja-JP>
