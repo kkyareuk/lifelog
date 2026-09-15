@@ -15,3 +15,11 @@ export function markMailRead(p){
  try{accountStorage.setItem(key,JSON.stringify(next));raw=JSON.stringify(next)}catch{/* Keep a session read mark when device storage is full. */}
  scope=accountStorage.scope;marks=next;
 }
+
+// One durable write for the whole selection; callers can report a storage failure.
+export function markMailsRead(rows){
+ const now=Date.now(),next={...load()};let count=0;
+ for(const p of rows)if(!mailWasRead(p)&&!p.answered){next[identity(p)]=now;count++}
+ if(count){const value=JSON.stringify(next);accountStorage.setItem(key,value);raw=value;scope=accountStorage.scope;marks=next}
+ return count;
+}

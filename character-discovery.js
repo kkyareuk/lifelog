@@ -57,7 +57,7 @@ export function considerDiscovery(c,scene,context={}){
  document.querySelector('[data-discovery-tools]')?.remove();clearTimeout(requestTimer);
  document.querySelectorAll('[data-discovery-locks-menu]').forEach(b=>b.onclick=()=>showDiscoveryGroups(c,context));
  const info=window.ParallelCityAuth?.getInfo?.();
- if(!c||document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
+ if(!c||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
  const rail=document.querySelector('.game-hud-side-right,[data-web-discovery-rail]'),stats=rail?.querySelector('[data-tab=statistics]');if(!rail||!stats)return;
  const bar=document.createElement('div');bar.dataset.discoveryTools='';bar.className='discovery-rail-item';
  const button=document.createElement('button');button.type='button';button.className='game-hud-button discovery-rail-button';const icon=document.createElement('i');icon.className='discovery-question-icon';icon.setAttribute('aria-hidden','true');const label=document.createElement('em');button.append(icon,label);if(rail.matches('[data-web-discovery-rail]')){const caption=document.createElement('span');caption.textContent=t('질문받기','Get a question','質問を受ける');button.append(caption);}

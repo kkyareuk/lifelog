@@ -1,8 +1,8 @@
 /* The source artwork is 3000 × 3300. It renders at 36% so more of the
    town is visible at once while the canvas can still be panned freely. */
 :root{
-  --town-canvas-width:1080px;
-  --town-canvas-height:1188px;
+  --town-canvas-width:max(1080px,100vw,90.9091dvh);
+  --town-canvas-height:max(1188px,100dvh,110vw);
   --town-building-width:229px;
   --town-building-height:252px;
 }
@@ -163,6 +163,10 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
     font-size:clamp(15px,1.6vw,24px)!important;
   }
   html:not(.native-app)[data-active-tab="town"] .mobile-town-shell{min-height:calc(100dvh - 126px)}
+  html:not(.native-app)[data-active-tab="town"] .town-map-scroll,
+  html:not(.native-app)[data-active-tab="town"] body main .town-map-scroll>.world{min-height:max(560px,calc(100dvh - 330px))!important}
+  html:not(.native-app)[data-active-tab="town"] body main .town-map-scroll>.world{width:max(100%,calc((100dvh - 330px) * .909091))!important;min-width:max(100%,calc((100dvh - 330px) * .909091))!important;max-width:none!important}
+  html:not(.native-app)[data-active-tab="town"] body main .town-map-scroll .world-bg{object-fit:fill!important}
   html:not(.native-app)[data-active-tab="town"] .town-edit{
     display:grid!important;
     grid-template-columns:minmax(0,1fr) minmax(300px,340px)!important;

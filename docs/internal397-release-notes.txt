@@ -1,0 +1,9 @@
+<ko-KR>
+우편함에 전체 읽음으로 표시 버튼을 추가했어요. 긴 화면에서도 마을 배경이 끝까지 채워지도록 하고, 상단 마을 이름과 버튼 겹침을 수정했어요. 질문받기 아이콘이 화면 갱신 중 사라지는 문제를 개선했어요.
+</ko-KR>
+<en-US>
+Added Mark all as read to the mailbox. The town map now fills tall screens, and town names no longer overlap the header buttons. Fixed the question icon disappearing during background screen updates.
+</en-US>
+<ja-JP>
+郵便箱に「すべて既読にする」を追加しました。縦長の画面でも村の背景が下まで表示され、上部の村名とボタンが重ならないようにしました。画面の更新中に質問アイコンが消える問題を改善しました。
+</ja-JP>
