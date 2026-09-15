@@ -25,6 +25,7 @@ const origin=`http://127.0.0.1:${server.address().port}`,browser=process.argv.in
 
 try{
  const page=await browser.newPage({viewport:{width:384,height:854},serviceWorkers:'block'});
+ await page.addLocatorHandler(page.locator('dialog.page-guide[open]'),async()=>page.evaluate(()=>document.querySelectorAll('dialog.page-guide[open]').forEach(d=>d.close())));
  await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin+'?native-preview');await page.waitForFunction(()=>window.DrawerVillageNavigation&&window.ParallelCityAuth);
  await page.evaluate(async()=>{window.g=await import('/state.js?v='+document.querySelector('script[type=module][src]').src.split('v=')[1]);g.createCharacter(30)});
  for(const lang of ['ko','en','ja'])for(const [width,height] of [[384,854],[360,640],[1024,768]]){

@@ -1,0 +1,28 @@
+{
+  "date": "2026-09-15",
+  "public": {
+    "version": "1.0.353",
+    "build": 405,
+    "web": "web405 / c0877be3",
+    "googlePlay": "submitted for review, 100% automatic rollout after approval",
+    "apple": "submitted for review, automatic release after approval",
+    "appleSubmissionId": "808e87ff-c1f6-4a29-a9ea-dc8827eac2d7",
+    "plaza": "coming soon"
+  },
+  "internal": {
+    "version": "1.0.354",
+    "build": 406,
+    "googlePlay": "available to internal testers at 16:26 KST, release 299",
+    "apple": "existing internal group: installed 1.0.354 (406) observed",
+    "plaza": "enabled"
+  },
+  "translations": {
+    "changedUiEnglish": "100%",
+    "changedUiJapanese": "100%",
+    "wholeApp": "not measured"
+  },
+  "sourceCommits": {
+    "public": "7e85e81",
+    "internal": "e017e4b"
+  }
+}
