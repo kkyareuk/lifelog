@@ -1,0 +1,18 @@
+<ko-KR>
+마피아 회의를 돌아가며 의견을 내는 방식으로 다듬었어요. 지목받은 사람이 먼저 답하고, 반응은 하나씩 표시해요.
+근거 종류별 제출과 작은 증거 목록 버튼을 추가하고 회의 화면을 정돈했어요.
+관전자는 마을에서 모두의 위치를 볼 수 있어요. NPC만 남으면 모든 관전자가 회의를 넘기는 즉시 투표해요.
+아침 발견 후 결과 화면이 멈추던 문제와 놀이 나가기 화면을 고쳤어요. 불필요한 화면 갱신도 줄였어요.
+</ko-KR>
+<en-US>
+Mafia meetings now use rotating speaking turns. The person addressed replies first, followed by one reaction at a time.
+Added evidence categories and a compact evidence button, and tidied the meeting layout.
+Spectators can see everyone on the village map. With only NPCs alive, all spectators skipping starts voting immediately.
+Fixed results getting stuck after a morning discovery and leaving a game. Reduced unnecessary screen updates.
+</en-US>
+<ja-JP>
+マフィア会議を順番に主意見を出す方式に変更。指名された人物が先に答え、反応は一つずつ表示します。
+根拠別の提出と小さな証拠ボタンを追加し、会議画面を整理しました。
+観戦者は村で全員の位置を確認できます。NPCのみ生存時は全観戦者が会議をスキップすると即座に投票へ進みます。
+朝の発見後に結果画面が止まる問題と退出画面を修正し、不要な画面更新を減らしました。
+</ja-JP>

@@ -41,5 +41,8 @@ try{
  }
  raw.players[0].alive=false;raw.phase='act';await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('.mp-building:not(:disabled)').count(),0);assert.equal(await page.locator('.mp-walker').count(),6);assert.equal(await page.locator('.mp-walker.is-dead').count(),1);
  raw.status='finished';raw.phase='dawn';raw.winner='citizen';raw.nightCycle=true;await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('.mp-result').count(),1);assert.equal(await page.locator('.night-scene').count(),0);
+ await page.evaluate(async()=>{const {gameSetup}=await import('/plaza-lobby.js');document.querySelector('dialog').dataset.plazaScreen='setup';gameSetup(document.querySelector('.home-social-content'),{manager:true,characters:[{id:'a',name:'네리네'}],towns:[{id:'t',name:'내 마을'}],locations:[],consent:[]},{back(){},submit(){},saveConsent(){}})});
+ assert.equal(await page.locator('.plaza-rules dd').first().evaluate(n=>getComputedStyle(n).color),'rgb(73, 54, 41)');
+ await page.screenshot({path:output+'/setup.png'});
  console.log('PASS423 UI: KO/EN/JA compact meeting, grounds menus, sequential reactions, no overlap/scroll, spectator map, finished dawn result.');
 }finally{await browser.close();server.closeAllConnections();server.close()}

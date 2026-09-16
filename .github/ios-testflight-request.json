@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-16-internal423-mafia-meeting-spectators",
-  "version": "1.0.371",
-  "build": 423,
+  "request": "2026-09-16-internal424-mafia-meeting-spectators",
+  "version": "1.0.372",
+  "build": 424,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
