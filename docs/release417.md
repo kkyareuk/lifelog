@@ -18,7 +18,7 @@ Optional secret objectives, later consequences of defending a revealed mafia, an
 ## Delivery
 Source 61d38d9 pushed to dev. Signed Android AAB SHA256 C90AC605675A75DE146DCC8C20B269D63D698C053C9D52FC4A4E5F27369312B6.
 Play release 309: 417 (1.0.365) available to internal testers, verified September 16 16:36 KST.
-sharedTownApi deployment succeeded. iOS Actions35069105388 is signing/uploading; TestFlight readiness pending.
+sharedTownApi deployment succeeded. iOS Actions35069105388 succeeded: signed IPA, uploadAccepted=true, internalOnly=true, submittedForReview=false. App Store Connect build a86704b9-a41e-4f24-93d3-2fdd27ce65cf processed and marked Ready to Test after the unchanged OS encryption questionnaire.
 Web packaging check initially found an old hardcoded service-worker version in the build validator. The validator now derives the module cache identity from the service-worker version; web packaging and 168-module closure pass. This tooling-only follow-up does not alter the built native417 assets and no website deployment was performed.
 Local standalone iOS check requires the ignored generated Firebase plist; the Mac workflow runs sync-ios to generate it and its preparation checks already passed.
 Apple public 411: user-authorized exact bug-fix exception request was sent and visibly verified on September 16. Guideline 4.8 equivalent login is a separate pending next-update task; this build does not resolve that issue or submit a public version.
@@ -35,3 +35,7 @@ Choose all previous activities within Other actions. Improved single-bed size, s
 「ほかの行動」内で以前の全行動を選べます。シングルベッドの大きさと寝姿、欲求の回復速度を改善。家具は部屋別に探してどの部屋にも置けます。マフィア会議に疑う・弁護・説明要求・反論・同調を追加し、NPCだけになると素早く進行します。キャラクターの配置と動きも調整しました。
 </ja-JP>
 ```
+
+Final Android artifact comparison: all 407 prepared assets exactly match the signed AAB, including UTF-8 Korean ZIP filenames.
+
+Existing Apple internal group 나만 테스트 shows 1.0.365 (417), including installed status. Android and iOS internal delivery complete; no new recipients, public promotion or website deployment.
