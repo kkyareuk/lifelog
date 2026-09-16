@@ -1,3 +1,4 @@
+import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {normalizeLanguageFields} from './character-language.js';
 import {repairProfileInteractionTargets} from './profile-interaction-targets.js';
 import {queueRelationshipLetter} from './relationship-letters.js';
@@ -1401,7 +1402,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
   // 위치·크기·이름·바닥·벽처럼 화면에만 영향을 주는 편집은 생활 사실을
   // 바꾸지 않는다. 방 용도나 가구처럼 실제 행동 후보가 달라지는 변경만
   // 다음 생활 장면에 반영한다.
-  const simulationKeys=new Set(["type","furniture","furniturePlacements","ownerMode","ownerCharacterIds","accessMode","accessGroups","accessCharacterIds"]);
+  const simulationKeys=new Set(["allowedActivities","type","furniture","furniturePlacements","ownerMode","ownerCharacterIds","accessMode","accessGroups","accessCharacterIds"]);
   if(Object.keys(patch||{}).some(key=>simulationKeys.has(key)))touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));
   if(persist)save();
 }
@@ -1588,8 +1589,8 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   else if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
     if(!home)return false;
-    const canEnter=(c,room)=>roomEntryAllowed(c,home,room);
-    const rooms=Object.entries(home.rooms||{}).filter(([,room])=>kind!=='affection'||canEnter(character,room)&&canEnter(target,room));let chosen;
+    const canEnter=(c,room)=>roomEntryAllowed(c,home,room)&&roomActivityAllowed(room,{kind,lifeTask:task?.id});
+    const rooms=Object.entries(home.rooms||{}).filter(([,room])=>canEnter(character,room)&&(kind!=='affection'||canEnter(target,room)));let chosen;
     if(kind==='affection'){
       const ordered=rooms.slice().sort(([a],[b])=>Number(b===targetScene?.room)-Number(a===targetScene?.room));
       for(const [key,room] of ordered){const items=room.furniturePlacements?.length?room.furniturePlacements:(room.furniture||[]).map(item=>({item,x:50,y:60}));const furniture=items.find(p=>!/아기|baby/i.test(p.item)&&/소파|침대|의자|sofa|bed|chair/i.test(p.item));if(furniture){chosen={key,furniture};break}}
@@ -2005,7 +2006,7 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
 }
 export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
-  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],sleepRoomId:(state.characters[cid]?.residences||[]).find(r=>r.homeId===homeId)?.sleepRoomId||state.characters[cid]?.sleepRoomId||"",allowedRoomKeys:Object.keys(home.rooms||{}).filter(key=>roomEntryAllowed(state.characters[cid],home,home.rooms[key])),seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
+  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],sleepRoomId:(state.characters[cid]?.residences||[]).find(r=>r.homeId===homeId)?.sleepRoomId||state.characters[cid]?.sleepRoomId||"",allowedRoomKeys:Object.keys(home.rooms||{}).filter(key=>roomEntryAllowed(state.characters[cid],home,home.rooms[key])&&roomActivityAllowed(home.rooms[key],contexts[cid])),seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
   const needsChanged=characterIds.map(id=>state.characters[id]&&advanceNeeds(state.characters[id],contexts[id]?.scene,now)).some(Boolean);
   const result=advanceLifeSimulation(home,characterIds,seatingContexts,now);
   result.changed ||= needsChanged;

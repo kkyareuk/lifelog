@@ -1,3 +1,4 @@
+import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
 import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
@@ -754,12 +755,13 @@ export function roomAllowsCharacter(c,home,room){return roomEntryAllowed(c,home,
 
 export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new Date()){
   const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
+  const activityRoomAllowed=room=>roomAllowsCharacter(c,home,room)&&roomActivityAllowed(room,item);
   if(!ordered.length)return"";
-  if(item.homeEncounter&&rooms[requestedRoom]&&roomAllowsCharacter(c,home,rooms[requestedRoom]))return requestedRoom;
+  if(item.homeEncounter&&rooms[requestedRoom]&&activityRoomAllowed(rooms[requestedRoom]))return requestedRoom;
   // Room names/types can be customized. Washing needs a real bathing fixture,
   // never a washer/dryer merely because its room was once typed as a bathroom.
   if(/샤워|목욕|반신욕|^(?:씻는 중|몸을 씻)|shower|taking a bath|シャワー|入浴/i.test(item.title||"")){
-    const equipped=ordered.filter(([,room])=>roomAllowsCharacter(c,home,room)&&
+    const equipped=ordered.filter(([,room])=>activityRoomAllowed(room)&&
       (Array.isArray(room.furniturePlacements)?room.furniturePlacements.map(p=>p.item):room.furniture||[]).some(name=>/샤워|욕조/.test(name)));
     if(equipped.length){
       const exact=equipped.find(([key])=>key===requestedRoom),owned=equipped.filter(([,room])=>ownsRoom(c,home,room));
@@ -772,22 +774,22 @@ export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new
   if(isHomeSleepScene(item)&&residence?.sleepElsewhere===true){
     const night=new Date(date);if(night.getHours()<12)night.setDate(night.getDate()-1);
     const frequency={rare:5,sometimes:15,often:35,frequent:50,high:70,mostly:85,almostAlways:95}[residence.sleepElsewhereFrequency]||5;
-    const alternatives=ordered.filter(([key,room])=>key!==preferredSleepRoom&&['living','rest'].includes(room.type||key)&&roomAllowsCharacter(c,home,room));
+    const alternatives=ordered.filter(([key,room])=>key!==preferredSleepRoom&&['living','rest'].includes(room.type||key)&&activityRoomAllowed(room));
     const seed=hash(`${c.id}:${home.id}:${dayKey(night)}:sleep-elsewhere`);
     if(alternatives.length&&seed%100<frequency)return alternatives[seed%alternatives.length][0];
   }
-  if(preferredSleepRoom&&rooms[preferredSleepRoom]&&roomAllowsCharacter(c,home,rooms[preferredSleepRoom]))return preferredSleepRoom;
+  if(preferredSleepRoom&&rooms[preferredSleepRoom]&&activityRoomAllowed(rooms[preferredSleepRoom]))return preferredSleepRoom;
   const direct=rooms[requestedRoom],requestedType=direct?.type||requestedRoom;
   const exactRoomRequest=Boolean(direct&&requestedRoom!==requestedType);
-  if(exactRoomRequest&&roomAllowsCharacter(c,home,direct))return requestedRoom;
-  const allowedByType=ordered.filter(([,room])=>room?.type===requestedType&&roomAllowsCharacter(c,home,room));
+  if(exactRoomRequest&&activityRoomAllowed(direct))return requestedRoom;
+  const allowedByType=ordered.filter(([,room])=>room?.type===requestedType&&activityRoomAllowed(room));
   const ownedByType=allowedByType.filter(([,room])=>ownsRoom(c,home,room));
   const candidates=ownedByType.length?ownedByType:allowedByType;
   if(candidates.length){
     const seed=hash(`${c.id}:${dayKey(date)}:${requestedType}:${item.minute||0}:${item.title||""}`);
     return candidates[seed%candidates.length][0];
   }
-  const allowed=ordered.filter(([,room])=>roomAllowsCharacter(c,home,room));
+  const allowed=ordered.filter(([,room])=>activityRoomAllowed(room));
   return (allowed.find(([,room])=>ownsRoom(c,home,room))||allowed[0]||[""])[0];
 }
 function mobilityAidMorningEntry(c,time,date=new Date()){
@@ -823,7 +825,7 @@ function withResidenceLocation(c,item,date=new Date()){
   if(!home)return {...item,visitHomeId:""};
   const rooms=home.rooms||{};
   const room=resolveHomeRoomForActivity(c,home,item.room,item,date);
-  const resolved={...item,visitHomeId:homeId,room};
+  const resolved={...item,visitHomeId:homeId,room:room||Object.keys(rooms)[0]};
   const interior=rooms[room]?.interiorStyle||"설정하지 않음",beauty=home.beautyLevel||"평범함";
   if(interior!=="설정하지 않음"&&hash(`${c.id}:${homeId}:${room}:${item.minute}:interior-mood`)%5===0){
     const crowded=interior==="맥시멀"&&["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness);
@@ -4912,7 +4914,12 @@ function sharedFurnitureScene(c,current,date){
  return {...current,title,desc:names+' · '+desc,baseTitle:current.baseTitle||current.title,baseDesc:current.baseDesc||current.desc,activityFamily:'talk',sharedFurnitureKey:key,withId:ids.find(id=>id!==c.id),withIds:ids.filter(id=>id!==c.id),participantOrder:ids,interactionId,groupInteraction:true,sharedCanonicalTitle:title,sharedCanonicalDesc:desc,sharedPerspectives:Object.fromEntries(people.map(p=>[p.id,{title,desc:people.filter(o=>o.id!==p.id).map(o=>o.name).join(' · ')+' · '+desc}]))};
 }
 export function eventFor(c,date=new Date()){
-  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
+  try{return withSimulationBatch(()=>{
+    privateLifeEvent(c,date);
+    const current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+    if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,current,date.getTime()))save(false,false);
+    return current;
+  })}catch(error){return sceneFailure(c,date,error)}
 }
 export function resolveHomeEncounter(c,current,otherScene,date){
   if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||isHomeSleepScene(current))return current;
@@ -4935,10 +4942,10 @@ function calculateEventFor(c,date){
   const need=!activeRoutine&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime()):'';
   if(need&&need!=='social'){
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type={sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
-    const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r));
+    const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,{needKey:need}));
     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
       const moment={...soloSceneFrom(rawCurrent),interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
-      if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,moment,date.getTime()))save(false,false);
+
       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
     }
   }
@@ -5060,7 +5067,7 @@ function calculateEventFor(c,date){
       commitLiveEntry(other,date,synchronizedCounterpart);
     });
   }
-  if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,current,date.getTime()))save(false,false);
+
   return localizeLifeLog({...current,coLocatedIds:coLocatedCharacterIds(c,current,date)},state.uiLanguage,state,c.id);
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}

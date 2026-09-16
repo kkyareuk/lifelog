@@ -9,8 +9,9 @@ import {prepareGameWebp} from './prepare-game-webp.mjs';
 
 const root=new URL("../",import.meta.url);
 const platform=process.argv.includes("--ios")?"ios":"android";
-const iosRelease=platform==="ios"?JSON.parse(await readFile(new URL("../ios-release.json",import.meta.url),"utf8")):null;
-const releaseChannel=process.env.DRAWER_RELEASE_CHANNEL||iosRelease?.channel||"public";
+const releaseMetadata=JSON.parse(await readFile(new URL("../ios-release.json",import.meta.url),"utf8"));
+const iosRelease=platform==="ios"?releaseMetadata:null;
+const releaseChannel=process.env.DRAWER_RELEASE_CHANNEL||releaseMetadata.channel||"public";
 if(!["public","internal"].includes(releaseChannel))throw Error("Unknown release channel");
 const output=new URL("../www/",import.meta.url);
 const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
