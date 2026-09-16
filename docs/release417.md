@@ -16,7 +16,11 @@ New UI copy: English/Japanese 100%; entire application translation percentage no
 Optional secret objectives, later consequences of defending a revealed mafia, and a special mafia topic-change success bonus are not included. Do not describe these as delivered.
 
 ## Delivery
-Pending signed build, Play internal availability and TestFlight readiness verification.
+Source 61d38d9 pushed to dev. Signed Android AAB SHA256 C90AC605675A75DE146DCC8C20B269D63D698C053C9D52FC4A4E5F27369312B6.
+Play release 309: 417 (1.0.365) available to internal testers, verified September 16 16:36 KST.
+sharedTownApi deployment succeeded. iOS Actions35069105388 is signing/uploading; TestFlight readiness pending.
+Web packaging check initially found an old hardcoded service-worker version in the build validator. The validator now derives the module cache identity from the service-worker version; web packaging and 168-module closure pass. This tooling-only follow-up does not alter the built native417 assets and no website deployment was performed.
+Local standalone iOS check requires the ignored generated Firebase plist; the Mac workflow runs sync-ios to generate it and its preparation checks already passed.
 Apple public 411: user-authorized exact bug-fix exception request was sent and visibly verified on September 16. Guideline 4.8 equivalent login is a separate pending next-update task; this build does not resolve that issue or submit a public version.
 
 ## Store notes
