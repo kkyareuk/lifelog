@@ -34,7 +34,7 @@ module.exports=base=>{
   const add=(p,a)=>{const target=live.find(q=>q.id===a?.targetId&&q.id!==p.id);ballots.push({voter:p.id,target:target?.id||'',kind:target?'vote':a?.kind==='noExile'?'noExile':'abstain'})};
   for(const p of live.filter(p=>!p.delegated||p.role!=='mafia'))add(p,g.submissions[p.id]||(p.delegated?npc(g,p):{kind:'abstain'}));
   for(const p of live.filter(p=>p.delegated&&p.role==='mafia'))add(p,g.submissions[p.id]||mafia(g,p,ballots));
-  g.voteResults=ballots;g.voteHistory||=[];g.voteHistory.push({day:g.day,ballots:ballots.map(b=>({...b}))});g.voteHistory=g.voteHistory.slice(-30);
+  for(const b of ballots)g.replay?.push({day:g.day,period:3,kind:'vote',subject:b.voter,target:b.target,action:b.kind});g.voteResults=ballots;g.voteHistory||=[];g.voteHistory.push({day:g.day,ballots:ballots.map(b=>({...b}))});g.voteHistory=g.voteHistory.slice(-30);
   const tally={};g.abstentions||={};for(const b of ballots){if(b.target){tally[b.target]=(tally[b.target]||0)+1;emotion(g,b.target,b.voter,'grudge',2)}if(b.kind==='abstain')g.abstentions[b.voter]=(g.abstentions[b.voter]||0)+1;}
   const ranking=Object.entries(tally).sort((a,b)=>b[1]-a[1]);let eliminated=null;
   if(ranking.length&&ranking[0][1]>(ranking[1]?.[1]||0)){eliminated=live.find(p=>p.id===ranking[0][0]);eliminated.alive=false;g.history.push({kind:'voted',target:eliminated.id,day:g.day});}else g.history.push({kind:'tie',day:g.day});

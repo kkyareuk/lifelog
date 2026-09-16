@@ -45,7 +45,7 @@ import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from ".
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {achievementRows} from "./achievements.js?v=20260909dev305";
 import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260909dev305";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260909dev305";
+import {homeSleepAnimation,furniturePatternForScene} from "./home-simulation.js?v=20260909dev305";
 import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260909dev305";
 import {renderSharedCatalog,renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260909dev305";
 import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260909dev305";
@@ -99,8 +99,8 @@ Object.assign(I18N.en,{"생활 환경 적응도":"Everyday environment familiari
 Object.assign(I18N.ja,{"생활 환경 적응도":"生活環境への慣れ","교육 수준":"教育背景","설정하지 않음":"未設定","도시·현대 생활에 매우 익숙함":"現代の都市生活にとても慣れている","일상 도구와 제도를 무리 없이 이용함":"日常の道具や制度を無理なく利用できる","익숙한 환경에서는 독립적으로 생활함":"慣れた環境では自立して生活する","일부 일상 도구나 제도에 도움이 필요함":"一部の日常道具や制度で助けが必要","현재 환경의 생활 방식이 낯섦":"現在の生活様式に慣れていない","다른 시대·문화권의 생활 방식에 익숙함":"別の時代・文化圏の生活様式に慣れている","자연·야외 중심 생활에 익숙함":"自然・野外中心の生活に慣れている","기초 교육 과정 이수":"基礎教育課程を修了","중등 교육 과정 이수":"中等教育課程を修了","고등 교육 과정 이수":"高等教育課程を修了","전문·직업 교육 이수":"専門・職業教育を修了","대학 교육 이수":"大学教育を修了","대학원 교육 이수":"大学院教育を修了","독학·비정규 교육 중심":"独学・非正規教育が中心","도제·문하 교육 이수":"徒弟・師弟教育を修了","종교·전통 교육 이수":"宗教・伝統教育を修了","현재 교육 과정 재학 중":"現在教育課程に在学中","세계관 고유 교육 체계":"世界観固有の教育体系"});
 Object.assign(I18N.en,{"왼쪽 시력":"Left-eye vision","오른쪽 시력":"Right-eye vision","눈 특징":"Eye features","안경":"Glasses","색상 방식":"Color method","본래 머리색":"Natural hair color","염색 색상":"Dyed color","머리 길이":"Hair length","머리 모양":"Hairstyle","키":"Height","키 인상":"Height impression","몸무게":"Weight","체격":"Build","전체적인 외모":"Overall appearance","정상 시력":"Normal vision","저시력":"Low vision","거의 보이지 않음":"Almost no vision","보이지 않음":"Blind","착용하지 않음":"Does not wear","필요할 때만 착용":"Wears when needed","안경 착용":"Wears glasses","선글라스 착용":"Wears sunglasses","자연 모발":"Natural hair","염색":"Dyed","부분 염색":"Partially dyed"});
 Object.assign(I18N.ja,{"왼쪽 시력":"左目の視力","오른쪽 시력":"右目の視力","눈 특징":"目の特徴","안경":"眼鏡","색상 방식":"色の設定","본래 머리색":"地毛の色","염색 색상":"染髪色","머리 길이":"髪の長さ","머리 모양":"髪型","키":"身長","키 인상":"身長の印象","몸무게":"体重","체격":"体格","전체적인 외모":"全体的な外見","정상 시력":"通常視力","저시력":"弱視","거의 보이지 않음":"ほとんど見えない","보이지 않음":"見えない","착용하지 않음":"着用しない","필요할 때만 착용":"必要な時だけ着用","안경 착용":"眼鏡を着用","선글라스 착용":"サングラスを着用","자연 모발":"地毛","염색":"染髪","부분 염색":"部分染め"});
-Object.assign(I18N.en,{"왼쪽 눈":"Left eye","오른쪽 눈":"Right eye","본래 머리색:":"Natural hair:"});
-Object.assign(I18N.ja,{"왼쪽 눈":"左目","오른쪽 눈":"右目","본래 머리색:":"地毛の色："});
+Object.assign(I18N.en,{"밀색":"Wheat blond","백금발":"Platinum blond","애쉬 블론드":"Ash blond","로즈 골드":"Rose gold","헤이즐":"Hazel","올리브색":"Olive","은회색":"Silver gray","왼쪽 눈":"Left eye","오른쪽 눈":"Right eye","본래 머리색:":"Natural hair:"});
+Object.assign(I18N.ja,{"밀색":"小麦色","백금발":"プラチナブロンド","애쉬 블론드":"アッシュブロンド","로즈 골드":"ローズゴールド","헤이즐":"ヘーゼル","올리브색":"オリーブ色","은회색":"銀灰色","왼쪽 눈":"左目","오른쪽 눈":"右目","본래 머리색:":"地毛の色："});
 Object.assign(I18N.en,{"헤어스타일":"Hairstyles","머리 장식":"Hair accessories","여러 개 선택 가능":"Select multiple","선택 완료":"Done","선택한 항목이 없습니다.":"No items selected."});
 Object.assign(I18N.ja,{"헤어스타일":"ヘアスタイル","머리 장식":"髪飾り","여러 개 선택 가능":"複数選択できます","선택 완료":"選択完了","선택한 항목이 없습니다.":"選択項目はありません。"});
 Object.assign(I18N.en,{"체모 정도":"Body hair amount","체모 위치":"Body hair locations","없음":"None","거의 없음":"Almost none","적은 편":"Light","많은 편":"Heavy","매우 많음":"Very heavy","얼굴":"Face","인중":"Upper lip","턱":"Chin","구레나룻":"Sideburns","가슴":"Chest","배":"Abdomen","등":"Back","어깨":"Shoulders","팔":"Arms","겨드랑이":"Armpits","손":"Hands","허벅지":"Thighs","종아리":"Calves","발":"Feet"});
@@ -2343,7 +2343,7 @@ function homeCard(id,chars){
   const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;
   const lifeAgents=edit?{}:{...(h.lifeSimulation?.agents||{})};
-  const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))};
+  const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))&&(!furniturePatternForScene(scene)||furniturePatternForScene(scene).test(scene.meetingFurniture.item))};
   for(const c of inside){if(usesAnchoredFurniture(c)){const scene=sceneFor(c),bed=scene.meetingFurniture;lifeAgents[c.id]={...lifeAgents[c.id],phase:'using',roomKey:scene.room,furnitureId:bed.id,item:bed.item,x:bed.x,y:bed.y};}}
 
   const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:sceneFor(character)?.room;
@@ -2662,17 +2662,19 @@ function homeCard(id,chars){
     <div class="home-native-switcher" data-home-switcher hidden><b>${esc(t("집 이동","집 이동"))}</b>${Object.keys(state.homes||{}).map(homeId=>{const item=state.homes[homeId]||{},members=homeGroupsById[homeId]||[];return `<div class="home-native-switcher-row"><button type="button" data-home-select="${esc(homeId)}" class="${homeId===id?"on":""}"><span>🏠</span><b>${esc(item.name||t("이름 없는 집","이름 없는 집"))}</b><small>${esc(item.kind||t("일반 주거","일반 주거"))} · ${members.length?members.length:t("빈집","빈집")}</small></button>${members.length?"":`<button type="button" class="home-native-empty-delete danger" data-delete-home="${esc(homeId)}" title="${esc(t("빈집을 바로 삭제할 수 있어요.","빈집을 바로 삭제할 수 있어요."))}">${esc(t("빈집 삭제","빈집 삭제"))}</button>`}</div>`}).join("")}<button type="button" class="home-native-add-home" data-add-home>＋ ${esc(t("새 집 만들기","새 집 만들기"))}</button></div>
     <nav class="home-native-side" aria-label="${esc(t("집 메뉴","집 메뉴"))}">${homeNativePill(t("집 정보","집 정보"),'data-open-home-feature="house-info"',"home-native-info-link")}${homeNativePill(homeCopy.rooms,'data-open-home-feature="room-info"')}${homeNativePill(homeCopy.members,'data-open-home-feature="members"',"home-native-residents")}${homeNativePill(t(edit?"편집 완료":"편집모드",edit?"편집 완료":"편집모드"),"data-home-edit",`home-native-edit ${edit?"on":""}`)}</nav>
     ${floorCount>1||edit?`<nav class="home-native-elevator" aria-label="${esc(homeFloorLabel(activeFloor))}"><button type="button" data-home-floor-step="1" data-home-id="${esc(id)}" aria-label="${esc(t("floorUp","위층으로 이동"))}" ${activeFloor>=floorCount?"disabled":""}>▲</button><b>${esc(homeFloorLabel(activeFloor))}</b>${edit?`<select data-home-floor-count data-home-id="${esc(id)}" aria-label="${esc(homeCopy.floorCount)}">${[1,2,3,4,5].map(n=>`<option value="${n}" ${n===floorCount?"selected":""}>${esc(homeCopy.floor(n))}</option>`).join("")}</select>`:""}<button type="button" data-home-floor-step="-1" data-home-id="${esc(id)}" aria-label="${esc(t("floorDown","아래층으로 이동"))}" ${activeFloor<=1?"disabled":""}>▼</button></nav>`:""}
-    ${homeNativePill(t("UI 숨김","UI 숨김"),'data-home-ui-toggle aria-pressed="false"',"home-native-ui-toggle")}<nav class="home-native-bottom">${homeNativePill(homeCopy.logs,'data-open-home-feature="house-log"')}${homeNativePill(homeCopy.summary,'data-open-home-feature="scenes"')}</nav>
+    ${edit?"":homeNativePill(t("UI 숨김","UI 숨김"),'data-home-ui-toggle aria-pressed="false"',"home-native-ui-toggle")}<nav class="home-native-bottom">${homeNativePill(homeCopy.logs,'data-open-home-feature="house-log"')}${homeNativePill(homeCopy.summary,'data-open-home-feature="scenes"')}</nav>
   </div>`:"";
   const tabletHomeInfo=nativeHome?`<aside class="home-native-tablet-info" aria-label="${esc(t("집 정보","집 정보"))}"><div class="home-native-tablet-photo">${h.image||h.exteriorImage?`<img src="${imageEsc(h.image||h.exteriorImage)}" alt="">`:`<img src="${imageEsc(homeExteriorSource(h))}" alt="">`}</div><dl><div><dt>${t("집 유형","집 유형")}</dt><dd>${esc(t(h.kind||"일반 주거",h.kind||"일반 주거"))}</dd></div><div><dt>${t("세부 유형","세부 유형")}</dt><dd>${esc(t(h.buildingSubtype||"단독주택",h.buildingSubtype||"단독주택"))}</dd></div><div><dt>${t("마을","마을")}</dt><dd>${esc(homeTown?.name||t("마을 미지정","마을 미지정"))}</dd></div><div><dt>${t("층","층")}</dt><dd>${floorCount}</dd></div><div><dt>${t("방 수","방 수")}</dt><dd>${roomKeys.length}</dd></div><div><dt>${t("구성원","구성원")}</dt><dd>${chars.length}</dd></div><div><dt>${t("현재 집 안","현재 집 안")}</dt><dd>${inside.length}</dd></div><div><dt>${t("청결도","청결도")}</dt><dd>${Math.round(h.cleanliness??100)}%</dd></div></dl></aside>`:"";
   const homeInfo=homeInformationMarkup(h,homeExteriorSource(h),state,t);
   const editToolbar=edit?(nativeHome?`<nav class="home-edit-toolbar home-native-edit-tools" style="${homeUiThemeStyle(hudCharacter)}" aria-label="집 편집 도구">${homeNativePill(t("집 설정","집 설정"),'data-open-home-feature="house-settings"')}${homeNativePill(t("방 구성","방 구성"),'data-open-home-feature="room-plan"')}${homeNativePill(t("가구 배치","가구 배치"),`data-open-furniture-layout="${esc(id)}"`)}${homeNativePill(t("거주 설정","거주 설정"),'data-open-home-feature="residents"')}</nav>`:`<nav class="home-edit-toolbar" aria-label="집 편집 도구"><button type="button" data-open-home-feature="house-settings">집 설정</button><button type="button" data-open-home-feature="room-plan">방 추가·구성</button><button type="button" data-open-furniture-layout="${esc(id)}">가구 배치</button><button type="button" data-open-home-feature="residents">구성원</button><button type="button" class="primary" data-home-edit>완료</button></nav>`):"";
+  const visibilityCopy=({ko:['UI 숨김','가구 숨김','이름 숨김','편집 취소'],en:['Hide UI','Hide furniture','Hide names','Cancel edits'],ja:['UIを隠す','家具を隠す','名前を隠す','編集を取消']})[state.uiLanguage]||['UI 숨김','가구 숨김','이름 숨김','편집 취소'];
+  const editVisibility=edit?`<nav class="home-edit-visibility"><button type="button" data-home-ui-toggle aria-pressed="false"><span>${visibilityCopy[0]}</span></button><button type="button" data-home-visibility="furniture" aria-pressed="false">${visibilityCopy[1]}</button><button type="button" data-home-visibility="names" aria-pressed="false">${visibilityCopy[2]}</button><button type="button" data-home-edit-cancel>${visibilityCopy[3]}</button></nav>`:'';
   const propToolbarLabel=state.uiLanguage==="en"?"Props +":state.uiLanguage==="ja"?"小物＋":"소품 +";
   const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="${homeCopy.editFurniture}"><div class="furniture-edit-heading"><strong data-furniture-edit-name>${homeCopy.furniture}</strong><button type="button" class="furniture-toolbar-toggle" data-furniture-toolbar-toggle aria-expanded="true" aria-label="${homeCopy.collapse}">−</button></div><div class="furniture-edit-actions"><button type="button" data-furniture-command="smaller" aria-label="${homeCopy.smaller}">−</button><button type="button" data-furniture-command="larger" aria-label="${homeCopy.larger}">＋</button><button type="button" data-furniture-command="rotate" aria-label="${homeCopy.direction}">↻</button><button type="button" data-furniture-command="flip">${homeCopy.flip}</button><button type="button" data-furniture-command="assign">${homeCopy.assign}</button><button type="button" data-furniture-command="props">${propToolbarLabel}</button><button type="button" class="danger" data-furniture-command="delete">${homeCopy.remove}</button><button type="button" class="primary" data-furniture-command="done">${homeCopy.done}</button></div></nav>`:"";
   return `<article class="home panel ${edit?"is-editing":""}" data-home-card="${id}">
     ${nativeHud}${tabletHomeInfo}
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.length?`${chars.map(c=>c.name).join(" · ")} 연결됨`:"아직 연결된 캐릭터가 없는 집"}</small></div><b>${inside.length}명 머무는 중</b></div>
-    ${nativeHome?"":editToolbar}${homeSettings}${residentEditor}${sleepEditor}${homeRoomBrowser(h,state.uiLanguage,value=>t(value,value))}${homeMemberMenu(h,chars,state.uiLanguage)}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
+    ${nativeHome?"":editToolbar}${editVisibility}${homeSettings}${residentEditor}${sleepEditor}${homeRoomBrowser(h,state.uiLanguage,value=>t(value,value))}${homeMemberMenu(h,chars,state.uiLanguage)}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     ${!nativeHome&&floorCount>1?`<nav class="home-floor-tabs" aria-label="집 층 선택">${Array.from({length:floorCount},(_,index)=>index+1).map(floor=>`<button type="button" data-home-floor="${floor}" data-home-id="${id}" class="${floor===activeFloor?"on":""}">${floor}층 <small>${roomKeys.filter(key=>(Number(h.rooms[key]?.floor)||1)===floor).length}개 방</small></button>`).join("")}</nav>`:""}
     <div class="rooms ${visibleRoomKeys.length>6?"has-extra":""}" data-room-canvas data-home-id="${id}" data-room-floor="${activeFloor}" data-room-grid-cols="12" data-room-grid-rows="16" style="--room-count:${visibleRoomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml||`<button type="button" class="empty-floor-room" data-add-room>+ ${activeFloor}층에 방 추가</button>`}${canvasWalkers||meetingWalkers?`<div class="home-life-roaming-layer" aria-label="방 사이를 이동하는 캐릭터">${canvasWalkers}${meetingWalkers}</div>`:""}</div>${edit?homeFurnitureDrawer(h,state.uiLanguage):""}${furnitureToolbar}
     ${homeInfo}<section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>반려생물</h2><button data-add-pet>+ 반려생물 추가</button></div><div class="pet-grid">${petCards||"<p>아직 등록된 반려생물이 없어요.</p>"}</div></section>
@@ -2686,7 +2688,7 @@ function chips(title,all,selected,key){return `<section class="chips"><h3>${titl
 function personalityChoice(c,title,field,options,help=""){
   const defaults={morality:"상황에 따라 판단함",socialStyle:"조용히 어울림",perceptionStyle:"균형형",decisionStyle:"균형형",planningStyle:"상황에 따라",activityTempo:"상황에 따라",neatness:"보통",fashionSense:"무난하게 입음",interference:"적당히 관여",conflictStyle:"대화로 해결",affectionStyle:"행동으로 표현",energyRhythm:"상황에 따라",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤"};
   const current=c[field]||defaults[field];
-  return `<label class="personality-choice"><span><b>${title}</b>${help?`<small>${help}</small>`:""}</span><select data-personality-field="${field}">${options.map(value=>`<option value="${esc(value)}" ${current===value?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
+  return `<label class="personality-choice"><span><b>${title}</b>${help?`<small>${help}</small>`:""}</span><select data-personality-field="${field}">${[...new Set([...options,current])].filter(Boolean).map(value=>`<option value="${esc(value)}" ${current===value?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
 }
 const PERSONALITY_TYPES=["철두철미함","차분하고 신중함","냉정하고 논리적","다정하고 세심함","수줍고 내향적","활발하고 사교적","즉흥적이고 자유로움","호기심 많고 창의적","완고하고 통제적","무심하고 독립적","감정적이고 충동적","장난기 많음"];
 function personalityTypeChoice(c){
@@ -2723,7 +2725,7 @@ const PHYSICAL_TRAIT_GROUPS={
   "얼굴·눈의 인상":["안경을 씀","안대","특이동공","세로동공","삼백안","날카로운 눈매","처진 눈매","속눈썹이 김","두꺼운 눈썹"],
   "전체적인 분위기":["중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함","위압적인 분위기","단정한 분위기","퇴폐적인 분위기","신비로운 분위기","소년미","성숙미"]
 };
-const HAIR_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","밝은 갈색","금발","백발·은발","회색","청회색","빨간색","주황색","분홍색","보라색","파란색","청록색","초록색","여러 색","기타"];
+const HAIR_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","밝은 갈색","금발","밀색","백금발","애쉬 블론드","로즈 골드","백발·은발","회색","청회색","빨간색","주황색","분홍색","보라색","파란색","청록색","초록색","여러 색","기타"];
 const HAIR_ORIGINS=["설정하지 않음","자연모","전체 염색","부분 염색","탈색 후 염색","가발·헤어피스"];
 const HAIR_LENGTHS=["설정하지 않음","삭발·매우 짧음","귀 위 길이","숏컷","단발","어깨 길이","가슴 길이","허리 길이","허리보다 김"];
 const HAIR_CURL_PATTERNS=["설정하지 않음","완전한 직모","약한 반곱슬","강한 반곱슬","느슨한 웨이브","굵은 곱슬","촘촘한 곱슬","코일형"];
@@ -2779,14 +2781,14 @@ const skinToneLabel=value=>{
   if(state.uiLanguage==="ja")return `${t(undertone,undertone)} ${shade}号`;
   return `${undertone} ${shade}호`;
 };
-const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
+const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","헤이즐","올리브색","은회색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
 const APPEARANCE_PREVIEW_COLORS={
-  "설정하지 않음":"#D8D1C2","검은색":"#22201F","짙은 갈색":"#3C281F","갈색":"#704A32","밝은 갈색":"#A8774F",
+  "밀색":"#DFC48B","백금발":"#F1E7CF","애쉬 블론드":"#B9AD94","로즈 골드":"#D7A18D","헤이즐":"#927544","올리브색":"#777B44","은회색":"#ABB2BC","설정하지 않음":"#D8D1C2","검은색":"#22201F","짙은 갈색":"#3C281F","갈색":"#704A32","밝은 갈색":"#A8774F",
   "연갈색":"#B68A61","호박색":"#C78222","금색":"#E1B72E","금발":"#E5C65A","백발·은발":"#D9DDE1","백색":"#F4F1E9",
   "회색":"#808489","청회색":"#6F8795","빨간색":"#9D2A2A","주황색":"#D06E2E","분홍색":"#D67C9D","보라색":"#75569A",
   "파란색":"#416FA8","청록색":"#2D8C82","초록색":"#4E7D4B","여러 색":"#8A65A5","기타":"#8D8178"
 };
-export const appearancePreviewColor=(value,fallback="#D8D1C2")=>APPEARANCE_PREVIEW_COLORS[value]||fallback;
+export const appearancePreviewColor=(value,fallback="#D8D1C2")=>String(value||"").match(/#[0-9a-f]{6}\b/i)?.[0]||APPEARANCE_PREVIEW_COLORS[value]||fallback;
 export const hairCurlPreviewPath=value=>({
   "완전한 직모":"M67 491 L324 491",
   "약한 반곱슬":"M67 492 C111 481 143 483 177 493 C213 503 256 499 324 486",
@@ -2811,8 +2813,9 @@ const ACCESSIBILITY_PREFERENCES=["도움 전에 먼저 물어보기","보조기�
 const HOSPITAL_PURPOSES=["입원 치료","통원 치료","상담·경과 확인","정기 검진 · 상담 포함","검사·영상 촬영 · 검진·상담 포함","외래 처치·치료 · 검사 이하 포함","통원 시술 · 외래 치료 이하 포함","입원 치료 · 통원 치료 이하 포함","수술·집중 치료 · 입원 치료 이하 포함","재활·회복 관리","처방·복약 조정","예방접종","정신건강 진료","치과 진료","기타 진료"];
 const MEDICATION_PURPOSES=["설정하지 않음","통증 조절","알레르기 관리","호흡기 관리","심혈관 관리","혈압 관리","혈당 관리","호르몬 관리","면역 관리","소화기 관리","감염 치료","수면 관리","불안 완화","기분 조절","집중력 관리","피임·생식 건강","성별확정 의료 과정","비타민·영양 보충","기타"];
 const MEDICATION_FREQUENCIES=["설정하지 않음","필요할 때만","매일 아침","매일 점심","매일 저녁","취침 전","하루 1회","하루 2회","하루 3회 이상","주 1회","정해진 주기마다"];
+const customColorButton=path=>/appearance\.(hairColor|naturalHairColor|leftEyeColor|rightEyeColor)$/.test(path)?`<button type="button" data-custom-appearance-color="${path}">${({ko:'직접 색 지정',en:'Custom color',ja:'色を指定'})[state.uiLanguage]||'직접 색 지정'}</button>`:'';
 function profileSelect(label,path,options,current){
-  return `<label>${label}<select data-body-field="${path}">${options.map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
+  return `<label>${label}<select data-body-field="${path}">${[...new Set([...options,current])].filter(Boolean).map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`).join("")}</select>${customColorButton(path)}</label>`;
 }
 function profileMultiChoice(title,key,options,selected){
   const values=new Set(selected||[]);
@@ -3110,7 +3113,7 @@ function character(){
   const profileOverviewPane=()=>overviewPane==="basic"?profileOverviewBasicPane():profileOverviewLifePane();
   const bodyAppearance=c.bodyProfile?.appearance||{};
   const bodyBasics=`<section class="profile-basic-settings body-basic-settings"><div class="settings-section-heading"><span><small>QUICK SETTINGS</small><h3>간단 설정</h3></span><p>캐릭터를 알아보는 데 중요한 외형만 먼저 골라요.</p></div><div class="health-field-grid"><label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>${profileSelect("체형","bodySize",BODY_SIZES,c.bodyProfile?.bodySize||"설정하지 않음")}${profileSelect("현재 머리색","appearance.hairColor",HAIR_COLORS,bodyAppearance.hairColor||"설정하지 않음")}${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,bodyAppearance.hairLength||"설정하지 않음")}${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,bodyAppearance.makeupLevel||"하지 않음")}</div></section>`;
-  const bodySelect=(path,values,current,extra="")=>`<select data-body-field="${path}" ${extra}>${values.map(value=>overviewOption(value,current)).join("")}</select>`;
+  const bodySelect=(path,values,current,extra="")=>`<select data-body-field="${path}" ${extra}>${[...new Set([...values,current])].filter(Boolean).map(value=>overviewOption(value,current)).join("")}${customColorButton(path)?`<option value="__custom_color">${({ko:'직접 색 지정…',en:'Custom color…',ja:'色を指定…'})[state.uiLanguage]||'직접 색 지정…'}</option>`:''}</select>`;
   const bodyChoiceSummary=(values=[])=>values.length?`${values.slice(0,2).map(value=>t(value,value)).join(" · ")}${values.length>2?` +${values.length-2}`:""}`:t("정하지 않음","Not set","未設定");
   const bodyChoiceOpener=(path,label,values)=>`<button type="button" data-open-body-choice="${esc(path)}"><span data-body-choice-summary>${esc(bodyChoiceSummary(values))}</span><i aria-hidden="true">＋</i><span class="sr-only">${esc(t("여러 개 선택 가능","여러 개 선택 가능"))}</span></button>`;
   const markOption=(options,current)=>[...options,...(!options.includes(current)&&current?[current]:[])].map(value=>overviewOption(value,current)).join("");

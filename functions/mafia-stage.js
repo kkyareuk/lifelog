@@ -66,7 +66,7 @@ function meeting(g,reason,source){g.phase='debate';g.debateRound=0;g.meetingReas
 function move(g){
  const plans=alive(g).map(p=>[p,g.submissions[p.id]||auto(g,p)]);
  const origins=Object.fromEntries(plans.map(([p])=>[p.id,p.place]));
- for(const [p,a]of plans){p.place=allowedPlaces(g,p).includes(a.place)?a.place:allowedPlaces(g,p)[0]}
+ for(const [p,a]of plans){p.place=allowedPlaces(g,p).includes(a.place)?a.place:allowedPlaces(g,p)[0];g.replay?.push({day:g.day,period:g.period,kind:'action',subject:p.id,place:p.place,action:'move'})}
  if(!g.preparationRules)for(const [q] of plans)if(origins[q.id]!==q.place)for(const [observer] of plans)if(observer.id!==q.id&&[origins[q.id],q.place].includes(observer.place))card(g,observer,{kind:'movement',subject:q.id,from:origins[q.id],to:q.place,place:q.place,action:'move'});
  const found=plans.find(([p])=>g.bodies.some(b=>!b.reported&&b.place===p.place));
  if(found){meeting(g,'discovery',found[0].id);return}
@@ -84,6 +84,7 @@ function act(g){
  if(!g.preparationRules)for(const q of people)if(old.random(g.seed,'footprint',g.day,g.period,q.id)>(q.gameSkills?.stealthSkill??50)/200)g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:q.place,action:'footprint'});
  for(const p of people){
   const a=validateAction(g,p,actions[p.id])?actions[p.id]:{kind:'stay'},others=occupancy[p.id];
+  g.replay||=[];g.replay.push({day:g.day,period:g.period,kind:'action',subject:p.id,place:p.place,action:a.kind,target:a.targetId||''});
   if(g.preparation){g.dayActions||={};const records=g.dayActions[p.id]||=[];records.push({day:g.day,period:g.period,place:p.place,action:a.kind});if(records.length>24)records.shift();}
   if(!g.preparation)card(g,p,{kind:'alibi',subject:p.id,action:a.kind,witnesses:others.filter(q=>awake(g,q)).map(q=>q.id)});
   if(!awake(g,p))continue;
@@ -134,7 +135,7 @@ function advance(g,now){
   else if(g.phase==='act')act(g);
   else if(g.phase==='debate')old.resolveDebate(g);
   else if(g.phase==='vote'){old.resolveVote(g);if(g.status==='playing'){g.phase='move';g.period=0;g.actionTick=0}}
-  g.phaseIndex++;g.submissions={};g.deadlineAt+=g.phase==='move'?60000:g.phase==='act'?15000:45000;g.history=g.history.slice(-200);g.board=g.board.slice(-120);
+  g.phaseIndex++;g.submissions={};g.deadlineAt+=g.phase==='move'?(g.moveSeconds||60)*1000:g.phase==='act'?(g.actionSeconds||15)*1000:45000;g.history=g.history.slice(-200);g.board=g.board.slice(-120);
  }
  return g;
 }

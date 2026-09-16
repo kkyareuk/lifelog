@@ -190,7 +190,7 @@ const googleLoginCopy=()=>({
 const storedPhotoUrls=value=>{
   const urls=new Set();
   const walk=node=>{
-    if(typeof node==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(node)){urls.add(node);return}
+    if(typeof node==="string"&&/^https:\/\/(?:firebasestorage\.googleapis\.com|[^/]+\.firebasestorage\.app|storage\.googleapis\.com)\//.test(node)){urls.add(node);return}
     if(!node||typeof node!=="object")return;
     Object.values(node).forEach(walk);
   };
@@ -198,7 +198,7 @@ const storedPhotoUrls=value=>{
 };
 const countStoredPhotos=value=>storedPhotoUrls(value).size;
 const normalizeManifest=(value,gameState)=>({
-  items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,maxPhotos()):[],
+  items:Array.isArray(value?.items)?[...new Map(value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").map(item=>[item.hash,item])).values()]:[],
   legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
 });
 const publishStorageUsage=(manifest,gameState)=>{
@@ -216,7 +216,7 @@ function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
   if(code.includes("backup-storage-full"))return ({en:"Not enough device save space. Your existing save is unchanged. Export a backup before trying again; do not clear app data.",ja:"端末の保存領域が不足しています。既存の記録は変更していません。先にバックアップを書き出してください。アプリのデータは削除しないでください。"}[window.ParallelCity?.getState?.()?.uiLanguage]||"기기 저장 공간 부족 · 기존 기록은 유지했어요. 백업을 내보낸 뒤 다시 시도해 주세요. 앱 데이터는 지우지 마세요.");
   if(code.includes("character-slot-limit"))return `캐릭터 슬롯 초과 (${error?.detail||""}) · 초과 인원을 정리한 뒤 다시 저장해 주세요`;
-  if(code.includes("legacy-document-too-large"))return "동기화 데이터가 너무 큼 · 사진을 줄이거나 Firebase 프로젝트 권한을 확인해 주세요";
+  if(code.includes("legacy-document-too-large"))return ({en:"This save exceeds the compatibility storage limit. Your device save is kept. Please report this sync error.",ja:"互換保存の上限を超えました。端末の記録は保持されています。この同期エラーをご報告ください。"}[window.ParallelCity?.getState?.()?.uiLanguage]||"호환 저장 한도를 넘었어요 · 기기 기록은 유지됩니다. 이 동기화 오류를 제보해 주세요");
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("resource-exhausted"))return "저장 데이터가 너무 큼 · 인물별 분할 저장을 다시 시도해 주세요";
   if(code.includes("failed-precondition"))return "Firebase 데이터베이스 설정 확인 필요";
@@ -297,10 +297,10 @@ async function readRawCloudGameState(rootData,{fresh=false,uid=user?.uid}={}){
   if(!coreSnapshot.exists())return rootData?.gameStateGzip
     ?decodeCompressedLegacyState(rootData.gameStateGzip)
     :decodeFirestoreState(rootData?.gameState||null);
-  const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
+  const coreData=await decodeCloudRecord(coreSnapshot.data()?.state||{});
   const characterSnapshots=await readDocuments(cloudCharacters(uid));
   const characters=await readCloudCharacters(characterSnapshots.docs,{
-    readDays:characterId=>readDocuments(cloudDays(characterId,uid)),decode:decodeFirestoreState
+    readDays:characterId=>readDocuments(cloudDays(characterId,uid)),decode:decodeCloudRecord
   });
   return {...coreData,characters};
 }
@@ -339,7 +339,7 @@ async function writeCloudGameState(gameState,session,previousManifest){
     const manifestKey=safeDocumentId(characterId),record=manifest.characters[manifestKey],oldRecord=canUseManifest?previousManifest.characters?.[manifestKey]:null;
     if(!oldRecord||oldRecord.hash!==record.hash)await setUserDoc(cloudCharacterDoc(characterId,uid),{
         characterId:String(characterId),
-        character:encodeFirestoreState(character),
+        character:await encodeCloudRecord(character),
         updatedAt:serverTimestamp()
       });
     const wantedDays=new Set(Object.keys(days).map(String));
@@ -352,13 +352,13 @@ async function writeCloudGameState(gameState,session,previousManifest){
     await Promise.all(Object.entries(days).filter(([dateKey])=>{
       const key=safeDocumentId(dateKey);
       return !oldRecord?.days?.[key]||oldRecord.days[key].hash!==record.days[key].hash;
-    }).map(([dateKey,day])=>setUserDoc(cloudDayDoc(characterId,dateKey,uid),{
-        dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
+    }).map(async([dateKey,day])=>setUserDoc(cloudDayDoc(characterId,dateKey,uid),{
+        dateKey:String(dateKey),day:await encodeCloudRecord(day),updatedAt:serverTimestamp()
       })));
   });
   // 루트의 syncRevision이 최종 완료 표식이다. core도 달라졌을 때만 쓴다.
   assertSession(session);
-  if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setUserDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+  if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setUserDoc(cloudCoreDoc(uid),{state:await encodeCloudRecord(next),updatedAt:serverTimestamp()});
   return manifest;
 }
 
@@ -389,6 +389,14 @@ async function decodeCompressedLegacyState(value){
     :ungzipBytes(bytes,{to:"string"});
   return decodeFirestoreState(JSON.parse(json));
 }
+// Compress each core/character/day record independently; never collapse a deep
+// history into one oversized root document merely because it contains nesting.
+async function encodeCloudRecord(value){
+ const encoded=encodeFirestoreState(value);
+ if(!needsCompressedCloudState(encoded)&&new TextEncoder().encode(JSON.stringify(encoded)).length<650000)return encoded;
+ return {recordEncoding:'gzip-v1',gameStateGzip:await encodeCompressedLegacyState(value)};
+}
+async function decodeCloudRecord(value){return value?.recordEncoding==='gzip-v1'&&typeof value.gameStateGzip==='string'?decodeCompressedLegacyState(value.gameStateGzip):decodeFirestoreState(value)}
 async function writeLegacyCloudGameState(gameState,mediaManifest,session){
   assertSession(session);
   const reference=cloudDoc(session.uid),profile={name:accountName(),email:user.email||""};
@@ -546,7 +554,7 @@ async function optimizeCloudImage(original){
 async function uploadDataUrl(dataUrl,manifest,session){
   assertSession(session);
   const cacheKey=`${session.uid}:${dataUrl}`;
-  if(uploadedCache.has(cacheKey))return uploadedCache.get(cacheKey);
+  if(uploadedCache.has(cacheKey)&&manifest.items.some(item=>item.url===uploadedCache.get(cacheKey)))return uploadedCache.get(cacheKey);
   const sourceBlob=await (await fetch(dataUrl)).blob();
   const blob=await optimizeCloudImage(sourceBlob);
   const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
@@ -583,6 +591,12 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
     });
   };
   walk(next,[]);
+  // Enforce quotas against this save's references, not replaced historical files.
+  // Keep the previous value only where it may be needed if a new upload fails.
+  const retained=storedPhotoUrls(next);
+  for(const job of jobs){const old=job.path.reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,previousState);if(typeof old==='string')for(const url of storedPhotoUrls(old))retained.add(url);}
+  manifest.items=manifest.items.filter(item=>retained.has(item.url));
+  manifest.legacyCount=Math.max(0,retained.size-manifest.items.length);
   let photoFailures=0;const photoErrors=[];
   const photoJobs=new Map();
   await mapConcurrent(jobs,3,async(job,i)=>{
@@ -716,7 +730,6 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
     let compatibilityMode=false;
     try{
-      if(needsCompressedCloudState(encodeFirestoreState(gameState)))throw Object.assign(Error("maximum document depth"),{code:"sync/document-depth"});
       const syncManifest=await writeCloudGameState(gameState,session,previous?.syncManifest);
       assertSession(session);
       const syncRevision=`${Date.now()}-${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;

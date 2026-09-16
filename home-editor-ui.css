@@ -1,3 +1,10 @@
+.room-preset-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;grid-column:1/-1}.room-preset-tools :is(input,select){min-width:0;width:100%}
+.home-edit-visibility{position:fixed;z-index:690;left:8px;right:8px;bottom:calc(var(--home-drawer-height) + 52px);display:flex;gap:4px;overflow-x:auto;pointer-events:auto}
+.home:has(.home-furniture-drawer.is-collapsed) .home-edit-visibility{bottom:64px}
+.home-edit-visibility button{flex:1;min-width:68px;min-height:36px;padding:5px;border:1px solid #9f835c;border-radius:9px;background:#fff8e9;color:#392b21;font-size:11px}
+.home-edit-visibility button[aria-pressed="true"]{background:#59402b;color:#fff8e9}
+.home-hide-furniture :is(.room-furniture-layer,.room-couple-bed-overlay,.chair-frame-overlay){visibility:hidden;pointer-events:none}
+.home-hide-names .room-furniture-item>small{display:none}
 /* Shared height keeps the furniture toolbar clear of the three drawer rows. */
 .home{--home-drawer-height:calc(184px + max(8px,env(safe-area-inset-bottom)))}
 .home-furniture-drawer{position:fixed;z-index:680;left:0;right:0;bottom:0;max-width:100%;color:#392b21;background:linear-gradient(180deg,#fff9ed,#efe0c7);border-top:2px solid #bba27b;border-radius:20px 20px 0 0;box-shadow:0 -5px 18px #20170b33;transition:transform .18s ease;transform:translateY(0)}
@@ -32,7 +39,7 @@ html body #app .is-using-couple-bed .home-person-visual>:is(.sprite,.avatar){wid
 
 .home-native-bottom{position:absolute;z-index:35;right:14px;bottom:max(22px,env(safe-area-inset-bottom));display:grid;grid-template-rows:30px 30px;gap:10px;width:70px;height:70px;pointer-events:auto}
 html.native-app[data-active-tab="home"] .home-native-bottom .home-native-pill{position:relative!important;inset:auto!important;width:70px!important;--home-pill-height:30px}
-.home.is-editing :is(.home-native-bottom,.home-native-ui-toggle),.home-ui-hidden .home-native-bottom{display:none!important}
+.home.is-editing .home-native-bottom,.home-ui-hidden .home-native-bottom{display:none!important}
 .home:has(.home-feature-panel.open) :is(.home-furniture-drawer,.furniture-edit-toolbar){visibility:hidden;pointer-events:none}
 
 /* SVG coordinate space: 412 × 917. The page scrolls, the artwork keeps its ratio. */

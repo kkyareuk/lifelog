@@ -1,3 +1,4 @@
+const decodeCloudRecord=require('./cloud-record');
 const crypto=require('node:crypto');
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status})};
 const blocked=new Set(['__proto__','constructor','prototype','ownerUid','sharedScene','sharedContext','days','lifeJson','lifeSimulation','characterDirectives']);
@@ -38,7 +39,7 @@ module.exports=({db,clock=Date.now})=>({
   if(!g.exists||g.data().ownerUid!==uid)fail('owner-required',403);
   const town=g.data().towns?.find(t=>t.id===tid);if(!town)fail('town-missing',404);
   if(residents.docs.some(d=>d.data().townId===tid)||homes.docs.some(d=>d.data().townId===tid)||(town.places||[]).length||(town.decorations||[]).length)fail('destination-town-not-empty',409);
-  const order=core.data()?.state?.order||[],localIds=Array.isArray(order)?order:Object.values(order).find(Array.isArray)||[],ids=Object.keys(pack.characters);
+  const order=decodeCloudRecord(core.data()?.state).order||[],localIds=Array.isArray(order)?order:Object.values(order).find(Array.isArray)||[],ids=Object.keys(pack.characters);
   if(ids.some(id=>!localIds.includes(id)))fail('personal-character-missing',409);
   if(residents.docs.length+ids.length>200||ids.length+residents.docs.filter(d=>d.data().ownerUid===uid).length>100)fail('resident-limit',409);
   if(slots.characters+slots.personalCharacters>slots.characterLimit||slots.towns+slots.personalTowns>slots.townLimit)fail('slot-limit',409);

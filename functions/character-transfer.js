@@ -1,3 +1,4 @@
+const decodeCloudRecord=require('./cloud-record');
 const parse=value=>{try{return JSON.parse(value||'{}')}catch{return {}}};
 const fail=(message,status=409)=>{throw Object.assign(Error(message),{status})};
 const transferRef=(db,uid,id)=>db.collection('users').doc(uid).collection('characterTransfers').doc(id);
@@ -12,7 +13,7 @@ async function prepareMove(db,tx,p,gid,now){
  }
  if(old.exists&&old.data().location==='group')fail('character-already-moved');
  const core=await tx.get(db.collection('users').doc(p.senderUid).collection('sync').doc('core'));
- const order=core.data()?.state?.order,ids=Array.isArray(order)?order:Object.values(order||{}).find(Array.isArray)||[];
+ const order=decodeCloudRecord(core.data()?.state).order,ids=Array.isArray(order)?order:Object.values(order||{}).find(Array.isArray)||[];
  if(!ids.includes(id))fail('personal-character-missing');
  const profile=parse(p.resident.profileJson);
  return ()=>tx.set(ref,{personalId:id,location:'group',groupId:gid,residentId:p.sourceId,homeId:profile.homeId||p.resident.sourceHomeId||id,homeTownId:profile.townId||'',revision:(old.data()?.revision||0)+1,updatedAt:now});

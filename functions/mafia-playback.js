@@ -63,7 +63,7 @@ module.exports=base=>{
    nextClaim(g);
   }else if(g.phase==='debate')base.resolveDebate(g);
   else if(g.phase==='vote'){base.resolveVote(g);if(g.status==='playing'){g.phase='move';g.period=0;g.actionTick=0}}
-  g.phaseIndex++;g.submissions={};g.deadlineAt=now+({walk:3500,perform:6000,claim:7000}[g.phase]||45000);
+  g.phaseIndex++;g.submissions={};g.deadlineAt=now+({walk:3500,perform:6000,claim:7000,move:(g.moveSeconds||45)*1000,act:(g.actionSeconds||45)*1000}[g.phase]||45000);
   if(g.drama&&!g.notebook&&g.phase==='move'&&g.period===2){g.submissions=Object.fromEntries(living(g).map(p=>[p.id,{kind:'move',place:g.squareId}]));g.deadlineAt=now;}
   g.history=g.history.slice(-200);g.board=g.board.slice(-120);return g;
  }

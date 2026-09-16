@@ -1,9 +1,10 @@
+const decodeCloudRecord=require('./cloud-record');
 const fail=message=>{throw Object.assign(Error(message),{status:409})};
 const array=v=>Array.isArray(v)?v:v&&typeof v==='object'?Object.values(v).find(Array.isArray)||[]:[];
 async function usage(db,tx,uid){
  const root=db.collection('users').doc(uid),lock=root.collection('slotReservations').doc('revision');
  const [user,core,memberships,revision]=await Promise.all([tx.get(root),tx.get(root.collection('sync').doc('core')),tx.get(root.collection('groupMemberships')),tx.get(lock)]);
- const local=core.data()?.state||user.data()?.gameState||{},entitlements=user.data()?.entitlements||{},personalIds=new Set(array(local.order));
+ const local=decodeCloudRecord(core.data()?.state||user.data()?.gameState||{}),entitlements=user.data()?.entitlements||{},personalIds=new Set(array(local.order));
  const transferDocs=await tx.get(root.collection('characterTransfers'));
  const transfers=transferDocs.docs.map(d=>d.data());transfers.filter(t=>['group','deleted'].includes(t.location)).forEach(t=>personalIds.delete(t.personalId));
  transfers.filter(t=>t.location==='personal'&&Number(local.characterTransferVersions?.[t.personalId]||0)<Number(t.revision)).forEach(t=>personalIds.add(t.personalId));

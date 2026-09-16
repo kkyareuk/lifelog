@@ -1,0 +1,18 @@
+<ko-KR>
+큰 기록의 계정 동기화를 보완하고 누적 이미지 파일 수에 교체 전 사진이 포함됨을 안내해요.
+집에서 행동과 가구 위치가 어긋나는 문제를 수정했어요. 편집 중 UI·가구·이름 숨김, 편집 취소, 방 프리셋을 추가했어요.
+자아 만들기 대기시간을 캐릭터별로 나눴어요. 머리색·눈색을 늘리고 직접 색과 이름을 지정할 수 있어요. 광장 아이콘과 안내 가독성을 개선했어요.
+마피아 무대는 자동으로 구성해요. 방장이 마피아 수와 이동·실내 행동·회의 시간을 정하고, 종료 후 날짜별 행동·목격·회의·투표 기록을 볼 수 있어요.
+</ko-KR>
+<en-US>
+Improved large-save syncing and clarified that image counts include replaced photos.
+Fixed activity/furniture mismatches. Added editor UI, furniture and name visibility toggles, cancel edits and room presets.
+Self-discovery cooldowns are per character. Added hair/eye colors and custom color names. Simplified the plaza icon and improved text contrast.
+Mafia stages are automatic. Hosts choose Mafia count and turn timers. After a game, review daily actions, observations, meetings and votes.
+</en-US>
+<ja-JP>
+大きな記録の同期を改善し、累積画像数には変更前の画像も含まれることを明記しました。
+家で行動と家具の位置が合わない問題を修正。編集時のUI・家具・名前の非表示、編集取消、部屋プリセットを追加しました。
+自分づくりの待ち時間をキャラクター別に変更。髪色・瞳色を増やし、色と名前を自由に指定できます。広場アイコンと案内の読みやすさを改善しました。
+マフィアの舞台は自動で構成されます。主催者がマフィア人数・移動・室内行動・会議の時間を選べます。終了後は日ごとの行動・目撃・会議・投票記録を確認できます。
+</ja-JP>

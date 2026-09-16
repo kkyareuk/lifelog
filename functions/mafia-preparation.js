@@ -49,7 +49,8 @@ module.exports=base=>{
    if(locked&&other.sleepAt!==home&&tool)other.inventory.splice(other.inventory.indexOf(tool),1);
    const plan=g.nightPlans?.[attacker.id]||{method:'impulsive',staging:'untouched'},skill=attacker.gameSkills?.stealthSkill??50;
    const chance=locked&&other.sleepAt!==home&&!tool?.type?.match(/crowbar|masterKey/)?0.35:tool||other.knownHomes.includes(home)?0.85:0.55;
-   if(base.random(g.seed,'entry',g.day,attacker.id)>=chance){g.dawnVictim='';g.traces.push({id:'failed-entry:'+g.day,day:g.day,tick:6,place:home,action:'tampered'});}else{
+   const success=base.random(g.seed,'entry',g.day,attacker.id)<chance;g.replay?.push({day:g.day-1,period:3,kind:'action',subject:attacker.id,target:victim.id,place:home,action:'nightAttack',success,method:plan.method,staging:plan.staging});
+   if(!success){g.dawnVictim='';g.traces.push({id:'failed-entry:'+g.day,day:g.day,tick:6,place:home,action:'tampered'});}else{
    const methodWorked=base.random(g.seed,'method',g.day,attacker.id)<Math.max(.25,Math.min(.85,.45+skill/250)),staged=plan.staging!=='untouched'&&base.random(g.seed,'stage',g.day,attacker.id)<Math.max(.2,Math.min(.8,.3+(attacker.gameSkills?.deceptionSkill??50)/200));
    const appearance=staged?(plan.staging==='clean'?'planned':'impulsive'):methodWorked?plan.method:'impulsive';
    victim.alive=false;g.bodies.push({id:victim.id,place:home,day:g.day,tick:6,reported:true});

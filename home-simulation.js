@@ -1,3 +1,4 @@
+import {roomActivityKey} from './room-activities.js?v=20260909dev305';
 const clamp=(value,min,max,fallback=min)=>{
   const number=Number(value);
   return Number.isFinite(number)?Math.max(min,Math.min(max,number)):fallback;
@@ -95,6 +96,8 @@ const SCENE_FURNITURE=[
   {scene:/쉬는|휴식|멍하니/,item:/소파|의자|안마의자/}
 ];
 export function furniturePatternForScene(scene){
+  const needPattern={toilet:/변기/,hygiene:/샤워|욕조|세면대/,eating:/식탁|티 테이블|의자/,sleep:/침대/}[roomActivityKey(scene)];
+  if(needPattern)return needPattern;
   const text=`${scene?.title||""} ${scene?.desc||""}`;
   if(/(?:음료|주스|커피|차를).{0,20}(?:준비|만들|우리|내리)|(?:준비|만들).{0,20}(?:음료|주스)/.test(scene?.title||""))return /조리대|커피|에스프레소|티 세트|냉장고/;
   return SCENE_FURNITURE.find(entry=>entry.scene.test(text))?.item||null;
@@ -166,8 +169,8 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
     const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
-    const pinned=placements.find(item=>item.id===(scene.furniture?.id||scene.meetingFurniture?.id));
-    let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
+    const pinned=placements.find(item=>item.roomKey===roomKey&&item.id===(scene.furniture?.id||scene.meetingFurniture?.id)&&(!pattern||pattern.test(item.item)));
+    let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&pattern&&pattern.test(item.item));
     // Select actual seats for dining and screen viewing, not the tabletop/TV.
     const diningTables=candidates.filter(item=>item.item==='식탁');
     if(diningTables.length)candidates=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&diningTables.some(table=>item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));

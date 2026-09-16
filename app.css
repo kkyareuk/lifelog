@@ -1442,7 +1442,7 @@ html body #app .home .room-furniture-item small{display:none;position:absolute;l
 .home.is-editing .furniture-drag-preview *{pointer-events:none!important}
 .home.is-editing .furniture-drag-source{opacity:0}
 .home.is-editing .room-furniture-item.furniture-drag-preview{pointer-events:none!important;z-index:1000}
-html body #app .home.is-editing .room-furniture-item small{display:block}
+html body #app .home-page:not(.home-hide-names) .home.is-editing .room-furniture-item small{display:block}
 .home.is-editing .room-furniture-item.is-selected::after{content:"";position:absolute;inset:var(--selection-inset-y,-2px) var(--selection-inset-x,-2px);border:2px dashed #fff;border-radius:14px;box-shadow:0 0 0 2px var(--p),0 5px 14px #17203355;pointer-events:none}
 .home.is-editing .room-furniture-item.is-dragging{cursor:grabbing;opacity:.9}
 .furniture-edit-toolbar{position:fixed;left:calc(50% + 26px);bottom:max(18px,env(safe-area-inset-bottom));z-index:700;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:6px;width:calc(100vw - 76px);max-width:520px;box-sizing:border-box;padding:8px;border:1px solid #bfa783;border-radius:16px;background:#fff5e4;box-shadow:0 4px 12px #24150b44;transform:translateX(-50%);overscroll-behavior:contain}

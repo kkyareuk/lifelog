@@ -1361,7 +1361,14 @@ export function setHomeBackground(homeId,data){
   h.image=data;save(true);
 }
 export function setHomeExteriorImage(homeId,data){const h=state.homes[homeId];if(h){h.exteriorImage=data;save(true)}}
-export function setHomeEditMode(value){state.homeEditMode=Boolean(value);save()}
+let homeEditSnapshot=null;
+export function setHomeEditMode(value){
+ if(value&&!state.homeEditMode){const id=state.activeHomeId;homeEditSnapshot=state.homes[id]?{id,home:clone(state.homes[id]),residents:Object.fromEntries(Object.entries(state.characters).map(([key,c])=>[key,{homeId:c.homeId,sleepRoomId:c.sleepRoomId,residences:clone(c.residences||[])}]))}:null;}
+ if(!value)homeEditSnapshot=null;
+ state.homeEditMode=Boolean(value);save();
+}
+export function cancelHomeEdit(){if(homeEditSnapshot){state.homes[homeEditSnapshot.id]=homeEditSnapshot.home;for(const [id,fields] of Object.entries(homeEditSnapshot.residents))if(state.characters[id])Object.assign(state.characters[id],fields);homeEditSnapshot=null;}state.homeEditMode=false;save(true);}
+
 export function updateHome(homeId,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   Object.assign(h,patch);
@@ -2458,6 +2465,6 @@ export function switchAccountState(uid){
   state=migrate(load());
   return true;
 }
-export const cloneState=()=>({...clone(editorPersonalState||state),characterSettingsView:"hub"});
+export const cloneState=()=>{const next={...clone(editorPersonalState||state),characterSettingsView:"hub"};if(homeEditSnapshot&&state.homeEditMode&&!editorPersonalState){next.homeEditMode=false;next.homes[homeEditSnapshot.id]=clone(homeEditSnapshot.home);for(const [id,fields] of Object.entries(homeEditSnapshot.residents))if(next.characters[id])Object.assign(next.characters[id],clone(fields));}return next};
 
 export function receiveCharacterTransfers(records){if(!records?.length)return;const personal=personalState();const changed=records.some(r=>r.kind==='world'?!personal.worldTransferVersions?.[r.personalId]:Number(r.revision||0)>=Number(personal.characterTransferVersions?.[r.personalId]||0)&&(!personal.characterTransferLocations?.[r.personalId]||Number(r.revision)>Number(personal.characterTransferVersions?.[r.personalId]||0)||(['group','deleted'].includes(r.location)&&Boolean(personal.characters?.[r.personalId]))));if(!changed)return;applyCharacterTransfers(personal,records);if(editorPersonalState)pendingPersonalTransferSave=true;else if(isolatedWorldDepth)queueMicrotask(()=>save(true,false));else save(true,false)}
