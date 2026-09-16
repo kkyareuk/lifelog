@@ -6,4 +6,4 @@ Reduced repeated animations, timer DOM writes, polling, and covered home/village
 
 Validation: 40 full NPC night-cycle games; day5 winning dawn; round-robin, response priority, sequential reactions, evidence validation/privacy, spectator unanimous skip. Chromium/WebKit 360x648 KO/EN/JA meeting layout, menus, one reaction, spectator map and finished dawn. New English/Japanese copy complete; whole-app translation coverage not measured.
 
-Android release314 provided to internal testers at 21:47 KST. SharedTownApi successfully deployed. Apple signed upload workflow35097576997 in progress. Superseded by424 for setup contrast. Public client and Coming Soon gate unchanged.
+Android release314 provided to internal testers at 21:47 KST. SharedTownApi successfully deployed. Apple signed upload workflow35097576997 succeeded. Superseded by424 for setup contrast. Public client and Coming Soon gate unchanged.
