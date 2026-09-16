@@ -1,5 +1,6 @@
 // Private preparation state is never copied into the public player list.
 module.exports=base=>{
+ const emotions=require('./mafia-voting')(base);
  const living=g=>g.players.filter(p=>p.alive),mine=(g,p)=>g.preparation.people[p.id];
  const tools=['crowbar','masterKey','lockKit'];
  function init(g){
@@ -16,6 +17,7 @@ module.exports=base=>{
  function trace(g,p,action,extra={}){g.traces.push({id:'prep:'+g.day+':'+(++g.cardSequence),day:g.day,tick:6,place:p.place,action,...extra});}
  function valid(g,p,a){
   if(!g.preparation)return false;const s=g.preparation,m=mine(g,p),target=living(g).find(q=>q.id===a.targetId&&q.id!==p.id&&q.place===p.place);
+  if(['watchTool','hideTool'].includes(a.kind))return s.tools.some(x=>x.id===a.toolId&&x.place===p.place);
   if(a.kind==='takeTool')return s.tools.some(x=>x.id===a.toolId&&x.place===p.place)&&m.inventory.length<2;
   if(a.kind==='scoutHome')return !!s.houses[p.place];
   if(a.kind==='secureHome')return p.place===m.sleepAt&&m.inventory.some(x=>x.type==='lockKit');
@@ -24,30 +26,39 @@ module.exports=base=>{
   if(a.kind==='mourn')return g.bodies.some(b=>b.id===a.targetId&&b.place===p.place)&&!m.mourning.includes(a.targetId);
   return false;
  }
- function allianceReply(g,p,a){const m=mine(g,p),from=m.offers.find(id=>id===a.targetId),q=living(g).find(q=>q.id===from);if(!q)throw Error('game-invalid-action');m.offers=m.offers.filter(id=>id!==from);const other=mine(g,q);other.results.push({target:p.id,accepted:!!a.accept});if(a.accept){m.allies.push(q.id);other.allies.push(p.id)}g.meetingRevision=(g.meetingRevision||0)+1;}
+ function allianceReply(g,p,a){const m=mine(g,p),from=m.offers.find(id=>id===a.targetId),q=living(g).find(q=>q.id===from);if(!q)throw Error('game-invalid-action');m.offers=m.offers.filter(id=>id!==from);const other=mine(g,q);other.results.push({target:p.id,accepted:!!a.accept});emotions.emotion(g,q.id,p.id,a.accept?'gratitude':'grudge',a.accept?2:1);if(a.accept){emotions.emotion(g,p.id,q.id,'gratitude',2);m.allies.push(q.id);other.allies.push(p.id)}g.meetingRevision=(g.meetingRevision||0)+1;}
  function act(g,p,a){
   if(!valid(g,p,a))return;const s=g.preparation,m=mine(g,p);
+  for(const observer of living(g).filter(q=>q.id!==p.id&&q.place===p.place)){const staged=a.kind==='mourn'&&p.role==='mafia'&&base.random(g.seed,'grief',g.day,p.id,observer.id)>(p.gameSkills?.deceptionSkill??50)/100;base.addCard(g,observer,{kind:'behavior',subject:p.id,action:a.kind,impression:staged?'strained':'observed',day:g.day,tick:(g.period||0)*2,place:p.place});}
+  if(a.kind==='watchTool'){const tool=s.tools.find(x=>x.id===a.toolId);base.addCard(g,p,{kind:'trace',action:'object',place:p.place,day:g.day,tick:(g.period||0)*2,toolType:tool.type});m.exposure++;}
+  if(a.kind==='hideTool'){s.tools=s.tools.filter(x=>x.id!==a.toolId);trace(g,p,'tampered');m.exposure+=2;}
   if(a.kind==='takeTool'){const i=s.tools.findIndex(x=>x.id===a.toolId),tool=s.tools.splice(i,1)[0];m.inventory.push(tool);s.missing.push({type:tool.type,place:tool.place,day:g.day});m.exposure+=1;}
   if(a.kind==='scoutHome'){if(!m.knownHomes.includes(p.place))m.knownHomes.push(p.place);trace(g,p,'tampered');m.exposure+=3;}
   if(a.kind==='secureHome'){m.inventory.splice(m.inventory.findIndex(x=>x.type==='lockKit'),1);s.houses[m.sleepAt].locked=true;trace(g,p,'reinforced');}
   if(a.kind==='sleepover'){m.sleepAt=g.players.find(q=>q.id===a.targetId).homePlace;if(!m.knownHomes.includes(m.sleepAt))m.knownHomes.push(m.sleepAt);}
-  if(a.kind==='alliance'){m.allianceUsed=true;const q=living(g).find(q=>q.id===a.targetId);mine(g,q).offers.push(p.id);if(q.delegated){const bias=g.bias?.[q.id+':'+p.id]||0;const accept=q.role==='mafia'||bias<=-3||bias<3&&((p.gameSkills?.composureSkill??50)-(g.claimIssues?.[p.id]||0)*5+(g.cards[p.id]||[]).filter(c=>['trace','autopsy'].includes(c.kind)).length*5>=45);allianceReply(g,q,{targetId:p.id,accept});}}
+  if(a.kind==='alliance'){m.allianceUsed=true;const q=living(g).find(q=>q.id===a.targetId);mine(g,q).offers.push(p.id);if(q.delegated){const f=emotions.feelings(g,q.id,p.id),bias=f.grudge-f.gratitude;const accept=q.role==='mafia'||bias<=-3||bias<3&&((p.gameSkills?.composureSkill??50)-(g.claimIssues?.[p.id]||0)*5+(g.cards[p.id]||[]).filter(c=>['trace','autopsy'].includes(c.kind)).length*5>=45);allianceReply(g,q,{targetId:p.id,accept});}}
   if(a.kind==='mourn'){m.mourning.push(a.targetId);const seen=living(g).filter(q=>q.id!==p.id&&q.place===p.place).length,bias=g.bias?.[p.id+':'+a.targetId]||0;g.claimIssues||={};if(seen)g.claimIssues[p.id]=Math.max(0,(g.claimIssues[p.id]||0)+(bias>=3?1:-Math.min(2,seen)));if(seen&&bias<=-3&&p.role!=='mafia')m.score++;}
  }
  function auto(g,p){const m=mine(g,p),s=g.preparation;
   if(g.phase==='move'){if(p.role==='mafia'){const q=living(g).find(q=>q.role!=='mafia'&&!m.knownHomes.includes(mine(g,q).sleepAt));if(q&&!m.inventory.some(x=>x.type!=='lockKit'))return {kind:'move',place:s.tools.find(x=>x.type!=='lockKit')?.place||q.homePlace};if(q)return {kind:'move',place:mine(g,q).sleepAt};}return {kind:'move',place:g.bodies.find(b=>b.day===g.day)?.place||g.openPlaces[Math.floor(base.random(g.seed,'prepMove',g.day,g.period,p.id)*g.openPlaces.length)]};}
   const tool=s.tools.find(x=>x.place===p.place&&(p.role!=='mafia'||x.type!=='lockKit'));if(tool&&m.inventory.length<2)return {kind:'takeTool',toolId:tool.id};if(p.role==='mafia'&&s.houses[p.place]&&!m.knownHomes.includes(p.place))return {kind:'scoutHome'};if(valid(g,p,{kind:'secureHome'}))return {kind:'secureHome'};return {kind:'investigate'};
  }
- function targets(g,p){const m=mine(g,p);return living(g).filter(q=>q.role!=='mafia'&&m.knownHomes.includes(mine(g,q).sleepAt)&&(!g.preparation.houses[mine(g,q).sleepAt]?.locked||m.sleepAt===mine(g,q).sleepAt||m.inventory.some(x=>x.type!=='lockKit')));}
+ function targets(g,p){return living(g).filter(q=>q.role!=='mafia');}
  function night(g,victim,attacker){
   const s=g.preparation;if(victim&&attacker){const home=mine(g,victim).sleepAt,other=mine(g,attacker),tool=other.inventory.find(x=>x.type!=='lockKit'),locked=s.houses[home]?.locked;
    if(locked&&other.sleepAt!==home&&tool)other.inventory.splice(other.inventory.indexOf(tool),1);
+   const plan=g.nightPlans?.[attacker.id]||{method:'impulsive',staging:'untouched'},skill=attacker.gameSkills?.stealthSkill??50;
+   const chance=locked&&other.sleepAt!==home&&!tool?.type?.match(/crowbar|masterKey/)?0.35:tool||other.knownHomes.includes(home)?0.85:0.55;
+   if(base.random(g.seed,'entry',g.day,attacker.id)>=chance){g.dawnVictim='';g.traces.push({id:'failed-entry:'+g.day,day:g.day,tick:6,place:home,action:'tampered'});}else{
+   const methodWorked=base.random(g.seed,'method',g.day,attacker.id)<Math.max(.25,Math.min(.85,.45+skill/250)),staged=plan.staging!=='untouched'&&base.random(g.seed,'stage',g.day,attacker.id)<Math.max(.2,Math.min(.8,.3+(attacker.gameSkills?.deceptionSkill??50)/200));
+   const appearance=staged?(plan.staging==='clean'?'planned':'impulsive'):methodWorked?plan.method:'impulsive';
    victim.alive=false;g.bodies.push({id:victim.id,place:home,day:g.day,tick:6,reported:true});
    const method=locked&&tool?.type==='crowbar'?'forcedLock':locked&&tool?.type==='masterKey'?'keyScratches':'unlocked';
    g.traces.push({id:'night:'+g.day,day:g.day,tick:6,place:home,action:method});
-   g.sceneReports||=[];g.sceneReports.push({id:'scene:'+victim.id,bodyId:victim.id,day:g.day,place:home,clues:[{kind:'time',tick:6},{kind:method},{kind:'footprint'}]});
-   g.history.push({kind:'discovery',target:victim.id,place:home,day:g.day});
+   g.sceneReports||=[];g.sceneReports.push({id:'scene:'+victim.id,bodyId:victim.id,day:g.day,place:home,clues:[{kind:'time',tick:6},{kind:method},{kind:appearance},{kind:staged?'tampered':'footprint'}]});
+   g.dawnScene={bodyId:victim.id,place:home,appearance,entry:method};g.history.push({kind:'discovery',target:victim.id,place:home,day:g.day});
    for(const q of living(g).filter(q=>q.id!==attacker.id&&mine(g,q).sleepAt===home)){if(base.random(g.seed,'wake',g.day,q.id)<(/얕|light|浅/.test(q.traits||'')?.7:.3))base.addCard(g,q,{kind:'trace',action:'nightNoise',day:g.day,tick:6,place:home});}
+   }
   }
   s.notices=s.missing.map(x=>({...x}));s.missing=[];for(const p of g.players){p.place=mine(g,p).sleepAt;mine(g,p).exposure=0;}restock(g);
  }

@@ -2294,7 +2294,7 @@ async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfte
   showToast(characterSave?copy.characterDone:info?.user?copy.syncing:copy.deviceDone);
   if(info?.user){
     Promise.resolve(auth.upload({reason:label})).then(synced=>{
-      if(!synced)showToast(copy.syncFailed);
+      if(!synced)showToast([copy.syncFailed,auth.getInfo?.().lastUploadError].filter(Boolean).join(" · "));
     }).catch(()=>showToast(copy.syncFailed));
   }
   return true;

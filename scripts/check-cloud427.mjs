@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {gzip,ungzip} from '../vendor/pako.esm.mjs';
+import {needsCompressedCloudState,cloudDocumentLimitError} from '../cloud-document-shape.js';
+const source=await readFile(new URL('../auth.js',import.meta.url),'utf8');
+const start=source.indexOf('const FIRESTORE_ARRAY_MARKER='),end=source.indexOf('\n};',source.indexOf('const decodeFirestoreState='))+3;
+const context={};vm.runInNewContext(source.slice(start,end)+';globalThis.encode=encodeFirestoreState;globalThis.decode=decodeFirestoreState;',context);
+const evidence={kind:'contradiction',account:{card:{account:{card:{clues:[{kind:'footprint'}]}}}},observation:{seenIds:['a','b']}};
+const state={homes:{h:{rooms:{r:{furniturePlacements:[{id:'tv',item:'TV',props:[{id:'p',item:'책'}]}]}}}},personalMafia:{town:{games:[{currentClaim:evidence,reactions:[{card:evidence}]}]}}};
+state.personalMafia.town.games[0].reactions[0].card={kind:'contradiction',account:evidence,observation:{card:evidence}};
+const encoded=context.encode(state);assert(needsCompressedCloudState(encoded),'deep Mafia snapshot requires compressed fallback');assert(!needsCompressedCloudState(context.encode({homes:{h:{name:'safe'}}})));
+const decoded=context.decode(JSON.parse(ungzip(gzip(JSON.stringify(encoded)),{to:'string'})));assert.equal(JSON.stringify(decoded),JSON.stringify(state));
+assert(cloudDocumentLimitError({message:'Document exceeds maximum depth of 20'}));assert(cloudDocumentLimitError({message:'Document is too large'}));assert(!cloudDocumentLimitError({code:'permission-denied',message:'Permission denied'}));
+assert(source.includes('byteLength<=700000&&!needsCompressedCloudState(encoded)'));
+console.log('PASS427 cloud: deep Mafia record triggers existing gzip-compatible save; rooms, props, evidence and arrays round-trip without loss; unrelated errors do not mask themselves as size failures.');

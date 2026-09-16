@@ -1,0 +1,18 @@
+<ko-KR>
+집 편집에서 층수를 늘리고 겹친 가구를 순서대로 선택할 수 있어요. TV 크기를 키웠어요.
+마피아 일과는 아침·점심·저녁으로 진행되며 사람·가구·시신·도구를 눌러 행동해요. 질문 답변과 변호 근거, 밤 표적·습격·현장 조작 선택을 개선했어요.
+마피아 동료 협력, 성향과 판 안 감정을 반영한 분산 투표, 아무도 안 내보내기·기권, 이전 투표·낮 행동 기록을 추가했어요. 동표는 탈락 없이 끝나요.
+집 1층 표시·반투명 탈락자·현장 발견 안내를 개선하고 복잡한 게임 기록의 계정 저장을 보완했어요.
+</ko-KR>
+<en-US>
+Edit floor counts, cycle overlapping furniture and enjoy larger TVs.
+Mafia now has morning, afternoon and evening activities through people, furniture, bodies and tools. Answer questions, use defense grounds and choose night targets, methods and staging.
+Added Mafia teamwork, personality-based voting, match-only emotions, no-exile and abstain options, and vote/behavior records. Ties eliminate nobody.
+Improved first-floor scenes, faded eliminated players, dawn reports and complex-save syncing.
+</en-US>
+<ja-JP>
+家の編集で階数を増やし、重なった家具を順番に選べます。テレビを大きくしました。
+マフィアの日課は朝・昼・夕方に進み、人・家具・遺体・道具を押して行動します。質問への返答、弁護の根拠、夜の標的・襲撃方法・現場偽装の選択を改善しました。
+マフィアの協力、性格とゲーム内だけの感情を反映する投票、追放なし・棄権、過去の投票・昼の行動記録を追加しました。同票では誰も退場しません。
+1階のみの表示、退場者の半透明表示、朝の現場説明、複雑なゲーム記録の同期を改善しました。
+</ja-JP>

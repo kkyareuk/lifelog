@@ -84,10 +84,12 @@ function act(g){
  if(!g.preparationRules)for(const q of people)if(old.random(g.seed,'footprint',g.day,g.period,q.id)>(q.gameSkills?.stealthSkill??50)/200)g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:q.place,action:'footprint'});
  for(const p of people){
   const a=validateAction(g,p,actions[p.id])?actions[p.id]:{kind:'stay'},others=occupancy[p.id];
+  if(g.preparation){g.dayActions||={};const records=g.dayActions[p.id]||=[];records.push({day:g.day,period:g.period,place:p.place,action:a.kind});if(records.length>24)records.shift();}
   if(!g.preparation)card(g,p,{kind:'alibi',subject:p.id,action:a.kind,witnesses:others.filter(q=>awake(g,q)).map(q=>q.id)});
   if(!awake(g,p))continue;
   if(!g.preparation)for(const q of others)card(g,p,{kind:'witness',subject:q.id,action:'stay'});
   if(g.preparation&&preparation.valid(g,p,a)){preparation.act(g,p,a);continue;}
+  if(g.preparation)for(const observer of others)card(g,observer,{kind:'behavior',subject:p.id,action:a.kind,impression:'observed'});
   if(a.kind==='task'){
    if(p.role==='citizen'){
     if(a.taskId==='common'){if(!g.commonTask.contributors.includes(p.id))g.commonTask.contributors.push(p.id)}
@@ -120,7 +122,7 @@ function act(g){
  for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,day:g.day,tick:tick(g),reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
  progress(g);g.traces=g.traces.slice(-120);
  if(old.finish(g))return;
- if(g.nightCycle){if(g.period>=1)meeting(g,'evening');else{g.period=1;g.actionTick=tick(g);g.phase='move'}return}
+ if(g.nightCycle){if(g.period>=2)meeting(g,'evening');else{g.period++;g.actionTick=tick(g);g.phase='move'}return}
  if(g.drama&&g.period===3||g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
  g.period+=g.drama&&g.period===0?2:1;g.actionTick=tick(g);g.phase='move';
 }

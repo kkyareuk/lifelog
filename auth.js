@@ -1,3 +1,4 @@
+import {needsCompressedCloudState,cloudDocumentLimitError} from './cloud-document-shape.js';
 import {giftError} from './mail-gifts.js?v=20260909dev305';
 import {accountIdentity} from "./account-identity.js?v=20260909dev305";
 import {bootstrapAuth} from './auth-bootstrap.js?v=20260909dev305';
@@ -149,7 +150,7 @@ const takeGuestHandoff=()=>{
   return characterCount(candidate)>0?clone(candidate):null;
 };
 let profileSetupComplete=false;
-let startupError="",lastDownloadError="";
+let startupError="",lastDownloadError="",lastUploadError="";
 const accountPhoto=()=>window.ParallelCity?.getState?.()?.ownerPhoto||user?.photoURL||'';
 const accountName=()=>String(
   window.ParallelCity?.getState?.()?.ownerName||
@@ -394,7 +395,7 @@ async function writeLegacyCloudGameState(gameState,mediaManifest,session){
   const encoded=encodeFirestoreState(gameState);
   const encodedText=JSON.stringify(encoded);
   const byteLength=new TextEncoder().encode(encodedText).byteLength;
-  if(byteLength<=700000){
+  if(byteLength<=700000&&!needsCompressedCloudState(encoded)){
     await setUserDoc(reference,{
       gameState:encoded,
       gameStateGzip:deleteField(),
@@ -663,6 +664,7 @@ async function login(){
 }
 
 async function upload({silent=false,reason="",accountTransition=false,metadataOnly=false}={}){
+  lastUploadError="";
   if(deletingAccount||(switchingAccount&&!accountTransition))return false;
   const session=captureSession();
   await window.DrawerVillageLocalMedia?.ready;
@@ -714,13 +716,14 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
     let compatibilityMode=false;
     try{
+      if(needsCompressedCloudState(encodeFirestoreState(gameState)))throw Object.assign(Error("maximum document depth"),{code:"sync/document-depth"});
       const syncManifest=await writeCloudGameState(gameState,session,previous?.syncManifest);
       assertSession(session);
       const syncRevision=`${Date.now()}-${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
       await setUserDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,syncManifest,syncRevision,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
       localStorage.setItem(syncRevisionKey(session.uid),syncRevision);
     }catch(error){
-      if(!canUseLegacySync(error))throw error;
+      if(!canUseLegacySync(error)&&!cloudDocumentLimitError(error))throw error;
       await writeLegacyCloudGameState(gameState,mediaManifest,session);
       localStorage.removeItem(syncRevisionKey(session.uid));
       compatibilityMode=true;
@@ -736,7 +739,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
     return true;
   }catch(error){
     if(error?.code==="sync/account-changed")return false;
-    console.error(error);status(`저장 실패 · ${shortError(error)}`);
+    lastUploadError=shortError(error);console.error(error);status(`저장 실패 · ${lastUploadError}`);
     if(!silent)toast(`동기화 실패 · ${shortError(error)}`);
     return false;
   }finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
@@ -1401,7 +1404,7 @@ window.ParallelCityAuth={
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupError,startupSyncing:switchingAccount,busy:busy||loginBusy||deletingAccount||switchingAccount||!authSettled,entitlements:effectiveEntitlements(),appleSandbox:appleSandboxUid===user?.uid&&!!appleSandboxEntitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
+  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupError,lastUploadError,startupSyncing:switchingAccount,busy:busy||loginBusy||deletingAccount||switchingAccount||!authSettled,entitlements:effectiveEntitlements(),appleSandbox:appleSandboxUid===user?.uid&&!!appleSandboxEntitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
 };
 
 setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home"].includes((window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab)))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));

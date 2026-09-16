@@ -3651,9 +3651,10 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle{width:78px!important}
   html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:7px}
 
-  html.native-app[data-active-tab="home"] .home-native-elevator{position:absolute;z-index:9;right:7px;top:52%;display:grid;grid-template-rows:34px auto 34px;place-items:center;width:42px;overflow:hidden;border:2px solid #4d372a;border-radius:18px;background:#fff9eee8;box-shadow:0 5px 16px #0006;transform:translateY(-50%);pointer-events:auto}
+  html.native-app[data-active-tab="home"] .home-native-elevator{position:absolute;z-index:9;right:7px;top:52%;display:grid;grid-auto-rows:auto;place-items:center;width:42px;overflow:hidden;border:2px solid #4d372a;border-radius:18px;background:#fff9eee8;box-shadow:0 5px 16px #0006;transform:translateY(-50%);pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-elevator button{display:grid;width:100%;height:34px;min-width:0;min-height:0;margin:0;padding:0;place-items:center;border:0!important;border-radius:0!important;background:#664b3a!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font:900 15px/1 sans-serif;box-shadow:none!important}
   html.native-app[data-active-tab="home"] .home-native-elevator button:disabled{opacity:.35}
+  html.native-app[data-active-tab="home"] .home-native-elevator select{width:100%;min-width:0;padding:4px 0;font-size:11px;background:#fff9ee;color:#463126;border:0;border-radius:0}
   html.native-app[data-active-tab="home"] .home-native-elevator b{display:grid;width:100%;min-height:27px;place-items:center;color:#463126!important;-webkit-text-fill-color:#463126!important;font:400 10px/1 var(--home-ui-font),sans-serif;white-space:nowrap}
   html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden :is(.home-native-switcher,.home-native-side,.home-native-elevator,.home-native-edit-tools){opacity:0;visibility:hidden;pointer-events:none}
   html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle{opacity:1;background-color:transparent!important;background-image:none!important;box-shadow:none!important}

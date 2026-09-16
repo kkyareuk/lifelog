@@ -23,7 +23,7 @@ module.exports=base=>{
   }else if(['move','act'].includes(g.phase)){
    if(!base.validateAction(g,p,a))throw Error('game-invalid-action');
   }else if(g.phase==='vote'){
-   if(!living(g).some(q=>q.id===a.targetId&&q.id!==p.id))throw Error('game-invalid-target');
+   if(!['noExile','abstain'].includes(a.kind)&&!living(g).some(q=>q.id===a.targetId&&q.id!==p.id))throw Error('game-invalid-target');
   }else if(g.phase==='debate'){
    if(!['card','accuse','defend','pass'].includes(a.kind))throw Error('game-invalid-action');
    if(a.kind==='card'&&!(g.cards[p.id]||[]).some(c=>c.id===a.cardId))throw Error('game-private-card');
