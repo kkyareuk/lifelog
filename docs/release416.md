@@ -23,3 +23,6 @@ Signed AAB SHA256: A0918476091CF9B55007259533E687DE66E1710B3245FDEC1909A5A7EB52B
 Source 2f5822b. Shared backend deployed successfully with 415's runtime; 416 adds client picker coverage only.
 
 Play release 308: 416 (1.0.364) available to internal testers, verified 2026-09-16 14:11 KST. No production promotion. Apple final workflow35058302469 in progress. Previous415 workflow35057778466 succeeded and Apple accepted its internal-only upload; 416 supersedes it.
+
+Apple Actions35058302469 succeeded: signed IPA, validated by Apple, uploadAccepted=true, internalOnly=true, submittedForReview=false. App Store Connect build55b5d079-18cc-4486-a53d-29296aaecc00 shows Ready to Test after the encryption questionnaire was completed for the unchanged OS-provided encryption implementation. No public App Store submission.
+Existing internal group '나만 테스트' verified with 1.0.364 (416), including its installed status. New recipients were not added. Android and iOS internal delivery complete.
