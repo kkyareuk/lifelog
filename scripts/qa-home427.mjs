@@ -40,5 +40,3 @@ try{
  await page.screenshot({path:out+'/floor-and-layer-selection.png'});
  console.log('PASS427 home: floors increase from edit mode; overlapping furniture cycles top to bottom; existing bed and surfaces regressions pass.');
 }finally{await browser.close();server.closeAllConnections();server.close()}
-
-

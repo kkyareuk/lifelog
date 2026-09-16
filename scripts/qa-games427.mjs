@@ -65,4 +65,3 @@ try{
  await page.screenshot({path:output+'/setup.png'});
  console.log('PASS427 UI: KO/EN/JA compact meeting, grounds menus, sequential reactions, no overlap/scroll, spectator map, finished dawn result.');
 }finally{await browser.close();server.closeAllConnections();server.close()}
-
