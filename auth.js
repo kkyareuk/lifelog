@@ -1098,8 +1098,10 @@ async function joinGroup(rawCode,profile={}){
 async function updateGroupRules(patch={}){
   requireGroupUser();if(!groupState.group||!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
   const number=(key,fallback)=>Math.max(1,Math.min(100,Number(patch[key])||fallback));
+  patch={...groupState.group.rules,...patch};
   const rules={
     ...groupState.group.rules,
+    relationshipChangeMode:["fixed","score","dynamic"].includes(patch.relationshipChangeMode)?patch.relationshipChangeMode:"dynamic",
     memberCharacterLimit:number("memberCharacterLimit",groupState.group.rules?.memberCharacterLimit||20),
     operatorCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
     managerCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),

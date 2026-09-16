@@ -77,7 +77,7 @@ const rooms=()=>({
   living:{name:"거실",type:"living",size:"큰 방",order:0,floor:1,image:"",imageFit:"cover",floorMaterial:"natural",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"],furniturePlacements:[]},
   kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,floor:1,image:"",imageFit:"cover",floorMaterial:"natural",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"],furniturePlacements:[]},
   entry:{name:"현관",type:"entry",size:"작은 방",order:2,floor:1,image:"",imageFit:"cover",floorMaterial:"cream",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"],furniturePlacements:[]},
-  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,floor:1,image:"",imageFit:"cover",floorMaterial:"cream",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"],furniturePlacements:[]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,floor:1,image:"",imageFit:"cover",floorMaterial:"cream",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대","변기"],furniturePlacements:[]},
   bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,floor:1,image:"",imageFit:"cover",floorMaterial:"natural",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"],furniturePlacements:[]},
   study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,floor:1,image:"",imageFit:"cover",floorMaterial:"natural",wallMaterial:"same",floorImage:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"],furniturePlacements:[]}
 });
@@ -364,6 +364,7 @@ function normalizeHomes(x){
   x.characters=Object.fromEntries(Object.entries(x.characters).filter(([,c])=>c&&typeof c==="object"&&!Array.isArray(c)).map(([key,c])=>{
     const id=String(c.id||key||uid());c.id=id;return[id,c];
   }));
+  if(!['fixed','score','dynamic'].includes(x.relationshipChangeMode))x.relationshipChangeMode=['fixed','score'].find(mode=>Object.values(x.characters).some(c=>c.relationshipChangeMode===mode))||'dynamic';
   x.deletedCharacterIds=Array.isArray(x.deletedCharacterIds)?[...new Set(x.deletedCharacterIds.map(String))]:[];
   x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
   x.deletedRelationshipKeys=Array.isArray(x.deletedRelationshipKeys)?[...new Set(x.deletedRelationshipKeys.map(normalizeRelationshipTombstoneKey).filter(Boolean))]:[];
@@ -702,6 +703,14 @@ function normalizeHomes(x){
       room.imageFit=previousSchema<22&&room.image?"cover":room.imageFit==="contain"?"contain":"cover";
       room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.titleTone=room.titleTone==="dark"?"dark":"light";room.furniture=Array.isArray(room.furniture)?[...new Set(room.furniture.map(String))]:[];
       room.furniturePlacements=normalizeFurniturePlacements(room.furniturePlacements);
+      if(room.type==='bath'&&!room.toiletInitialized){
+        room.toiletInitialized=true;
+        if(!room.furniture.includes('변기'))room.furniture.push('변기');
+        if(!room.furniturePlacements.some(p=>p.item==='변기')){
+          const spot=[[78,62],[22,62],[50,78],[78,34],[22,34]].find(([x,y])=>room.furniturePlacements.every(p=>Math.hypot(p.x-x,p.y-y)>22));
+          if(spot)room.furniturePlacements.push(normalizeFurniturePlacement({id:'toilet-default-'+key,item:'변기',x:spot[0],y:spot[1],scale:1},room.furniturePlacements.length));
+        }
+      }
       room.furniturePlacements.forEach(placement=>{if(!room.furniture.includes(placement.item))room.furniture.push(placement.item)});
       const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
@@ -1621,7 +1630,7 @@ const AUTO_RELATION_STAGES=[[4,"아는 사이"],[8,"편한 친구"],[15,"가까�
 export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1,persist=true,kind="talk"){
   const ids=[...new Set((characterIds||[]).map(String).filter(id=>state.characters?.[id]))].slice(0,2);
   if(ids.length!==2||ids[0]===ids[1]||!momentId)return false;
-  const policy=relationshipPolicy(ids.map(id=>state.characters[id]));
+  const policy=relationshipPolicy(ids.map(id=>state.characters[id]),state);
   if(policy==="fixed")return false;
   const key=[...ids].sort().join("~");
   state.relationshipDevelopment=state.relationshipDevelopment&&typeof state.relationshipDevelopment==="object"?state.relationshipDevelopment:{};

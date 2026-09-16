@@ -107,7 +107,7 @@ export function fitCoupleBedOccupants(root){
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(18,Math.min(underCover?64:56,paintedWidth*(underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
     person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{

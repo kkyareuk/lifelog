@@ -45,7 +45,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
   const activeId=state.activeTab==='routine'&&sharedSelection(snapshot).routineCharacter&&characters[sharedSelection(snapshot).routineCharacter]?sharedSelection(snapshot).routineCharacter:snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
-  return {...base,preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:Object.keys(characters),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
+  return {...base,relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:Object.keys(characters),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
     characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
     sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0};
 }

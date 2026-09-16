@@ -89,12 +89,14 @@ export function renderMafiaPlayback(body,g,p,{submit,back}){
  }
  if(meeting){
   if(g.notebook&&['discussion','floor','rebuttal'].includes(g.phase)){
+   if(g.phase==='discussion'){const suspect=document.createElement('button');suspect.textContent=t('의심하기','Question','疑う');suspect.onclick=()=>menu(suspect,g.players.filter(q=>q.alive&&q.id!==p?.id).map(q=>({text:q.name,action:{kind:'accuse',targetId:q.id}})));tools.append(suspect);}
    const witness=document.createElement('button');witness.textContent=t('알리바이 증언','Testify','アリバイを証言');witness.disabled=!g.testimonyCards?.length;
    witness.onclick=()=>menu(witness,cards.filter(c=>g.testimonyCards?.includes(c.id)).map(c=>({text:describe(c),action:{kind:'testify',cardId:c.id}})));tools.append(witness);
    const agree=document.createElement('button');agree.textContent=t('동조하기','Agree','同意する');agree.onclick=()=>choose({kind:'agree'});agree.disabled=!g.history.some(h=>h.day===g.day&&h.speaker!==p?.id&&['accuse','testify','challenge','rebuttal','claim'].includes(h.kind));tools.append(agree);
+   if(g.phase==='discussion'){witness.textContent=t('변호하기','Defend','弁護する');const pass=document.createElement('button');pass.textContent=t('넘기기','Pass','パス');pass.onclick=()=>choose({kind:'pass'});tools.append(pass);}
   }
   if(g.phase==='challenge'&&g.challengeOwner===p?.id){const target=world.querySelector('[data-focus-card]');const eligible=cards.filter(c=>g.challengeCards?.includes(c.id));target.innerHTML=eligible.map(c=>`<button data-evidence="${e(c.id)}">${e(describe(c))}</button>`).join('');target.querySelectorAll('[data-evidence]').forEach(b=>b.onclick=()=>choose({kind:'card',cardId:b.dataset.evidence}));world.querySelector('[data-submit-evidence]')?.remove();}
-  const speech=world.querySelector('.mp-speech');if(speech){speech.append(tools);const relevant=cards.find(c=>c.subject===g.currentClaim?.speaker&&c.tick===g.currentClaim?.tick);if(relevant){const memory=document.createElement('small');memory.className='mp-memory';memory.textContent=describe(relevant);speech.append(memory);}}
+  const speech=world.querySelector('.mp-speech');if(speech){root.append(tools);const relevant=cards.find(c=>c.subject===g.currentClaim?.speaker&&c.tick===g.currentClaim?.tick);if(relevant){const memory=document.createElement('small');memory.className='mp-memory';memory.textContent=describe(relevant);speech.append(memory);}}
  }
  if(!active)root.querySelectorAll('.mp-tools button,.mp-card').forEach(b=>b.disabled=true);
  return ()=>{root.querySelector('[data-live-clock]').textContent=['walk','perform'].includes(g.phase)?t('연출 중','Playing','演出中'):g.status==='playing'?Math.max(0,Math.ceil((g.deadlineAt-Date.now())/1000))+t('초','s','秒'):'';};

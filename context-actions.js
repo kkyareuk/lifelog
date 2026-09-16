@@ -21,6 +21,7 @@ export function contextActions(target){
  if(/냉장|싱크|가스|오븐|조리/i.test(item))return [{kind:'meal',lifeTask:'simple_cook',label:label('요리하기','Cook','料理する')},{kind:'meal',label:label('식사하기','Eat','食事する')}];
  if(/식탁|dining table/i.test(item))return [{kind:'meal',label:label('여기서 밥 먹기','Eat here','ここで食事する')}];
  if(/책장|책상/i.test(item))return [{kind:'read',label:label('책 읽기','Read','読書する')},{kind:'study',label:label('공부하기','Study','勉強する')}];
+ if(/변기|toilet/i.test(item))return [{kind:'wash',lifeTask:'toilet',label:label('용변 보기','Use the toilet','トイレに行く')}];
  if(/욕조|샤워/i.test(item))return [{kind:'wash',lifeTask:/욕조/.test(item)?'bath':'shower',label:label('씻기','Wash','体を洗う')}];
  if(/TV|텔레비전|컴퓨터|게임/i.test(item))return [{kind:'game',label:label('게임하기','Play a game','ゲームをする')},{kind:'relax',label:label('쉬기','Relax','くつろぐ')}];
  return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},{kind:'chores',lifeTask:'clean',label:label('청소하기','Clean','掃除する')}];

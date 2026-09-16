@@ -14,6 +14,7 @@ module.exports=(base,conversation,playback)=>{
   }
  }
  function submit(g,p,a,now){
+  if(g.phase==='discussion'&&a.kind==='pass'){g.submissions[p.id]={kind:'pass'};log(g,{kind:'noReply',speaker:p.id});if(living(g).filter(q=>!q.delegated).every(q=>g.submissions[q.id]))g.deadlineAt=Math.min(g.deadlineAt,now+2000);return;}
   if(['discussion','claim','floor','rebuttal'].includes(g.phase)&&['accuse','testify','agree','alibi'].includes(a.kind)){
    if(g.phase!=='discussion'&&a.kind==='accuse')throw Error('game-invalid-action');
    if(a.kind==='accuse'){

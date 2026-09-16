@@ -1,4 +1,4 @@
-import {furnitureMeetingKey,advanceNeeds} from './life-needs.js';
+import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
@@ -3947,7 +3947,7 @@ function interactionPair(group,date=new Date(),placeKey=""){
       const familiarity=relationshipAwareness(first,second,relation);
       const initiative=Math.max(interactionInitiativeScore(first),interactionInitiativeScore(second));
       const priority=interactionPriority(relation,characterViewFor(first.id,second.id),characterViewFor(second.id,first.id));
-      const willingness=Math.max(4,Math.min(92,12+familiarity*56+initiative*3+(priority===2?18:priority===1?10:0)))*perception;
+      const willingness=Math.max(4,Math.min(92,12+familiarity*56+initiative*3+(priority===2?18:priority===1?10:0)+([first,second].some(c=>urgentNeed(c,date.getTime())==="social")?30:0)))*perception;
       // 모르는 사람은 같은 장소에 있다는 이유만으로 매번 대화하지 않는다.
       // 관계·편안함·신뢰와 실제로 보이는 방향을 통과했을 때만 먼저 다가간다.
       if(hash(`${key}:${placeKey}:${dayKey(date)}:${Math.floor(nowMin(date)/30)}:notice`)%100>=willingness){if(scores)scores.set(scoreKey,null);continue}
@@ -4931,6 +4931,17 @@ export function resolveHomeEncounter(c,current,otherScene,date){
 }
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
+  // Needs never interrupt a manual command, travel or a scheduled activity.
+  const need=!activeRoutine&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime()):'';
+  if(need&&need!=='social'){
+    const home=state.homes[rawCurrent.visitHomeId||c.homeId],type={sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
+    const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r));
+    if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
+      const moment={...soloSceneFrom(rawCurrent),interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:10};
+      if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,moment,date.getTime()))save(false,false);
+      return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
+    }
+  }
   if(rawCurrent.home&&rawCurrent.withId&&!rawCurrent.groupInteraction&&!rawCurrent.manualDirective){
     const other=state.characters[rawCurrent.withId];
     const aligned=resolveHomeEncounter(c,rawCurrent,other?baseEventFor(other,date):null,date);

@@ -26,6 +26,7 @@ function safeHomePoint(x,y){
 }
 
 const PROFILE_GROUPS=[
+  {match:/변기/,kind:"toilet",minutes:[5,10]},
   {match:/샤워/,kind:"shower",minutes:[10,20]},
   {match:/욕조/,kind:"shower",minutes:[25,45]},
   {match:/세면대|전신거울|화장대|스킨케어|향수/,kind:"groom",minutes:[10,25]},
@@ -83,6 +84,7 @@ export function homeActivityDurationMinutes(item,seed=""){
 }
 
 const SCENE_FURNITURE=[
+  {scene:/용변|화장실|toilet|トイレ/i,item:/변기/},
   {scene:/옷을 고르|입을 옷|옷차림|의상을 고르|갈아입/,item:/옷장|행거|옷걸이|의류 수납/},
   {scene:/샤워|씻는|씻고/,item:/샤워/},{scene:/목욕|반신욕|욕조/,item:/욕조/},{scene:/TV|텔레비전|방송|영화|영상|드라마|프로그램|화면을 보는/,item:/TV|홈시어터|프로젝터|빔프로젝터/},
   {scene:/안마|마사지/,item:/안마의자/},{scene:/자는 중|잠들|낮잠|침구|이불/,item:/침대/},{scene:/요리|조리|식사 준비|굽는|반죽/,item:/조리대|오븐|냉장고|제빵|향신료|요리책/},

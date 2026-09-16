@@ -2078,6 +2078,7 @@ function openHomeOccupantSheet(button){
     const groupId=state.sharedContext?.groupId||'',uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,actor=state.characters[state.activeId];
     const owned=!groupId||character.ownerUid===uid;
     dialog.append(occupantPanel({world:state,character,actor:!groupId||actor?.ownerUid===uid?actor:null,canSelect:owned,close,
+      openActivities:id=>openDirectCommandDialog({id}),
       onSelect:id=>{if(groupId){window.DrawerVillageGroups.selectResident(id)}else{const homeId=state.activeHomeId;setActive(id);state.activeHomeId=homeId;save()}close();render();requestAnimationFrame(()=>{const next=document.querySelector('[data-home-occupant][data-character-id="'+CSS.escape(id)+'"]');if(next)openHomeOccupantSheet(next)})},
       execute:(id,action,target)=>executeContextActivity(id,action,target,{groupId,uid})
     }));
@@ -2089,6 +2090,7 @@ function openHomeOccupantSheet(button){
 
 function openDirectCommandDialog(character,sleeping=false){
  const shared=activeShared();if(shared&&!state.sharedContext)return withSharedWorld(shared,()=>{const resident=state.characters[character.id];if(resident)openDirectCommandDialog(resident,sleeping)});
+ character=state.characters[character.id];if(!character)return;
  const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko;
  const dialog=document.createElement('dialog');dialog.className='direct-command-dialog';
  dialog.innerHTML=`<header><span><small>${htmlEsc(character.name)}</small><h2>${htmlEsc(({ko:"활동 선택",en:"Choose an activity",ja:"活動を選ぶ"})[state.uiLanguage])}</h2></span><button type="button" data-command-close aria-label="${({ko:'닫기',en:'Close',ja:'閉じる'})[state.uiLanguage]}">×</button></header><div class="direct-command-body">${directActivityCommandMarkup(character,sleeping)}</div>`;
@@ -4181,8 +4183,13 @@ function bind(){
     if(state.dailyQuestion?.mailId&&ids.includes(state.dailyQuestion.mailId))setDailyQuestion(null);
     contactMailbox.removeMany(ids);render();showToast(copy.done);
   });
-  $$("[data-setting]").forEach(el=>el.onchange=()=>{
+  $$("[data-setting]").forEach(el=>el.onchange=async()=>{
     const key=el.dataset.setting;
+    if(key==="relationshipChangeMode"&&activeShared()?.activeGroupId){
+      const before=activeShared()?.group?.rules?.relationshipChangeMode||"dynamic";el.disabled=true;
+      try{await window.DrawerVillageGroups.updateRules({relationshipChangeMode:el.value})}catch(error){el.value=before;showToast(error.message)}finally{el.disabled=false}
+      return;
+    }
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
     if(key==="personalTownLabel"){
       state.personalTownLabel=String(el.value||"").trim().slice(0,24)||"내 마을";
@@ -6266,6 +6273,7 @@ window.addEventListener("drawer-village-character-notification-received",event=>
 });
 async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target,...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
 installContextMenu({
+ openActivities:(id,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;const c=state.characters[id]||activeShared()?.characters?.[id];if(c)openDirectCommandDialog(c);else if(context.groupId){const snapshot=activeShared();withSharedWorld(snapshot,()=>{const resident=state.characters[id];if(resident)openDirectCommandDialog(resident)})}},
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},

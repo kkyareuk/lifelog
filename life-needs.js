@@ -1,10 +1,11 @@
 export const NEEDS={sleep:['수면','Sleep','睡眠'],hunger:['허기','Hunger','空腹'],toilet:['용변','Toilet','排泄'],hygiene:['청결','Hygiene','清潔'],social:['사교','Social','交流']};
 export const needLabel=(key,lang='ko')=>NEEDS[key][{ko:0,en:1,ja:2}[lang]||0];
 const clamp=n=>Math.max(0,Math.min(100,Number.isFinite(Number(n))?Number(n):80));
+export function blockedNeed(c,key){return (c.autonomousActivityBlocks||[]).includes(({hunger:'eating',sleep:'sleep',toilet:'toilet',hygiene:'hygiene',social:'social'})[key]);}
 export function needsAt(c,now=Date.now()){
  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
- return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]))]));
+ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]))]));
 }
 export function advanceNeeds(c,scene,now=Date.now()){
  const old=c.lifeNeeds,values=needsAt(c,now);
@@ -19,10 +20,17 @@ export function advanceNeeds(c,scene,now=Date.now()){
  if(scene?.lifeTaskId==='toilet'||/화장실|용변|toilet|トイレ|用を足/i.test(title))recovering.push('toilet');
  if(/씻|샤워|목욕|wash|shower|bath|洗|シャワー|入浴/i.test(title))recovering.push('hygiene');
  if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
- if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering))return false;
- c.lifeNeeds={...values,updatedAt:now,recovering};return true;
+ if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
+ c.lifeNeeds={...values,updatedAt:now,recovering,activeNeed:scene?.needKey||'',needStartedAt:scene?.needKey?(old?.activeNeed===scene.needKey?old.needStartedAt:now):0};return true;
 }
-export function relationshipPolicy(characters){
+export function urgentNeed(c,now=Date.now()){
+ if(c.needsFixed)return '';
+ const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
+ if(current&&!blockedNeed(c,current)&&values[current]<75)return current;
+ return Object.keys(NEEDS).filter(key=>!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
+}
+export function relationshipPolicy(characters,world={}){
+ if(["fixed","score","dynamic"].includes(world.relationshipChangeMode))return world.relationshipChangeMode;
  const modes=characters.map(c=>c?.relationshipChangeMode||'dynamic');
  return modes.includes('fixed')?'fixed':modes.includes('score')?'score':'dynamic';
 }

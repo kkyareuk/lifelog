@@ -11,7 +11,7 @@ const family=r=>isFamily(r?.type);
 const romantic=new Set(['교제','약혼','결혼','재결합']);
 export const RELATION_LETTER_KINDS=['친구','단짝','교제','동거','약혼','결혼','동거해소','결별','이혼','절교','절연','화해','재결합','거리두기','라이벌','가족 맞이'];
 export function relationshipLetterCandidate(w,a,b){
- const x=w.characters[a],y=w.characters[b];if(!x||!y||a===b||w.sharedContext||relationshipPolicy([x,y])!=='dynamic')return '';
+ const x=w.characters[a],y=w.characters[b];if(!x||!y||a===b||w.sharedContext||relationshipPolicy([x,y],w)!=='dynamic')return '';
  const r=current(w,a,b),m=relationMetrics(w,a,b),adult=isAdultAge(x.ageGroup)&&isAdultAge(y.ageGroup),past=Object.values(w.relationships||{}).find(r=>r.temporalStatus==='past'&&pair(r.a,r.b)===pair(a,b));
  if(r&&m.tension>=75&&m.trust<=25)return r.cohabit?'동거해소':r.type==='부부'?'이혼':r.type==='연인'?'결별':family(r)?'절연':'절교';
  if(r&&m.tension>=55&&r.stage!=='잠시 거리두기')return '거리두기';
@@ -39,7 +39,7 @@ export function respondRelationshipLetter(w,id,choice,now=Date.now()){
  const a=w.characters[p.a],b=w.characters[p.b],r=current(w,p.a,p.b);
  if(choice==='later'){p.snoozedUntil=now+86400000;return {ok:true}}
  if(choice==='decline'){p.status='declined';p.respondedAt=now;return {ok:true}}
- if(relationshipPolicy([a,b])!=='dynamic')return {ok:false,reason:'locked'};
+ if(relationshipPolicy([a,b],w)!=='dynamic')return {ok:false,reason:'locked'};
  if((r?.id||'')!==p.relationId||(r?.type||'')!==p.relationType||(r?.stage||'')!==p.relationStage){p.status='stale';p.respondedAt=now;return {ok:false,reason:'stale'}}
  if(romantic.has(p.kind)&&(!isAdultAge(a.ageGroup)||!isAdultAge(b.ageGroup)||Object.values(w.relationships||{}).some(edge=>pair(edge.a,edge.b)===pair(p.a,p.b)&&family(edge))))return {ok:false,reason:'unavailable'};
  // Consent to a proposal is separate from scores. No housing or legal records

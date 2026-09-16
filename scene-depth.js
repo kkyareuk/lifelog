@@ -60,7 +60,7 @@ export function scheduleSceneDepth(){
         const occupants=seated.filter(el=>el.dataset.seatId===person.dataset.seatId).sort((a,b)=>Number(a.dataset.seatOrder||0)-Number(b.dataset.seatOrder||0)||(a.dataset.characterId||'').localeCompare(b.dataset.characterId||''));
         const slot=occupants.indexOf(person),sideSofa=sofa&&['left','right'].includes(chair.dataset.seatDirection);
         const x=baseLeft+pull+r.width*(sofa&&!sideSofa?(slot===0?.32:.68):.5);
-        const y=(sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66))-(side==='north'?width*.16:0);
+        const y=(sofa&&!sideSofa?r.top+r.height*.55+width*.28:r.top+r.height*(sofa?(slot===0?.48:.78):.66))-(side==='north'?width*.42:0);
         const roomBounds=scene.getBoundingClientRect();
         const fits=x-width/2>=roomBounds.left+4&&x+width/2<=roomBounds.right-4&&y-width>=roomBounds.top+24&&y+width*.35<=roomBounds.bottom-4;
         if(!fits){
