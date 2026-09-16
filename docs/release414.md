@@ -15,3 +15,7 @@ Daily Mafia tasks stay visible on the left. Cards are replaced by one notebook. 
 </ja-JP>
 
 Google Play internal release 306: 414 (1.0.362), available to internal testers, verified 2026-09-16 08:59 KST. Apple final internal workflow 35037782423 uses source 9b295c3.
+
+Apple Actions35037782423 succeeded. Upload report confirms 1.0.362(414), internalOnly=true, uploadAccepted=true, submittedForReview=false, source9b295c3. Apple still lists processing; Ready to Test is not yet confirmed.
+Android AAB SHA256: 68D40A1587F25D8AA3E95BE42A2688254CA43A1D9FAE0E3923BF7408B072153C.
+No physical-device QA performed. New/changed copy EN100%, JA100%; full-project coverage not measured.
