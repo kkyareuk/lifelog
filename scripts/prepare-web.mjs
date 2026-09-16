@@ -135,7 +135,7 @@ for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
 const sourceWorker=await readSource(new URL("sw.js",root),"utf8");
-const cacheParts=sourceWorker.match(/const CACHE_VERSION="drawer-village-(web\d+)-(\d{8})"/);
+const cacheParts=sourceWorker.match(/const CACHE_VERSION="drawer-village-((?:web|public|internal)\d+)-(\d{8})"/);
 if(!cacheParts)throw new Error("서비스워커 버전 형식이 올바르지 않습니다.");
 const expectedModuleCache=cacheParts[2]+cacheParts[1];
 const expectedWorkerCache=`drawer-village-${cacheParts[1]}-${cacheParts[2]}`;
