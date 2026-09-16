@@ -1,3 +1,4 @@
+import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {relationMetrics} from './relationship-metrics.js';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {characterMood} from './character-mood.js?v=20260909dev305';
@@ -33,7 +34,7 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
  }
  const home=world.homes[target.homeId],room=home?.rooms?.[target.room];
  if(!home||!room||home.townId&&c.townId&&home.townId!==c.townId)return null;
- if(!roomEntryAllowed(c,home,room))return null;
+ if(!roomEntryAllowed(c,home,room)||!roomActivityAllowed(room,{kind,lifeTask}))return null;
  let furniture=null;
  if(target.type==='furniture'){
   furniture=room.furniturePlacements?.find(p=>p.id===target.id);if(!furniture)return null;

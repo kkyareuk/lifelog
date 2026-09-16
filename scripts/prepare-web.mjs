@@ -67,7 +67,7 @@ const includedFiles=new Set([
   "home-simulation.js",
   "home-surfaces.js",
   "room-layout.js",
-  "room-permissions.js",
+  "room-permissions.js","room-activities.js",
   "mood-event-causes.js",
   "simulation.js",
   "speech-styles.js",
