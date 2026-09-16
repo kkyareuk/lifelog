@@ -62,7 +62,9 @@ function auto(g,p){
 function meeting(g,reason,source){g.phase='debate';g.debateRound=0;g.meetingReason=reason;g.history.push({kind:'meeting',reason,speaker:source||'',day:g.day});g.bodies.forEach(b=>b.reported=true)}
 function move(g){
  const plans=alive(g).map(p=>[p,g.submissions[p.id]||auto(g,p)]);
+ const origins=Object.fromEntries(plans.map(([p])=>[p.id,p.place]));
  for(const [p,a]of plans){p.place=allowedPlaces(g,p).includes(a.place)?a.place:allowedPlaces(g,p)[0]}
+ for(const [q] of plans)if(origins[q.id]!==q.place)for(const [observer] of plans)if(observer.id!==q.id&&[origins[q.id],q.place].includes(observer.place))card(g,observer,{kind:'movement',subject:q.id,from:origins[q.id],to:q.place,place:q.place,action:'move'});
  const found=plans.find(([p])=>g.bodies.some(b=>!b.reported&&b.place===p.place));
  if(found){meeting(g,'discovery',found[0].id);return}
  g.phase='act';
@@ -93,6 +95,7 @@ function act(g){
    const seen=others.filter(q=>old.random(g.seed,'seen',g.day,g.period,p.id,q.id)<Math.max(.25,Math.min(.95,.7+((p.gameSkills?.observationSkill??50)-(q.gameSkills?.stealthSkill??50))/200)));
    card(g,p,{kind:'survey',subject:p.id,action:'investigate',seenIds:[p.id,...seen.map(q=>q.id)]});
    const known=new Set((g.cards[p.id]||[]).map(c=>c.originId).filter(Boolean));
+   for(const report of (g.sceneReports||[]).filter(r=>r.place===p.place&&!known.has(r.id)))card(g,p,{kind:'autopsy',subject:report.bodyId,place:report.place,originId:report.id,clues:report.clues,action:'discovery'});
    const traces=g.traces.filter(t=>t.place===p.place&&!known.has(t.id)).sort((a,b)=>Number(['blood','object','wiped'].includes(b.action))-Number(['blood','object','wiped'].includes(a.action))||b.tick-a.tick).slice(0,3);
    for(const trace of traces)card(g,p,{...trace,kind:'trace',subject:null,originId:trace.id});
    if(!traces.length)card(g,p,{kind:'empty',subject:null,action:'no-trace'});

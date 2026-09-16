@@ -1545,6 +1545,7 @@ function stabilizeInteractiveScroll(root,resolveScroller){
   root.addEventListener("change",restore,true);
   root.addEventListener("click",restore,true);
 }
+const plazaCoversScene=()=>!!document.querySelector(".plaza-games-dialog[open]");
 let homeLifeRefreshTimer=0,homeLifeObservationKey="";
 function prepareActiveHomeLife(now=new Date()){
   if(state.activeTab!=="home"||state.homeEditMode||document.visibilityState==="hidden"){homeLifeObservationKey="";return null}
@@ -1570,12 +1571,12 @@ function prepareActiveHomeLife(now=new Date()){
 }
 function scheduleHomeLifeRefresh(){
   clearTimeout(homeLifeRefreshTimer);homeLifeRefreshTimer=0;
-  if(document.visibilityState==="hidden"||state.activeTab!=="home"||state.homeEditMode)return;
+  if(document.visibilityState==="hidden"||plazaCoversScene()||state.activeTab!=="home"||state.homeEditMode)return;
   const simulation=state.homes[state.activeHomeId]?.lifeSimulation;
   if(!Object.keys(simulation?.agents||{}).length)return;
   homeLifeRefreshTimer=setTimeout(()=>{
     homeLifeRefreshTimer=0;
-    if(document.visibilityState!=="hidden"&&state.activeTab==="home"&&!state.homeEditMode)render();
+    if(document.visibilityState!=="hidden"&&!plazaCoversScene()&&state.activeTab==="home"&&!state.homeEditMode)render();
   },homeLifeNextDelay(simulation));
 }
 let relationshipRailCleanup=[];
@@ -6292,24 +6293,25 @@ let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;
 function scheduleLiveSceneRefresh(){
   clearTimeout(liveSceneRefreshTimer);
-  if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)||state.homeEditMode){liveSceneRefreshTimer=0;return}
+  if(document.visibilityState==="hidden"||plazaCoversScene()||!["observe","home"].includes(state.activeTab)||state.homeEditMode){liveSceneRefreshTimer=0;return}
   const now=new Date();
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   // Scan deadlines in small tasks. A cold timeline for 80 residents must not
   // monopolize the input thread after the screen has just appeared.
   let index=0,delay=10*60*1000;const started=Date.now();
   const scan=()=>{
-    if(document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab))return;
+    if(document.visibilityState==='hidden'||plazaCoversScene()||!['observe','home'].includes(state.activeTab))return;
     const sliceStart=performance.now();
     withSimulationBatch(()=>{do{delay=Math.min(delay,nextSceneRefreshDelay(characters[index++],now))}while(index<characters.length&&performance.now()-sliceStart<6)});
     if(index<characters.length){liveSceneRefreshTimer=setTimeout(scan,0);return}
     liveSceneRefreshTimer=setTimeout(()=>{
       liveSceneRefreshTimer=0;
-      if(document.visibilityState!=='hidden'&&['observe','home'].includes(state.activeTab)&&!state.homeEditMode){settleScheduledChoices(Date.now());render()}
+      if(document.visibilityState!=='hidden'&&!plazaCoversScene()&&['observe','home'].includes(state.activeTab)&&!state.homeEditMode){settleScheduledChoices(Date.now());render()}
     },Math.max(1000,delay-(Date.now()-started)));
   };
   liveSceneRefreshTimer=setTimeout(scan,0);
 }
+window.addEventListener("drawer-plaza-visibility",()=>{scheduleHomeLifeRefresh();scheduleLiveSceneRefresh()});
 setTimeout(scheduleLiveSceneRefresh,0);
 ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{

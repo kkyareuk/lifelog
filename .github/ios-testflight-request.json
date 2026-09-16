@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-16-internal422-needs-room-activities",
-  "version": "1.0.370",
-  "build": 422,
+  "request": "2026-09-16-internal423-mafia-meeting-spectators",
+  "version": "1.0.371",
+  "build": 423,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

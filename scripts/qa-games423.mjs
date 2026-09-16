@@ -1,0 +1,45 @@
+import assert from "node:assert/strict";
+import {createServer} from "node:http";
+import {readFile,mkdir} from "node:fs/promises";
+import {resolve,extname,sep} from "node:path";
+import {createRequire} from "node:module";
+import {fileURLToPath} from "node:url";
+
+const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
+const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
+const {chromium,webkit}=require(playwrightPath),output=resolve(root,"tmp/qa-games423");
+await mkdir(output,{recursive:true});
+const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
+const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
+const server=createServer(async(request,response)=>{
+  try{
+    const pathname=decodeURIComponent(new URL(request.url,"http://localhost").pathname),file=resolve(root,process.env.QA_PACKAGED||".","."+(pathname==="/"?"/index.html":pathname));
+    if(!file.startsWith(root+sep)||!mime[extname(file)])return response.writeHead(404).end();
+    let body=pathname==="/auth.js"?previewAuth:await readFile(file);
+    response.writeHead(200,{"Content-Type":mime[extname(file)],"Cache-Control":"no-store"}).end(body);
+  }catch{response.writeHead(404).end()}
+});
+await new Promise(done=>server.listen(0,"127.0.0.1",done));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=process.argv.includes('--webkit')?await webkit.launch({headless:true}):await chromium.launch({channel:process.env.QA_BROWSER||"chrome",headless:true});
+
+
+try{
+ const page=await browser.newPage({viewport:{width:360,height:648},serviceWorkers:'block'});page.on('pageerror',e=>console.error('PAGE',e.stack));await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin);await page.waitForFunction(()=>window.DrawerVillageNavigation);
+ const engine=require('../functions/mafia-stage.js');
+ const raw=engine.start({meetingControls:2,notebook:true,drama:true,rulesVersion:4,id:'g',hostUid:'qa',name:'Mafia',seed:'qa417',mode:'live',capacity:6,durationMs:45000,deadlineAt:Date.now()+45000,map:{bg:'./world-assets/owner-forest-town.webp'},locations:Array.from({length:3},(_,i)=>({id:'l'+i,name:'Place '+i,x:[25,70,28][i],y:[20,30,55][i],square:i===0,selected:true})),players:Array.from({length:6},(_,i)=>({id:'p'+i,name:'Player '+i,ownerUid:i?'u'+i:'qa',icon:'./assets/home-ui/phone.png',delegated:i>0,sleep:'23:00'}))});
+ await page.evaluate(async()=>{window.s=await import('/state.js?v=20260909dev305');window.stageUI=await import('/mafia-playback-ui.js?v=20260909dev305');document.querySelector('#app').hidden=true;document.body.insertAdjacentHTML('beforeend','<dialog open class="home-social-dialog plaza-games-dialog" data-plaza-screen="stage"><div class="home-social-content"></div></dialog>');window.paint=g=>stageUI.renderMafiaPlayback(document.querySelector('.home-social-content'),g,g.players[0],{submit:a=>window.sent=a,back(){}})});
+ for(const lang of ['ko','en','ja']){
+ await page.evaluate(lang=>s.state.uiLanguage=lang,lang);raw.phase='alibi';engine.advance(raw,Date.now());
+ await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('[data-meeting-action]').count(),7);
+ assert.equal(await page.locator('.meeting-evidence-button').count(),1);assert.equal(await page.locator('.mp-public-record').count(),0);
+ await page.locator('[data-meeting-action=accuse]').click();await page.locator('.meeting-options button').first().click();assert.equal(await page.locator('.meeting-options button').count(),6);await page.locator('.meeting-options button').first().click();assert.equal(await page.evaluate(()=>sent.reason),'none');
+ raw.phase='rebuttal';raw.currentClaim={kind:'accuse',speaker:'p1',target:'p2',reason:'none'};const now=Date.now();raw.reactions=[{kind:'agree',speaker:'p2',target:'p1',startsAt:now-100,endsAt:now+1900},{kind:'oppose',speaker:'p3',target:'p1',startsAt:now+1900,endsAt:now+3900}];
+ await page.evaluate(g=>{window.tick=paint(g);tick()},engine.view(raw,'qa'));assert.equal(await page.locator('[data-meeting-action]').count(),3);assert.equal(await page.locator('.meeting-reactions article').count(),1);
+ await page.waitForTimeout(2050);await page.evaluate(()=>tick());assert.equal(await page.locator('.meeting-reactions article').count(),1);assert.match(await page.locator('.meeting-reactions').innerText(),/Player 3/);
+ const geometry=await page.evaluate(()=>{const a=document.querySelector('.meeting-main').getBoundingClientRect(),b=document.querySelector('.meeting-reactions').getBoundingClientRect(),c=document.querySelector('.meeting-actions').getBoundingClientRect(),f=document.querySelector('.meeting-flow');return [a.bottom<=b.top,b.bottom<=c.top,c.bottom<=innerHeight,f.scrollHeight<=f.clientHeight+1]});assert(geometry.every(Boolean),JSON.stringify(geometry));await page.screenshot({path:output+'/meeting-'+lang+'.png'});
+ await page.locator('[data-meeting-action=oppose]').click();assert.equal(await page.locator('.meeting-options button').count(),5);
+ }
+ raw.players[0].alive=false;raw.phase='act';await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('.mp-building:not(:disabled)').count(),0);assert.equal(await page.locator('.mp-walker').count(),6);assert.equal(await page.locator('.mp-walker.is-dead').count(),1);
+ raw.status='finished';raw.phase='dawn';raw.winner='citizen';raw.nightCycle=true;await page.evaluate(g=>paint(g)(),engine.view(raw,'qa'));assert.equal(await page.locator('.mp-result').count(),1);assert.equal(await page.locator('.night-scene').count(),0);
+ console.log('PASS423 UI: KO/EN/JA compact meeting, grounds menus, sequential reactions, no overlap/scroll, spectator map, finished dawn result.');
+}finally{await browser.close();server.closeAllConnections();server.close()}

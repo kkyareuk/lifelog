@@ -29,7 +29,7 @@ export async function localGames(action,input,owner){
    if(g.status!=='recruiting')throw Error('game-already-started');
    for(const c of people.filter(c=>data.consent.includes(c.id)&&!g.players.some(p=>p.id===c.id)).slice(0,g.capacity-g.players.length))g.players.push(participant(c,true));
    if(g.players.length<4)throw Error('game-not-enough-players');g.bias={};g.deadlineAt=now+45000;engine.start(g);
-  }else if(action==='submitGame'){const p=g.players.find(p=>p.id===input.characterId&&!p.delegated&&p.alive);if(g.status!=='playing'||g.phaseIndex!==input.phaseIndex)throw Error('game-stale-phase');if(!p)throw Error('character-owner-required');engine.submitPlayback(g,p,input.action,now);engine.advance(g,now);}
+  }else if(action==='submitGame'){const p=g.players.find(p=>p.id===input.characterId&&!p.delegated&&(p.alive||input.action?.kind==='skipMeeting'));if(g.status!=='playing'||g.phaseIndex!==input.phaseIndex)throw Error('game-stale-phase');if(!p)throw Error('character-owner-required');engine.submitPlayback(g,p,input.action,now);engine.advance(g,now);}
   else if(action==='cancelGame')g.status='cancelled';
   else if(action==='leaveGame'){if(g.status==='recruiting')g.players=g.players.filter(p=>p.delegated);else g.players.filter(p=>!p.delegated).forEach(p=>p.alive=false);}
   else if(action!=='advanceGame')throw Error('game-invalid-action');
