@@ -11,7 +11,7 @@ export function contextActions(target){
  if(target.type==='place')return [{kind:'walk',label:label('방문하기','Visit','訪れる')},{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')}];
  const item=target.item||'';
  const affection={kind:'affection',companion:true,label:label('스킨십하기','Physical affection','スキンシップ')};
- if(/침대|bed/i.test(item))return [{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},affection];
+ if(/침대|bed/i.test(item))return [{kind:'nap',lifeTask:'sleep',label:label('잠자기','Go to sleep','眠る')},{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},{kind:'rest',label:label('침대에서 쉬기','Rest in bed','ベッドで休む')},{kind:'read',label:label('책 읽기','Read a book','本を読む')},...LIFE_TASKS.filter(t=>['early_sleep','sleep_in'].includes(t.id)).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),affection];
  if(/소파|sofa/i.test(item))return [
   {kind:'rest',label:label('편하게 쉬기','Relax on the sofa','ソファでくつろぐ')},
   {kind:'nap',label:label('낮잠 자기','Take a nap','昼寝する')},

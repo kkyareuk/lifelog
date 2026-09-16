@@ -1594,6 +1594,12 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
       const ordered=rooms.slice().sort(([a],[b])=>Number(b===targetScene?.room)-Number(a===targetScene?.room));
       for(const [key,room] of ordered){const items=room.furniturePlacements?.length?room.furniturePlacements:(room.furniture||[]).map(item=>({item,x:50,y:60}));const furniture=items.find(p=>!/아기|baby/i.test(p.item)&&/소파|침대|의자|sofa|bed|chair/i.test(p.item));if(furniture){chosen={key,furniture};break}}
       if(!chosen){const room=ordered.find(([key])=>key===targetScene?.room)||ordered.find(([,r])=>r.type==="living")||ordered[0];if(room)chosen={key:room[0]};else return false;}
+    }else if(kind==='nap'){
+      const preferred=(character.residences||[]).find(r=>r.homeId===home.id)?.sleepRoomId||character.sleepRoomId;
+      const beds=rooms.filter(([key,r])=>canEnter(character,r)&&(!home.rooms[preferred]||key===preferred)).flatMap(([key,r])=>(r.furniturePlacements||[]).filter(f=>/침대|bed/i.test(f.item)).map(f=>({key,furniture:f})));
+      const usable=beds.filter(({furniture:f})=>(!f.assignedCharacterIds?.length||f.assignedCharacterIds.includes(characterId))&&Object.entries(state.characterDirectives).filter(([id,d])=>id!==characterId&&d.endsAt>startedAt&&d.homeId===home.id&&d.furniture?.id===f.id).length<(/커플|더블|2인|double|couple/i.test(f.item)?2:1));
+      chosen=usable.find(b=>b.furniture.assignedCharacterIds?.includes(characterId))||usable[0];
+      if(!chosen){const room=rooms.find(([key,r])=>key===preferred&&canEnter(character,r))||rooms.find(([,r])=>canEnter(character,r));if(!room)return false;chosen={key:room[0]};}
     }else{const room=rooms.find(([key,r])=>key===definition.room||r.type===definition.room)||rooms[0];if(!room)return false;chosen={key:room[0]}}
     destination={home:true,visitHomeId:home.id,room:chosen.key,townId:home.townId||character.townId};
     if(task?.id==='groceries'){const shop=(state.world?.places||[]).find(p=>/마트|시장|편의점|식료품|슈퍼/.test([p.name,p.kind,p.type].join(' ')));if(shop)destination={home:false,placeId:shop.id,townId:character.townId}}

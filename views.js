@@ -1358,7 +1358,7 @@ function reciprocalSceneCandidates(id){
 }
 function nativeScenePresentation(c,entry,visualMode="sd"){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
-  const sleeping=/자는 중|잠든|수면|낮잠|눈을 붙|눈 붙|taking a nap|sleeping|昼寝|眠る/.test(text);
+  const sleeping=entry?.actionKind==="sleep"||/자는 중|잠든|수면|낮잠|눈을 붙|눈 붙|taking a nap|sleeping|昼寝|眠る/.test(text);
   const drowsy=!sleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(text);
   // 공동 장면은 어느 캐릭터 탭에서 보더라도 같은 두 사람을 보여야 한다.
   // 상대 쪽 이벤트에만 withId가 남아 있는 예전 저장 데이터도 현재 시각·장소와
@@ -2343,7 +2343,7 @@ function homeCard(id,chars){
   const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;
   const lifeAgents=edit?{}:{...(h.lifeSimulation?.agents||{})};
-  const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&['소파','의자','커플 침대'].includes(scene?.meetingFurniture?.item)};
+  const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))};
   for(const c of inside){if(usesAnchoredFurniture(c)){const scene=sceneFor(c),bed=scene.meetingFurniture;lifeAgents[c.id]={...lifeAgents[c.id],phase:'using',roomKey:scene.room,furnitureId:bed.id,item:bed.item,x:bed.x,y:bed.y};}}
 
   const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:sceneFor(character)?.room;

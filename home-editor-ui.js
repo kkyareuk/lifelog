@@ -64,12 +64,14 @@ export function homeMemberMenu(home,characters,locale){
   ].map(([kind,label,cards])=>`<section class="home-member-section"><h3>${label}</h3>${kind==="resident"?`<p class="home-resident-help">${c.residentHelp}</p>`:""}<div class="home-member-grid">${cards}<button type="button" class="home-member-card home-member-add" data-member-add="${kind}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo home-add-symbol">＋</span><b>${c.add}</b></button></div></section>`).join("")}</section>`;
 }
 export function homeInformationMarkup(home,photo,state,t){
-  const c=homeEditorCopy(state.uiLanguage),id=escape(home.id);
+  const c=homeEditorCopy(state.uiLanguage),id=escape(home.id),interiorTitle=({ko:"대표 내부사진",en:"Main interior photo",ja:"代表の内観写真"}[state.uiLanguage]||"대표 내부사진"),exteriorTitle=({ko:"집 외형 아이콘",en:"House exterior icon",ja:"家の外観アイコン"}[state.uiLanguage]||"집 외형 아이콘");
   const select=(key,label,values)=>`<label>${label}<select data-home-field="${key}" data-home-id="${id}">${[...new Set([...(home[key]?[home[key]]:[]),...values])].map(v=>`<option value="${escape(v)}" ${v===home[key]?"selected":""}>${escape(t(v,v))}</option>`).join("")}</select></label>`;
   return `<section class="home-feature-panel home-design-page home-design-info" data-home-feature="house-info">
     <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header>
-    <button type="button" class="home-design-photo" data-home-building-shape="${id}" aria-label="${c.homePhoto}"><img src="${escape(photo)}" alt=""></button>
-    <button type="button" class="home-design-photo" data-home-interior-image="${id}">${home.image?`<img src="${escape(home.image)}" alt="">`:`<span>＋</span>`}<b>${c.homePhoto}</b></button><div class="home-design-fields">
+    <section class="home-information-hero">
+      <button type="button" class="home-design-photo" data-home-interior-image="${id}" aria-label="${interiorTitle}">${home.image?`<img src="${escape(home.image)}" alt="">`:`<span>＋</span>`}<b>${interiorTitle}</b></button>
+      <button type="button" class="home-exterior-choice" data-home-building-shape="${id}" aria-label="${exteriorTitle}"><img src="${escape(photo)}" alt=""><span>${exteriorTitle}</span></button>
+    </section><div class="home-design-fields">
       <button type="button" class="wide" data-share-kind="home" data-settings-transfer="world-transfer" data-share-home="${id}">${({ko:"집 공유 코드",en:"Home sharing code",ja:"家の共有コード"}[state.uiLanguage]||"집 공유 코드")}</button>
       <label class="wide">${t("집 이름","집 이름")}<input data-home-name data-home-id="${id}" value="${escape(home.name)}" maxlength="80"></label>
       <div>${select("kind",t("집 유형","집 유형"),["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"])}${select("ownershipType",`<span class="sr-only">${t("거주 방식","거주 방식")}</span>`,["설정하지 않음","자가","전세","월세","기숙사","사택","무상 거주","임시 거주","기타"])}</div>

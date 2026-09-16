@@ -1160,6 +1160,16 @@ function openRoomEditor(homeId,roomKey){
   dialog.querySelector('[name="wallMaterial"]').onchange=()=>{samples.querySelector("[data-wall-sample] img").src=wallSurfaceImage(dialog.querySelector('[name="wallMaterial"]').value,dialog.querySelector('[name="floorMaterial"]').value,room.floorImage,room.type)};
   const originalDrawFloor=dialog.querySelector('[name="floorMaterial"]').onchange;
   dialog.querySelector('[name="floorMaterial"]').onchange=()=>{originalDrawFloor();samples.querySelector("[data-floor-sample] img").src=floorSource()};
+  // The selectable thumbnails and the stored select share one value/change path.
+  for(const [field,keys] of [['floorMaterial',HOME_SURFACE_KEYS],['wallMaterial',HOME_WALL_KEYS]]){
+    const select=dialog.querySelector(`[name="${field}"]`),label=select.closest('label'),grid=document.createElement('div');grid.className='room-surface-choices';grid.setAttribute('role','group');
+    grid.setAttribute('aria-label',field==='floorMaterial'?({ko:'바닥재',en:'Flooring',ja:'床材'}[state.uiLanguage]):({ko:'벽지',en:'Wallpaper',ja:'壁紙'}[state.uiLanguage]));
+    const options=[...keys,...(field==='floorMaterial'&&room.floorImage?['customTile','custom']:[])];
+    grid.innerHTML=options.map(key=>`<button type="button" data-surface-value="${key}" aria-pressed="${select.value===key}"><img src="${field==='floorMaterial'?homeSurfaceImage(key,room.floorImage,room.type):wallSurfaceImage(key,currentFloorMaterial,room.floorImage,room.type)}" alt=""><span>${homeSurfaceLabel(key,state.uiLanguage)}</span></button>`).join('');
+    select.hidden=true;label.append(grid);
+    grid.querySelectorAll('button').forEach(button=>button.onclick=()=>{select.value=button.dataset.surfaceValue;select.dispatchEvent(new Event('change',{bubbles:true}));grid.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));if(field==='floorMaterial')dialog.querySelector('[name="usePhoto"]').checked=select.value==='custom';});
+    samples.querySelector(field==='floorMaterial'?'[data-floor-sample]':'[data-wall-sample]').onclick=()=>grid.querySelector(`[aria-pressed="true"]`)?.focus();
+  }
   translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
 }
 

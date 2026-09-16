@@ -10,6 +10,6 @@ export function furnitureSprite(placement={}){
   const composite=kind==='chair'&&variant==='back';
   const dimensions={'single-bed':{front:[280,567],side:[550,412]},tv:{front:[303,222],side:[49,342]},plant:{front:[225,287]},bookcase:{front:[391,560],side:[186,563]},bed:{front:[527,567],side:[550,604]},sofa:{front:[448,257],side:[232,447],back:[443,227]},chair:{front:[176,313],side:[160,307],back:[195,327]},table:{front:[375,440]}}[kind][variant];
   return {src:ROOT+(composite?'chair-seat':`${kind}-${variant}`)+'.png',frame:composite?ROOT+'chair-frame.png':null,kind,direction,
-    width:dimensions[0],height:dimensions[1],scale:kind==='chair'?1.8:kind==='sofa'?1.9:kind==='table'?1.5:1,
+    width:dimensions[0],height:dimensions[1],scale:kind==='chair'?1.8:kind==='sofa'?1.9:kind==='table'?1.5:['plant','bookcase'].includes(kind)?1.2:1,
     flip:(direction==='right'?-1:1)*(placement.flipped?-1:1)};
 }
