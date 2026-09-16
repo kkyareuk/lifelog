@@ -4,6 +4,8 @@
 
 검증 완료: 새 규칙30판·기존40판, Chrome/WebKit KO/EN/JA 회의·도구·투표·야간·카메라 유지. QA는 실제 앱과 동일한 showModal 경로로 실행해 초기 화면 비동기 렌더와 비모달 위치 간섭을 제거. 최종 www 번들에서도 통과.171개 모듈 의존·411개 준비 자산 검사, AAB 서명 검증 및 변경 클라이언트 파일 바이트 일치 확인.
 
-Android426은 Play 내부 release316에서 2026-09-16 22:57 KST 내부 테스터에게 제공됨 확인. 멀티 sharedTownApi 배포 성공. Apple426 Actions35104844648 진행 중(서명/업로드); Apple 설치 가능 여부는 아직 확인하지 않음. 공개 main 및 공개 놀이 잠금 유지.
+Android426은 Play 내부 release316에서 2026-09-16 22:57 KST 내부 테스터에게 제공됨 확인. 멀티 sharedTownApi 배포 성공. Apple426 Actions35104844648 성공: 서명 archive·uploadAccepted=true, internalOnly=true, submittedForReview=false, source93a28dc. Apple post-upload build:null로 처리 대기, 설치 가능 미확인. 기존 수출규정 확인도 미완료. 공개 main 및 공개 놀이 잠금 유지.
 
 소스93a28dc, 신규 EN/JA100%, 전체 번역률 미측정. 실기기 발열·실제 다인 게임 밸런스는 이 자동 검사로 측정하지 않음.
+
+추가 NPC 밸런스 표본60판: 시민37승·마피아23승, 평균2.72일, 야간 사망66명. 실제 유저 밸런스를 검증한 수치는 아님.
