@@ -1,38 +1,38 @@
 export function meetingControls({root,g,p,cards,choose,describe,claimText,t,e,name}){
- const tools=root.querySelector('.mp-tools'),world=root.querySelector('.mp-world'),notebook=root.querySelector('.mp-notebook');
- const own=g.phase==='discussion'||g.phase==='finalSpeech'&&g.currentClaim?.speaker===p?.id;
- const active=p?.alive&&g.status==='playing';
- root.classList.add('mp-meeting-v2');tools.replaceChildren();
- const panel=document.createElement('section');panel.className='mp-meeting-choices';panel.hidden=true;root.append(panel);
- const show=(title,items)=>{panel.replaceChildren();panel.hidden=false;const h=document.createElement('b');h.textContent=title;panel.append(h);for(const item of items){const b=document.createElement('button');b.textContent=item.text;b.classList.toggle('is-fabricated',!!item.forge);b.onclick=item.run;panel.append(b)}const back=document.createElement('button');back.textContent=t('닫기','Close','閉じる');back.onclick=()=>panel.hidden=true;panel.append(back)};
- const evidence=(kind,targetId)=>{
-  const options=[{text:t('근거 없이','Without evidence','根拠なし'),run:()=>choose({kind,targetId})},...cards.filter(c=>!targetId||c.subject===targetId||c.witnesses?.includes(targetId)).map(c=>({text:describe(c),run:()=>choose({kind,targetId,cardId:c.id})}))];
-  if(g.canForge)for(const c of cards.filter(c=>!targetId||c.subject===targetId).slice(-2)){const elsewhere=g.locations.find(l=>l.id!==c.place);if(elsewhere)options.push({forge:true,text:t('위증 · ','Fabricated · ','偽証・')+describe({...c,place:elsewhere.id}),run:()=>choose({kind,targetId,cardId:c.id,forge:true,forgePlace:elsewhere.id})})}
-  show(t('어떤 근거로 말할까요?','Choose your grounds','どの根拠で話しますか？'),options);
- };
- const targets=kind=>show(t('누구에게 말할까요?','Choose a person','誰に話しますか？'),g.players.filter(q=>q.alive&&q.id!==p?.id).map(q=>({text:q.name,run:()=>kind==='request'?show(t('언제의 행적을 물을까요?','Ask about which time?','いつの行動を聞きますか？'),[t('아침','Morning','朝'),t('점심','Afternoon','昼'),t('저녁','Evening','夕方'),t('밤','Night','夜')].map((text,period)=>({text,run:()=>choose({kind,targetId:q.id,period})}))):evidence(kind,q.id)})));
- const button=(kind,label,run,disabled=false)=>{const b=document.createElement('button');b.dataset.meetingAction=kind;b.textContent=label;b.disabled=!active||disabled;b.onclick=run;tools.append(b)};
- if(g.phase==='reply'&&g.replyTo===p?.id){for(const c of g.alibiOptions||[])button('alibi',claimText(c),()=>choose({kind:'alibi',optionId:c.id}));}
- else if(own){
-  button('accuse',t('의심하기','Suspect','疑う'),()=>targets('accuse'));
-  button('defend',t('변호하기','Defend','弁護する'),()=>targets('defend'));
-  if(g.phase!=='finalSpeech'){
-   button('request',t('진술 요구하기','Ask for an account','説明を求める'),()=>targets('request'));
-   button('changeTopic',t('주제 바꾸기','Change topic','話題を変える'),()=>choose({kind:'changeTopic'}));
-  }
-  button('pass',t('넘기기','Pass','パス'),()=>choose({kind:'pass'}));
- }else if(['claim','rebuttal'].includes(g.phase)){
-  const disabled=!!g.challengeOwner||g.currentClaim?.speaker===p?.id;
-  button('oppose',t('반박하기','Rebut','反論する')+' · '+cards.length,()=>evidence('oppose'),disabled);
-  button('agree',t('동조하기','Agree','同調する'),()=>choose({kind:'agree'}),disabled);
-  button('pass',t('넘기기','Pass','パス'),()=>choose({kind:'pass'}),g.currentClaim?.speaker===p?.id);
+ if(g.phase==='vote')return;
+ root.classList.add('mp-opinion-meeting');
+ const world=root.querySelector('.mp-world'),tools=root.querySelector('.mp-tools');
+ const picture=id=>{const img=world.querySelector(`[data-person="${CSS.escape(id||'')}"] img`);return img?.outerHTML||''};
+ const people=g.players.map(q=>`<button data-meeting-person="${e(q.id)}" class="${q.id===g.currentClaim?.speaker?'is-speaking':''}">${picture(q.id)}<b>${e(q.name)}</b></button>`).join('');
+ const speaker=g.currentClaim?.speaker||p?.id,art=picture(speaker),active=p?.alive&&g.status==='playing';
+ const text=c=>c?.kind==='silence'?t(`${name(c.target)}, 아직 의견을 듣지 못했어요. 어떻게 생각하나요?`,`${name(c.target)}, we have not heard your view yet. What do you think?`,`${name(c.target)}、まだ意見を聞いていません。どう思いますか？`):c?.kind==='changeStance'?t(`${name(c.target)}에 대한 아까 의견을 거둘게요.`,`I withdraw my earlier opinion about ${name(c.target)}.`,`${name(c.target)}についての先ほどの意見を撤回します。`):c?.kind==='account'?claimText({...c,kind:c.partner?'together':c.place?'visit':'unknown'}):claimText(c);
+ const contradiction=r=>r.contradiction?t(`↳ 내 기억: ${describe(r.contradiction.observation)} 이 기록은 위 진술의 시간·장소와 맞지 않아요.`,`↳ My memory: ${describe(r.contradiction.observation)} This does not match the time and place in that account.`,`↳ 私の記憶：${describe(r.contradiction.observation)} この記録は証言の時刻・場所と一致しません。`):r.card?t('↳ 참고 기록: ','↳ Reference: ','↳ 参考記録：')+describe(r.card):'';
+ const memoryFor=c=>{const a=c?.account||(c?.partner?c:null);if(!a||!Number.isInteger(a.tick))return '';const memory=cards.find(x=>x.day===a.day&&x.tick===a.tick&&(x.kind==='alibi'&&x.subject===a.partner&&x.place!==a.place||x.kind==='survey'&&x.place===a.place&&!x.seenIds?.includes(a.speaker)));return memory?t('↳ 내 기억: ','↳ My memory: ','↳ 私の記憶：')+describe(memory):''};
+ const reactions=(g.reactions||[]).filter(r=>r.kind!=='pass');
+ root.querySelectorAll('.mp-notebook,.mp-public-record,.mp-hint,.mp-collection,.mp-popover').forEach(n=>n.remove());
+ world.className='meeting-flow';world.innerHTML=`<aside class="meeting-evidence"><details><summary>${t('증거 목록','Evidence','証拠一覧')} · ${cards.length}</summary><div>${cards.length?cards.map(c=>`<p>${e(describe(c))}</p>`).join(''):t('아직 직접 조사한 기록이 없어요.','No observations yet.','まだ調べた記録がありません。')}</div></details></aside><nav class="meeting-people">${people}</nav><div class="meeting-portrait">${art}</div><article class="meeting-main"><b>${e(name(speaker))}</b><p>${e(g.currentClaim?text(g.currentClaim):t('어떤 의견을 낼까요?','What would you like to say?','どんな意見を出しますか？'))}</p>${memoryFor(g.currentClaim)||g.currentClaim?.card?`<small>${e(memoryFor(g.currentClaim)||contradiction(g.currentClaim))}</small>`:''}</article><section class="meeting-reactions" aria-live="polite">${reactions.map(r=>`<article>${picture(r.speaker)}<div><b>${e(name(r.speaker))}</b><p>${e(text(r))}</p>${memoryFor(r)||contradiction(r)?`<small>${e(memoryFor(r)||contradiction(r))}</small>`:''}</div></article>`).join('')}</section><section class="meeting-actions"></section><section class="meeting-options" hidden></section>`;
+ // Images were copied before replacing the world. Reactions use the saved participant art.
+ for(const node of world.querySelectorAll('.meeting-reactions article')){const r=reactions[[...node.parentNode.children].indexOf(node)];if(!node.querySelector('img')){const img=world.querySelector(`[data-meeting-person="${CSS.escape(r.speaker)}"] img`);if(img)node.prepend(img.cloneNode())}}
+ tools.remove();root.querySelector('.mp-hand-area')?.remove();
+ const panel=world.querySelector('.meeting-options'),buttons=world.querySelector('.meeting-actions');
+ const status=document.createElement('p');if(g.opinionQueued)status.textContent=t('주 의견을 받았어요. 현재 반응이 끝나면 이어서 나와요.','Your main opinion will follow the current reactions.','主意見を受け付けました。今の反応が終わると続きます。');status.dataset.gameStatus='';status.setAttribute('role','status');world.append(status);
+ const show=(title,items)=>{panel.replaceChildren();panel.hidden=false;const h=document.createElement('b');h.textContent=title;panel.append(h);for(const item of items){const b=document.createElement('button');b.textContent=item.text;b.onclick=item.run;panel.append(b)}const close=document.createElement('button');close.textContent=t('닫기','Close','閉じる');close.onclick=()=>panel.hidden=true;panel.append(close);panel.scrollIntoView({block:'nearest'})};
+ const evidence=(kind,targetId)=>show(t('근거 선택','Choose grounds','根拠を選ぶ'),[{text:t('근거 없이 의견 내기','Give an opinion without evidence','根拠なしで意見を出す'),run:()=>choose({kind,targetId})},...cards.map(c=>({text:describe(c),run:()=>choose({kind,targetId,cardId:c.id})})),...(g.canForge?cards.slice(-1).flatMap(c=>g.locations.filter(l=>l.id!==c.place).slice(0,1).map(l=>({text:t('위증 · ','Fabricated · ','偽証・')+describe({...c,place:l.id}),run:()=>choose({kind,targetId,cardId:c.id,forge:true,forgePlace:l.id})}))):[])]);
+ const targets=kind=>show(t('대상 선택','Choose a person','相手を選ぶ'),g.players.filter(q=>q.alive&&q.id!==p?.id&&(kind!=='silence'||!g.mainCounts?.[q.id])).map(q=>({text:q.name,run:()=>kind==='request'?show(t('시간 선택','Choose a time','時間を選ぶ'),[t('아침','Morning','朝'),t('점심','Afternoon','昼'),t('저녁','Evening','夕方'),t('밤','Night','夜')].map((text,period)=>({text,run:()=>choose({kind,targetId:q.id,period})}))):kind==='silence'?choose({kind,targetId:q.id}):evidence(kind,q.id)})));
+ const add=(kind,label,run,disabled=false)=>{const b=document.createElement('button');b.dataset.meetingAction=kind;b.textContent=label;b.disabled=!active||disabled;b.onclick=run;buttons.append(b)};
+ { // Main opinions can be submitted throughout the meeting.
+
+  for(const [kind,label] of [['accuse',t('의심하기','Suspect','疑う')],['defend',t('변호하기','Defend','弁護する')],['request',t('진술 요구하기','Ask for an account','説明を求める')],['silence',t('침묵 지적하기','Ask a quiet participant','沈黙を指摘する')]])add(kind,label,()=>targets(kind));
+  add('changeTopic',t('주제 바꾸기','Change topic','話題を変える'),()=>choose({kind:'changeTopic'}));add('changeStance',t('입장 바꾸기','Change stance','立場を変える'),()=>choose({kind:'changeStance'}),!g.canChangeStance);
  }
- const records=g.history.filter(h=>['accuse','defend','request','changeTopic','oppose','agree','claim'].includes(h.kind));
- const ledger=document.createElement('section');ledger.className='mp-public-record';ledger.setAttribute('aria-label',t('회의 기록','Meeting record','会議記録'));
- const recent=records.slice(-4);ledger.innerHTML=recent.length?recent.map(h=>`<p><b>${e(name(h.speaker))}</b> · ${e(claimText(h))}</p>`).join(''):`<p>${t('회의에서 나온 말이 여기에 기록됩니다.','Statements will appear here as the meeting progresses.','会議の発言がここに記録されます。')}</p>`;
- if(records.length>4){const older=document.createElement('details');older.innerHTML=`<summary>${t('이전 기록','Earlier records','以前の記録')}</summary>`+records.slice(0,-4).map(h=>`<p>${e(name(h.speaker))} · ${e(claimText(h))}</p>`).join('');ledger.prepend(older)}
- const reports=notebook?.querySelector('.mp-notebook-pages');if(reports){const scene=reports.querySelector('h3');if(scene){const heading=document.createElement('b');heading.textContent=scene.textContent;const details=document.createElement('details');const summary=document.createElement('summary');summary.append(heading);details.append(summary);let next=scene.nextElementSibling;while(next&&next.tagName!=='H3'){details.append(next.cloneNode(true));next=next.nextElementSibling}ledger.prepend(details)}}
- notebook?.remove();root.append(ledger);
- for(const ally of g.allies||[]){const b=world.querySelector('[data-person="'+CSS.escape(ally.id)+'"]');if(b)b.title=t('동료 압박: ','Ally pressure: ','仲間の圧迫度：')+ally.pressure;}
- world.querySelectorAll('[data-person]').forEach(b=>{b.classList.toggle('is-speaking',b.dataset.person===g.currentClaim?.speaker);b.classList.toggle('is-pressured',(g.pressure?.[b.dataset.person]||0)>=6);if(g.phase!=='vote')b.onclick=()=>show(name(b.dataset.person),cards.filter(c=>c.subject===b.dataset.person).map(c=>({text:describe(c),run:()=>{}})))});
+ if(g.phase!=='discussion'){
+  if(g.phase==='reply'&&g.replyTo===p?.id)for(const option of g.alibiOptions||[])add('alibi',claimText(option),()=>choose({kind:'alibi',optionId:option.id}));
+  const reacted=(g.reactions||[]).some(r=>r.speaker===p?.id);
+  add('oppose',t('반박하기','Disagree','反論する'),()=>evidence('oppose'),reacted);add('agree',t('동조하기','Agree','同調する'),()=>choose({kind:'agree'}),reacted);
+ }
+ add('pass',t('넘기기','Pass','パス'),()=>choose({kind:'pass'}),(g.reactions||[]).some(r=>r.speaker===p?.id));
+ const mainHeading=document.createElement('h3');mainHeading.textContent=t('주 의견','Main opinion','主意見');buttons.prepend(mainHeading);if(g.phase!=='discussion'){const responseHeading=document.createElement('h3');responseHeading.textContent=t('현재 의견에 반응하기','Respond to this opinion','今の意見への反応');const responseButtons=[...buttons.querySelectorAll('[data-meeting-action]')].filter(b=>['oppose','agree','pass','alibi'].includes(b.dataset.meetingAction));buttons.prepend(responseHeading,...responseButtons);}
+ const top=root.querySelector('.mp-top>div:last-child');top.querySelector('span').textContent=t(`${g.day}일차 회의`,`Day ${g.day} meeting`,`${g.day}日目の会議`);
+ const skip=document.createElement('button');skip.className='meeting-skip';skip.textContent=t('회의 넘기기','Skip meeting','会議をスキップ')+` ${(g.meetingSkip||[]).length}/${g.humanCount}`;skip.disabled=!active||(g.meetingSkip||[]).includes(p?.id);skip.onclick=()=>choose({kind:'skipMeeting'});top.append(skip);
+ world.querySelectorAll('[data-meeting-person]').forEach(b=>b.onclick=()=>show(name(b.dataset.meetingPerson),cards.filter(c=>c.subject===b.dataset.meetingPerson).map(c=>({text:describe(c),run:()=>{}}))));
 }

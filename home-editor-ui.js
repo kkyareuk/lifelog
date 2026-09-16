@@ -23,7 +23,7 @@ export function furnitureType(item){
 export function filteredFurniture({category="all",type="all",query=""}={},locale="ko"){
   const catalog=category==="all"?[...new Set(Object.values(FURNITURE_CATALOG).flat())]:FURNITURE_CATALOG[category]||[];
   const search=query.trim().toLocaleLowerCase();
-  return catalog.filter(item=>(type==="all"||furnitureType(item)===type)&&`${item} ${furnitureLabel(item,locale)}`.toLocaleLowerCase().includes(search));
+  return catalog.filter(item=>item!=="침대"&&(type==="all"||furnitureType(item)===type)&&`${item} ${furnitureLabel(item,locale)}`.toLocaleLowerCase().includes(search));
 }
 const drawerStates=new Map();
 const drawerState=home=>{
@@ -100,7 +100,7 @@ export function fitCoupleBedOccupants(root){
     // the pillow and the lower part is actually covered by the foreground quilt.
     const underCover=person.classList.contains('is-under-cover');
     const pillow=bedPillowPoint({side:bed.dataset.bedSide==='true',direction:Number(bed.dataset.bedDirection)||1,artFlip:flip},Number(person.dataset.bedSlot),underCover);
-    if(bed.dataset.bedSingle==='true'){if(bed.dataset.bedSide==='true'){pillow.x=.235*(Number(bed.dataset.bedDirection)||1);pillow.y=0}else{pillow.x=0;pillow.y=-.225}}
+    if(bed.dataset.bedSingle==='true'){if(bed.dataset.bedSide==='true'){pillow.x=.235*(Number(bed.dataset.bedDirection)||1);pillow.y=0}else{pillow.x=0;pillow.y=-.20}}
     const x=width/2+pillow.x*paintedWidth*1.05,y=height/2+pillow.y*paintedHeight*1.05;
     person.style.zIndex=String(pillow.depth);
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
@@ -108,7 +108,7 @@ export function fitCoupleBedOccupants(root){
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(18,Math.min(underCover?64:56,paintedWidth*(bed.dataset.bedSingle==='true'?.56:underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(12,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(10,Math.min(underCover?64:56,paintedWidth*(bed.dataset.bedSingle==='true'?.56:underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
     person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{

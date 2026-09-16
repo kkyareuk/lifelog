@@ -114,7 +114,7 @@ export const LIFE_TASKS=[
     "id": "toilet",
     "kind": "wash",
     "room": "bath",
-    "minutes": 8,
+    "minutes": 1,
     "labels": [
       "화장실 가기",
       "Use the toilet",

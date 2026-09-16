@@ -53,7 +53,7 @@ export function openPlazaGames(groupId='',gameId=''){
  async function setupGame(id){
   if(!id){d.close();window.DrawerVillageNavigation.go('groups');return}groupId=id;const revision=++loadRevision;body.textContent=t('불러오는 중…','Loading…','読み込み中…');
   try{const data=await call('readGames',{groupId});if(!current()||revision!==loadRevision)return;d.dataset.plazaScreen='setup';gameSetup(body,data,{saveConsent:characters=>call('setGameConsent',{groupId,characters}),back:()=>{gameId='';load()},submit:async f=>{
-   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,drama:true,notebook:true,meetingControls:2,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(current())load()}
+   try{body.querySelectorAll('button').forEach(b=>b.disabled=true);const made=await call('createGame',{groupId,rulesVersion:4,drama:true,notebook:true,meetingControls:2,nightCycle:true,gameId:crypto.randomUUID(),name:f.get('name'),capacity:Number(f.get('capacity')),hours:6,mode:'live',locations:f.getAll('place')});gameId=made.id;await call('joinGame',{groupId,gameId,characterId:f.get('character')});if(current())load()}
    catch(e){if(current()){if(gameId){await load();const status=body.querySelector('[data-game-status]');if(status)status.textContent=errorText(e)}else{body.querySelector('[data-game-status]').textContent=errorText(e);body.querySelectorAll('button').forEach(b=>b.disabled=false)}}}
   }});
   }catch(e){if(current())body.textContent=errorText(e)}
@@ -67,10 +67,10 @@ export function openPlazaGames(groupId='',gameId=''){
   const p=g.players.find(p=>p.ownerUid===owner&&!p.delegated);
   const same=lastStage?.id===g.id&&lastStage.phaseIndex===g.phaseIndex&&lastStage.challengeOwner===g.challengeOwner&&lastStage.meetingRevision===g.meetingRevision&&lastStage.status===g.status&&body.querySelector('.mafia-playback');
   if(same){Object.assign(lastStage,g);const status=body.querySelector('[data-game-status]');if(status)status.textContent=p?.submitted?t('선택 완료 · 다른 참가자를 기다려요','Choice saved · waiting for others','選択済み・他の参加者を待っています'):'';}
-  else {lastStage=g;stageTick=renderMafiaPlayback(body,g,p,{back:()=>{gameId='';lastStage=null;load()},submit:async action=>{
+  else {const sameOpinion=lastStage?.id===g.id&&lastStage?.currentClaim?.id===g.currentClaim?.id&&lastStage?.phaseIndex===g.phaseIndex,scrollTop=sameOpinion?body.querySelector('.meeting-flow')?.scrollTop||0:0;lastStage=g;stageTick=renderMafiaPlayback(body,g,p,{back:()=>{gameId='';lastStage=null;load()},submit:async action=>{
    try{const next=await call('submitGame',{groupId,gameId,characterId:p.id,phaseIndex:g.phaseIndex,action});if(current())showGame(next,stageData)}
    catch(error){if(current()){const status=body.querySelector('[data-game-status]');if(status)status.textContent=errorText(error)}}
-  }});}
+  }});const flow=body.querySelector('.meeting-flow');if(flow&&sameOpinion)flow.scrollTop=scrollTop;}
   stageTick?.();clockTimer=setInterval(()=>stageTick?.(),250);
   if(g.status==='playing')timer=setTimeout(async()=>{try{const next=await call('advanceGame',{groupId,gameId});if(current()&&gameId===next.id)showGame(next,stageData)}catch(error){if(current()){const status=body.querySelector('[data-game-status]');if(status)status.textContent=errorText(error);timer=setTimeout(load,3000)}}},1000);
   return;

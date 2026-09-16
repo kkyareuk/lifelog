@@ -349,7 +349,7 @@ function normalizeHomes(x){
   x.characterPane=["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
   x.characterOverviewPane=x.characterOverviewPane==="basic"?"basic":"life";
   x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
-  x.characterPersonalityPane=["core","emotion","details"].includes(x.characterPersonalityPane)?x.characterPersonalityPane:"core";
+  x.characterPersonalityPane=["core","emotion","details","abilities"].includes(x.characterPersonalityPane)?x.characterPersonalityPane:"core";
   x.characterTastePane=x.characterTastePane==="catalog"?"catalog":"categories";
   // 전체설정 열림 여부는 저장 데이터가 아니라 현재 화면 세션의 상태다.
   // 예전에는 full 값을 기기·동기화에 저장해 앱을 다시 열었을 때 캐릭터
@@ -785,6 +785,7 @@ function normalizeHomes(x){
     c.smokingStatus=smokingOptions.includes(c.smokingStatus)?c.smokingStatus:"설정하지 않음";
     const alcoholOptions=["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"];
     c.alcoholTolerance=alcoholOptions.includes(c.alcoholTolerance)?c.alcoholTolerance:"설정하지 않음";
+    for(const key of ["deceptionSkill", "intuitionSkill", "stealthSkill", "intelligenceSkill", "observationSkill", "composureSkill"])c[key]=Math.max(0,Math.min(100,Number.isFinite(Number(c[key]))?Number(c[key]):50));
     c.wakeHabit=c.wakeHabit||"알람을 듣고 천천히 일어남";
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.foodHabit=c.foodHabit||"규칙적으로 식사함";

@@ -31,7 +31,7 @@ function start(g){
  }
  return g;
 }
-function canHit(g,p){return p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
+function canHit(g,p){return !g.nightCycle&&p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
 function allowedPlaces(g,p){if(g.notebook)return g.openPlaces;if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
@@ -76,6 +76,7 @@ function act(g){
  const occupancy=Object.fromEntries(people.map(p=>[p.id,peers(g,p)]));
  const hits=people.filter(p=>actions[p.id].kind==='hit'&&validateAction(g,p,actions[p.id]));
  const copies=Object.fromEntries(people.map(p=>[p.id,(g.cards[p.id]||[]).map(c=>({...c}))]));
+ for(const q of people)if(old.random(g.seed,'footprint',g.day,g.period,q.id)>(q.gameSkills?.stealthSkill??50)/200)g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:q.place,action:'footprint'});
  for(const p of people){
   const a=validateAction(g,p,actions[p.id])?actions[p.id]:{kind:'stay'},others=occupancy[p.id];
   card(g,p,{kind:'alibi',subject:p.id,action:a.kind,witnesses:others.filter(q=>awake(g,q)).map(q=>q.id)});
@@ -89,6 +90,8 @@ function act(g){
    g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'task'});
    card(g,p,{kind:'alibi',subject:p.id,action:'task'});
   }else if(a.kind==='investigate'){
+   const seen=others.filter(q=>old.random(g.seed,'seen',g.day,g.period,p.id,q.id)<Math.max(.25,Math.min(.95,.7+((p.gameSkills?.observationSkill??50)-(q.gameSkills?.stealthSkill??50))/200)));
+   card(g,p,{kind:'survey',subject:p.id,action:'investigate',seenIds:[p.id,...seen.map(q=>q.id)]});
    const known=new Set((g.cards[p.id]||[]).map(c=>c.originId).filter(Boolean));
    const traces=g.traces.filter(t=>t.place===p.place&&!known.has(t.id)).sort((a,b)=>Number(['blood','object','wiped'].includes(b.action))-Number(['blood','object','wiped'].includes(a.action))||b.tick-a.tick).slice(0,3);
    for(const trace of traces)card(g,p,{...trace,kind:'trace',subject:null,originId:trace.id});
@@ -109,6 +112,7 @@ function act(g){
  for(const p of hits){const target=occupancy[p.id][0];if(!target.alive)continue;target.alive=false;p.hitDay=g.day;g.bodies.push({id:target.id,place:p.place,day:g.day,tick:tick(g),reported:false});g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,subject:null,action:'blood'});}
  progress(g);g.traces=g.traces.slice(-120);
  if(old.finish(g))return;
+ if(g.nightCycle){if(g.period>=1)meeting(g,'evening');else{g.period=1;g.actionTick=tick(g);g.phase='move'}return}
  if(g.drama&&g.period===3||g.period===4||g.period===3&&!alive(g).some(late)){meeting(g,'morning');return}
  g.period+=g.drama&&g.period===0?2:1;g.actionTick=tick(g);g.phase='move';
 }

@@ -1773,12 +1773,12 @@ function markMobileCharacterDraft(element){
   }
   return isMobileCharacterDraftControl(element);
 }
-const numericCharacterFields=new Set(["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging","homeVisualScale"]);
+const numericCharacterFields=new Set(["deceptionSkill","intuitionSkill","stealthSkill","intelligenceSkill","observationSkill","composureSkill","spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging","homeVisualScale"]);
 function characterPatchFromField(element){
   if(!element?.dataset?.field)return null;
   const field=element.dataset.field;
   const value=element.type==="checkbox"?element.checked:numericCharacterFields.has(field)?Number(element.value):element.value;
-  const patch={[field]:value};
+  const patch={[field]:field.endsWith("Skill")?Math.max(0,Math.min(100,Number.isFinite(value)?value:50)):value};
   if(field==="attractionTarget")patch.attractedGenders={
     "여성에게 끌림":["여성"],"남성에게 끌림":["남성"],"여성과 남성에게 끌림":["여성","남성"],
     "성별과 무관하게 끌림":["남성","여성","그외"],"그외 성별에게 끌림":["그외"]
@@ -2528,7 +2528,7 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
-const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","taste","closet"];
+const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
 function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
 }
@@ -2543,7 +2543,7 @@ function openCharacterBookPage(next){
     state.characterBodyPane=next.endsWith("accessibility")?"accessibility":next.endsWith("appearance")?"appearance":"figure";
   }else if(next.startsWith("personality-")){
     state.characterPane="personality";
-    state.characterPersonalityPane=next.endsWith("details")?"details":"core";
+    state.characterPersonalityPane=next.endsWith("abilities")?"abilities":next.endsWith("details")?"details":"core";
   }else state.characterPane=next;
   save(true);render();return true;
 }
@@ -4051,7 +4051,7 @@ function bind(){
     const pane=el.dataset.characterPane;
     if(pane==="profile") state.characterOverviewPane=el.dataset.characterOverviewTarget==="life"?"life":"basic";
     if(pane==="body") state.characterBodyPane=el.dataset.characterBodyTarget==="accessibility"?"accessibility":"figure";
-    if(pane==="personality") state.characterPersonalityPane=["core","emotion","details"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
+    if(pane==="personality") state.characterPersonalityPane=["core","emotion","details","abilities"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
     if(pane==="taste") state.characterTastePane=el.dataset.characterTastePane==="catalog"?"catalog":"categories";
     setCharacterPane(pane);
     el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
@@ -4069,7 +4069,7 @@ function bind(){
   });
   $$("[data-character-personality-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane="personality";
-    state.characterPersonalityPane=["core","emotion","details"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
+    state.characterPersonalityPane=["core","emotion","details","abilities"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
     save();render();
   });
   $$("[data-character-taste-pane]").forEach(el=>el.onclick=()=>{
