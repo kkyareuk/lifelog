@@ -1,6 +1,7 @@
 // Versioned server rules: private movement followed by a shared-room action.
 // Existing games retain their original rules and deadlines.
 const old=require('./mafia-engine');
+const preparation=require('./mafia-preparation')(old);
 const alive=g=>g.players.filter(p=>p.alive);
 const pick=(g,a,...key)=>a[Math.floor(old.random(g.seed,...key)*a.length)];
 const peers=(g,p)=>alive(g).filter(q=>q.id!==p.id&&q.place===p.place);
@@ -29,15 +30,16 @@ function start(g){
   const preferred=hubs.find(l=>new RegExp(taskTypes.find(([,re])=>new RegExp(re).test(p.hobbies||''))?.[1]||'(?!)').test(l.type+' '+l.name+' '+(l.furniture||[]).join(' ')));
   g.tasks[p.id]=Array.from({length:3},(_,i)=>{const place=i===0&&preferred?preferred:hubs[(i+g.players.indexOf(p))%hubs.length];const kind=taskTypes.find(([,re])=>new RegExp(re).test(place.type+' '+place.name+' '+(place.furniture||[]).join(' ')))?.[0]||'boxes';return {id:p.id+'-task-'+i,place:place.id,kind,required:i===1?2:1,done:0,lastDay:0,lastPeriod:-2}});
  }
- return g;
+ preparation.init(g);return g;
 }
 function canHit(g,p){return !g.nightCycle&&p.alive&&g.phase==='act'&&(g.rulesVersion>=3||g.day>1)&&p.role==='mafia'&&p.hitDay!==g.day&&awake(g,p)&&peers(g,p).length===1&&peers(g,p)[0].role!=='mafia'}
-function allowedPlaces(g,p){if(g.notebook)return g.openPlaces;if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
+function allowedPlaces(g,p){if(g.preparation)return [...new Set([...g.openPlaces,...Object.keys(g.preparation.houses)])];if(g.notebook)return g.openPlaces;if(g.drama)return g.period===2?[g.squareId]:g.openPlaces;return g.period>=3?[p.homePlace]:(g.openPlaces||[])}
 function near(g,p){const own=g.locations.find(l=>l.id===p.place)||{};return g.locations.filter(l=>g.openPlaces.includes(l.id)&&l.id!==p.place).sort((a,b)=>Math.hypot((a.x||50)-(own.x||50),(a.y||50)-(own.y||50))-Math.hypot((b.x||50)-(own.x||50),(b.y||50)-(own.y||50))).slice(0,2).map(l=>l.id)}
 function validateAction(g,p,a){
  if(!a||typeof a!=='object')return false;
  if(g.phase==='move')return a.kind==='move'&&allowedPlaces(g,p).includes(a.place);
  if(g.phase!=='act')return false;
+ if(g.preparation&&preparation.valid(g,p,a))return true;
  if(!awake(g,p))return a.kind==='stay';
  if(a.kind==='stay')return true;
  if(a.kind==='task')return a.taskId==='common'?g.commonTask.place===p.place:(g.tasks[p.id]||[]).some(t=>t.id===a.taskId&&t.place===p.place&&t.done<t.required);
@@ -49,6 +51,7 @@ function validateAction(g,p,a){
  return false;
 }
 function auto(g,p){
+ if(g.preparation)return preparation.auto(g,p);
  if(g.phase==='move'){if(g.rulesVersion>=4&&!p.delegated)return {kind:'move',place:allowedPlaces(g,p).includes(p.place)?p.place:allowedPlaces(g,p)[0]};const pending=(g.tasks[p.id]||[]).filter(t=>t.done<t.required);return {kind:'move',place:g.drama&&!g.notebook&&g.period===2?g.squareId:g.period>=3&&!g.drama?p.homePlace:pending[0]?.place||pick(g,g.openPlaces,'move',g.day,g.period,p.id)}}
  if(!awake(g,p))return {kind:'stay'};
  if(canHit(g,p)&&old.random(g.seed,'hit',g.day,g.period,p.id)>.4)return {kind:'hit',targetId:peers(g,p)[0].id};
@@ -64,7 +67,7 @@ function move(g){
  const plans=alive(g).map(p=>[p,g.submissions[p.id]||auto(g,p)]);
  const origins=Object.fromEntries(plans.map(([p])=>[p.id,p.place]));
  for(const [p,a]of plans){p.place=allowedPlaces(g,p).includes(a.place)?a.place:allowedPlaces(g,p)[0]}
- for(const [q] of plans)if(origins[q.id]!==q.place)for(const [observer] of plans)if(observer.id!==q.id&&[origins[q.id],q.place].includes(observer.place))card(g,observer,{kind:'movement',subject:q.id,from:origins[q.id],to:q.place,place:q.place,action:'move'});
+ if(!g.preparationRules)for(const [q] of plans)if(origins[q.id]!==q.place)for(const [observer] of plans)if(observer.id!==q.id&&[origins[q.id],q.place].includes(observer.place))card(g,observer,{kind:'movement',subject:q.id,from:origins[q.id],to:q.place,place:q.place,action:'move'});
  const found=plans.find(([p])=>g.bodies.some(b=>!b.reported&&b.place===p.place));
  if(found){meeting(g,'discovery',found[0].id);return}
  g.phase='act';
@@ -78,12 +81,13 @@ function act(g){
  const occupancy=Object.fromEntries(people.map(p=>[p.id,peers(g,p)]));
  const hits=people.filter(p=>actions[p.id].kind==='hit'&&validateAction(g,p,actions[p.id]));
  const copies=Object.fromEntries(people.map(p=>[p.id,(g.cards[p.id]||[]).map(c=>({...c}))]));
- for(const q of people)if(old.random(g.seed,'footprint',g.day,g.period,q.id)>(q.gameSkills?.stealthSkill??50)/200)g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:q.place,action:'footprint'});
+ if(!g.preparationRules)for(const q of people)if(old.random(g.seed,'footprint',g.day,g.period,q.id)>(q.gameSkills?.stealthSkill??50)/200)g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:q.place,action:'footprint'});
  for(const p of people){
   const a=validateAction(g,p,actions[p.id])?actions[p.id]:{kind:'stay'},others=occupancy[p.id];
-  card(g,p,{kind:'alibi',subject:p.id,action:a.kind,witnesses:others.filter(q=>awake(g,q)).map(q=>q.id)});
+  if(!g.preparation)card(g,p,{kind:'alibi',subject:p.id,action:a.kind,witnesses:others.filter(q=>awake(g,q)).map(q=>q.id)});
   if(!awake(g,p))continue;
-  for(const q of others)card(g,p,{kind:'witness',subject:q.id,action:'stay'});
+  if(!g.preparation)for(const q of others)card(g,p,{kind:'witness',subject:q.id,action:'stay'});
+  if(g.preparation&&preparation.valid(g,p,a)){preparation.act(g,p,a);continue;}
   if(a.kind==='task'){
    if(p.role==='citizen'){
     if(a.taskId==='common'){if(!g.commonTask.contributors.includes(p.id))g.commonTask.contributors.push(p.id)}
@@ -92,6 +96,7 @@ function act(g){
    g.traces.push({id:'trace-'+ ++g.cardSequence,day:g.day,tick:tick(g),place:p.place,action:'task'});
    card(g,p,{kind:'alibi',subject:p.id,action:'task'});
   }else if(a.kind==='investigate'){
+   if(g.preparation)g.preparation.people[p.id].exposure+=g.bodies.some(b=>b.place===p.place)?3:2;
    const seen=others.filter(q=>old.random(g.seed,'seen',g.day,g.period,p.id,q.id)<Math.max(.25,Math.min(.95,.7+((p.gameSkills?.observationSkill??50)-(q.gameSkills?.stealthSkill??50))/200)));
    card(g,p,{kind:'survey',subject:p.id,action:'investigate',seenIds:[p.id,...seen.map(q=>q.id)]});
    const known=new Set((g.cards[p.id]||[]).map(c=>c.originId).filter(Boolean));
@@ -150,7 +155,7 @@ function view(g,uid){
  result.map=g.map||null;
  return result;
 }
-const primitives={...old,view,move,act,auto,validateAction};
+const primitives={...old,view,move,act,auto,validateAction,preparation};
 const playback=require('./mafia-playback')(primitives);
 const conversation=require('./mafia-conversation')(primitives,playback);
 const notebook=require('./mafia-notebook')(primitives,conversation,playback);

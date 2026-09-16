@@ -21,14 +21,14 @@ export async function localGames(action,input,owner){
   if(data.games.filter(g=>['playing','recruiting'].includes(g.status)).length>=3)throw Error('game-limit');
   if(!Number.isInteger(input.capacity)||input.capacity<4||input.capacity>10)throw Error('game-invalid-input');
   const selected=new Set(input.locations);if(selected.size<engine.targetCount(input.capacity,4)||selected.size>8||[...selected].some(id=>!locations.some(l=>l.id===id)))throw Error('game-locations');
-  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,notebook:true,meetingControls:2,nightCycle:true,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
+  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,notebook:true,meetingControls:2,nightCycle:true,preparationRules:1,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
  }else{
   if(!g)throw Error('game-missing');engine.advance(g,now);
   if(action==='joinGame'){const c=people.find(c=>c.id===input.characterId);if(g.status!=='recruiting'||!c)throw Error('game-invalid-action');if(g.players.some(p=>!p.delegated))throw Error('game-one-character');g.players.push(participant(c,false));}
   else if(action==='startGame'){
    if(g.status!=='recruiting')throw Error('game-already-started');
    for(const c of people.filter(c=>data.consent.includes(c.id)&&!g.players.some(p=>p.id===c.id)).slice(0,g.capacity-g.players.length))g.players.push(participant(c,true));
-   if(g.players.length<4)throw Error('game-not-enough-players');g.bias={};g.deadlineAt=now+45000;engine.start(g);
+   if(g.players.length<4)throw Error('game-not-enough-players');g.bias={};for(const [source,targets] of Object.entries(s.characterViews||{}))for(const [target,view] of Object.entries(targets)){const terms=JSON.stringify(view);g.bias[source+':'+target]=/원한|증오|혐오/.test(terms)?6:/사랑|연인/.test(terms)?-6:/미워|싫어|질투|불편|경계/.test(terms)?3:/신뢰|친구|소중|편안/.test(terms)?-3:0;}g.deadlineAt=now+45000;engine.start(g);
   }else if(action==='submitGame'){const p=g.players.find(p=>p.id===input.characterId&&!p.delegated&&(p.alive||input.action?.kind==='skipMeeting'));if(g.status!=='playing'||g.phaseIndex!==input.phaseIndex)throw Error('game-stale-phase');if(!p)throw Error('character-owner-required');engine.submitPlayback(g,p,input.action,now);engine.advance(g,now);}
   else if(action==='cancelGame')g.status='cancelled';
   else if(action==='leaveGame'){if(g.status==='recruiting')g.players=g.players.filter(p=>p.delegated);else g.players.filter(p=>!p.delegated).forEach(p=>p.alive=false);}

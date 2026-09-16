@@ -1,0 +1,9 @@
+<ko-KR>
+낮에 도구를 챙기고 잠자리와 집 방어를 준비할 수 있어요. 밤의 침입은 낮 준비에 따라 달라지고, 다음 날 현장 흔적을 조사할 수 있어요. 정체를 숨긴 동맹과 애도 행동을 추가했어요. 회의 반응 시간을 조정하고 반박·감사 반응과 투표 내역을 추가했어요. 이동 연출 때 지도 위치를 유지해요. 새 준비 규칙은 새 놀이부터 적용돼요.
+</ko-KR>
+<en-US>
+Gather tools, scout sleeping places and secure homes during the day. Night intrusions depend on preparation and leave clues to investigate. Added private alliances without role reveals and mourning. Meetings now have clearer reaction timing, rebuttals, thanks and visible voting results. The map keeps its position during movement. New preparation rules apply to newly created games.
+</en-US>
+<ja-JP>
+昼に道具を集め、寝る場所と家の守りを準備できます。夜の侵入は昼の準備で変わり、翌朝に現場の痕跡を調べられます。正体を明かさない同盟と追悼行動を追加。会議の反応時間を調整し、反論・感謝と投票結果の表示を追加しました。移動演出中も地図の位置を維持します。新しい準備ルールは新規のゲームに適用されます。
+</ja-JP>

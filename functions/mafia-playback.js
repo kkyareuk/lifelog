@@ -29,7 +29,7 @@ module.exports=base=>{
    if(a.kind==='card'&&!(g.cards[p.id]||[]).some(c=>c.id===a.cardId))throw Error('game-private-card');
    if(['accuse','defend'].includes(a.kind)&&!living(g).some(q=>q.id===a.targetId&&q.id!==p.id))throw Error('game-invalid-target');
   }else throw Error('game-invalid-action');
-  g.submissions[p.id]=Object.fromEntries(['kind','place','taskId','targetId','cardId','optionId'].filter(k=>typeof a[k]==='string').map(k=>[k,a[k]]));
+  g.submissions[p.id]=Object.fromEntries(['kind','place','taskId','targetId','cardId','optionId','toolId'].filter(k=>typeof a[k]==='string').map(k=>[k,a[k]]));
   const humans=living(g).filter(q=>!q.delegated);
   if(g.phase==='challenge'||humans.length&&humans.every(q=>g.submissions[q.id]))g.deadlineAt=Math.min(g.deadlineAt,now+(humans.length===1?2000:0));
  }

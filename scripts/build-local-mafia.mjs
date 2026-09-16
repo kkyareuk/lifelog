@@ -1,5 +1,5 @@
 import {readFile,writeFile} from 'node:fs/promises';
-const names=['mafia-engine','mafia-stage','mafia-playback','mafia-conversation','mafia-notebook','mafia-meeting'];
+const names=['mafia-engine','mafia-stage','mafia-playback','mafia-conversation','mafia-notebook','mafia-meeting','mafia-preparation'];
 const modules=await Promise.all(names.map(async n=>JSON.stringify('./'+n)+':function(module,exports,require){\n'+await readFile(new URL('../functions/'+n+'.js',import.meta.url),'utf8')+'\n}'));
 // Offline games use a deterministic non-cryptographic seed hash. No authentication uses this shim.
 const shim=`const cryptoShim={createHash:()=>({update(s){this.s=s;return this},digest(){let h=2166136261;for(const c of this.s)h=Math.imul(h^c.charCodeAt(0),16777619);h^=h>>>16;h=Math.imul(h,0x85ebca6b);h^=h>>>13;return (h>>>0).toString(16).padStart(8,'0')}})};`;
