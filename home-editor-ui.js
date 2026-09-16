@@ -41,7 +41,7 @@ export function homeFurnitureDrawer(home,locale){
     <button type="button" class="home-drawer-toggle" data-home-drawer-toggle aria-expanded="${!ui.collapsed}" aria-label="${ui.collapsed?copy.expand:copy.collapse}">${ui.collapsed?"▲":"▼"}</button>
     <div class="home-drawer-content" ${ui.collapsed?"inert":""}>
       <div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"></div>
-      <nav class="home-drawer-categories home-drawer-types" aria-label="${copy.typeFilter}">${FURNITURE_TYPES.map(key=>`<button type="button" data-home-furniture-type="${key}" aria-pressed="${ui.type===key}" class="${ui.type===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
+      <nav class="home-drawer-categories" aria-label="${copy.categoryFilter}">${['all',...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]||copy.other}</button>`).join("")}</nav>
       <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
     </div>
   </section><div class="home-drawer-clearance" aria-hidden="true"></div>`;
@@ -100,6 +100,7 @@ export function fitCoupleBedOccupants(root){
     // the pillow and the lower part is actually covered by the foreground quilt.
     const underCover=person.classList.contains('is-under-cover');
     const pillow=bedPillowPoint({side:bed.dataset.bedSide==='true',direction:Number(bed.dataset.bedDirection)||1,artFlip:flip},Number(person.dataset.bedSlot),underCover);
+    if(bed.dataset.bedSingle==='true'){if(bed.dataset.bedSide==='true'){pillow.x=.235*(Number(bed.dataset.bedDirection)||1);pillow.y=0}else{pillow.x=0;pillow.y=-.225}}
     const x=width/2+pillow.x*paintedWidth*1.05,y=height/2+pillow.y*paintedHeight*1.05;
     person.style.zIndex=String(pillow.depth);
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
@@ -107,7 +108,7 @@ export function fitCoupleBedOccupants(root){
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(18,Math.min(underCover?64:56,paintedWidth*(underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(18,Math.min(underCover?64:56,paintedWidth*(bed.dataset.bedSingle==='true'?.56:underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
     person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{
@@ -151,7 +152,7 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
   const home=state.homes[drawer.dataset.homeId];if(!home)return;
   const ui=drawerState(home),items=drawer.querySelector("[data-home-furniture-items]"),content=drawer.querySelector(".home-drawer-content");
   const draw=()=>{
-    const matches=filteredFurniture({...ui,category:"all"},state.uiLanguage);
+    const matches=filteredFurniture({...ui,type:"all"},state.uiLanguage);
     items.innerHTML=matches.map(item=>`<button type="button" data-home-add-furniture="${escape(item)}" ${ui.room?"":"disabled"}>${furniturePickerArt(item)}<b>${escape(furnitureLabel(item,state.uiLanguage))}</b></button>`).join("");
     drawer.querySelector("[data-home-furniture-empty]").hidden=matches.length>0;
     items.querySelectorAll("[data-home-add-furniture]").forEach(button=>{
@@ -201,9 +202,9 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
     event.currentTarget.textContent=ui.collapsed?"▲":"▼";event.currentTarget.setAttribute("aria-expanded",String(!ui.collapsed));event.currentTarget.setAttribute("aria-label",ui.collapsed?copy.expand:copy.collapse);
   };
   drawer.querySelector("[data-home-furniture-search]").oninput=event=>{ui.query=event.target.value;draw()};
-  drawer.querySelectorAll("[data-home-furniture-type]").forEach(button=>button.onclick=()=>{
-    ui.type=button.dataset.homeFurnitureType;
-    drawer.querySelectorAll("[data-home-furniture-type]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();
+  drawer.querySelectorAll("[data-home-furniture-category]").forEach(button=>button.onclick=()=>{
+    ui.category=button.dataset.homeFurnitureCategory;
+    drawer.querySelectorAll("[data-home-furniture-category]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();
   });
   draw();
 }

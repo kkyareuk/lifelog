@@ -34,7 +34,11 @@ module.exports=base=>{
   if(g.phase==='challenge'||humans.length&&humans.every(q=>g.submissions[q.id]))g.deadlineAt=Math.min(g.deadlineAt,now+(humans.length===1?2000:0));
  }
  function advance(g,now){
-  if(g.status!=='playing'||g.deadlineAt>now)return g;
+  if(g.status!=='playing')return g;
+  if(!living(g).some(p=>!p.delegated)&&['move','act','vote','alibi'].includes(g.phase)){
+   if(g.npcFastPhase!==g.phaseIndex){g.npcFastPhase=g.phaseIndex;g.deadlineAt=Math.min(g.deadlineAt,now+2000)}
+  }
+  if(g.deadlineAt>now)return g;
   // Start playback from the actual transition, so a late reconnect cannot skip it.
   if(g.phase==='move'){
    g.playback={kind:'walk',from:Object.fromEntries(g.players.map(p=>[p.id,p.place]))};

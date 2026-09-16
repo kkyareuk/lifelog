@@ -21,7 +21,7 @@ export async function localGames(action,input,owner){
   if(data.games.filter(g=>['playing','recruiting'].includes(g.status)).length>=3)throw Error('game-limit');
   if(!Number.isInteger(input.capacity)||input.capacity<4||input.capacity>10)throw Error('game-invalid-input');
   const selected=new Set(input.locations);if(selected.size<engine.targetCount(input.capacity,4)||selected.size>8||[...selected].some(id=>!locations.some(l=>l.id===id)))throw Error('game-locations');
-  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,notebook:true,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
+  g={id:input.gameId,name:String(input.name).slice(0,60),hostUid:owner,type:'mafia',rulesVersion:4,drama:true,notebook:true,meetingControls:2,capacity:input.capacity,status:'recruiting',createdAt:now,players:[],mode:'live',durationMs:45000,seed:crypto.randomUUID(),map:{townId,name:town.name,bg:world.photo||world.bg||'./world-assets/owner-forest-town.webp'},locations:locations.map(l=>({...l,selected:selected.has(l.id)}))};data.games.unshift(g);data.games=data.games.slice(0,20);
  }else{
   if(!g)throw Error('game-missing');engine.advance(g,now);
   if(action==='joinGame'){const c=people.find(c=>c.id===input.characterId);if(g.status!=='recruiting'||!c)throw Error('game-invalid-action');if(g.players.some(p=>!p.delegated))throw Error('game-one-character');g.players.push(participant(c,false));}

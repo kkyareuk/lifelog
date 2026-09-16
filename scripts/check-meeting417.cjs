@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),e=require('../functions/mafia-stage');
+function make(seed='417'){return e.start({meetingControls:2,rulesVersion:4,drama:true,notebook:true,id:'g',seed,mode:'live',capacity:6,deadlineAt:45000,locations:Array.from({length:3},(_,i)=>({id:'l'+i,name:'L'+i,selected:true,square:i===0})),players:Array.from({length:6},(_,i)=>({id:'p'+i,name:'P'+i,ownerUid:'u'+i,delegated:i>0,sleep:'03:00'}))})}
+const g=make();g.phase='alibi';e.advance(g,0);assert.equal(g.phase,'discussion');
+e.submitPlayback(g,g.players[0],{kind:'accuse',targetId:'p1'},100);assert.equal(g.phase,'claim');assert.equal(g.currentClaim.speaker,'p0');assert.equal(g.claimIssues.p1,1);
+e.submitPlayback(g,g.players[1],{kind:'oppose'},200);assert.equal(g.intervention.speaker,'p1');assert.throws(()=>e.submitPlayback(g,g.players[2],{kind:'agree'},201));
+e.advance(g,g.deadlineAt);assert.equal(g.currentClaim.kind,'oppose');assert.equal(g.claimIssues.p0||0,0,'baseless opposition adds no pressure');
+assert.throws(()=>e.submitPlayback(g,g.players[3],{kind:'oppose',cardId:'not-mine'},g.deadlineAt-100));
+const ask=make('ask');ask.phase='alibi';e.advance(ask,0);e.submitPlayback(ask,ask.players[0],{kind:'request',targetId:'p1',period:2},100);ask.players.forEach(p=>p.delegated=false);e.advance(ask,ask.deadlineAt);assert.equal(ask.phase,'reply');assert.equal(e.view(ask,'u1').replyTo,'p1');assert.throws(()=>e.submitPlayback(ask,ask.players[2],{kind:'alibi',optionId:'unknown'},8300));e.submitPlayback(ask,ask.players[1],{kind:'alibi',optionId:'unknown'},8400);assert.equal(ask.currentClaim.speaker,'p1');
+const fast=make('fast');fast.players[0].alive=false;e.advance(fast,1000);assert(fast.deadlineAt<=3000);e.advance(fast,3000);assert.equal(fast.phase,'walk');
+for(let n=0;n<30;n++){const game=make(String(n));game.players[0].delegated=true;let sawMeeting=false;for(let step=0;step<1200&&game.status==='playing';step++){e.advance(game,game.deadlineAt);sawMeeting ||= game.phase==='discussion';assert(!e.view(game,'u0').privateCards.p1)}assert.equal(game.status,'finished','stalled '+n);assert(sawMeeting);}
+const forge=make('forge');forge.phase='alibi';e.advance(forge,0);const mafia=forge.players.find(p=>p.role==='mafia'),citizen=forge.players.find(p=>p.role==='citizen');forge.cards[mafia.id]=[{id:'secret',kind:'witness',day:1,tick:0,place:'l0',subject:citizen.id,action:'stay'}];mafia.delegated=false;
+assert.equal(e.view(forge,mafia.ownerUid).canForge,true);assert.equal(e.view(forge,citizen.ownerUid).canForge,false);
+e.submitPlayback(forge,mafia,{kind:'accuse',targetId:citizen.id,cardId:'secret',forge:true,forgePlace:'l1'},100);assert(!JSON.stringify(e.view(forge,citizen.ownerUid).currentClaim).includes('forged'));assert.equal(e.view(forge,mafia.ownerUid).canForge,false);
+console.log('PASS417: 30 complete games; own speech, first-come reaction, directed account, private evidence and fabrication, spectator deadlines.');

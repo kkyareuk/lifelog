@@ -31,3 +31,12 @@
 .mp-challenge-focus b{font-size:1.3rem}.mp-challenge-focus blockquote{margin:12px 0;padding:12px;border-left:3px solid #c67455;background:#fff1}.mp-challenge-focus button{padding:9px 12px;margin:4px;border-radius:12px;background:#f5e6cd;color:#39281f;border:1px solid #b69770}
 @keyframes mp-focus-enter{from{transform:scale(.96);opacity:0}to{transform:scale(1);opacity:1}}
 @media(prefers-reduced-motion:reduce){.mp-challenge-focus{animation:none}}
+
+/* Meeting v2 keeps the decision area and public record visible together. */
+.mp-meeting-v2 .mp-tools{grid-template-columns:repeat(3,minmax(0,1fr));top:72%;gap:5px}
+.mp-meeting-v2 .mp-tools button{font-size:11px;min-height:32px}
+.mp-public-record{position:absolute;bottom:1%;left:5%;right:5%;height:13%;overflow:auto;z-index:6;background:#f8e7c8;color:#39291c;border:2px solid #9a724b;border-radius:12px;padding:5px 10px;box-sizing:border-box;font-size:11px}
+.mp-public-record p{margin:3px 0;line-height:1.3}.mp-public-record summary{cursor:pointer}
+.mp-meeting-choices{position:absolute;left:5%;right:5%;top:70%;bottom:1%;z-index:12;overflow:auto;background:#fff0d4;color:#39291c;padding:12px;border:2px solid #9a724b;border-radius:14px;box-sizing:border-box}
+.mp-meeting-choices[hidden]{display:none}.mp-meeting-choices button{display:block;width:100%;min-height:38px;margin:5px 0;padding:6px;border:1px solid #765437;border-bottom-width:3px;border-radius:10px;background:#e7bd62;color:#20140d}.mp-meeting-choices .is-fabricated{background:#e8c2ce}
+.mp-participants .is-speaking{filter:drop-shadow(0 0 5px #fff1b7)}.mp-participants .is-pressured img{outline:2px solid #ba503a;border-radius:50%}

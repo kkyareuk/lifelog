@@ -6,7 +6,7 @@ const {createHash}=require('node:crypto');
 const random=(seed,...keys)=>parseInt(createHash('sha256').update([seed,...keys].join('|')).digest('hex').slice(0,8),16)/4294967296;
 const choose=(g,items,...keys)=>items[Math.floor(random(g.seed,...keys)*items.length)];
 const alive=g=>g.players.filter(p=>p.alive);
-function finish(g){const people=alive(g),mafia=people.filter(p=>p.role==='mafia').length;const winner=mafia===0||g.progress>=100&&(g.rulesVersion!==4||g.phase==='vote')?'citizen':mafia>=people.length-mafia?'mafia':null;if(winner){g.status='finished';g.winner=winner;g.finishedAt=g.deadlineAt;g.history.push({kind:'result',winner,day:g.day});g.submissions={};}return winner}
+function finish(g){const people=alive(g),mafia=people.filter(p=>p.role==='mafia').length;const winner=mafia===0||g.meetingControls!==2&&g.progress>=100&&(g.rulesVersion!==4||g.phase==='vote')?'citizen':mafia>=people.length-mafia?'mafia':null;if(winner){g.status='finished';g.winner=winner;g.finishedAt=g.deadlineAt;g.history.push({kind:'result',winner,day:g.day});g.submissions={};}return winner}
 function start(g){g.status='playing';g.phase='plan';g.phaseIndex=0;g.actionTick=0;g.day=1;g.progress=0;g.history=[];g.board=[];g.submissions={};g.cards={};const shuffled=[...g.players].sort((a,b)=>random(g.seed,'role',a.id)-random(g.seed,'role',b.id));const team=new Set(shuffled.slice(0,g.players.length>=8?2:1).map(p=>p.id));g.players.forEach((p,i)=>{p.role=team.has(p.id)?'mafia':'citizen';p.alive=true;p.place=g.locations[i%g.locations.length].id});return g}
 function neighbours(g,place){const i=g.locations.findIndex(p=>p.id===place);return [place,g.locations[(i+1)%g.locations.length].id,g.locations[(i+g.locations.length-1)%g.locations.length].id]}
 function autoPlan(g,p){let place=p.place;return Array.from({length:6},(_,tick)=>{const next=choose(g,neighbours(g,place),'move',g.day,p.id,tick+(g.mode==='live'?(g.actionTick||0):0));const kind=next!==place?'move':p.role==='mafia'&&random(g.seed,'sabotage',g.day,p.id,tick)>.55?'sabotage':random(g.seed,'investigate',g.day,p.id,tick)>.6?'investigate':'task';place=next;return {place,kind}})}
@@ -222,7 +222,8 @@ const primitives={...old,view,move,act,auto,validateAction};
 const playback=require('./mafia-playback')(primitives);
 const conversation=require('./mafia-conversation')(primitives,playback);
 const notebook=require('./mafia-notebook')(primitives,conversation,playback);
-module.exports={...old,start,advance:(g,n)=>g.notebook?notebook.advance(g,n):g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.notebook?notebook.view(g,u):g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.notebook?notebook.submit(g,p,a,n):g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};
+const meetingV2=require('./mafia-meeting')(primitives,notebook,playback);
+module.exports={...old,start,advance:(g,n)=>g.meetingControls===2?meetingV2.advance(g,n):g.notebook?notebook.advance(g,n):g.rulesVersion===4?conversation.advance(g,n):g.rulesVersion===3?playback.advance(g,n):advance(g,n),view:(g,u)=>g.meetingControls===2?meetingV2.view(g,u):g.notebook?notebook.view(g,u):g.rulesVersion===4?conversation.view(g,u):g.rulesVersion===3?playback.view(g,u):view(g,u),submitPlayback:(g,p,a,n)=>g.meetingControls===2?meetingV2.submit(g,p,a,n):g.notebook?notebook.submit(g,p,a,n):g.rulesVersion===4?conversation.submit(g,p,a,n):playback.submit(g,p,a,n),validateAction,targetCount};
 
 },"./mafia-playback":function(module,exports,require){
 // Rules v3: choice deadlines and playback are independent server phases.
@@ -261,7 +262,11 @@ module.exports=base=>{
   if(g.phase==='challenge'||humans.length&&humans.every(q=>g.submissions[q.id]))g.deadlineAt=Math.min(g.deadlineAt,now+(humans.length===1?2000:0));
  }
  function advance(g,now){
-  if(g.status!=='playing'||g.deadlineAt>now)return g;
+  if(g.status!=='playing')return g;
+  if(!living(g).some(p=>!p.delegated)&&['move','act','vote','alibi'].includes(g.phase)){
+   if(g.npcFastPhase!==g.phaseIndex){g.npcFastPhase=g.phaseIndex;g.deadlineAt=Math.min(g.deadlineAt,now+2000)}
+  }
+  if(g.deadlineAt>now)return g;
   // Start playback from the actual transition, so a late reconnect cannot skip it.
   if(g.phase==='move'){
    g.playback={kind:'walk',from:Object.fromEntries(g.players.map(p=>[p.id,p.place]))};
@@ -493,6 +498,117 @@ module.exports=(base,conversation,playback)=>{
  }
  function view(g,uid){const out=conversation.view(g,uid),p=g.players.find(p=>p.ownerUid===uid&&!p.delegated);out.notebook=true;out.searchAvailable=!!p&&g.phase==='act'&&g.traces.some(t=>t.place===p.place&&!(g.cards?.[p.id]||[]).some(c=>c.originId===t.id));out.sceneReports=g.sceneReports||[];out.currentClaim=['discussion','claim','floor','challenge','rebuttal','finalSpeech'].includes(g.phase)?g.currentClaim||null:null;out.alibiOptions=p&&g.currentClaim?.speaker===p.id?playback.options(g,p):[];out.testimonyCards=p?(g.cards?.[p.id]||[]).filter(c=>['witness','exchange'].includes(c.kind)&&!c.heardFrom&&c.subject!==p.id).map(c=>c.id):[];return out}
  return {advance,view,submit};
+};
+
+},"./mafia-meeting":function(module,exports,require){
+// Meeting controls v2. Only opt-in games use these rules; older clients keep theirs.
+module.exports=(base,previous,playback)=>{
+ const alive=g=>g.players.filter(p=>p.alive),allNPC=g=>!alive(g).some(p=>!p.delegated);
+ const meeting=new Set(['discussion','claim','reply','rebuttal','finalSpeech']);
+ const clean=({forged,sourceChain,...c})=>c;
+ const log=(g,row)=>{g.history.push({...row,day:g.day});g.history=g.history.slice(-240);g.meetingRevision=(g.meetingRevision||0)+1};
+ const pressure=(g,id,n)=>{g.claimIssues||={};g.claimIssues[id]=Math.max(0,Math.min(12,(g.claimIssues[id]||0)+n))};
+ const phase=(g,name,now,seconds)=>{g.phase=name;g.phaseIndex++;g.phaseStartedAt=now;g.submissions={};g.deadlineAt=Math.min(now+(allNPC(g)?2:seconds)*1000,g.meetingEndsAt||Infinity)};
+ function vote(g,now){delete g.meetingEndsAt;g.currentClaim=null;g.intervention=null;phase(g,'vote',now,20)}
+ function next(g,now){g.intervention=null;g.currentClaim=null;if(g.speechLeft<=0||now>=g.meetingEndsAt-12000){const p=alive(g).sort((a,b)=>(g.claimIssues?.[b.id]||0)-(g.claimIssues?.[a.id]||0))[0];g.currentClaim={kind:'final',speaker:p.id};phase(g,'finalSpeech',now,12)}else phase(g,'discussion',now,15)}
+ function open(g,now){g.meetingEndsAt=now+300000;g.speechLeft=6+Math.floor(alive(g).length/2);g.forgeryUsed={};g.silent={};g.intervention=null;g.currentClaim=null;phase(g,'discussion',now,15)}
+ function evidence(g,p,a){
+  if(!a.cardId)return null;
+  const found=(g.cards[p.id]||[]).find(c=>c.id===a.cardId);if(!found)throw Error('game-private-card');
+  if(a.forge){if(p.role!=='mafia'||g.forgeryUsed?.[p.id])throw Error('game-invalid-action');if(!g.locations.some(l=>l.id===a.forgePlace&&l.id!==found.place))throw Error('game-invalid-action');g.forgeryUsed[p.id]=true;return {...found,id:found.id+':statement:'+g.phaseIndex,place:a.forgePlace,forged:true,sourceChain:[p.id]}}
+  return found;
+ }
+ function speak(g,p,a,now){
+  const targets=alive(g).filter(q=>q.id!==p.id);
+  if(['accuse','defend','request'].includes(a.kind)&&!targets.some(q=>q.id===a.targetId))throw Error('game-invalid-target');
+  if(a.kind==='request'&&![0,1,2,3].includes(a.period))throw Error('game-invalid-action');
+  const c=evidence(g,p,a);if(c)base.publish(g,p,c);
+  const claim={kind:a.kind,speaker:p.id,target:a.targetId||'',period:a.period??null,...(c?{card:clean(c)}:{})};
+  if(a.kind==='accuse')pressure(g,a.targetId,c?2:1);
+  if(a.kind==='defend'){pressure(g,a.targetId,c?-1:0);g.defenseLinks||=[];g.defenseLinks.push({speaker:p.id,target:a.targetId,day:g.day})}
+  if(a.kind==='changeTopic')pressure(g,p.id,1);
+  if(a.kind==='pass'){g.silent[p.id]=(g.silent[p.id]||0)+1;if(g.silent[p.id]>1)pressure(g,p.id,1)}
+  g.speechLeft--;g.intervention=null;g.currentClaim=claim;log(g,claim);phase(g,'claim',now,8);
+ }
+ function intervene(g,p,a,now){
+  if(!['claim','rebuttal'].includes(g.phase)||!g.currentClaim||p.id===g.currentClaim.speaker||g.intervention)throw Error('game-invalid-action');
+  if(a.kind==='pass'){g.submissions[p.id]={kind:'pass'};return}
+  if(!['oppose','agree'].includes(a.kind))throw Error('game-invalid-action');
+  const c=evidence(g,p,a);g.intervention={kind:a.kind,speaker:p.id,target:g.currentClaim.speaker,card:c||null};
+  // Reserving does not skip the current sentence or reset its reading time.
+  log(g,{kind:'reservation',speaker:p.id,target:g.currentClaim.speaker});
+ }
+ function resolveIntervention(g,now){
+  const row=g.intervention,p=g.players.find(p=>p.id===row.speaker);g.intervention=null;
+  if(row.card)base.publish(g,p,row.card);
+  if(row.kind==='oppose'&&row.card){const c=g.currentClaim.card,conflict=c&&c.subject===row.card.subject&&c.day===row.card.day&&c.tick===row.card.tick&&c.place!==row.card.place;pressure(g,conflict?row.target:row.speaker,conflict?2:1)}
+  const publicRow={kind:row.kind,speaker:row.speaker,target:row.target,...(row.card?{card:clean(row.card)}:{})};
+  log(g,publicRow);g.currentClaim=publicRow;phase(g,'rebuttal',now,8);
+ }
+ function submit(g,p,a,now){
+  if(!p.alive)throw Error('game-invalid-action');
+  if(!meeting.has(g.phase))return previous.submit(g,p,a,now);
+  if(now>=g.deadlineAt||now>=g.meetingEndsAt)throw Error('game-stale-phase');
+  if(g.phase==='discussion'){if(!['accuse','defend','request','changeTopic','pass'].includes(a.kind))throw Error('game-invalid-action');return speak(g,p,a,now)}
+  if(g.phase==='reply'){
+   if(p.id!==g.currentClaim.target||a.kind!=='alibi')throw Error('game-invalid-action');
+   const option=playback.options(g,p).find(c=>c.id===a.optionId);if(!option)throw Error('game-private-card');
+   g.currentClaim={...option,speaker:p.id};log(g,{kind:'claim',...g.currentClaim});phase(g,'claim',now,8);return;
+  }
+  if(g.phase==='finalSpeech'){
+   if(p.id!==g.currentClaim.speaker||!['accuse','defend','pass'].includes(a.kind))throw Error('game-invalid-action');
+   speak(g,p,a,now);g.finalDone=true;return;
+  }
+  return intervene(g,p,a,now);
+ }
+ function npcSpeech(g,p,now){
+  const others=alive(g).filter(q=>q.id!==p.id),privateCards=g.cards[p.id]||[];
+  // Only public pressure, private observations and the character's own attitudes.
+  const target=others.sort((a,b)=>(g.claimIssues?.[b.id]||0)+(g.bias?.[p.id+':'+b.id]||0)-(g.claimIssues?.[a.id]||0)-(g.bias?.[p.id+':'+a.id]||0))[0];
+  const friend=others.find(q=>(g.bias?.[p.id+':'+q.id]||0)<-2&&(g.claimIssues?.[q.id]||0)>0);
+  const r=base.random(g.seed,'meeting',g.phaseIndex,p.id),kind=friend?'defend':r<.2?'request':r<.3?'changeTopic':'accuse',subject=friend||target;
+  const c=privateCards.filter(c=>c.subject===subject?.id).at(-1);
+  submit(g,p,{kind,targetId:subject?.id,period:Math.min(3,g.period||0),...(c?{cardId:c.id}:{})},now);
+ }
+ function advance(g,now){
+  if(g.status!=='playing')return g;
+  if(!meeting.has(g.phase)){
+   previous.advance(g,now);
+   if(g.phase==='discussion'||g.phase==='alibi')open(g,now);
+   return g;
+  }
+  if(!g.meetingEndsAt)open(g,now);
+  if(now>=g.meetingEndsAt){vote(g,now);return g}
+  const elapsed=now-(g.phaseStartedAt||0);
+  if(g.phase==='discussion'&&elapsed>=(allNPC(g)?1900:6000)){
+   const candidates=alive(g).filter(p=>p.delegated);const p=candidates.sort((a,b)=>base.random(g.seed,g.phaseIndex,a.id)-base.random(g.seed,g.phaseIndex,b.id))[0];
+   if(p){npcSpeech(g,p,Math.min(now,g.deadlineAt-1));return g}
+  }
+  if(g.phase==='reply'&&elapsed>=(allNPC(g)?1900:5000)){
+   const p=alive(g).find(p=>p.id===g.currentClaim.target);
+   if(p?.delegated){const opts=playback.options(g,p);submit(g,p,{kind:'alibi',optionId:opts.find(c=>Math.floor((c.tick||0)/2)===g.currentClaim.period)?.id||'unknown'},Math.min(now,g.deadlineAt-1));return g}
+  }
+  if(['claim','rebuttal'].includes(g.phase)&&!g.intervention&&elapsed>=(allNPC(g)?1000:5000)){
+   const npc=alive(g).find(p=>p.delegated&&p.id!==g.currentClaim.speaker&&base.random(g.seed,'response',g.phaseIndex,p.id)>.7);
+   if(npc){const c=(g.cards[npc.id]||[]).find(c=>c.subject===g.currentClaim.speaker);intervene(g,npc,{kind:(g.bias?.[npc.id+':'+g.currentClaim.speaker]||0)<0?'agree':'oppose',...(c?{cardId:c.id}:{})},now)}
+  }
+  if(now<g.deadlineAt)return g;
+  if(g.phase==='finalSpeech'||g.finalDone){g.finalDone=false;vote(g,now)}
+  else if(g.intervention)resolveIntervention(g,now);
+  else if(g.phase==='claim'&&g.currentClaim.kind==='request')phase(g,'reply',now,12);
+  else next(g,now);
+  return g;
+ }
+ function view(g,uid){
+  const out=previous.view(g,uid),p=g.players.find(p=>p.ownerUid===uid&&!p.delegated);
+  out.meetingControls=2;out.currentClaim=meeting.has(g.phase)?g.currentClaim:null;out.challengeOwner=g.intervention?.speaker||'';out.questions=[];out.challengeCards=[];out.speechLeft=g.speechLeft||0;
+  out.alibiOptions=g.phase==='reply'&&g.currentClaim?.target===p?.id?playback.options(g,p):[];
+  out.replyTo=g.phase==='reply'?g.currentClaim?.target||'':'';
+  out.canForge=!!p?.alive&&p.role==='mafia'&&!g.forgeryUsed?.[p.id];
+  out.allies=p?.role==='mafia'?g.players.filter(q=>q.role==='mafia'&&q.id!==p.id).map(q=>({id:q.id,pressure:g.claimIssues?.[q.id]||0})):[];
+  return out;
+ }
+ return {submit,advance,view};
 };
 
 }},cache={};function require(id){if(id==='node:crypto')return cryptoShim;if(!cache[id]){const m=cache[id]={exports:{}};modules[id](m,m.exports,require)}return cache[id].exports}

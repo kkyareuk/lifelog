@@ -13,7 +13,7 @@ export function advanceNeeds(c,scene,now=Date.now()){
  // Attribute elapsed time only to the previously observed action. Never give a
  // newly started action credit for an offline interval.
  const minutes=old?Math.max(0,Math.min(10,(now-old.updatedAt)/60000)):0;
- if(!c.needsFixed){for(const key of old?.recovering||[])if(key in values)values[key]=clamp(values[key]+minutes*({sleep:.8,hunger:4,toilet:12,hygiene:4,social:2}[key]));}
+ if(!c.needsFixed){for(const key of old?.recovering||[])if(key in values)values[key]=clamp(values[key]+minutes*({sleep:4,hunger:8,toilet:20,hygiene:8,social:4}[key]));}
  const title=String(scene?.baseTitle||scene?.title||''),recovering=[];
  if(scene?.sleeping||/자는 중|잠드는|Sleeping|nap|眠って|昼寝/i.test(title))recovering.push('sleep');
  if(/식사|먹는 중|eating|meal|食事|食べ/i.test(title))recovering.push('hunger');
