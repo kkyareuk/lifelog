@@ -22,7 +22,10 @@
 New/changed UI text: English 100%, Japanese 100%. Whole application coverage not measured. Real multi-device latency and gameplay balance still require internal playtesting; automated completion is not a balance claim.
 
 ## Delivery
-Internal Android and Apple TestFlight requested. Public app main is not merged with these new features.
+Source b449a54 pushed to dev. Public app main is not merged with these new features.
+Play release 310: 418 (1.0.366) available to internal testers, verified September 16 19:18 KST.
+Signed Android AAB SHA256: 4F74A49651CBC8DEB5177D8A5A58257C55C2DB7A490DE1F7A145375C974B2659. All 407 packaged assets match the prepared files.
+sharedTownApi deployment succeeded. Apple internal TestFlight run 35083679716 succeeded: uploadAccepted=true, internalOnly=true, submittedForReview=false. App Store Connect build a9287faa-90c0-49ad-a5bd-64e9bc69649c is Ready to Test, one existing internal tester invited. Android and Apple internal delivery verified September 16. No public promotion or website deployment.
 
 ## Store notes
 <ko-KR>

@@ -16,7 +16,7 @@ try{
  await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');const a=g.state.characters[g.createCharacter()],b=g.state.characters[g.createCharacter()];a.name='First';b.name='Second';a.ageGroup=b.ageGroup='성인';b.homeId=a.homeId;b.townId=a.townId;g.state.activeId=a.id;g.state.activeTownId=a.townId;g.state.activeHomeId=a.homeId;window.qaPeople=[a.id,b.id];g.updateCharacterView(b.id,a.id,'touchIntensity','성인 간 친밀한 접촉까지');const h=g.state.homes[a.homeId];h.rooms.living.furniturePlacements=[{id:'qa-sofa',item:'소파',x:50,y:60}];window.DrawerVillageNavigation.go('home');window.qaRender();document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
 
  await page.waitForTimeout(500);await page.evaluate(()=>document.querySelectorAll("dialog[open]:not(.direct-command-dialog)").forEach(d=>d.close()));
- await page.locator('[data-furniture-placement="qa-sofa"]').evaluate(n=>{const r=n.getBoundingClientRect(),opts={bubbles:true,clientX:r.x+8,clientY:r.y+8};n.dispatchEvent(new PointerEvent('pointerdown',opts));n.dispatchEvent(new MouseEvent('click',opts))}); 
+ await page.locator('[data-furniture-placement="qa-sofa"]').evaluate(n=>{const r=n.getBoundingClientRect(),opts={bubbles:true,clientX:r.x+8,clientY:r.y+8};n.dispatchEvent(new PointerEvent('pointerdown',opts));n.dispatchEvent(new MouseEvent('click',opts))});
  await page.locator('[data-context-menu]').getByRole('button',{name:'다른 행동',exact:true}).click();
 
  const menu=page.locator('[data-context-menu]');await menu.waitFor();assert.equal(await page.locator('.direct-command-dialog').count(),0);
