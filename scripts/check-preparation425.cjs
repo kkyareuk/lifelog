@@ -13,4 +13,3 @@ a.phase='discussion';a.turnSpeaker=a.players[2].id;a.phaseStartedAt=100;a.deadli
 const vote=make('vote');vote.phase='vote';vote.submissions={p0:{targetId:'p2'},p1:{targetId:'p2'}};engine.advance(vote,vote.deadlineAt);assert.equal(vote.phase,'voteResult');assert.equal(vote.voteResults.length,6);assert.deepEqual(vote.voteResults.find(v=>v.voter==='p0'),{voter:'p0',target:'p2'});assert.equal(engine.view(vote,'u0').voteResults.length,6);
 for(let i=0;i<30;i++){const game=make('complete425-'+i);game.players.forEach(p=>p.delegated=true);for(let n=0;n<2500&&game.status==='playing';n++)engine.advance(game,game.deadlineAt);assert.equal(game.status,'finished','stalled '+i);assert(!Object.values(game.cards).flat().some(c=>c.kind==='movement'));}
 console.log('PASS425: preparation-gated attacks, lock/tool consumption, actual home crime scene, private alliances/no role leak, bed capacity, gratitude, 5s reactions, immediate NPC opinion, vote identities, 30 full games.');
-
