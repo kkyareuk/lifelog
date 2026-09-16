@@ -70,7 +70,7 @@ export function homeInformationMarkup(home,photo,state,t){
     <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header>
     <section class="home-information-hero">
       <button type="button" class="home-design-photo" data-home-interior-image="${id}" aria-label="${interiorTitle}">${home.image?`<img src="${escape(home.image)}" alt="">`:`<span>＋</span>`}<b>${interiorTitle}</b></button>
-      <button type="button" class="home-exterior-choice" data-home-building-shape="${id}" aria-label="${exteriorTitle}"><img src="${escape(photo)}" alt=""><span>${exteriorTitle}</span></button>
+      <button type="button" class="home-exterior-choice" data-home-building-shape="${id}" aria-label="${exteriorTitle}"><img src="${escape(photo)}" alt=""></button>
     </section><div class="home-design-fields">
       <button type="button" class="wide" data-share-kind="home" data-settings-transfer="world-transfer" data-share-home="${id}">${({ko:"집 공유 코드",en:"Home sharing code",ja:"家の共有コード"}[state.uiLanguage]||"집 공유 코드")}</button>
       <label class="wide">${t("집 이름","집 이름")}<input data-home-name data-home-id="${id}" value="${escape(home.name)}" maxlength="80"></label>

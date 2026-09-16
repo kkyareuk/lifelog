@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-16-internal419-home-beds-recruiting",
-  "version": "1.0.367",
-  "build": 419,
+  "request": "2026-09-16-internal420-exterior-icon-only",
+  "version": "1.0.368",
+  "build": 420,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

@@ -16,7 +16,7 @@
 - No physical-device test. New/changed localized labels EN/JA complete; overall legacy translation coverage not measured.
 
 ## Delivery
-Pending signed Android and Apple internal delivery. No public or website deployment.
+Android signed AAB verified and released to internal testers (Play release311, September 16 19:46 KST). sharedTownApi deployed successfully. Apple internal TestFlight run35086501411 is still building/uploading. No public or website deployment.
 
 ## Store notes
 <ko-KR>
