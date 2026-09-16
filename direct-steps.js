@@ -32,6 +32,8 @@ export function installDirectSteps(command,copy,character,world){
 
  for(const [kind,item] of Object.entries(SOCIAL_ACTIVITIES)){const section=item.section==='conversation'?sections[0]:item.section==='together'?sections[5]:null;if(section)section[3].push(kind)}
  for(const [ko,en,ja,kinds] of sections){const p=createPage(text('교류 · ','Social · ','交流・')+text(ko,en,ja));button(exchange,text(ko,en,ja),()=>show(p));if(!kinds.length){button(p,text('우편함에서 선물 보내기','Send a gift from the mailbox','郵便箱から贈り物を送る'),()=>{dialog.close();location.hash='tab=mailbox'});continue}const choose=button(p,text('함께할 상대 고르기','Choose a companion','相手を選ぶ'),()=>show(targetPage));choose.classList.add('command-companion');for(const kind of new Set(kinds)){const b=socialButtons.find(b=>b.dataset.directSocialAction===kind);if(b){b.hidden=false;b.className='command-menu-button';p.append(b)}}}
+ const remainingSocial=socialButtons.filter(source=>!command.querySelector('[data-direct-social-action="'+CSS.escape(source.dataset.directSocialAction)+'"]'));
+ if(remainingSocial.length){const more=createPage(text('그 밖의 교류','More interactions','その他の交流'));button(exchange,text('그 밖의 교류','More interactions','その他の交流'),()=>show(more));for(const b of remainingSocial){b.hidden=false;b.className='command-menu-button';more.append(b)}}
  if(payment){payment.hidden=false;payment.classList.add('command-payment');const together=pages.find(p=>titles.get(p)===text('교류 · ','Social · ','交流・')+text('동행','Together','一緒に'));together?.append(payment)}
  const details=createPage(text('행동 정하기','Activity details','行動の設定'));
  const companion=button(details,text('함께할 상대 고르기','Choose a companion','相手を選ぶ'),()=>show(targetPage));companion.classList.add('command-companion');
