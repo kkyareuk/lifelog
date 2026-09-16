@@ -21,6 +21,8 @@ try{
  const hero=page.locator('.home-information-hero');assert.equal(await hero.locator('[data-home-interior-image]').count(),1);assert.equal(await hero.locator('[data-home-building-shape]').count(),1);
  const exterior=hero.locator('[data-home-building-shape]');assert.equal(await exterior.locator('span').count(),0);assert.equal(await exterior.evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');assert.equal(await exterior.evaluate(e=>getComputedStyle(e).boxShadow),'none');
  await page.screenshot({path:out+'/home-info.png'});
+ for(const mode of ['dark','light']){await page.evaluate(mode=>document.documentElement.dataset.colorMode=mode,mode);assert.equal(await exterior.evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)');}
+
  await page.evaluate(()=>{document.querySelector('[data-home-feature="house-info"]').classList.remove('open');window.qaRoomEditor(home.id,'own')});
  const grids=page.locator('.room-surface-choices');assert.equal(await grids.count(),2);assert.equal(await grids.nth(0).locator('button').count(),5);assert.equal(await grids.nth(1).locator('button').count(),7);
  await grids.nth(0).locator('button').last().click();await grids.nth(1).locator('button').last().click();
