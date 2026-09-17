@@ -32,7 +32,7 @@ import {hospitalPurposes} from "./creative-options.js?v=20260909dev305";
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev305";
 import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev305";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev305";
+import {normalizeRoomLayout,homeGrid} from "./room-layout.js?v=20260909dev305";
 import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev305";
 import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev305";
 import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev305";
@@ -717,7 +717,7 @@ function normalizeHomes(x){
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
       room.floor=Number.isFinite(+room.floor)?Math.max(1,Math.min(h.floorCount,Math.round(+room.floor))):1;
-      const normalizedLayout=normalizeRoomLayout(room.layout);
+      const normalizedLayout=normalizeRoomLayout(room.layout,homeGrid(h));
       if(normalizedLayout)room.layout=normalizedLayout;else delete room.layout;
       return[String(key),room];
     }));

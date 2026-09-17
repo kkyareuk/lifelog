@@ -1,3 +1,4 @@
+import {bindHomeCanvas} from './home-canvas.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
@@ -14,7 +15,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=uid+':'+s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  function commit(){
-  const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor});
+  const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor,canvasColumns:home.canvasColumns,canvasRows:home.canvasRows});
   selection.homeDrafts??={};selection.homeDrafts[home.id]=layout;
   let queue=queues.get(key);
   if(!queue){queue=latestSaveQueue(async layout=>{
@@ -26,6 +27,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
   });queues.set(key,queue)}
   const next=queue.push(layout);next.catch(e=>toast(e.message));return next;
  }
+ bindHomeCanvas(root,{home,canEdit,scope:s.activeGroupId,apply:patch=>{Object.assign(home,patch);commit()},render});
  const change=fn=>{if(!canEdit)return;const result=runIsolatedWorld(world,fn);commit();return result};
  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=!canEdit);
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});

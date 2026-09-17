@@ -15,6 +15,7 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(android.os.Bundle savedInstanceState) {
         registerPlugin(PlayBillingPlugin.class);
         registerPlugin(ProfileExportPlugin.class);
+        registerPlugin(AdViewportPlugin.class);
         registerPlugin(PlayGamesAchievementsPlugin.class);
         super.onCreate(savedInstanceState);
         if (BuildConfig.WEBVIEW_INSPECTION) {

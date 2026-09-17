@@ -27,8 +27,8 @@ export async function watchDiscoveryAd(){
  const account=uid();if(account==='guest')throw Error('discovery-login');
  const ticket=await request('prepareAd',{platform:adPlatform()});
  const earned=await runRewardAd(ticket,account);if(!earned)return 'cancelled';
- // Google sample ads never grant a production credit. QA injects signed test callbacks instead.
- if(adsTesting())return 'test';
+ // Demo ads have no SSV; the server permits one-use QA rewards only for authorized test accounts.
+ if(adsTesting()){try{await request('testReward',{ticketId:ticket.ticketId});await request('read');return discoveryRewardCredit()?'ready':'test'}catch(e){if(e.message==='ads-test-account-required')return 'test';throw e}}
  for(let i=0;i<10;i++){await request('read');if(discoveryRewardCredit())return 'ready';await new Promise(r=>setTimeout(r,1500));}
  return 'pending';
 }

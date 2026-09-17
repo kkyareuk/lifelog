@@ -1,3 +1,4 @@
+import {bindHomeCanvas} from './home-canvas.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindFurnitureEditor} from './furniture-editor.js';
@@ -93,7 +94,7 @@ import {SPEECH_STYLE_OPTIONS,bindSpeechStylePickers,characterQuestionPrompt,char
 import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260909dev305";
 import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260909dev305";
 import {mergeImportedBackupState} from "./sync-merge.js?v=20260909dev305";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260909dev305";
+import {normalizeRoomLayout,snapRoomLayout,homeGrid} from "./room-layout.js?v=20260909dev305";
 import {installDirectSteps} from './direct-steps.js?v=20260909dev305';
 import {furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition} from "./furniture-layout.js?v=20260909dev305";
 import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev305";
@@ -1221,7 +1222,7 @@ function captureRoomCanvasLayouts(canvas,world=state,update=updateRoom,saveAll=(
   canvas.querySelectorAll(".room[data-room-key]").forEach(room=>{
     const saved=world.homes[canvas.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout;
     const fromStyle={x:parseFloat(room.style.getPropertyValue("--mobile-room-x")),y:parseFloat(room.style.getPropertyValue("--mobile-room-y")),w:parseFloat(room.style.getPropertyValue("--mobile-room-w")),h:parseFloat(room.style.getPropertyValue("--mobile-room-h"))};
-    const layout=snapRoomLayout(normalizeRoomLayout(saved)||fromStyle);
+    const layout=snapRoomLayout(normalizeRoomLayout(saved,homeGrid(world.homes[canvas.dataset.homeId]))||fromStyle,homeGrid(world.homes[canvas.dataset.homeId]));
     update(canvas.dataset.homeId,room.dataset.roomKey,{layout},false);setRoomLayoutStyle(room,layout);
   });
   saveAll();return true;
@@ -1238,7 +1239,7 @@ function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveA
       y:parseFloat(room.style.getPropertyValue("--mobile-room-y"))||0,
       w:parseFloat(room.style.getPropertyValue("--mobile-room-w"))||startLayout.w,
       h:parseFloat(room.style.getPropertyValue("--mobile-room-h"))||startLayout.h
-    })},true);
+    },homeGrid(world.homes[handle.dataset.homeId]))},true);
     event?.preventDefault?.();event?.stopPropagation?.();
   };
   handle.onclick=event=>{event.preventDefault();event.stopPropagation()};
@@ -1247,7 +1248,7 @@ function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveA
     room=handle.closest(".room");canvas=handle.closest("[data-room-canvas]");if(!room||!canvas)return;
     if(!world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout)captureRoomCanvasLayouts(canvas,world,update,saveAll);
     const saved=world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout;if(!saved)return;
-    startLayout=snapRoomLayout(saved);setRoomLayoutStyle(room,startLayout);startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;
+    startLayout=snapRoomLayout(saved,homeGrid(world.homes[handle.dataset.homeId]));setRoomLayoutStyle(room,startLayout);startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;
     handle.setPointerCapture(pointerId);room.classList.add("room-dragging");
   };
   handle.onpointermove=event=>{
@@ -1255,9 +1256,9 @@ function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveA
     event.preventDefault();event.stopPropagation();
     const box=canvas.getBoundingClientRect(),dx=(event.clientX-startX)/box.width*100,dy=(event.clientY-startY)/box.height*100;
     if(mode==="move"){
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,x:startLayout.x+dx,y:startLayout.y+dy}));
+      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,x:startLayout.x+dx,y:startLayout.y+dy},homeGrid(world.homes[handle.dataset.homeId])));
     }else{
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy}));
+      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy},homeGrid(world.homes[handle.dataset.homeId])));
     }
   };
   handle.onpointerup=finish;handle.onpointercancel=finish;handle.onlostpointercapture=()=>{if(pointerId!==null)finish()};
@@ -2654,6 +2655,7 @@ function bind(){
   bindHorizontalWheelNavigation();
   bindNativeObserveCharacterSwipe();
   bindCharacterBookSwipe();
+  if(!activeShared()?.activeGroupId)bindHomeCanvas(document.querySelector('.home-page'),{home:state.homes[state.activeHomeId],apply:patch=>updateHome(state.activeHomeId,patch),render:()=>{render();showHomeFeature('house-info')}});
   bindFurniturePlacementEditors();
   bindHomeEditorUI(document,{state,addFurniture:addFurniturePlacement,updateFurniture:updateFurniturePlacement,openRoom:openRoomEditor,selectAdded:(homeId,roomKey,placementId)=>{setActiveHomeFloor(homeId,state.homes[homeId].rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};render()}});
   // Cloud sync intentionally does not copy device-only photos. If an old

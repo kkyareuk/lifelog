@@ -58,8 +58,8 @@ export function furnitureGridForRoom(roomRect,canvasRect){
   const canvasWidth=Math.max(1,Number(canvasRect?.width)||Number(roomRect?.width)||1);
   const canvasHeight=Math.max(1,Number(canvasRect?.height)||Number(roomRect?.height)||1);
   return {
-    columns:Math.max(1,Math.round((Math.max(1,Number(roomRect?.width)||1)/canvasWidth)*HOUSE_FURNITURE_GRID.columns)),
-    rows:Math.max(1,Math.round((Math.max(1,Number(roomRect?.height)||1)/canvasHeight)*HOUSE_FURNITURE_GRID.rows))
+    columns:Math.max(1,Math.round((Math.max(1,Number(roomRect?.width)||1)/canvasWidth)*(canvasRect?.columns||HOUSE_FURNITURE_GRID.columns))),
+    rows:Math.max(1,Math.round((Math.max(1,Number(roomRect?.height)||1)/canvasHeight)*(canvasRect?.rows||HOUSE_FURNITURE_GRID.rows)))
   };
 }
 

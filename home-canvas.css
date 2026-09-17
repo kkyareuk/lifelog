@@ -1,0 +1,4 @@
+.home-canvas-viewport{display:block;overscroll-behavior:contain;touch-action:pan-x pan-y;scrollbar-width:thin}
+.home-canvas-viewport>.rooms{position:relative;display:block;box-sizing:border-box;width:var(--home-canvas-width);height:var(--home-canvas-height);min-width:var(--home-canvas-width);min-height:var(--home-canvas-height);aspect-ratio:auto;margin:0;padding:0;overflow:hidden;background:#5c4234}
+.home-canvas-viewport .room{touch-action:pan-x pan-y}
+.home.is-editing .home-canvas-viewport [data-furniture-placement],.home-canvas-viewport :is([data-room-drag],[data-room-resize]){touch-action:none}
