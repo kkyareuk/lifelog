@@ -1,0 +1,18 @@
+<ko-KR>
+카운터는 양 끝을 유지하며 가운데 길이를 늘릴 수 있어요. 잘못 분리된 상판 그림은 회전 방향으로 바로잡았어요.
+가구를 카운터의 작은 상판 격자나 협탁 중앙으로 끌면 붙고, 받침 가구 앞에 표시돼요. 협탁에는 하나만 올릴 수 있어요.
+이름 숨김 옆 버튼으로 편집 도구를 위아래로 옮겨요. 멀티 집 편집 저장 실패 후 다시 완료할 수 있도록 수정했어요.
+소파 좌석 높이와 중복 대화 문구를 정리하고, 같은 원본 사진의 업로드 재사용과 메모리 사용을 개선했어요.
+</ko-KR>
+<en-US>
+Stretch counters while keeping their end edges. Corrected counter rotation artwork.
+Drag furniture onto the counter grid or the single nightstand slot. Attached items stay in front of their support.
+Move editing tools up or down beside Hide names. Shared-home saves can be retried after a failure.
+Aligned sofa seating, merged duplicate conversation labels, improved reuse of original photo uploads and reduced image-cache memory use.
+</en-US>
+<ja-JP>
+カウンターは両端を保って中央の長さを伸ばせます。回転用の絵も修正しました。
+家具をカウンター天板の細かいマスやナイトテーブル中央へドラッグすると吸着し、台より手前に表示されます。ナイトテーブルは1個までです。
+名前非表示の隣のボタンで編集ツールを上下に移動できます。共有の家の保存失敗後に再試行できるよう修正しました。
+ソファの座る高さと重複した会話表示を整え、同じ元画像のアップロード再利用とメモリ使用を改善しました。
+</ja-JP>

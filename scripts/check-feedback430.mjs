@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {normalizeFurniturePlacements} from '../furniture-layout.js';
+import {snapToSurface,surfaceArea} from '../furniture-surfaces.js';
+import {reusableImage,retainImage,imageSourceHash} from '../cloud-image-identity.js';
+import {latestSaveQueue} from '../latest-save-queue.js';
+const old=normalizeFurniturePlacements([{id:'c',item:'카운터 상판',x:50,y:50,props:[{item:'화분'}]}]);
+assert.equal(old[0].item,'카운터');assert.equal(old[0].rotation,90);assert.equal(old[1].surfaceId,'c');assert.deepEqual(normalizeFurniturePlacements(old),old);
+const night={id:'n',item:'협탁'},counter={id:'c',item:'카운터',counterSpan:3},box={left:0,top:0,width:300,height:200};
+const a=surfaceArea(night,box),point={x:a.left+a.width/2,y:a.top+a.height/2};
+assert.equal(snapToSurface(point,{id:'plant',item:'화분'},[{placement:night,box}],[]).surfaceId,'n');
+assert.equal(snapToSurface(point,{id:'plant',item:'화분'},[{placement:night,box}],[{id:'occupied',surfaceId:'n'}]),null);
+assert.equal(snapToSurface(point,{item:'소파'},[{placement:night,box}],[]),null);
+assert.equal(snapToSurface({x:999,y:999},{item:'화분'},[{placement:counter,box}],[]),null);
+const h=await imageSourceHash(new Blob(['same original'])),known={hash:'browser-A-encoding',sourceHash:h,url:'existing',size:100};
+assert.equal(reusableImage([known],h,'browser-B-encoding'),known);const manifest={items:[]};for(let i=0;i<122;i++)retainImage(manifest,known);assert.equal(manifest.items.length,1);
+let attempts=0,stored;const q=latestSaveQueue(async value=>{attempts++;if(attempts===1)throw Error('network');stored=value});await assert.rejects(q.push('draft'));await q.push('retry');assert.equal(stored,'retry');await q.done;
+console.log('PASS430: legacy rotation/prop migration idempotence, one-slot nightstand, fine-grid surface restrictions, 122 source reuses, failed-save retry');

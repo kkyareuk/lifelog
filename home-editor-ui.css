@@ -1,3 +1,4 @@
+@import url('./home-editor-position.css');
 .room-preset-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;grid-column:1/-1}.room-preset-tools :is(input,select){min-width:0;width:100%}
 .home-edit-visibility{position:fixed;z-index:690;left:8px;right:8px;bottom:calc(var(--home-drawer-height) + 52px);display:flex;gap:4px;overflow-x:auto;pointer-events:auto}
 .home:has(.home-furniture-drawer.is-collapsed) .home-edit-visibility{bottom:64px}

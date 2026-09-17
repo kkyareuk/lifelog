@@ -1938,8 +1938,8 @@ export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,
   if(!from||!to)return false;
   const source=normalizeFurniturePlacements(from.furniturePlacements),current=source.find(item=>item.id===placementId);
   if(!current)return false;
-  if(current.item==='식탁'&&source.some(item=>item.tableId===current.id)){
-    const moving=source.filter(item=>item.id===current.id||item.tableId===current.id),ids=new Set(moving.map(item=>item.id));
+  if(source.some(item=>item.surfaceId===current.id)||current.item==='식탁'&&source.some(item=>item.tableId===current.id)){
+    const moving=source.filter(item=>item.id===current.id||item.surfaceId===current.id||current.item==='식탁'&&item.tableId===current.id),ids=new Set(moving.map(item=>item.id));
     const target=from===to?source.filter(item=>!ids.has(item.id)):normalizeFurniturePlacements(to.furniturePlacements);
     if(from!==to&&target.some(item=>ids.has(item.id)))return false;
     const dx=Math.max(.5-Math.min(...moving.map(p=>p.x)),Math.min(99.5-Math.max(...moving.map(p=>p.x)),Number(position.x??current.x)-current.x));
@@ -1951,7 +1951,7 @@ export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,
     if(from!==to)touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
     save();return moved.find(item=>item.id===placementId);
   }
-  const patch={x:position.x??current.x,y:position.y??current.y,...(position.tableId!==undefined?{tableId:position.tableId,seatSide:position.seatSide||"",rotation:position.rotation??current.rotation}:fromRoomKey!==toRoomKey?{tableId:"",seatSide:""}:{})};
+  const patch={x:position.x??current.x,y:position.y??current.y,surfaceId:position.surfaceId||"",surfaceU:position.surfaceU??.5,surfaceV:position.surfaceV??.5,...(position.tableId!==undefined?{tableId:position.tableId,seatSide:position.seatSide||"",rotation:position.rotation??current.rotation}:fromRoomKey!==toRoomKey?{tableId:"",seatSide:""}:{})};
   if(fromRoomKey===toRoomKey)return updateFurniturePlacement(homeId,fromRoomKey,placementId,patch);
   const target=normalizeFurniturePlacements(to.furniturePlacements);
   if(target.some(item=>item.id===placementId))return false;
@@ -2003,7 +2003,6 @@ export function addFurnitureProp(homeId,roomKey,placementId,item){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return "";
   const placements=normalizeFurniturePlacements(room.furniturePlacements),index=placements.findIndex(entry=>entry.id===placementId);
   if(index<0||!supportsFurnitureProps(placements[index].item)||placements[index].props.length>=4)return "";
-  if(placements[index].props.some(p=>p.item==='인덕션')||item==='인덕션'&&(!placements[index].item.startsWith('카운터')||placements[index].props.length))return '';
   const id=`prop-${uid()}`,prop=newFurnitureProp(id,item,placements[index].props.length);if(!prop)return "";
   placements[index]=normalizeFurniturePlacement({...placements[index],props:[...placements[index].props,prop]},index);
   room.furniturePlacements=placements;save(true);return id;

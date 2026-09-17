@@ -1,3 +1,4 @@
+import {bindEditorPosition} from './home-editor-position.js';
 import {furnitureSprite} from "./furniture-sprites.js?v=20260909dev305";
 import {bedPillowPoint} from './bed-perspective.js?v=20260909dev305';
 import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev305";
@@ -137,6 +138,7 @@ export function fitCoupleBedOccupants(root){
 }
 
 export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded}){
+  bindEditorPosition(root,state.activeHomeId,state.uiLanguage);
   fitCoupleBedOccupants(root);
   const copy=homeEditorCopy(state.uiLanguage);
   root.querySelectorAll('.home-catalog-photo img').forEach(image=>{

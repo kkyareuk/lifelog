@@ -1409,12 +1409,19 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
 .home.is-editing .room-furniture-layer:has(.is-dragging)::before,.home.is-editing .room.is-furniture-drop-target .room-furniture-layer::before{content:"";position:absolute;inset:0;z-index:0;background-image:linear-gradient(to right,#40566b52 1px,transparent 1px),linear-gradient(to bottom,#40566b52 1px,transparent 1px);background-size:calc(var(--furniture-cell-w,25%)/4) calc(var(--furniture-cell-h,25%)/4);box-shadow:inset 0 0 0 1px #40566b62;pointer-events:none}
 html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 :is(.home-page,.mafia-playback) button.room-furniture-item{position:absolute;left:var(--furniture-x);top:var(--furniture-y);z-index:var(--furniture-layer);display:grid!important;place-items:center;width:calc(var(--furniture-cell-w,25%)*var(--furniture-grid-width,1))!important;min-width:0!important;height:calc(var(--furniture-cell-h,25%)*var(--furniture-grid-height,1))!important;min-height:0!important;margin:0!important;padding:3px!important;border:0!important;border-radius:12px!important;background:transparent!important;background-image:none!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;transform:translate(-50%,-50%) rotate(var(--furniture-rotation)) scale(var(--furniture-scale));transform-origin:50% 70%;touch-action:manipulation;user-select:none;pointer-events:auto;filter:none!important}
+.room-furniture-art:has(.furniture-surface-grid){position:relative}
+.furniture-surface-grid{display:none;position:absolute;left:12%;top:8%;width:76%;height:43%;pointer-events:none;background-image:linear-gradient(to right,#a0793855 1px,transparent 1px),linear-gradient(to bottom,#a0793855 1px,transparent 1px);background-size:calc(100% / var(--surface-columns)) calc(100% / 3);outline:1px dashed #a0793888}
+.furniture-surface-grid[data-surface-kind="nightstand"]{left:17%;top:12%;width:66%;height:27%;background-size:100% 100%}
+.furniture-surface-grid[data-surface-side="true"]{top:12%;height:76%}
+.is-editing .furniture-surface-grid{display:block}
+.surface-drop-target .room-furniture-art{outline:2px solid #d5ae52;outline-offset:2px}
+.counter-stretch{box-sizing:border-box;border-style:solid;border-width:0 12px;border-image-slice:0 24 fill;border-image-repeat:stretch}
 .furniture-sprite{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
 .chair-frame-overlay{display:grid;place-items:center;position:absolute;left:var(--furniture-x);top:var(--furniture-y);width:calc(var(--furniture-cell-w,25%)*var(--furniture-grid-width,1));height:calc(var(--furniture-cell-h,25%)*var(--furniture-grid-height,1));padding:3px;box-sizing:border-box;pointer-events:none;transform:translate(-50%,-50%) scale(var(--furniture-scale));transform-origin:50% 70%}
 .room-furniture-art:has(.furniture-sprite){width:calc(100% * var(--sprite-width,1));height:auto;aspect-ratio:var(--sprite-ratio)}
 .chair-frame-overlay img{width:100%;height:100%;object-fit:contain}
 .home-life-person.is-seated{width:var(--seat-person-width)!important;transform:translate(-50%,-78%)!important}
-.home-life-person.is-seated .home-person-visual{width:var(--seat-person-width);max-width:none}
+.home-life-person.is-seated .home-person-visual{translate:0 var(--seat-align-y,0px);animation:none;width:var(--seat-person-width);max-width:none}
 @media(prefers-reduced-motion:no-preference){html:not([data-animation-intensity="off"]) .home-life-person.is-seated.is-hugging .home-person-visual{animation:hug-left 3.4s ease-in-out infinite!important}html:not([data-animation-intensity="off"]) .home-life-person.is-seated.is-hugging[data-seat-slot="1"] .home-person-visual{animation-name:hug-right!important}}
 .home-life-person.is-seated .home-person-visual :is(.avatar,.sprite){width:100%!important;height:auto!important;max-width:100%!important}
 .home-life-using.scene-action-eating .home-person-visual{animation:home-activity-cook 1.7s ease-in-out infinite!important}
@@ -1434,13 +1441,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .home-bed-foreground-status.is-shared .home-interaction-status{min-width:104px;max-width:148px}
 .home-bed-foreground-status .home-interaction-status b{font-size:11px}
 .home-bed-foreground-status .home-interaction-status small{font-size:8px}
-.room-furniture-art:has(.furniture-surface-props){position:relative}
-.furniture-surface-props{position:absolute;left:10%;top:7%;width:80%;height:45%;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;place-items:center;overflow:hidden;pointer-events:none;gap:3%;padding:2%;box-sizing:border-box}
-.furniture-surface-props[data-surface-kind="nightstand"]{top:9%;height:32%;left:13%;width:74%}
-.furniture-surface-props[data-surface-kind="counter-top"]{top:8%;height:84%}
-.furniture-surface-props[data-surface-full="true"]{display:flex;align-items:center;justify-content:center}
-.furniture-surface-props i{display:grid;place-items:center;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;font-style:normal;font-size:clamp(10px,2vw,20px);line-height:1}
-.furniture-surface-props img{width:100%;height:100%;object-fit:contain}
+
 .room-furniture-props{position:absolute;left:50%;bottom:58%;z-index:2;display:flex;align-items:flex-end;justify-content:center;gap:1px;width:max-content;max-width:72px;transform:translateX(-50%);pointer-events:none}
 .room-furniture-props i{display:block;font-style:normal;font-size:clamp(10px,1.65vw,17px);line-height:1;filter:drop-shadow(0 2px 2px #17203380);transform:translateY(calc((var(--prop-slot,0) % 2) * -2px))}
 html body #app .home .room-furniture-item small{display:none;position:absolute;left:50%;top:100%;max-width:92px;padding:3px 6px;border-radius:999px;background:#30251ef2;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px;line-height:1.2;text-shadow:none;white-space:normal;text-align:center;min-width:48px;overflow-wrap:anywhere;transform:translateX(-50%) rotate(calc(var(--furniture-rotation) * -1));pointer-events:none}
@@ -1454,7 +1455,7 @@ html body #app .home-page:not(.home-hide-names) .home.is-editing .room-furniture
 .home.is-editing .room-furniture-item.is-dragging{cursor:grabbing;opacity:.9}
 .furniture-edit-toolbar{position:fixed;left:calc(50% + 26px);bottom:max(18px,env(safe-area-inset-bottom));z-index:700;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:6px;width:calc(100vw - 76px);max-width:520px;box-sizing:border-box;padding:8px;border:1px solid #bfa783;border-radius:16px;background:#fff5e4;box-shadow:0 4px 12px #24150b44;transform:translateX(-50%);overscroll-behavior:contain}
 .furniture-edit-toolbar[hidden]{display:none!important}.furniture-edit-toolbar strong{flex:0 0 auto;max-width:100px;padding:0 6px;color:#fff;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.furniture-edit-toolbar button{flex:0 0 auto;display:grid;place-items:center;min-width:42px;height:42px;padding:7px 10px;border-color:#ffffff38;background:#ffffff14;color:#fff;font-size:17px}.furniture-edit-toolbar button.danger{font-size:11px}.furniture-edit-toolbar button.primary{font-size:11px}
-.native-app .furniture-edit-toolbar{top:auto;bottom:12px}
+.native-app .furniture-edit-toolbar{bottom:12px}
 html body #app .furniture-edit-toolbar .chair-magnet-toggle{width:auto!important;height:28px!important;padding:3px 8px!important;font-size:10px!important}.furniture-edit-toolbar .chair-magnet-toggle[aria-pressed="true"]{outline:2px solid #87995d}.furniture-edit-heading{display:flex;align-items:center;gap:8px;min-width:0}
 .furniture-edit-heading .furniture-toolbar-toggle{flex:0 0 34px!important;width:34px!important;height:32px!important;padding:0!important;font-size:19px!important}
 .furniture-edit-toolbar.is-collapsed{width:min(280px,calc(100vw - 76px))}

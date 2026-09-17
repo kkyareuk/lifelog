@@ -1289,7 +1289,8 @@ function setFurniturePlacementStyle(element,placement){
   if(sprite){
     element.style.setProperty("--sprite-width",String(sprite.width/527*2*sprite.scale/furnitureFootprint(placement.item).columns));
     element.style.setProperty("--sprite-ratio",String(sprite.width/sprite.height));
-    element.querySelector('.furniture-sprite').src=sprite.src;
+    const art=element.querySelector('.furniture-sprite');if(sprite.kind==='counter')art.style.borderImageSource=`url(${sprite.src})`;else art.src=sprite.src;
+    element.dataset.surfaceRotation=placement.rotation;element.dataset.seatDirection=sprite.direction;const grid=element.querySelector('.furniture-surface-grid');if(grid)grid.dataset.surfaceSide=String(['left','right'].includes(sprite.direction));
     const layer=element.closest('.room-furniture-layer');
     let overlay=[...layer.querySelectorAll('[data-chair-frame]')].find(el=>el.dataset.chairFrame===placement.id);
     if(sprite.frame){
@@ -1305,14 +1306,14 @@ function setFurniturePlacementStyle(element,placement){
 function openFurniturePropsDialog(homeId,roomKey,placementId){
   const placement=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!placement||!supportsFurnitureProps(placement.item))return;
   const copy={
-    ko:{eyebrow:"선반 위 꾸미기",title:"소품 올리기",available:"올릴 소품",attached:"현재 올려둔 소품",empty:"아직 올려둔 소품이 없어요.",remove:"치우기",close:"완료",limit:"소품은 4개까지 올려요. 카운터·협탁은 상판 안에 배치되며, 인덕션은 카운터 상판 전체를 사용해요."},
-    en:{eyebrow:"Decorate the surface",title:"Add props",available:"Available props",attached:"Placed props",empty:"No props placed yet.",remove:"Remove",close:"Done",limit:"Up to four props fit on the surface. Counter and bedside props stay on the top; an induction cooktop uses the whole counter top."},
-    ja:{eyebrow:"棚の上を飾る",title:"小物を置く",available:"置ける小物",attached:"置いている小物",empty:"小物はまだありません。",remove:"片付ける",close:"完了",limit:"小物は4個まで。カウンター・サイドテーブルの天板内に置きます。IHコンロはカウンター天板全体を使います。"}
+    ko:{eyebrow:"선반 위 꾸미기",title:"소품 올리기",available:"올릴 소품",attached:"현재 올려둔 소품",empty:"아직 올려둔 소품이 없어요.",remove:"치우기",close:"완료",limit:"선반 소품은 4개까지 올려요."},
+    en:{eyebrow:"Decorate the surface",title:"Add props",available:"Available props",attached:"Placed props",empty:"No props placed yet.",remove:"Remove",close:"Done",limit:"Place up to four shelf decorations."},
+    ja:{eyebrow:"棚の上を飾る",title:"小物を置く",available:"置ける小物",attached:"置いている小物",empty:"小物はまだありません。",remove:"片付ける",close:"完了",limit:"棚の小物は4個まで置けます。"}
   }[state.uiLanguage]||null;
   const dialog=document.createElement("dialog");dialog.className="furniture-props-dialog";
   const draw=()=>{
     const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId),props=current?.props||[],full=props.length>=4;
-    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><p>${copy.limit}</p><section><h3>${copy.available}</h3><div class="furniture-prop-picker">${FURNITURE_PROPS.filter(item=>item!=="인덕션"||current.item.startsWith("카운터")).map(item=>`<button type="button" data-add-furniture-prop="${item}" ${full||props.some(p=>p.item==="인덕션")||item==="인덕션"&&props.length?"disabled":""}><span aria-hidden="true">${furniturePropIcon(item)}</span><b>${htmlEsc(furniturePropLabel(item,state.uiLanguage))}</b></button>`).join("")}</div></section><section><h3>${copy.attached}</h3><div class="furniture-prop-current">${props.length?props.map(prop=>`<button type="button" data-delete-furniture-prop="${htmlEsc(prop.id)}"><span aria-hidden="true">${furniturePropIcon(prop.item)}</span><b>${htmlEsc(furniturePropLabel(prop.item,state.uiLanguage))}</b><small>${copy.remove}</small></button>`).join(""):`<p>${copy.empty}</p>`}</div></section><button class="primary furniture-props-done" value="close">${copy.close}</button></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><p>${copy.limit}</p><section><h3>${copy.available}</h3><div class="furniture-prop-picker">${FURNITURE_PROPS.map(item=>`<button type="button" data-add-furniture-prop="${item}" ${full?"disabled":""}><span aria-hidden="true">${furniturePropIcon(item)}</span><b>${htmlEsc(furniturePropLabel(item,state.uiLanguage))}</b></button>`).join("")}</div></section><section><h3>${copy.attached}</h3><div class="furniture-prop-current">${props.length?props.map(prop=>`<button type="button" data-delete-furniture-prop="${htmlEsc(prop.id)}"><span aria-hidden="true">${furniturePropIcon(prop.item)}</span><b>${htmlEsc(furniturePropLabel(prop.item,state.uiLanguage))}</b><small>${copy.remove}</small></button>`).join(""):`<p>${copy.empty}</p>`}</div></section><button class="primary furniture-props-done" value="close">${copy.close}</button></form>`;
     dialog.querySelectorAll("[data-add-furniture-prop]").forEach(button=>button.onclick=()=>{if(addFurnitureProp(homeId,roomKey,placementId,button.dataset.addFurnitureProp))draw()});
     dialog.querySelectorAll("[data-delete-furniture-prop]").forEach(button=>button.onclick=()=>{if(deleteFurnitureProp(homeId,roomKey,placementId,button.dataset.deleteFurnitureProp))draw()});
   };
@@ -1326,12 +1327,7 @@ function bindFurniturePlacementEditors(){
   const positionToolbar=()=>{
     if(!selected?.isConnected||toolbar.hidden)return;
     toolbar.style.removeProperty('top');toolbar.style.removeProperty('bottom');
-    const box=selected.getBoundingClientRect(),viewport=window.visualViewport;
-    const top=viewport?.offsetTop||0,height=viewport?.height||innerHeight;
-    if(box.top+box.height/2>top+height/2){
-      toolbar.style.top=Math.max(top+12,box.top-toolbar.offsetHeight-12)+'px';
-      toolbar.style.bottom='auto';
-    }
+
   };
   document.querySelector('.home-page')?.addEventListener('scroll',positionToolbar,true);
   const clearSelection=()=>{
@@ -1354,9 +1350,9 @@ function bindFurniturePlacementEditors(){
     const destination=toolbar.querySelector('[data-furniture-move-room]');if(destination)destination.value=element.dataset.roomKey;
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
-    positionToolbar();
+    positionToolbar();element.dispatchEvent(new CustomEvent('furniture-selection',{bubbles:true}));
   };
-  bindFurnitureDrag(document.querySelector('.home-page'),{getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
+  bindFurnitureDrag(document.querySelector('.home-page'),{resize:(el,span)=>{updateFurniturePlacement(el.dataset.homeId,el.dataset.roomKey,el.dataset.furniturePlacement,{counterSpan:span});pendingFurnitureSelection={homeId:el.dataset.homeId,roomKey:el.dataset.roomKey,placementId:el.dataset.furniturePlacement};render()},getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
     const {homeId,roomKey,furniturePlacement:id}=element.dataset;
     if(moveFurniturePlacement(homeId,roomKey,position.roomKey,id,position)){pendingFurnitureSelection={homeId,roomKey:position.roomKey,placementId:id};render()}
   }});

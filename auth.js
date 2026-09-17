@@ -1,3 +1,4 @@
+import {imageSourceHash,reusableImage,retainImage} from './cloud-image-identity.js';
 import {needsCompressedCloudState,cloudDocumentLimitError} from './cloud-document-shape.js';
 import {giftError} from './mail-gifts.js?v=20260909dev305';
 import {accountIdentity} from "./account-identity.js?v=20260909dev305";
@@ -170,7 +171,6 @@ const assertSession=session=>{
 const REFRESH_GUARD_MS=30*60*1000;
 const sessionStamp=key=>Number(localStorage.getItem(key)||0);
 const stampSession=key=>localStorage.setItem(key,String(Date.now()));
-const uploadedCache=new Map();
 const MAX_PHOTOS=120;
 const FREE_TOTAL_BYTES=20*1024*1024;
 const STORAGE_50_TOTAL_BYTES=50*1024*1024;
@@ -239,7 +239,7 @@ async function refreshMediaEpoch(){
  const session=captureSession(),snap=await requestDeadline(getDoc(doc(db,'imageDeletionState',session.uid)),'image-epoch');assertSession(session);
  const value=snap.data();mediaEpoch=value?.epoch||'';
  if(value?.status==='deleting')throw Object.assign(Error('image-deletion-in-progress'),{code:'images/deleting'});
- if(mediaEpoch&&localStorage.getItem('drawer-images-cleared-epoch')!==mediaEpoch){await clearAccountImages(mediaEpoch);assertSession(session);uploadedCache.clear();localStorage.removeItem(syncRevisionKey(session.uid))}
+ if(mediaEpoch&&localStorage.getItem('drawer-images-cleared-epoch')!==mediaEpoch){await clearAccountImages(mediaEpoch);assertSession(session);localStorage.removeItem(syncRevisionKey(session.uid))}
 }
 const cloudDoc=(uid=user?.uid)=>doc(db,"users",uid);
 const cloudCoreDoc=(uid=user?.uid)=>doc(db,"users",uid,"sync","core");
@@ -551,14 +551,14 @@ async function optimizeCloudImage(original){
   throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
 }
 
-async function uploadDataUrl(dataUrl,manifest,session){
+async function uploadDataUrl(dataUrl,manifest,session,knownItems=manifest.items){
   assertSession(session);
-  const cacheKey=`${session.uid}:${dataUrl}`;
-  if(uploadedCache.has(cacheKey)&&manifest.items.some(item=>item.url===uploadedCache.get(cacheKey)))return uploadedCache.get(cacheKey);
   const sourceBlob=await (await fetch(dataUrl)).blob();
+  const sourceHash=await imageSourceHash(sourceBlob),sourceKnown=reusableImage(knownItems,sourceHash);
+  if(sourceKnown){assertSession(session);return retainImage(manifest,sourceKnown)}
   const blob=await optimizeCloudImage(sourceBlob);
-  const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
-  if(known){assertSession(session);uploadedCache.set(cacheKey,known.url);return known.url}
+  const hash=await digestBlob(blob),known=reusableImage(knownItems,sourceHash,hash);
+  if(known){assertSession(session);known.sourceHash=sourceHash;return retainImage(manifest,known)}
   if(manifest.items.length+manifest.legacyCount>=maxPhotos())throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
   const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
   if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
@@ -574,8 +574,7 @@ async function uploadDataUrl(dataUrl,manifest,session){
     new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),10000))
   ]);
   assertSession(session);
-  manifest.items.push({hash,size:blob.size,url});
-  uploadedCache.set(cacheKey,url);
+  manifest.items.push({hash,sourceHash,size:blob.size,url});
   return url;
 }
 
@@ -595,6 +594,7 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
   // Keep the previous value only where it may be needed if a new upload fails.
   const retained=storedPhotoUrls(next);
   for(const job of jobs){const old=job.path.reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,previousState);if(typeof old==='string')for(const url of storedPhotoUrls(old))retained.add(url);}
+  const knownItems=manifest.items.slice();
   manifest.items=manifest.items.filter(item=>retained.has(item.url));
   manifest.legacyCount=Math.max(0,retained.size-manifest.items.length);
   let photoFailures=0;const photoErrors=[];
@@ -602,7 +602,7 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
   await mapConcurrent(jobs,3,async(job,i)=>{
     if(!uploadPhotos){const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";return}
     status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
-    try{assertSession(session);if(!photoJobs.has(job.value))photoJobs.set(job.value,uploadDataUrl(job.value,manifest,session));jobs[i].node[jobs[i].key]=await photoJobs.get(job.value)}
+    try{assertSession(session);if(!photoJobs.has(job.value))photoJobs.set(job.value,uploadDataUrl(job.value,manifest,session,knownItems));jobs[i].node[jobs[i].key]=await photoJobs.get(job.value)}
     catch(error){
       if(error?.code==="sync/account-changed")throw error;
       console.warn("사진 업로드에 실패했지만 기존 클라우드 사진과 정보 동기화를 유지합니다",error);
@@ -1306,7 +1306,7 @@ if(ready){
           window.ParallelCity.replaceState(guestHandoff);
           adoptedGuest=true;
         }
-        uploadedCache.clear();mediaEpoch="";
+        mediaEpoch="";
         appleSandboxEntitlements=null;appleSandboxUid="";
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
@@ -1397,7 +1397,7 @@ window.DrawerVillageAccountImages={
   try{const token=await user.getIdToken(true);assertSession(session);
    const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/images/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});
    const result=await response.json();assertSession(session);if(!response.ok)throw Error(result.code||'image-deletion-failed');
-   if(action==='delete'&&result.deleted){mediaEpoch=result.epoch;await clearAccountImages(result.epoch);assertSession(session);uploadedCache.clear();storageUsage={...storageUsage,count:0,bytes:0};localStorage.removeItem(syncRevisionKey(session.uid));}
+   if(action==='delete'&&result.deleted){mediaEpoch=result.epoch;await clearAccountImages(result.epoch);assertSession(session);storageUsage={...storageUsage,count:0,bytes:0};localStorage.removeItem(syncRevisionKey(session.uid));}
    return result;
   }finally{busy=false;finish();window.dispatchEvent(new Event('drawer-village-auth-busy'))}
  }
