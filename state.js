@@ -1594,7 +1594,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     character.timelineResetAt=startedAt;delete state.dailyPlans?.[characterId];save();return true;
   }
   let destination=targetScene,otherJourney=null;
-  if(options.contextTarget){destination=contextDestination(state,character,options.contextTarget,kind,startedAt,options.lifeTask||'',target?.id);if(!destination||target&&kind!=='affection')return false;if(target&&!roomEntryAllowed(target,state.homes[destination.visitHomeId],state.homes[destination.visitHomeId]?.rooms?.[destination.room]))return false;
+  if(options.contextTarget){destination=contextDestination(state,character,options.contextTarget,kind,startedAt,options.lifeTask||'',target?.id);if(!destination||target&&kind!=='affection'&&options.contextTarget.type!=='place')return false;if(target&&destination.home&&!roomEntryAllowed(target,state.homes[destination.visitHomeId],state.homes[destination.visitHomeId]?.rooms?.[destination.room]))return false;
     if(kind==='nap'&&destination.furniture){const beds=(state.homes[destination.visitHomeId]?.rooms[destination.room]?.furniturePlacements||[]).filter(p=>/침대|bed/i.test(p.item)),capacity=/커플|더블|2인|double|couple/i.test(destination.furniture.item)?2:1;const sleepers=state.order.filter(id=>id!==characterId).map(id=>state.characters[id]).filter(Boolean).filter(c=>{const s=scene(c);return s.home&&(s.visitHomeId||c.homeId)===destination.visitHomeId&&s.room===destination.room&&/sleep|nap|수면|자는|잠든|눈을 붙|眠/.test([s.kind,s.title].join(' '))&&(!s.furniture?.id?/침대|bed/i.test(destination.furniture.item)&&beds.length<=1:s.furniture.id===destination.furniture.id)});if(sleepers.length>=capacity)return false;} }
   else if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
@@ -1619,7 +1619,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     if(goal){destination.goal=goal;destination.furniture=chosen.furniture;}
   }
   const journey=planMeetingJourney(state,character,target||character,startedAt,sourceScene,destination,positions||{});
-  if(kind==='affection'){
+  if(kind==='affection'||target&&options.contextTarget?.type==='place'){
     otherJourney=planMeetingJourney(state,target,character,startedAt,targetScene,destination,positions||{});
     const arrival=Math.max(journey.arrivesAt,otherJourney.arrivesAt);journey.arrivesAt=arrival;otherJourney.arrivesAt=arrival;
   }

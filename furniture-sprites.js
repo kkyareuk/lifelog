@@ -10,6 +10,6 @@ export function furnitureSprite(placement={}){
   const composite=kind==='chair'&&variant==='back';
   const dimensions={'plant-flower':{front:[139,239]},nightstand:{front:[155,190]},counter:{front:[275,372],side:[248,245],back:[242,372]},fridge:{front:[359,556],side:[229,561]},induction:{front:[264,239]},'single-bed':{front:[280,567],side:[550,412]},tv:{front:[303,222],side:[49,342]},plant:{front:[225,287]},bookcase:{front:[391,560],side:[186,563]},bed:{front:[527,567],side:[550,604]},sofa:{front:[448,257],side:[232,447],back:[443,227]},chair:{front:[176,313],side:[160,307],back:[195,327]},table:{front:[375,440]}}[kind][variant];
   return {src:ROOT+(composite?'chair-seat':kind==='counter'?({front:'counter-front',side:'counter-side',back:'counter-back'})[variant]:`${kind}-${variant}`)+'.png',frame:composite?ROOT+'chair-frame.png':null,kind,direction,
-    width:dimensions[0]*(kind==='counter'?Number(placement.counterSpan)||1:1),height:dimensions[1],scale:kind==='tv'?1.7:kind==='chair'?1.8:kind==='sofa'?1.9:kind==='table'?1.5:['plant','plant-flower','bookcase','fridge'].includes(kind)?1.2:kind.startsWith('counter')?1.6:kind==='nightstand'?2:1,
+    width:dimensions[0]*(kind==='counter'?Number(placement.counterSpan)||1:1),height:dimensions[1],scale:kind==='tv'?1.7:kind==='chair'?1.8:kind==='sofa'?1.9:kind==='table'?1.5:kind==='fridge'?1.4:['plant','plant-flower','bookcase'].includes(kind)?1.2:kind.startsWith('counter')?1.6:kind==='nightstand'?2:1,
     flip:(direction==='right'?-1:1)*(placement.flipped?-1:1)};
 }

@@ -1,10 +1,10 @@
+import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
-import {bindFurnitureDrag} from './furniture-drag.js';
+import {bindFurnitureEditor} from './furniture-editor.js';
 import {latestSaveQueue} from './latest-save-queue.js?v=20260909dev305';
-import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,deleteRoom,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev305';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addFurnitureProp,deleteFurnitureProp,deleteRoom,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev305';
 import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev305';
-import {bindHomeEditorUI,fitFurnitureSelection} from './home-editor-ui.js?v=20260909dev305';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev305';
 import {mt} from './mailbox-center.js?v=20260909dev305';
 import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev305';
 const queues=new Map();
@@ -40,21 +40,20 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
   if(b.matches('[data-close-home-feature]')&&b.closest('[data-home-feature="room-info"]')){stop(e);selection.homeEditMode=false;render();return}
   if(b.matches('[data-add-room]')){stop(e);change(()=>addRoom(home.id,home.activeFloor||1));render();return}
   if(b.matches('[data-open-room-editor],[data-open-furniture-layout],[data-room-info-edit]')){if(e.target.closest('[data-home-occupant],[data-home-person],[data-furniture-placement],.room-drag-handle,.room-resize-handle'))return;stop(e);if(canEdit)roomDialog(b.dataset.roomInfoEdit||b.dataset.openRoomEditor||Object.keys(home.rooms)[0]);return}
-  if(b.matches('[data-furniture-placement]')&&selection.homeEditMode){stop(e);if(canEdit&&e.detail===0)furnitureDialog(b.closest('[data-room-key]')?.dataset.roomKey,b.dataset.furniturePlacement);return}
+  if(b.matches('[data-furniture-placement]')&&selection.homeEditMode)return;
   if(selection.homeEditMode&&b.matches('[data-delete-home],[data-home-image],[data-open-room-image-menu]')){stop(e);return}
  },true);
  // Replace personal callbacks with isolated shared-world callbacks; search and drag/drop keep the existing drawer.
  if(canEdit){bindHomeEditorUI(root,{state:world,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
- let selectedFurniture=null;
- const toolbar=root.querySelector('[data-furniture-edit-toolbar]');
- if(selection.homeEditMode&&canEdit&&toolbar){
-  toolbar.replaceChildren();const details=document.createElement('button'),done=document.createElement('button');
-  details.textContent=mt('선택한 가구 설정','Selected furniture settings','選択した家具の設定');
-  details.onclick=()=>{if(selectedFurniture)furnitureDialog(selectedFurniture.dataset.roomKey,selectedFurniture.dataset.furniturePlacement)};
-  done.textContent=mt('선택 해제','Clear selection','選択解除');done.onclick=()=>{selectedFurniture?.classList.remove('is-selected');selectedFurniture=null;toolbar.hidden=true};
-  toolbar.append(details,done);
- }
- if(selection.homeEditMode&&canEdit)bindFurnitureDrag(root,{resize:(el,span)=>{change(()=>updateFurniturePlacement(home.id,el.dataset.roomKey,el.dataset.furniturePlacement,{counterSpan:span}));render()},getHome:()=>home,language:state.uiLanguage,select:el=>{root.querySelectorAll('.is-selected').forEach(n=>n.classList.remove('is-selected'));el.classList.add('is-selected');fitFurnitureSelection(el);selectedFurniture=el;if(toolbar)toolbar.hidden=false},move:(el,pos)=>{change(()=>moveFurniturePlacement(home.id,el.dataset.roomKey,pos.roomKey,el.dataset.furniturePlacement,pos));render()}});
+ if(selection.homeEditMode&&canEdit)bindFurnitureEditor(root,{state:world,render,
+  updateFurniturePlacement:(...args)=>change(()=>updateFurniturePlacement(...args)),
+  moveFurniturePlacement:(...args)=>change(()=>moveFurniturePlacement(...args)),
+  deleteFurniturePlacement:(...args)=>change(()=>deleteFurniturePlacement(...args)),
+  setActiveHomeFloor:()=>{},pending:selection.furnitureSelection,onPending:value=>selection.furnitureSelection=value,
+  openFurniturePropsDialog:(id,room,p)=>showFurnitureProps(id,room,p,{state:world,addFurnitureProp:(...args)=>change(()=>addFurnitureProp(...args)),deleteFurnitureProp:(...args)=>change(()=>deleteFurnitureProp(...args)),onClose:value=>{selection.furnitureSelection=value;render()}}),
+  openBedAssignmentDialog:(_,room,id)=>furnitureDialog(room,id)
+ });
+ selection.furnitureSelection=null;
 
  function dialog(title,exitEdit=false){const d=document.createElement('dialog');d.className='mail-reader shared-home-dialog';const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.textContent=mt('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>{if(exitEdit)selection.homeEditMode=false;d.remove();render()};document.body.append(d);d.showModal();return d}
  function roomDialog(roomKey){const room=home.rooms[roomKey];if(!room)return;const d=dialog(mt('방 편집','Edit room','部屋の編集'),true);for(const [key,label,type] of [['name',mt('방 이름','Room name','部屋名'),'text'],['floor',mt('층','Floor','階'),'number']]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type=type;input.value=room[key]||1;if(type==='number'){input.min=1;input.max=home.floorCount||1}input.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[key]:type==='number'?Math.max(1,Math.min(home.floorCount||1,Number(input.value))):input.value}));l.append(input);d.append(l)}const choose=(field,label,values)=>{const l=document.createElement('label');l.textContent=label;const select=document.createElement('select');for(const [value,ko,en,ja] of values){const o=document.createElement('option');o.value=value;o.textContent=mt(ko,en,ja);select.append(o)}select.value=room[field]||values[0][0];select.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[field]:select.value}));l.append(select);d.append(l)};
@@ -65,10 +64,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const owners=document.createElement('fieldset'),legend=document.createElement('legend');legend.textContent=mt('방 주인','Room owners','部屋の持ち主');owners.append(legend);for(const c of Object.values(world.characters).filter(c=>c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id))){const l=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.checked=room.ownerCharacterIds?.includes(c.id)||false;check.onchange=()=>change(()=>updateRoom(home.id,roomKey,{ownerMode:'selected',ownerCharacterIds:[...owners.querySelectorAll('input:checked')].map(el=>el.value)}));check.value=c.id;l.append(check,document.createTextNode(c.name));owners.append(l)}d.append(owners);
  const remove=document.createElement('button');remove.textContent=mt('방 삭제','Delete room','部屋を削除');remove.disabled=Object.keys(home.rooms).length<=1;remove.onclick=()=>{if(!confirm(mt('이 방과 안에 배치한 가구를 삭제할까요?','Delete this room and its furniture?','この部屋と配置した家具を削除しますか？')))return;change(()=>deleteRoom(home.id,roomKey));d.close()};d.append(remove);
  const hint=document.createElement('p');hint.textContent=mt('가구는 아래 가구 목록에서 방으로 끌어 놓거나 눌러 추가할 수 있어요.','Drag furniture into a room or tap it in the catalog below.','下の家具一覧から部屋へドラッグするか、タップして追加できます。');d.append(hint)}
- function furnitureDialog(roomKey,id){const item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===id);if(!item)return;const d=dialog(item.item||mt('가구','Furniture','家具'));const action=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{change(fn);d.close()};d.append(b)};
-  const move=document.createElement('select');move.setAttribute('aria-label',mt('다른 방으로 이동','Move to another room','別の部屋へ移動'));for(const [key,room] of Object.entries(home.rooms)){const o=document.createElement('option');o.value=key;o.textContent=room.name;move.append(o)}move.value=roomKey;move.onchange=()=>{change(()=>moveFurniturePlacement(home.id,roomKey,move.value,id,{x:50,y:60}));d.close()};d.append(move);
-  action(mt('90° 회전','Rotate 90°','90°回転'),()=>updateFurniturePlacement(home.id,roomKey,id,{rotation:((item.rotation||0)+90)%360}));action(mt('좌우 뒤집기','Flip horizontally','左右反転'),()=>updateFurniturePlacement(home.id,roomKey,id,{flipped:!item.flipped}));
-  for(const [field,label,min,max] of [['scale',mt('크기','Scale','大きさ'),.2,3],['x','X',0,100],['y','Y',0,100]]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type='range';input.min=min;input.max=max;input.step=field==='scale'?.1:1;input.value=item[field]??1;input.onchange=()=>change(()=>updateFurniturePlacement(home.id,roomKey,id,{[field]:Number(input.value)}));l.append(input);d.append(l)}
+ function furnitureDialog(roomKey,id){const item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===id);if(!item)return;const d=dialog(mt('침대 배정','Assign bed','ベッドの割り当て'));const action=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{change(fn);d.close()};d.append(b)};
   if(String(item.item).includes('침대')){for(const c of Object.values(world.characters).filter(c=>c.homeId===home.id)){const l=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=(item.assignedCharacterIds||[]).includes(c.id);input.onchange=()=>change(()=>assignFurnitureBed(home.id,roomKey,id,c.id,input.checked));l.append(input,document.createTextNode(c.name));d.append(l)}}action(mt('가구 삭제','Remove furniture','家具を削除'),()=>deleteFurniturePlacement(home.id,roomKey,id));
  }
 }

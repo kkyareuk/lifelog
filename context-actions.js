@@ -1,3 +1,4 @@
+import {placeActions} from './place-activities.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {relationMetrics} from './relationship-metrics.js';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
@@ -9,8 +10,9 @@ const label=(ko,en,ja)=>({ko,en,ja});
 export function contextActions(target){
  if(target.type==='person')return [
  {kind:'talk',label:label('대화하기','Talk','話す')},{kind:'hug',label:label('포옹하기','Hug','抱きしめる')},{kind:'debate',label:label('토론하기','Discuss','議論する')},{kind:'hangout',label:label('함께 시간 보내기','Spend time together','一緒に過ごす')}];
- if(target.type==='place')return [{kind:'walk',label:label('방문하기','Visit','訪れる')},{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')}];
+ if(target.type==='place')return placeActions(target.place);
  const item=target.item||'';
+ if(/오디오|턴테이블|플레이어|audio|stereo/i.test(item))return [{kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')}];
  const affection={kind:'affection',companion:true,label:label('스킨십하기','Physical affection','スキンシップ')};
  if(/침대|bed/i.test(item))return [{kind:'nap',lifeTask:'sleep',label:label('잠자기','Go to sleep','眠る')},{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},{kind:'rest',label:label('침대에서 쉬기','Rest in bed','ベッドで休む')},{kind:'read',label:label('책 읽기','Read a book','本を読む')},...LIFE_TASKS.filter(t=>['early_sleep','sleep_in'].includes(t.id)).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),affection];
  if(/소파|sofa/i.test(item))return [
@@ -19,7 +21,7 @@ export function contextActions(target){
   {kind:'read',label:label('책 읽기','Read a book','本を読む')},
   {kind:'relax',lifeTask:'video',label:label('영상 보기','Watch videos','動画を見る')},
   {kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')},affection];
- if(/냉장|싱크|가스|오븐|조리/i.test(item))return [{kind:'meal',lifeTask:'simple_cook',label:label('요리하기','Cook','料理する')},{kind:'meal',label:label('식사하기','Eat','食事する')}];
+ if(/냉장|싱크|가스|오븐|조리|인덕션|카운터/i.test(item))return [{kind:'meal',lifeTask:'simple_cook',label:label('요리하기','Cook','料理する')},{kind:'meal',label:label('식사하기','Eat','食事する')}];
  if(/식탁|dining table/i.test(item))return [{kind:'meal',label:label('여기서 밥 먹기','Eat here','ここで食事する')}];
  if(/책장|책상/i.test(item))return [{kind:'read',label:label('책 읽기','Read','読書する')},{kind:'study',label:label('공부하기','Study','勉強する')}];
  if(/변기|toilet/i.test(item))return [{kind:'wash',lifeTask:'toilet',label:label('용변 보기','Use the toilet','トイレに行く')}];
@@ -31,7 +33,7 @@ export function contextActions(target){
 export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='',companionId=''){
  if(!target||typeof target!=='object')return null;
  if(target.type==='place'){
-  const place=(world.world.places||[]).find(p=>p.id===target.id);if(!place||!['walk','rest'].includes(kind))return null;
+  const place=(world.world.places||[]).find(p=>p.id===target.id);if(!place||!placeActions(place).some(a=>a.kind===kind&&(a.lifeTask||'')===lifeTask))return null;
   return {home:false,placeId:place.id,townId:world.activeTownId||c.townId};
  }
  const home=world.homes[target.homeId],room=home?.rooms?.[target.room];

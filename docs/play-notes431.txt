@@ -1,0 +1,9 @@
+<ko-KR>
+집 편집 도구를 접고 끌어 옮길 수 있는 작은 창으로 정리했습니다. 개인·멀티에서 같은 가구 편집 도구를 사용하며 냉장고를 조금 키웠습니다. 오디오·카페·공연장을 눌러 행동하고, 동행할 캐릭터를 골라 함께 방문할 수 있습니다. 마피아 종료 기록은 주요 행동과 발견·판단 중심으로 표시합니다. 생활 로그 처리 성능을 개선했습니다.
+</ko-KR>
+<en-US>
+Home editing now uses a compact, collapsible, draggable toolbox in both solo and multiplayer. The fridge is slightly larger. Tap stereos, cafes and venues to act, or choose a companion for a visit. Mafia recaps focus on key actions, discoveries and character beliefs. Improved life-log processing performance.
+</en-US>
+<ja-JP>
+家の編集ツールを折りたたみ・ドラッグ移動できる小さなウィンドウに整理しました。個人・マルチで同じ家具編集ツールを使えます。冷蔵庫を少し大きくしました。オーディオ・カフェ・公演会場から行動でき、同行者を選んで一緒に訪問できます。マフィアの記録は主な行動・発見・人物の判断を中心に表示します。生活ログの処理を改善しました。
+</ja-JP>

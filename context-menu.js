@@ -19,7 +19,7 @@ export function installContextMenu({world,execute,enabled,openHome}){
   if(requested){target={type:'self',id:e.detail.id};title=w.characters[e.detail.id]?.name;}
   else if(el.dataset.furniturePlacement){const homeId=el.dataset.homeId,room=el.dataset.roomKey,item=w.homes[homeId]?.rooms?.[room]?.furniturePlacements?.find(p=>p.id===el.dataset.furniturePlacement);if(!item)return;target={type:'furniture',homeId,room,id:item.id,item:item.item};title=item.item;}
   else if(el.dataset.homeOccupant||el.dataset.homePerson||el.dataset.person){const id=el.dataset.characterId||el.dataset.homePerson||el.dataset.person;if(!w.characters[id])return;target={type:'person',id};title=w.characters[id].name;}
-  else if(el.dataset.place){target={type:'place',id:el.dataset.place};title=w.world.places.find(p=>p.id===target.id)?.name;}
+  else if(el.dataset.place){target={type:'place',id:el.dataset.place,place:w.world.places.find(p=>p.id===el.dataset.place)};title=target.place?.name;}
   else {const homeId=el.dataset.homeId||el.dataset.homeMap,home=w.homes[homeId],room=el.dataset.roomKey||Object.keys(home?.rooms||{})[0];if(!home?.rooms?.[room])return;target={type:'room',homeId,room};title=home.rooms[room].name;}
   e.preventDefault();e.stopImmediatePropagation();close();
   const buildingHome=el.dataset.homeMap;

@@ -1,3 +1,5 @@
+import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
+import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
 import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
 import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
@@ -288,41 +290,6 @@ const activityTown=(c,date=new Date())=>{
   return travelPurpose(c,date).town;
 };
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
-const configuredAppearanceValue=value=>value&&!["설정하지 않음","하지 않음"].includes(value)?String(value):"";
-const hairColorText=value=>({
-  "검은색":"검은","짙은 갈색":"짙은 갈색","갈색":"갈색","밝은 갈색":"밝은 갈색","금발":"금빛","백발·은발":"백색·은색","회색":"회색","청회색":"청회색","빨간색":"붉은","주황색":"주황색","분홍색":"분홍색","보라색":"보라색","파란색":"파란색","청록색":"청록색","초록색":"초록색","여러 색":"여러 색"
-}[value]||configuredAppearanceValue(value));
-const eyeColorText=value=>({
-  "검은색":"검은","짙은 갈색":"짙은 갈색","갈색":"갈색","연갈색":"연갈색","호박색":"호박색","금색":"금색","초록색":"초록색","청록색":"청록색","파란색":"파란색","청회색":"청회색","회색":"회색","보라색":"보라색","분홍색":"분홍색","빨간색":"붉은","백색":"백색","여러 색":"여러 색"
-}[value]||configuredAppearanceValue(value));
-const appearanceProfile=c=>c?.bodyProfile?.appearance||{};
-const hairLookPhrase=c=>{
-  const a=appearanceProfile(c),color=hairColorText(a.hairColor),texture=configuredAppearanceValue(a.hairTexture);
-  const textureText={"약한 반곱슬":"반곱슬","강한 반곱슬":"짙은 반곱슬","곱슬":"곱슬","강한 곱슬":"강한 곱슬","직모":"곧은"}[texture]||"";
-  return [color,textureText].filter(Boolean).join(" ")+(color||textureText?"머리":"");
-};
-const eyeLookPhrase=c=>{
-  const a=appearanceProfile(c),left=eyeColorText(a.leftEyeColor),right=eyeColorText(a.rightEyeColor);
-  if(left&&right&&left!==right)return `왼쪽은 ${left}, 오른쪽은 ${right}인 눈`;
-  const color=left||right;
-  return color?`${color} 눈`:"";
-};
-const appearanceTraitTags=c=>{
-  const a=appearanceProfile(c),tags=[],hairColor=hairColorText(a.hairColor),eyeColor=eyeColorText(a.leftEyeColor===a.rightEyeColor?a.leftEyeColor:"");
-  const hairTags={"검은":"검은 머리","갈색":"갈색 머리","짙은 갈색":"갈색 머리","밝은 갈색":"갈색 머리","금빛":"금발","백색·은색":"백발·은발","붉은":"빨간 머리","분홍색":"분홍 머리","보라색":"보라 머리","파란색":"파란 머리","청록색":"청록 머리","초록색":"초록 머리"};
-  const eyeTags={"검은":"검은 눈","갈색":"갈색 눈","짙은 갈색":"갈색 눈","연갈색":"갈색 눈","호박색":"호박색 눈","금색":"금색 눈","초록색":"초록색 눈","파란색":"파란색 눈","청회색":"청회색 눈","회색":"회색 눈","보라색":"보라색 눈"};
-  if(c.bodyProfile?.tattoos?.length)tags.push("문신이 있음");
-  if(hairTags[hairColor])tags.push(hairTags[hairColor]);
-  if(eyeTags[eyeColor])tags.push(eyeTags[eyeColor]);
-  if(a.leftEyeColor&&a.rightEyeColor&&a.leftEyeColor!==a.rightEyeColor)tags.push("오드아이");
-  if(/곱슬/.test(a.hairTexture||""))tags.push("곱슬머리");
-  if(/웨이브/.test((a.hairStyles||[]).join(" ")))tags.push("웨이브머리");
-  if(["가슴 길이","허리 길이","허리보다 김"].includes(a.hairLength))tags.push("장발");
-  if(a.hairLength==="단발")tags.push("단발");
-  if(["삭발·매우 짧음","귀 위 길이","숏컷"].includes(a.hairLength))tags.push("숏컷");
-  (a.hairStyles||[]).forEach(style=>tags.push(style,style.replace(" 스타일링","머리").replace("번 헤어","올림머리")));
-  return [...new Set(tags.filter(Boolean))];
-};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 function relationIndex(){
   if(sceneBatch&&sceneBatch.relations?.revision===sceneBatch.relationshipRevision)return sceneBatch.relations;
@@ -3023,88 +2990,6 @@ function calculateSignature(c){
   return value;
 }
 
-const entryMomentKey=item=>{
-  const minute=Number(item?.minute);
-  return String(item?.time||(Number.isFinite(minute)?clock(minute):""));
-};
-function mergeImmutableEntries(kept,generated){
-  const merged=[...kept],seen=new Set(kept.map(item=>`${entryMomentKey(item)}|${item.title}|${item.placeId||""}|${item.room||""}`));
-  generated.forEach(item=>{
-    const id=`${entryMomentKey(item)}|${item.title}|${item.placeId||""}|${item.room||""}`;
-    if(!seen.has(id)){seen.add(id);merged.push(item)}
-  });
-  return merged.sort((a,b)=>a.minute-b.minute);
-}
-function cleanExactRepeatedEntries(entries){
-  const kept=[];
-  [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
-    const titleParts=value=>[...new Set(String(value||"").split(" · ").map(part=>part.replace(/\s+/g," ").trim()).filter(Boolean))];
-    const itemParts=titleParts(item.title);
-    const repeatedIndex=kept.findIndex(previous=>{
-      const gap=Math.abs(Number(previous.minute)-Number(item.minute));
-      if(!Number.isFinite(gap))return false;
-      const previousParts=titleParts(previous.title);
-      const titleOverlap=itemParts.some(part=>previousParts.includes(part));
-      const samePlace=(previous.visitHomeId||previous.homeId||"")===(item.visitHomeId||item.homeId||"")
-        &&(previous.placeId||"")===(item.placeId||"");
-      const previousDesc=String(previous.desc||"").replace(/\s+/g," ").trim();
-      const itemDesc=String(item.desc||"").replace(/\s+/g," ").trim();
-      const sameStory=previousDesc===itemDesc||previousDesc.includes(itemDesc)||itemDesc.includes(previousDesc);
-      const exactTitle=String(previous.title||"").replace(/\s+/g," ").trim()===String(item.title||"").replace(/\s+/g," ").trim();
-      const exactStory=previousDesc===itemDesc;
-      const sameDateGroup=Boolean(previous.dateGroup&&item.dateGroup&&previous.dateGroup===item.dateGroup);
-      if(samePlace&&exactTitle&&exactStory&&gap<=180)return true;
-      if(sameDateGroup&&exactTitle&&exactStory&&gap<=240)return true;
-      if(gap>15)return false;
-      return samePlace&&titleOverlap&&(sameStory||exactTitle);
-    });
-    if(repeatedIndex<0){kept.push(item);return}
-    const previous=kept[repeatedIndex];
-    const itemScore=(item.groupInteraction?8:0)+(item.dateGroup?4:0)+String(item.title||"").length+String(item.desc||"").length/100;
-    const previousScore=(previous.groupInteraction?8:0)+(previous.dateGroup?4:0)+String(previous.title||"").length+String(previous.desc||"").length/100;
-    if(itemScore>previousScore)kept[repeatedIndex]=item;
-  });
-  return kept;
-}
-const MAJOR_CLEANUP_PATTERN=/대청소|집 전체.{0,12}(?:청소|정리)|방 전체.{0,12}(?:청소|정리)|창고.{0,12}(?:청소|정리)|다락.{0,12}(?:청소|정리)|지하실.{0,12}(?:청소|정리)|이사 짐|짐을 대대적으로 정리|옷장 전체|서재 전체|묵은 (?:물건|짐)|계절.{0,8}(?:정리|옷)/;
-function cleanRoutineCleanupRest(entries){
-  const sorted=[...entries].sort((a,b)=>Number(a.minute)-Number(b.minute));
-  return sorted.filter((item,index)=>{
-    if(String(item?.title||"")!=="정리를 마치고 잠깐 쉬는 중")return true;
-    const previous=sorted.slice(0,index).reverse().find(candidate=>Number(item.minute)-Number(candidate.minute)<=150);
-    return Boolean(previous&&MAJOR_CLEANUP_PATTERN.test(`${previous.title||""} ${previous.desc||""}`));
-  });
-}
-function cleanSameMinuteEntries(entries){
-  const byMinute=new Map();
-  [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
-    const minute=Number(item.minute);
-    if(!Number.isFinite(minute))return;
-    const moment=entryMomentKey(item);
-    const previous=byMinute.get(moment);
-    if(!previous||item.groupInteraction||!previous.groupInteraction)byMinute.set(moment,{...item,time:clock(minute)});
-  });
-  return [...byMinute.values()].sort((a,b)=>a.minute-b.minute);
-}
-function cleanShadowedBaseEntries(entries){
-  const kept=[];
-  const sameLocation=(a,b)=>Boolean(a&&b&&
-    (a.visitHomeId||a.homeId||"")===(b.visitHomeId||b.homeId||"")&&
-    (a.placeId||"")===(b.placeId||"")&&
-    (a.room||"")===(b.room||""));
-  [...entries].sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
-    const previous=kept.at(-1);
-    const shadowsPrevious=Boolean(previous&&item?.groupInteraction&&
-      Number(item.minute)>=Number(previous.minute)&&
-      Number(item.minute)-Number(previous.minute)<=15&&
-      sameLocation(previous,item)&&
-      (String(item.baseTitle||"")===String(previous.title||"")||
-        String(item.title||"").split(" · ").includes(String(previous.title||""))));
-    if(shadowsPrevious)kept.pop();
-    kept.push(item);
-  });
-  return kept;
-}
 function cleanInvalidRoomAndHobbyEntries(c,entries){
   const interests=[...settingList(c.hobbies),...settingList(c.interests)].map(String);
   const likesScent=interests.some(value=>/향수|향수 시향|조향|향기/.test(value));

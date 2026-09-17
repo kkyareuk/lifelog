@@ -572,7 +572,7 @@ module.exports=(base,previous,playback)=>{
   if(a.kind==='agree'&&g.currentClaim.kind==='accuse')emotions.emotion(g,g.currentClaim.target,p.id,'grudge',1);
   if(a.kind==='oppose')emotions.emotion(g,g.currentClaim.speaker,p.id,'grudge',1);
   if(['agree','oppose'].includes(a.kind)){const sign=g.currentClaim.kind==='defend'?-1:g.currentClaim.kind==='accuse'?1:0;influence(g,p.id,g.currentClaim.target,sign*(a.kind==='agree'?.6:-1),c);}
-  if(mismatch)pressure(g,g.currentClaim.account?.speaker||g.currentClaim.speaker,2);
+  if(mismatch){pressure(g,g.currentClaim.account?.speaker||g.currentClaim.speaker,2);g.replay?.push({day:g.day,period:3,kind:'observation',observer:p.id,card:{kind:'contradiction',subject:g.currentClaim.account?.speaker||g.currentClaim.speaker,place:c?.place||'',action:'contradiction'}});}
   g.reactions||=[];g.reactions.push(row);log(g,row);g.deadlineAt=Math.min(g.meetingEndsAt,Math.max(g.deadlineAt,row.endsAt));
  }
  function speak(g,p,a,now){
@@ -591,6 +591,8 @@ module.exports=(base,previous,playback)=>{
   if(a.kind==='changeTopic'||a.kind==='changeStance')pressure(g,p.id,1);
   g.mainCounts||={};g.mainCounts[p.id]=(g.mainCounts[p.id]||0)+1;
   g.currentClaim=claim;g.reactions=[];g.intervention=null;log(g,claim);
+  for(const observer of alive(g).filter(q=>q.role!=='mafia')){const ranked=alive(g).filter(q=>q.id!==observer.id).map(q=>({id:q.id,score:base.suspicion(g,observer,q)})).sort((a,b)=>b.score-a.score);if(ranked[0]?.score>=12&&ranked[0].score-(ranked[1]?.score||0)>=5&&!g.replay?.some(r=>r.kind==='belief'&&r.day===g.day&&r.subject===observer.id&&r.target===ranked[0].id))g.replay?.push({kind:'belief',day:g.day,period:3,subject:observer.id,target:ranked[0].id});}
+
   for(const observer of alive(g).filter(q=>q.id!==p.id)){const score=((observer.gameSkills?.intuitionSkill??50)+(observer.gameSkills?.intelligenceSkill??50))/2-((p.gameSkills?.deceptionSkill??50)+(p.gameSkills?.composureSkill??50))/2;const chance=Math.max(.08,Math.min(.65,.22+score/300+(c?.forged?.15:0)));if(!(g.cards[observer.id]||[]).some(x=>x.kind==='intuition'&&x.subject===p.id&&x.day===g.day)&&base.random(g.seed,'impression',claim.id,observer.id)<chance){g.cards[observer.id]||=[];g.cards[observer.id].push({id:'intuition-'+claim.id+':'+observer.id,kind:'intuition',subject:p.id,day:g.day,tick:g.period*2,place:'',action:'intuition'});}}phase(g,'claim',now,8);
  }
  function submit(g,p,a,now){
