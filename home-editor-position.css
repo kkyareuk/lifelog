@@ -10,3 +10,7 @@
 .home-editor-dock input[type="range"]{min-width:0;flex:1}
 .home:has(.home-editor-dock) .home-drawer-clearance{height:0}
 .home:has(.home-feature-panel.open) .home-editor-dock{visibility:hidden;pointer-events:none}
+
+.home-ui-hidden .home-editor-dock{width:auto;min-width:90px}
+.home-ui-hidden .home-editor-dock :is(.home-tools-header,.furniture-edit-toolbar,.home-furniture-drawer){display:none!important}
+.home-ui-hidden .home-editor-dock .home-edit-visibility>button:not([data-home-ui-toggle]){display:none!important}

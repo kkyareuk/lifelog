@@ -1,7 +1,7 @@
 {
-  "version": "1.0.379",
-  "build": 431,
-  "sourceAndroidCode": 431,
+  "version": "1.0.380",
+  "build": 432,
+  "sourceAndroidCode": 432,
   "stage": "testing",
   "appStoreReady": false,
   "channel": "internal"

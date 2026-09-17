@@ -1,3 +1,4 @@
+import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindFurnitureEditor} from './furniture-editor.js';
 import './selection-popup.js';
@@ -1159,23 +1160,11 @@ function openRoomEditor(homeId,roomKey){
   extra.innerHTML=`<label class="room-use-photo check">벽지·바닥 대신 사진 사용<input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}></label><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
   fields.append(extra);
   bindRoomPermissionEditor(dialog);
-  const samples=document.createElement("div");samples.className="room-design-samples";
-  samples.innerHTML=`<button type="button" data-wall-sample aria-label="벽지"><img src="${wallSurfaceImage(currentWallMaterial,currentFloorMaterial,room.floorImage,room.type)}" alt=""></button><button type="button" data-floor-sample aria-label="바닥재"><img src="${floorSource()}" alt=""></button>`;
-  dialog.querySelector("[data-edit-room-photo]").after(samples);
-  samples.querySelector("[data-wall-sample]").onclick=()=>dialog.querySelector('[name="wallMaterial"]').focus();
-  samples.querySelector("[data-floor-sample]").onclick=()=>floorButton.click();
-  dialog.querySelector('[name="wallMaterial"]').onchange=()=>{samples.querySelector("[data-wall-sample] img").src=wallSurfaceImage(dialog.querySelector('[name="wallMaterial"]').value,dialog.querySelector('[name="floorMaterial"]').value,room.floorImage,room.type)};
-  const originalDrawFloor=dialog.querySelector('[name="floorMaterial"]').onchange;
-  dialog.querySelector('[name="floorMaterial"]').onchange=()=>{originalDrawFloor();samples.querySelector("[data-floor-sample] img").src=floorSource()};
-  // The selectable thumbnails and the stored select share one value/change path.
-  for(const [field,keys] of [['floorMaterial',HOME_SURFACE_KEYS],['wallMaterial',HOME_WALL_KEYS]]){
-    const select=dialog.querySelector(`[name="${field}"]`),label=select.closest('label'),grid=document.createElement('div');grid.className='room-surface-choices';grid.setAttribute('role','group');
-    grid.setAttribute('aria-label',field==='floorMaterial'?({ko:'바닥재',en:'Flooring',ja:'床材'}[state.uiLanguage]):({ko:'벽지',en:'Wallpaper',ja:'壁紙'}[state.uiLanguage]));
-    const options=[...keys,...(field==='floorMaterial'&&room.floorImage?['customTile','custom']:[])];
-    grid.innerHTML=options.map(key=>`<button type="button" data-surface-value="${key}" aria-pressed="${select.value===key}"><img src="${field==='floorMaterial'?homeSurfaceImage(key,room.floorImage,room.type):wallSurfaceImage(key,currentFloorMaterial,room.floorImage,room.type)}" alt=""><span>${homeSurfaceLabel(key,state.uiLanguage)}</span></button>`).join('');
-    select.hidden=true;label.append(grid);
-    grid.querySelectorAll('button').forEach(button=>button.onclick=()=>{select.value=button.dataset.surfaceValue;select.dispatchEvent(new Event('change',{bubbles:true}));grid.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));if(field==='floorMaterial')dialog.querySelector('[name="usePhoto"]').checked=select.value==='custom';});
-    samples.querySelector(field==='floorMaterial'?'[data-floor-sample]':'[data-wall-sample]').onclick=()=>grid.querySelector(`[aria-pressed="true"]`)?.focus();
+  floorButton.hidden=true;
+  for(const field of ['floorMaterial','wallMaterial']){
+    const select=dialog.querySelector(`[name="${field}"]`);
+    if(field==='floorMaterial')select.onchange=()=>{drawFloorButton();dialog.querySelector('[name="usePhoto"]').checked=select.value==='custom'};
+    bindRoomSurfacePicker(select,{room,language:state.uiLanguage,floor:()=>dialog.querySelector('[name="floorMaterial"]').value,onCustom:()=>floorButton.click()});
   }
   translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
 }
@@ -2012,6 +2001,7 @@ function openTownCharacterSheet(button){
 const homeEditVisibility={ui:false,furniture:false,names:false};
 function setHomeUiHidden(page,hidden){
   if(!page)return false;
+  page=page.closest(".home-page")||page;
   page.classList.toggle("home-ui-hidden",hidden);
   if(state.homeEditMode)homeEditVisibility.ui=hidden;
   const labels={ko:hidden?"UI 표시":"UI 숨김",en:hidden?"Show UI":"Hide UI",ja:hidden?"UIを表示":"UIを隠す"};
@@ -3127,7 +3117,7 @@ function bind(){
     if(opening){const header=button.closest("[data-home-native-hud]").querySelector(".home-native-header"),parent=switcher.offsetParent?.getBoundingClientRect()||{top:0};switcher.style.top=`${Math.max(button.getBoundingClientRect().bottom,header?.getBoundingClientRect().bottom||0)+8-parent.top}px`;switcher.style.maxHeight=`${Math.max(80,innerHeight-switcher.getBoundingClientRect().top-12)}px`}
     button.setAttribute("aria-expanded",String(opening));
   });
-  $$("[data-home-ui-toggle]").forEach(button=>button.onclick=()=>toggleHomeUi(button.closest(".home-native-page")));
+  $$("[data-home-ui-toggle]").forEach(button=>button.onclick=()=>toggleHomeUi(button.closest(".home-page,.home-native-page")));
   if(state.homeEditMode){const page=document.querySelector('.home-native-page');setHomeUiHidden(page,homeEditVisibility.ui);for(const key of ['furniture','names']){page?.classList.toggle('home-hide-'+key,homeEditVisibility[key]);document.querySelector('[data-home-visibility="'+key+'"]')?.setAttribute('aria-pressed',String(homeEditVisibility[key]));}}
   $$('[data-home-visibility]').forEach(button=>button.onclick=()=>{const key=button.dataset.homeVisibility;homeEditVisibility[key]=!homeEditVisibility[key];button.closest('.home-native-page,.home-page')?.classList.toggle('home-hide-'+key,homeEditVisibility[key]);button.setAttribute('aria-pressed',String(homeEditVisibility[key]));});
   $('[data-home-edit-cancel]')?.addEventListener('click',()=>{cancelHomeEdit();Object.keys(homeEditVisibility).forEach(k=>homeEditVisibility[k]=false);render();});

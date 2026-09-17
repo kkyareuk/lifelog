@@ -112,6 +112,7 @@ export function scheduleSceneDepth(){
         const r=furnitureRect(scene,furniture);
         labels.push({scene,furniture,status,x:r.left+r.width/2-sceneRect.left,y:r.bottom-sceneRect.top+6,anchorTop:r.top-sceneRect.top,z:20+bounds.length*3});
       }
+      const heading=scene.querySelector(':scope > .room-heading');if(heading)updates.push([heading,30+bounds.length*3]);
       bounds.sort((a,b)=>a.bottom-b.bottom);
       bounds.forEach(({element},index)=>updates.push([element,10+index*3]));
       // Occupancy badges are UI labels, not actors standing behind buildings.

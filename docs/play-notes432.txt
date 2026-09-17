@@ -1,0 +1,9 @@
+<ko-KR>
+방 편집에서 벽지 고르기·바닥재 고르기를 누르면 별도 선택창이 열립니다. 개인·멀티에 함께 적용했습니다. 광장 아이콘을 직접 그린 분수대로 바꾸고, UI 숨김에 뒤로가기 버튼을 포함했습니다. 방 이름은 가구 앞에 표시됩니다. 일반 클릭, 캐릭터 설정 페이지 넘기기·책 닫기, 메뉴 진입·홈 복귀 효과음을 새로 연결했으며 소리가 겹치지 않도록 개선했습니다.
+</ko-KR>
+<en-US>
+Choose wallpaper and flooring in separate pickers in solo and multiplayer room editing. The plaza now uses the hand-drawn fountain icon. Hide UI also hides Back, and room names appear in front of furniture. Added distinct sounds for clicks, character-book pages and closing, entering menus and returning home, without overlapping effects.
+</en-US>
+<ja-JP>
+個人・マルチの部屋編集で、壁紙・床材を別の選択ウィンドウから選べます。広場を手描きの噴水アイコンに変更しました。UI非表示で戻るボタンも隠れ、部屋名は家具の手前に表示されます。クリック、キャラクター設定のページめくり・本を閉じる操作、メニューへの移動・ホームへの復帰に新しい効果音を設定し、音が重ならないようにしました。
+</ja-JP>

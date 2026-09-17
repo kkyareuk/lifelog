@@ -3664,8 +3664,8 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   html.native-app[data-active-tab="home"] .home-native-elevator button:disabled{opacity:.35}
   html.native-app[data-active-tab="home"] .home-native-elevator select{width:100%;min-width:0;padding:4px 0;font-size:11px;background:#fff9ee;color:#463126;border:0;border-radius:0}
   html.native-app[data-active-tab="home"] .home-native-elevator b{display:grid;width:100%;min-height:27px;place-items:center;color:#463126!important;-webkit-text-fill-color:#463126!important;font:400 10px/1 var(--home-ui-font),sans-serif;white-space:nowrap}
-  html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden :is(.home-native-switcher,.home-native-side,.home-native-elevator,.home-native-edit-tools){opacity:0;visibility:hidden;pointer-events:none}
-  html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle{opacity:1;background-color:transparent!important;background-image:none!important;box-shadow:none!important}
+  .home-ui-hidden :is(.home-native-switcher,.home-native-side,.home-native-elevator,.home-native-edit-tools,.home-native-meta){opacity:0;visibility:hidden;pointer-events:none}
+  .home-ui-hidden .home-native-ui-toggle{opacity:1;background-color:transparent!important;background-image:none!important;box-shadow:none!important}
   html.native-app[data-active-tab="home"] .rooms,
   html.native-app[data-active-tab="home"] .rooms.has-extra{
     position:absolute;
@@ -6451,13 +6451,13 @@ html[data-color-mode="dark"] .relationship-pair-core>em{border:1px solid #3a5068
 
 /* UI 숨김 상태에서도 나무 상단바는 남지만 뒤로가기까지 포함한 조작 UI는
    사라진다. 다시 표시하는 버튼만 반투명하게 남긴다. */
-html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-back{
+.home-ui-hidden .home-native-back{
   opacity:0!important;visibility:hidden!important;pointer-events:none!important
 }
-html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle{
+.home-ui-hidden .home-native-ui-toggle{
   opacity:.58!important;filter:saturate(.8)!important
 }
-html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle:is(:hover,:focus-visible,:active){opacity:.72!important}
+.home-ui-hidden .home-native-ui-toggle:is(:hover,:focus-visible,:active){opacity:.72!important}
 
 /* 태블릿에서도 방 좌표계를 무한히 넓히지 않고 휴대전화 화면과 같은 폭으로
    고정한다. 남는 영역은 방 경계색으로 채워 UI가 늘어나거나 갈라지지 않는다. */
