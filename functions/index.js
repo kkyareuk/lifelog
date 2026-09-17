@@ -13,7 +13,7 @@ const app=express();
 app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
-const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","storage_50mb","green_tea"]);
+const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","storage_50mb","green_tea","ad_free"]);
 const CONSUMABLE_PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
   character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:4800},
@@ -96,6 +96,7 @@ function nextEntitlements(current,productId,quantity){
   if(productId==="character_slot_1")next.characterSingleSlots=(Number(current?.characterSingleSlots)||0)+count;
   if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks ?? (current?.purchases||[]).filter(id=>id==="character_slots_5").length)||0)+count;
   if(productId==="town_slot_1"||productId==="town_slots_5")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count*(productId==="town_slots_5"?5:1);
+  if(productId==="ad_free")next.adFree=true;
   if(productId==="storage_50mb")next.storage50=true;
   if(productId==="green_tea")next.teaSupportCount=(Number(current?.teaSupportCount)||0)+count;
   return next;
@@ -272,6 +273,7 @@ app.post("/play-billing/verify",async(request,response)=>{
         if(saved.uid!==identity.uid||saved.productId!==productId){
           throw Object.assign(new Error("이미 다른 계정에서 처리된 구매입니다."),{status:409});
         }
+        if(saved.revoked)throw Object.assign(new Error("취소되거나 환불된 구매입니다."),{status:409});
         alreadyApplied=true;
         return;
       }

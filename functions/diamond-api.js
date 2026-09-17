@@ -6,6 +6,9 @@ module.exports=({db,signedInUser})=>{
  app.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Authorization, Content-Type');res.set('Access-Control-Allow-Methods','GET, POST, OPTIONS');if(req.method==='OPTIONS')return res.sendStatus(204);next()});
  for(const action of ['read','purchase','claim','prepareAd'])app.post('/'+action,async(req,res)=>{try{const identity=await signedInUser(req);res.json(await (req.body?.sandbox===true?sandboxWallet:wallet)[action](identity.uid,req.body||{}))}catch(e){res.status(e.status||503).json({code:e.status?e.message:'wallet-unavailable'})}});
  const discovery=require('./discovery-access').createDiscoveryAccess({db});
+ const discoveryRewards=require('./discovery-rewards').createDiscoveryRewards({db});
+ app.post('/discovery/prepareAd',async(req,res)=>{try{const identity=await signedInUser(req);res.json(await discoveryRewards.prepareAd(identity.uid,req.body||{}))}catch(e){res.status(e.status||503).json({code:e.status?e.message:'ads-unavailable'})}});
+ app.get('/discovery/admob-ssv',async(req,res)=>{try{const data=await require('./admob-ssv').verify(req.originalUrl.split('?')[1]||'');if(data.user_id==='admob-verification'&&data.custom_data==='setup')return res.json({received:true,test:true});await discoveryRewards.rewardAd(data);res.json({received:true})}catch(e){res.status(e.status||503).json({received:false})}});
  for(const action of ['read','use'])app.post('/discovery/'+action,async(req,res)=>{try{const identity=await signedInUser(req);res.json(await discovery[action](identity.uid,req.body||{}))}catch(e){res.status(e.status||503).json({code:e.status?e.message:'discovery-unavailable'})}});
  app.get('/admob-ssv',async(req,res)=>{try{const data=await require('./admob-ssv').verify(req.originalUrl.split('?')[1]||'');await wallet.rewardAd(data);res.json({received:true})}catch(e){res.status(e.status||503).json({received:false})}});
  return app;

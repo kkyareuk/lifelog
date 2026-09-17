@@ -1,0 +1,2 @@
+/* The app becomes the containing block for fixed game controls below the native banner. */
+html.has-game-banner #app{transform:translateY(var(--game-ad-height));height:var(--game-viewport-height);overflow:hidden}

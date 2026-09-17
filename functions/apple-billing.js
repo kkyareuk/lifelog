@@ -8,6 +8,7 @@ const productMap=Object.freeze({
  'com.drawervillage.app.character_slots_5':'character_slots_5',
  'com.drawervillage.app.town_slots_5':'town_slots_5',
  'com.drawervillage.app.town_slot_1':'town_slot_1',
+ 'com.drawervillage.app.ad_free':'ad_free',
  'com.drawervillage.app.green_tea':'green_tea'
 });
 function fail(code,status=409){return Object.assign(new Error(code),{code,status})}
@@ -17,7 +18,7 @@ function accountToken(uid){
 }
 function validatePurchase(p,uid,environment,transactionId){
  const productId=productMap[p.productId];
- if(!productId||p.bundleId!==bundleId||p.environment!==environment||p.type!=='Consumable')throw fail('APPLE_INVALID_TRANSACTION');
+ if(!productId||p.bundleId!==bundleId||p.environment!==environment||p.type!==(productId==='ad_free'?'Non-Consumable':'Consumable'))throw fail('APPLE_INVALID_TRANSACTION');
  if(p.transactionId!==transactionId||!/^\d{1,30}$/.test(p.transactionId||''))throw fail('APPLE_INVALID_TRANSACTION');
  if(String(p.appAccountToken||'').toLowerCase()!==accountToken(uid))throw fail('APPLE_ACCOUNT_MISMATCH');
  if(p.revocationDate||p.inAppOwnershipType==='FAMILY_SHARED')throw fail('APPLE_REVOKED');
@@ -91,6 +92,7 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
     const userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(saved.uid),user=await tx.get(userRef),field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';
     const ent={...(user.data()?.[field]||{})},key={character_slot_1:'characterSingleSlots',character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',town_slots_5:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
     if(saved.productId==='diamonds_100')ent.diamondPaid=(Number(ent.diamondPaid)||0)-saved.quantity*100;
+    if(saved.productId==='ad_free')ent.adFree=false;
     if(key)ent[key]=Math.max(0,(Number(ent[key])||0)-saved.quantity*(saved.productId==='town_slots_5'?5:1));
     const deleted=await tx.get(db.collection("deletedAccounts").doc(saved.uid));
     if(!deleted.exists)tx.set(userRef,{[field]:ent,updatedAt:serverTimestamp()},{merge:true});

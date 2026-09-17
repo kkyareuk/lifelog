@@ -13,7 +13,8 @@
       "@capacitor/network",
       "@capacitor/splash-screen",
       "@capacitor/status-bar",
-      "@capacitor-firebase/authentication"
+      "@capacitor-firebase/authentication",
+      "@capacitor-community/admob"
     ]
   },
   "android": {
@@ -28,7 +29,8 @@
       "@capacitor/network",
       "@capacitor/push-notifications",
       "@capacitor/splash-screen",
-      "@capacitor/status-bar"
+      "@capacitor/status-bar",
+      "@capacitor-community/admob"
     ]
   },
   "plugins": {

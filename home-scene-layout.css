@@ -170,8 +170,8 @@
     top:-13.1dvh!important;
     bottom:auto!important;
     width:100vw!important;
-    height:100dvh!important;
-    min-height:100dvh!important;
+    height:var(--game-viewport-height,100dvh)!important;
+    min-height:var(--game-viewport-height,100dvh)!important;
     max-width:none!important;
     max-height:none!important;
     translate:-50% 0!important;

@@ -29,11 +29,12 @@
       character_slot_1:"character_slot_1",
       town_slot_1:"town_slot_1",town_slots_5:"town_slots_5",
       storage_50mb:"storage_50mb",
+      ad_free:"ad_free",
       green_tea:"green_tea"
     }
   };
   window.PARALLEL_CITY_CONFIG.diamonds={enabled:false,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/diamondWalletApi"};
-  window.PARALLEL_CITY_CONFIG.ads={enabled:false,testing:true};
+  window.PARALLEL_CITY_CONFIG.ads={enabled:true,testing:false};
   window.PARALLEL_CITY_CONFIG.maintenance=window.PARALLEL_CITY_CONFIG.maintenance||{
     enabled:false,
     title:"서랍마을을 잠시 점검하고 있어요",

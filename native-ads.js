@@ -1,0 +1,44 @@
+import {AD_UNITS} from './ad-units.js';
+import {showRewardedAd} from './rewarded-ad.js';
+const sdk=()=>window.Capacitor?.Plugins?.AdMob;
+export const adPlatform=()=>window.Capacitor?.getPlatform?.();
+export const adsAvailable=()=>!!AD_UNITS[adPlatform()]&&!!sdk()&&window.PARALLEL_CITY_CONFIG?.ads?.enabled===true;
+export const adsTesting=()=>window.DRAWER_VILLAGE_PLAZA_ENABLED===true||window.PARALLEL_CITY_CONFIG?.ads?.testing===true;
+let ready,fullScreen=false;
+async function bounded(promise){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('ads-timeout')),20000)})])}finally{clearTimeout(timer)}}
+export async function initializeAds(){
+ if(!adsAvailable())throw Error('ads-unavailable');
+ if(!ready)ready=(async()=>{
+  // Request consent before any ad request; do not request cross-app tracking permission.
+  let info=await bounded(sdk().requestConsentInfo());
+  if(info.status==='REQUIRED'&&info.isConsentFormAvailable)info=await sdk().showConsentForm();
+  if(!info.canRequestAds)throw Error('ads-consent');
+  await bounded(sdk().initialize({initializeForTesting:adsTesting(),maxAdContentRating:'General'}));
+  return sdk();
+ })().catch(e=>{ready=null;throw e});
+ return ready;
+}
+export async function adPrivacyOptions(){await sdk()?.showPrivacyOptionsForm();ready=null;window.dispatchEvent(new Event('drawer-ads-update'))}
+export function adOptions(kind){return {adId:AD_UNITS[adPlatform()]?.[kind],npa:true,isTesting:adsTesting()}}
+export function adIsFullScreen(){return fullScreen}
+export async function runRewardAd(ticket,account){
+ if(fullScreen)throw Error('ads-busy');fullScreen=true;window.dispatchEvent(new Event('drawer-ads-update'));
+ try{
+  const ad=await initializeAds();await bounded(ad.prepareRewardVideoAd({...adOptions('reward'),adId:ticket.adUnit,ssv:{userId:account,customData:ticket.ticketId}}));
+  if(window.ParallelCityAuth?.getInfo?.()?.user?.uid!==account)throw Error('account-changed');
+  return await showRewardedAd(ad);
+ }finally{fullScreen=false;window.dispatchEvent(new Event('drawer-ads-update'))}
+}
+export async function prepareGameAd(){const ad=await initializeAds();await bounded(ad.prepareInterstitial(adOptions('interstitial')))}
+export async function showGameAd(){
+ if(fullScreen)return false;fullScreen=true;window.dispatchEvent(new Event('drawer-ads-update'));
+ const handles=[];let timer;
+ try{
+  const ad=await initializeAds();let finish;
+  const done=new Promise(resolve=>{finish=resolve});
+  handles.push(await ad.addListener('interstitialAdDismissed',()=>finish(true)));
+  handles.push(await ad.addListener('interstitialAdFailedToShow',()=>finish(false)));
+  timer=setTimeout(()=>finish(false),180000);
+  Promise.resolve(ad.showInterstitial()).catch(()=>finish(false));return await done;
+ }finally{clearTimeout(timer);await Promise.allSettled(handles.map(h=>h.remove()));fullScreen=false;window.dispatchEvent(new Event('drawer-ads-update'))}
+}

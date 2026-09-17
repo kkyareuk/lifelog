@@ -2,8 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Google test app ID; production ads remain disabled until configured. -->
-	<key>GADApplicationIdentifier</key><string>ca-app-pub-3940256099942544~1458002511</string>
+	<!-- AdMob app ID supplied by the owner; consent precedes ad requests. -->
+	<key>GADApplicationIdentifier</key><string>ca-app-pub-2970618408876751~7480727664</string>
+	<key>SKAdNetworkItems</key><array><dict><key>SKAdNetworkIdentifier</key><string>cstr6suwn9.skadnetwork</string></dict></array>
 	<key>GADDelayAppMeasurementInit</key><true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

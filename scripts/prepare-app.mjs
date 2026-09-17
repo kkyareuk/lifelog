@@ -34,7 +34,7 @@ for(const asset of gameWebp.assets){
  if(!useGameWebp||excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
 }
 const includedFiles=new Set([
-  "diamond-shop.css","diamond-shop.js",
+  "banner-ads.css","diamond-shop.css","diamond-shop.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css","home-editor-position.css",
   "index.html","intro-tour.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
@@ -200,7 +200,7 @@ config=config.replace(
 config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
 if(platform==="ios"){
  config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=false;window.PARALLEL_CITY_CONFIG.iosApp=true;\n";
- config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{diamonds_100:"com.drawervillage.app.diamonds_100",character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",town_slots_5:"com.drawervillage.app.town_slots_5",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
+ config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{diamonds_100:"com.drawervillage.app.diamonds_100",character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",town_slots_5:"com.drawervillage.app.town_slots_5",ad_free:"com.drawervillage.app.ad_free",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
 }
 await writeFile(configPath,config,"utf8");
 

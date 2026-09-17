@@ -1,3 +1,4 @@
+import {updateMafiaAd} from './mafia-ads.js';
 import {bindFurnitureSceneDepth} from './furniture-depth.js';
 import {importantReplay} from './mafia-replay.js';
 import {preparationControls} from './mafia-preparation-ui.js';
@@ -15,6 +16,7 @@ const words=()=>({stay:t('쉬기','Rest','休む'),task:t('임무 수행','Work 
 const art=l=>safe(l.image)||safe(state.buildingShapes?.find(s=>s.id===l.iconPreset)?.src)||(BUILDING_PRESET_SOURCES[l.iconPreset]?'./'+BUILDING_PRESET_SOURCES[l.iconPreset]:l.square?'./world-assets/building-types/park-handdrawn.png':'./world-assets/building-types/red-roof-home-handdrawn.webp');
 const cameraPositions=new Map();
 export function renderMafiaPlayback(body,g,p,{submit,back}){
+ updateMafiaAd(g,p);
  body.furnitureDepthCleanup?.();
  const previousMap=body.querySelector('.mp-village');if(previousMap)cameraPositions.set(g.id,{x:previousMap.scrollLeft,y:previousMap.scrollTop});
  const place=id=>g.locations.find(l=>l.id===id),person=id=>g.players.find(q=>q.id===id),name=id=>person(id)?.name||t('누군가','Someone','誰か');
