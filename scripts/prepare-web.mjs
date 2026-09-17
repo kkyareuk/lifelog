@@ -37,6 +37,7 @@ const includedFiles=new Set([
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
   "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","native-json-export.js","profile-document-export.js","multiplayer-art.js","dictionary.js","world-transfer.css","mailbox.css","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
   "_headers",
+  "app-ads.txt",
   "index.html",
   "login.html",
   "terms.html",
@@ -127,6 +128,7 @@ const requiredFiles=[
   "sw.js",
   "manifest.webmanifest",
   "_headers",
+  "app-ads.txt",
   "icons/icon-192.png",
   "icons/icon-512.png"
 ];
