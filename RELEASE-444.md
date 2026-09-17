@@ -29,3 +29,7 @@ Camera cutout space is black, with ads and game controls below it. Added banners
 <ja-JP>
 カメラ領域を黒くし、その下に広告とゲーム画面を配置します。広場・店・マルチ一覧・建物情報・部屋情報にバナーを追加し、実広告のリクエストに切り替えました。同期中も自分づくりボタンを表示し、待機中は半透明にします。ベッドの選択範囲を画像に合わせ、マルチ一覧の文字を読みやすくしました。店のログイン状態表示を削除しました。
 </ja-JP>
+
+## Distribution
+Google Play internal release329: 444 (1.0.392), available to internal testers September17 20:15 KST. Source49fd1b1 on dev. No supported devices removed. One nonblocking deobfuscation warning. Production unchanged.
+Test link: https://play.google.com/apps/internaltest/4701300702493397907
