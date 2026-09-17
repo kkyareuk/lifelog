@@ -1,2 +1,6 @@
 /* The app becomes the containing block for fixed game controls below the native banner. */
 html.has-game-banner #app{transform:translateY(var(--game-ad-height));height:var(--game-viewport-height);overflow:hidden}
+.game-ad-slot{position:fixed;inset:0 0 auto;height:var(--game-ad-height);display:flex;align-items:center;justify-content:center;gap:8px;padding:4px 12px;box-sizing:border-box;background:#f5efdf;color:#55432e;font:12px/1.3 sans-serif;z-index:1}
+.game-ad-slot[hidden]{display:none}
+.game-ad-slot span{max-width:75%;overflow-wrap:anywhere}
+.game-ad-slot button{flex:none;padding:6px 12px;min-height:36px;border:1px solid #8f7656;border-radius:10px;background:#fff9ec;color:#55432e;font:inherit}

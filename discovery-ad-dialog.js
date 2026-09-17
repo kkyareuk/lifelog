@@ -1,4 +1,5 @@
 import {watchDiscoveryAd,discoveryRemaining,refreshDiscoveryAccess} from './discovery-access.js';
+import {adErrorText} from './ad-errors.js';
 
 export function showDiscoveryAdChoice(language,onReady){
  const t=(ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -19,7 +20,7 @@ export function showDiscoveryAdChoice(language,onReady){
    status.textContent=result==='test'?t('테스트 광고 시청 완료. 테스트 광고는 실제 이용권을 지급하지 않아요.','Test ad completed. Sample ads do not grant a real credit.','テスト広告の視聴完了。テスト広告では実際の利用権は付与されません。'):result==='cancelled'?t('시청을 취소했어요. 무료 대기시간은 그대로예요.','Ad cancelled. Your free countdown is unchanged.','視聴を中止しました。無料の待ち時間は変わりません。'):t('보상을 확인하고 있어요. 확인되면 질문을 열어 드릴게요.','Verifying your reward. Your question will open when confirmed.','報酬を確認しています。確認でき次第、質問を開きます。');
    if(result==='pending'){watch.disabled=true;timer=setInterval(async()=>{try{await refreshDiscoveryAccess();if(!valid()){dialog.close();return;}if(!discoveryRemaining())finish();}catch{}},16000);}
    else watch.disabled=false;
-  }catch{if(valid())status.textContent=t('광고를 불러오지 못했어요. 기다리거나 잠시 후 다시 시도해 주세요.','Could not load an ad. Wait for a free question or try again later.','広告を読み込めませんでした。無料の質問を待つか、後ほどお試しください。');watch.disabled=false;}
+  }catch(error){if(valid())status.textContent=adErrorText(error,language);watch.disabled=false;}
   finally{watching=false;}
  };
  dialog.addEventListener('cancel',event=>{if(watching)event.preventDefault()});

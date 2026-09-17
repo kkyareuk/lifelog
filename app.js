@@ -2995,7 +2995,12 @@ function bind(){
     mobileCharacterEditorDetailsCaptured=false;
     render();
   }));
-  $$("[data-open-full-character-settings]").forEach(button=>button.addEventListener("click",()=>{
+  if($("[data-open-full-character-settings]")||$("[data-open-advanced-ld]"))void import('./settings-ads.js').then(module=>module.prepareSettingsAd());
+  $$("[data-open-full-character-settings]").forEach(button=>button.addEventListener("click",async()=>{
+    if(button.disabled)return;button.disabled=true;
+    const tab=state.activeTab,characterId=active()?.id;
+    await (await import('./settings-ads.js')).showSettingsAd();
+    if(state.activeTab!==tab||active()?.id!==characterId)return;
     state.characterProfileBook=false;
     state.characterSettingsView="full";
     state.characterPane="visual";
@@ -3009,7 +3014,11 @@ function bind(){
     const dialog=$("[data-character-layout-dialog]");
     if(dialog&&!dialog.open)dialog.showModal();
   });
-  $("[data-open-advanced-ld]")?.addEventListener("click",()=>{
+  $("[data-open-advanced-ld]")?.addEventListener("click",async event=>{
+    const button=event.currentTarget;if(button.disabled)return;button.disabled=true;
+    const tab=state.activeTab,characterId=active()?.id;
+    await (await import('./settings-ads.js')).showSettingsAd();
+    if(state.activeTab!==tab||active()?.id!==characterId)return;
     state.characterSettingsView="full";
     state.characterProfileBook=false;
     state.characterPane="closet";
