@@ -1,3 +1,5 @@
+// Select painted images before their wrapper: selector lists use DOM order.
+export const furnitureArt=el=>el.querySelector('.furniture-sprite,.couple-bed-base')||el.querySelector('.room-furniture-art')||el;
 // object-fit:contain leaves empty letterbox space inside an image element.
 export function furniturePaintedBounds(art){
  const rect=art.getBoundingClientRect();

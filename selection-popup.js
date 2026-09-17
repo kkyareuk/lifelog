@@ -6,7 +6,7 @@ export function openSelectionPopup(select){
  const copy=text(),dialog=document.createElement('dialog');current=dialog;dialog.className='selection-popup';
  const heading=document.createElement('h2'),label=select.labels?.[0];
  heading.id='selection-popup-title';heading.textContent=select.getAttribute('aria-label')||label?.querySelector('b,.field-title')?.textContent||[...(label?.childNodes||[])].filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim()||copy[0];dialog.setAttribute('aria-labelledby',heading.id);
- const header=document.createElement('header'),close=document.createElement('button');close.type='button';close.textContent=copy[2];close.onclick=()=>dialog.close();header.append(heading,close);dialog.append(header);
+ const header=document.createElement('header'),close=document.createElement('button');close.type='button';close.textContent=copy[2];close.onclick=()=>{current=null;dialog.close()};header.append(heading,close);dialog.append(header);
  const search=document.createElement('input');search.type='search';search.placeholder=copy[1];search.setAttribute('aria-label',copy[1]);if(select.options.length>8)dialog.append(search);
  const list=document.createElement('div');list.className='selection-popup-options';const empty=document.createElement('p');empty.textContent=copy[3];empty.hidden=true;
  const rows=[];
@@ -20,6 +20,21 @@ export function openSelectionPopup(select){
  document.body.append(dialog);dialog.showModal();(list.querySelector('[aria-pressed="true"]:not(:disabled)')||close).focus();playSelectionSound();
 }
 const eligible=target=>target?.closest?.('select:not([multiple]):not([data-native-select])');
-document.addEventListener('pointerdown',e=>{const select=eligible(e.target);if(select&&!select.disabled&&select.size<=1&&e.button===0){e.preventDefault();openSelectionPopup(select)}},true);
-document.addEventListener('click',e=>{const select=eligible(e.target);if(select&&!select.disabled&&select.size<=1){e.preventDefault();openSelectionPopup(select)}},true);
-document.addEventListener('keydown',e=>{const select=eligible(e.target);if(select&&!select.disabled&&select.size<=1&&['Enter',' ','ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();openSelectionPopup(select)}},true);
+// Open after release; consume only the compatibility click from that gesture.
+// Opening on pointerdown can retarget release to an option in the new dialog.
+let gesture=null,suppressClick=false;
+document.addEventListener('pointerdown',e=>{
+ suppressClick=false;gesture=null;const select=eligible(e.target);
+ if(select&&!select.disabled&&select.size<=1&&e.button===0){e.preventDefault();e.stopImmediatePropagation();gesture={select,id:e.pointerId,x:e.clientX,y:e.clientY}}
+},true);
+document.addEventListener('pointerup',e=>{
+ if(!gesture||e.pointerId!==gesture.id)return;
+ const g=gesture;gesture=null;e.preventDefault();e.stopImmediatePropagation();suppressClick=true;
+ if(Math.hypot(e.clientX-g.x,e.clientY-g.y)<12)openSelectionPopup(g.select);
+},true);
+document.addEventListener('pointercancel',()=>{gesture=null;suppressClick=false},true);
+document.addEventListener('click',e=>{
+ if(suppressClick){suppressClick=false;e.preventDefault();e.stopImmediatePropagation();return}
+ const select=eligible(e.target);if(select&&!select.disabled&&select.size<=1){e.preventDefault();e.stopImmediatePropagation();openSelectionPopup(select)}
+},true);
+document.addEventListener('keydown',e=>{suppressClick=false;const select=eligible(e.target);if(select&&!select.disabled&&select.size<=1&&['Enter',' ','ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();e.stopImmediatePropagation();openSelectionPopup(select)}},true);

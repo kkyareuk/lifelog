@@ -1,9 +1,9 @@
-import {furniturePaintedBounds} from './furniture-painted-bounds.js';
+import {furniturePaintedBounds,furnitureArt} from './furniture-painted-bounds.js';
 import {isSurface,snapToSurface} from './furniture-surfaces.js';
 import {preserveFurnitureDragSize} from './furniture-drag-size.js';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 let cleanupActive=null;
-export const furnitureArt=el=>el.querySelector('.furniture-sprite,.couple-bed-base,.room-furniture-art')||el;
+export {furnitureArt} from './furniture-painted-bounds.js';
 export function counterSnap(point,own,neighbors){
  let best=null;
  for(const other of neighbors)for(const side of [-1,1]){const x=side<0?other.box.left-own.width/2+1:other.box.right+own.width/2-1,y=other.box.top+own.height/2,distance=Math.hypot(point.x-x,point.y-y);if(distance<Math.max(22,own.width*.4)&&(!best||distance<best.distance))best={x,y,distance};}
