@@ -1,6 +1,6 @@
+import {positionBedOccupants} from './bed-occupant-layout.js';
 import {bindEditorPosition} from './home-editor-position.js';
 import {furnitureSprite} from "./furniture-sprites.js?v=20260909dev305";
-import {bedPillowPoint} from './bed-perspective.js?v=20260909dev305';
 import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev305";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
@@ -86,60 +86,11 @@ export function homeInformationMarkup(home,photo,state,t){
     </div><div class="editor-save-actions"><button type="button" class="primary" data-editor-save>${c.save}</button><button type="button" class="danger" data-delete-home="${id}">${c.deleteHome}</button></div></section>`;
 }
 
-let bedLayoutObserver;
-// Pillow positions use the painted contain-image, not percentages of the room.
-// Recalculate only on layout/image changes (including tablet rotation).
-export function fitCoupleBedOccupants(root){
-  bedLayoutObserver?.disconnect();
-  const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')],statuses=[...root.querySelectorAll('.home-bed-foreground-status[data-bed-status-for]')];
-  const layout=()=>people.forEach(person=>{
-    if(!person.isConnected)return;
-    const room=person.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(person.dataset.coupleBedId)}"]`),image=bed?.querySelector('.couple-bed-base');
-    if(!image?.naturalWidth||!bed.clientWidth||!bed.clientHeight)return;
-    const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
-    const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
-    const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
-    // Sleeping occupants sit across the quilt edge: the upper part stays on
-    // the pillow and the lower part is actually covered by the foreground quilt.
-    const underCover=person.classList.contains('is-under-cover');
-    const pillow=bedPillowPoint({side:bed.dataset.bedSide==='true',direction:Number(bed.dataset.bedDirection)||1,artFlip:flip},Number(person.dataset.bedSlot),underCover);
-    if(bed.dataset.bedSingle==='true'){if(bed.dataset.bedSide==='true'){pillow.x=.235*(Number(bed.dataset.bedDirection)||1);pillow.y=0}else{pillow.x=0;pillow.y=-.20}}
-    const x=width/2+pillow.x*paintedWidth*1.05,y=height/2+pillow.y*paintedHeight*1.05;
-    person.style.zIndex=String(pillow.depth);
-    const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
-    const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
-    const parent=person.offsetParent,layer=bed.offsetParent;
-    person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
-    person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(12,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(10,Math.min(underCover?64:56,paintedWidth*(bed.dataset.bedSingle==='true'?.56:underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
-    person.style.setProperty('--bed-face-size',`${faceSize}px`);
-  });
-  const layoutStatuses=()=>statuses.forEach(status=>{
-    if(!status.isConnected)return;
-    const room=status.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(status.dataset.bedStatusFor)}"]`),image=bed?.querySelector('.couple-bed-base');
-    if(!image?.naturalWidth||!bed.clientWidth||!bed.clientHeight)return;
-    // Place the shared label below the complete painted bed, including its
-    // transformed footboard, rather than inside the quilt/footboard rectangle.
-    const painted=bed.querySelector('.room-furniture-art')||image,rect=painted.getBoundingClientRect();
-    const parent=status.offsetParent,parentRect=parent.getBoundingClientRect();
-    const scaleX=parentRect.width/parent.clientWidth||1,scaleY=parentRect.height/parent.clientHeight||1;
-    const half=Math.min(75,parent.clientWidth*.43),x=(rect.left+rect.width/2-parentRect.left)/scaleX;
-    status.style.setProperty('--bed-status-x',`${Math.max(half,Math.min(parent.clientWidth-half,x))}px`);
-    status.style.setProperty('--bed-status-y',`${(rect.bottom-parentRect.top)/scaleY+8}px`);
-  });
-  const fit=()=>{layout();layoutStatuses()};
-  if(!people.length&&!statuses.length)return;
-  bedLayoutObserver=new ResizeObserver(fit);
-  new Set([...people.map(person=>person.closest('.room')),...statuses.map(status=>status.closest('.room'))]).forEach(room=>{
-    if(!room)return;bedLayoutObserver.observe(room);
-    room.querySelectorAll('.couple-bed-base').forEach(image=>{if(!image.complete)image.addEventListener('load',fit,{once:true})});
-  });
-  fit();
-}
+export {positionBedOccupants as fitCoupleBedOccupants} from './bed-occupant-layout.js';
 
 export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded}){
   bindEditorPosition(root,state.activeHomeId,state.uiLanguage);
-  fitCoupleBedOccupants(root);
+  positionBedOccupants(root);
   const copy=homeEditorCopy(state.uiLanguage);
   root.querySelectorAll('.home-catalog-photo img').forEach(image=>{
     const fallback=()=>{const marker=document.createElement('span');marker.textContent=image.closest('[data-member-edit="car"]')?'🚙':image.closest('[data-member-edit="pet"]')?'🐾':image.closest('[data-member-edit="resident"]')?'?':'🚪';marker.setAttribute('aria-hidden','true');image.replaceWith(marker)};

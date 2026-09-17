@@ -1,3 +1,5 @@
+import {orderAttachedFurniture} from './furniture-depth.js';
+import {positionBedOccupants} from './bed-occupant-layout.js';
 import {positionWorktopUsers} from './worktop-users.js';
 import {positionConversationPartners} from './scene-conversation-layout.js';
 import {groupSceneLabels,sharedSeatActivity} from './scene-label-groups.js';
@@ -31,7 +33,7 @@ export function scheduleSceneDepth(){
   frame=requestAnimationFrame(()=>{
     frame=0;if(!root?.isConnected)return;
     const updates=[],seats=[],pulls=[],meals=[],labels=[];
-    for(const scene of root.querySelectorAll('.room')){positionSurfaceFurniture(scene);positionWorktopUsers(scene)}
+    for(const scene of root.querySelectorAll('.room')){positionSurfaceFurniture(scene);positionWorktopUsers(scene);positionBedOccupants(scene)}
     for(const scene of root.querySelectorAll('.room,.world.town-environment')){
       const items=[...scene.querySelectorAll(scene.matches('.room')?actors:'.map-art-button,.person:not(.place-people),.meeting-walker')];
       const bounds=items.map(element=>{
@@ -118,7 +120,7 @@ export function scheduleSceneDepth(){
       }
       const heading=scene.querySelector(':scope > .room-heading');if(heading)updates.push([heading,30+bounds.length*3]);
       bounds.sort((a,b)=>a.bottom-b.bottom);
-      bounds.forEach(({element},index)=>updates.push([element,10+index*3]));
+      orderAttachedFurniture(bounds).forEach(({element},index)=>updates.push([element,10+index*3]));
       // Occupancy badges are UI labels, not actors standing behind buildings.
       if(!scene.matches('.room'))scene.querySelectorAll('.place-people').forEach(element=>updates.push([element,20+bounds.length*3]));
       // Back frame remains above a table intersecting its seat, without raising

@@ -1,0 +1,9 @@
+<ko-KR>
+카운터·협탁 위 소품이 가구 뒤에 가려지는 문제를 수정하고 식탁 상판에도 소품을 놓을 수 있게 했습니다. 침대를 옮기거나 화면 배치가 달라질 때 취침 위치가 어긋나는 문제를 개선했습니다. 자아만들기는 모든 캐릭터가 공유하는 계정당 10분 간격으로 바꾸고, 비슷한 생활 질문의 반복을 줄였습니다. 사진 사용량 계산, 버튼 반응, 효과음, 대화 표시와 집 편집 개선도 포함됩니다. 광장은 준비 중입니다.
+</ko-KR>
+<en-US>
+Fixed objects appearing behind counters and nightstands, and added tabletop placement on dining tables. Improved sleeping positions when beds move or layouts change. Self-discovery now shares a 10-minute cooldown across your account, with fewer repetitive daily-life questions. Includes improvements to photo usage counts, tap response, sounds, conversation labels and home editing. The plaza remains unavailable.
+</en-US>
+<ja-JP>
+カウンター・サイドテーブルの上の小物が家具の後ろに隠れる問題を修正し、食卓にも小物を置けるようにしました。ベッド移動やレイアウト変更時の寝る位置を改善。自分づくりは全キャラクター共通のアカウントごと10分間隔にし、似た生活質問の繰り返しを減らしました。写真使用数、タップ反応、効果音、会話表示、家編集の改善も含まれます。広場は準備中です。
+</ja-JP>

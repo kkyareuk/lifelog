@@ -1,3 +1,4 @@
+import {bindFurnitureSceneDepth} from './furniture-depth.js';
 import {importantReplay} from './mafia-replay.js';
 import {preparationControls} from './mafia-preparation-ui.js';
 import {meetingControls} from './mafia-meeting-ui.js';
@@ -14,6 +15,7 @@ const words=()=>({stay:t('쉬기','Rest','休む'),task:t('임무 수행','Work 
 const art=l=>safe(l.image)||safe(state.buildingShapes?.find(s=>s.id===l.iconPreset)?.src)||(BUILDING_PRESET_SOURCES[l.iconPreset]?'./'+BUILDING_PRESET_SOURCES[l.iconPreset]:l.square?'./world-assets/building-types/park-handdrawn.png':'./world-assets/building-types/red-roof-home-handdrawn.webp');
 const cameraPositions=new Map();
 export function renderMafiaPlayback(body,g,p,{submit,back}){
+ body.furnitureDepthCleanup?.();
  const previousMap=body.querySelector('.mp-village');if(previousMap)cameraPositions.set(g.id,{x:previousMap.scrollLeft,y:previousMap.scrollTop});
  const place=id=>g.locations.find(l=>l.id===id),person=id=>g.players.find(q=>q.id===id),name=id=>person(id)?.name||t('누군가','Someone','誰か');
  const cards=g.privateCards[p?.id]||[],active=g.status==='playing'&&p?.alive,meeting=['discussion','alibi','claim','reply','floor','challenge','rebuttal','finalSpeech','debate','vote'].includes(g.phase);
@@ -150,5 +152,6 @@ export function renderMafiaPlayback(body,g,p,{submit,back}){
  preparationControls({g,p,root,world,tools,choose,menu,t,e,portrait,place,name});
  if(g.status==='playing'&&meeting&&g.meetingControls===2)meetingControls({root,g,p,cards,choose,describe,claimText,t,e,name});
  if(!active)root.querySelectorAll('.mp-tools button,.mp-card').forEach(b=>b.disabled=true);
+ body.furnitureDepthCleanup=bindFurnitureSceneDepth(root);
  let lastClock;return ()=>{const value=['walk','perform'].includes(g.phase)?t('연출 중','Playing','演出中'):g.status==='playing'?Math.max(0,Math.ceil(((meeting&&g.phase!=='vote'?(g.skipAt||g.meetingEndsAt||g.deadlineAt):g.deadlineAt)-Date.now())/1000))+t('초','s','秒'):'';if(value!==lastClock){root.querySelector('[data-live-clock]').textContent=value;lastClock=value;}root.meetingTick?.();};
 }

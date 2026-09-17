@@ -1412,7 +1412,8 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .room-furniture-art:has(.furniture-surface-grid){position:relative}
 .furniture-surface-grid{display:none;position:absolute;left:5%;top:4%;width:90%;height:56%;pointer-events:none;background-image:linear-gradient(to right,#a0793855 1px,transparent 1px),linear-gradient(to bottom,#a0793855 1px,transparent 1px);background-size:calc(100% / var(--surface-columns)) calc(100% / 3);outline:1px dashed #a0793888}
 .furniture-surface-grid[data-surface-kind="nightstand"]{left:17%;top:12%;width:66%;height:27%;background-size:100% 100%}
-.furniture-surface-grid[data-surface-side="true"]{left:12%;top:12%;width:76%;height:76%}
+.furniture-surface-grid[data-surface-kind="table"]{left:10%;top:8%;width:80%;height:65%}
+.furniture-surface-grid[data-surface-kind="counter"][data-surface-side="true"]{left:12%;top:12%;width:76%;height:76%}
 .is-editing .furniture-surface-grid{display:block}
 .surface-drop-target .room-furniture-art{outline:2px solid #d5ae52;outline-offset:2px}
 .furniture-sprite.counter-stretch{display:grid;grid-template-columns:var(--counter-cap) minmax(0,1fr) var(--counter-cap);height:auto;aspect-ratio:var(--sprite-ratio)}
