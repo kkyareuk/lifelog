@@ -26,3 +26,7 @@ Removed linked sign-in text from Shop. Fixed dropdown opening gestures activatin
 <ja-JP>
 店の連携ログイン表示を削除しました。ドロップダウンを開く操作で新しい画面の項目まで押される問題を修正しました。ベッドの選択範囲を画像に合わせました。配信できる広告がない場合の案内を改善しました。
 </ja-JP>
+
+## Distribution
+Play internal release330: 445 (1.0.393), available to internal testers September17 20:31 KST. Source f04f382 on dev. No supported devices removed; one nonblocking deobfuscation warning. Public main unchanged.
+https://play.google.com/apps/internaltest/4701300702493397907
