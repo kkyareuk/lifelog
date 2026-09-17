@@ -76,6 +76,7 @@ import {bindSharedUi,activeShared,canEditShared} from './shared-ui.js?v=20260909
 import "./group-push.js?v=20260909dev305";
 import {EXTRA_FAMILY,hospitalPurposes} from "./creative-options.js?v=20260909dev305";
 import {installSettingsTransfer} from "./settings-transfer.js?v=20260909dev305";
+import {playInteractionSound} from './interaction-feedback.js';
 import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, setCharacterBodyChoices, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, cancelHomeEdit, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260909dev305";
 import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260909dev305";
 import {bindHomeEditorUI,homeEditorCopy,filteredFurniture} from "./home-editor-ui.js?v=20260909dev305";
@@ -2395,6 +2396,7 @@ function bindNativeObserveCharacterSwipe(){
     const currentIndex=Math.max(0,localOrder.indexOf(selected));
     const direction=dx<0?1:-1;
     const next=localOrder[(currentIndex+direction+localOrder.length)%localOrder.length];
+    playInteractionSound('book-page');
     if(shared)window.DrawerVillageGroups?.selectResident?.(next);
     else withSimulationBatch(()=>{const date=new Date();activateCharacterInObservedTown(next,date);render({selectionOnly:true,sceneDate:date});});
   };
@@ -5670,6 +5672,7 @@ window.ParallelCity={
   cropCharacterImage:(file,type)=>cropImage(file,type),
   cropUserProfile:file=>cropImage(file,"userProfile"),
   getState:cloneState,
+  getInteractionSettings:()=>({activeTab:state.activeTab,uiLanguage:state.uiLanguage,soundMuted:state.soundMuted,soundEffectsVolume:state.soundEffectsVolume}),
   getPersonalStateForSharing:()=>structuredClone(personalState()),
   getPersonalWardrobeForSharing:id=>{const world=personalState(),c=world.characters?.[id];return c?structuredClone(withWardrobe(c,world.catalog).wardrobeItems):null},
   getCharacterCount:()=>personalState().order.length,getActiveTab:()=>state.activeTab,

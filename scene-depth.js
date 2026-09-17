@@ -1,3 +1,4 @@
+import {positionConversationPartners} from './scene-conversation-layout.js';
 import {groupSceneLabels,sharedSeatActivity} from './scene-label-groups.js';
 import {positionSurfaceFurniture} from './furniture-surfaces.js';
 // One batched geometry read after layout/placement, never an animation loop.
@@ -144,8 +145,8 @@ export function scheduleSceneDepth(){
       const {scene,person,status,z}=label;
       const key=label.groupKey;
       const peers=key?labels.filter(l=>l.scene===scene&&l.groupKey===key):[label];
-      if(peers[0]!==label){status.hidden=true;continue}status.hidden=false;
-      if(key&&status.querySelector('b'))status.querySelector('b').textContent=[...new Set(peers.map(l=>l.status.dataset.personName).filter(Boolean))].join(' · ');
+      if(peers[0]!==label){status.hidden=true;if(person)person.sceneStatus=status;status.remove();continue}status.hidden=false;
+      if(key&&status.querySelector('b'))status.querySelector('b').textContent=[...new Set(peers.map(l=>l.status.dataset.personName).filter(Boolean))].join(' * ');
       const activity=status.querySelector('small');if(activity){status.dataset.soloActivity??=activity.textContent;const lang=document.documentElement.lang?.slice(0,2)||'ko',talking=peers.length>1&&peers.every(p=>p.status.dataset.interactionId&&p.status.dataset.interactionId===status.dataset.interactionId);activity.textContent=peers.length>1&&talking?sharedSeatActivity(peers,lang):peers.length>1?({ko:talking?'함께 앉아 대화하는 중':'함께 앉아 각자 할 일을 하는 중',en:talking?'Sitting and talking together':'Sitting together, each doing their own thing',ja:talking?'一緒に座って話している':'一緒に座って、それぞれのことをしている'}[lang]||'함께 앉아 각자 할 일을 하는 중'):status.dataset.soloActivity;}
       let layer=scene.querySelector(':scope > .room-activity-labels');
       if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';scene.append(layer)}
@@ -158,6 +159,7 @@ export function scheduleSceneDepth(){
       person.classList.add('is-seated');person.style.left=x+'%';person.style.top=y+'%';person.style.setProperty('--seat-person-width',width+'px');
       const visual=person.querySelector('.home-person-visual');if(visual){visual.style.setProperty('--seat-align-y','0px');const image=visual.querySelector('img'),r=image?paintedRect(image):visual.getBoundingClientRect(),parent=person.offsetParent.getBoundingClientRect();const target=parent.top+parent.height*y/100;visual.style.setProperty('--seat-align-y',(target-r.top-r.height*.78)+'px');}
     }
+    positionConversationPartners(labels);
     const occupied=[...root.querySelectorAll('.home-person-visual,.home-interaction-visual')].map(el=>{
       const images=[...el.querySelectorAll('img')].map(paintedRect);
       return images.length?images: [el.getBoundingClientRect()];

@@ -60,7 +60,7 @@ function scheduleChannel(state,actor,initial=false){
     const audio=new Audio(FOOTSTEP_URLS[actor.mode]);audio.preload="auto";audio.playsInline=true;
     channel={audio,mode:actor.mode,gait:actor.gait.className,timer:0};channels.set(actor.id,channel);
   }
-  clearTimeout(channel.timer);channel.audio.volume=Math.min(1,volume*.82);
+  clearTimeout(channel.timer);channel.audio.volume=Math.min(1,volume);
   const play=()=>{
     if(!channels.has(actor.id))return;
     if(document.visibilityState==="hidden"||!audioVolume(state))return stopMovementAudio();
@@ -88,7 +88,7 @@ export function syncMovementAudio(state){
   actors.forEach(actor=>{
     const channel=channels.get(actor.id);
     if(!channel||channel.mode!==actor.mode||channel.gait!==actor.gait.className)scheduleChannel(state,actor,true);
-    else channel.audio.volume=Math.min(1,audioVolume(state)*.82);
+    else channel.audio.volume=Math.min(1,audioVolume(state));
   });
 }
 

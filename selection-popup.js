@@ -1,5 +1,5 @@
 import {playSelectionSound} from './interaction-feedback.js';
-const text=()=>({ko:['선택하기','검색','닫기','일치하는 항목이 없어요.'],en:['Choose an option','Search','Close','No matching options.'],ja:['選択する','検索','閉じる','該当する項目がありません。']}[window.ParallelCity?.getState?.()?.uiLanguage]||['선택하기','검색','닫기','일치하는 항목이 없어요.']);
+const text=()=>({ko:['선택하기','검색','닫기','일치하는 항목이 없어요.'],en:['Choose an option','Search','Close','No matching options.'],ja:['選択する','検索','閉じる','該当する項目がありません。']}[window.ParallelCity?.getInteractionSettings?.()?.uiLanguage]||['선택하기','검색','닫기','일치하는 항목이 없어요.']);
 let current=null;
 export function openSelectionPopup(select){
  if(current||!select.isConnected||select.disabled||select.multiple||select.size>1||select.dataset.nativeSelect!==undefined)return;

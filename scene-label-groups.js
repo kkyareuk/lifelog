@@ -2,7 +2,7 @@
 export function groupSceneLabels(labels){
  const interactionKeys=new Map();
  for(const label of labels){const seat=label.furniture;label.groupKey=seat&&['chair','sofa'].includes(seat.dataset.furnitureKind)?(seat.dataset.tableId?'table:'+seat.dataset.tableId:seat.dataset.furniturePlacement):label.status.dataset.sharedFurniture;const interaction=label.status.dataset.interactionId;if(interaction&&label.groupKey)interactionKeys.set(interaction,label.groupKey);}
- for(const label of labels){const id=label.status.dataset.interactionId;if(id&&interactionKeys.has(id))label.groupKey=interactionKeys.get(id);}
+ for(const label of labels){const id=label.status.dataset.interactionId;if(id)label.groupKey=interactionKeys.get(id)||"interaction:"+id;}
  return labels;
 }
 export function sharedSeatActivity(peers,language){

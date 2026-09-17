@@ -1,0 +1,12 @@
+<ko-KR>
+버튼과 선택창을 누를 때 발생하던 지연을 줄였습니다.
+새 가구와 연결형 카운터·상판 소품 배치를 추가했습니다. 개인·멀티 집 편집 도구, 벽지·바닥 선택, UI 숨김과 저장을 개선했습니다. 방에 맞는 행동과 욕구 회복, 본가·침실 연결을 수정하고, 대화하는 두 캐릭터의 겹침과 중복 이름표를 정리했습니다. 음식점 주문과 장소별 행동을 늘리고 동기화를 개선했습니다. 터치·메뉴·책·발소리 효과음과 음량을 조정했습니다. 광장은 준비 중입니다.
+</ko-KR>
+<en-US>
+Reduced delays when tapping buttons and opening choice menus.
+Added furniture, extendable counters and tabletop placement. Improved solo and multiplayer home editing, material pickers, UI hiding and saving. Fixed room activities, needs recovery, home/bedroom links and overlapping conversation partners with duplicate labels. Added restaurant orders and place-specific actions, improved sync, and adjusted touch, menu, book and footstep sounds. The plaza remains unavailable.
+</en-US>
+<ja-JP>
+ボタンや選択メニューを操作する際の遅延を軽減しました。
+新しい家具、伸ばせるカウンター、天板への小物配置を追加。個人・マルチの家編集、壁紙・床選択、UI非表示、保存を改善しました。部屋に合う行動、欲求回復、本家・寝室の関連付け、会話中の重なりと名前の重複を修正。飲食店の注文や場所ごとの行動を増やし、同期を改善しました。タッチ・メニュー・本・足音の効果音と音量を調整しました。広場は準備中です。
+</ja-JP>
