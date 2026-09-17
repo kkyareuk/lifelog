@@ -1,3 +1,4 @@
+import {furniturePaintedBounds} from './furniture-painted-bounds.js';
 import {isSurface,snapToSurface} from './furniture-surfaces.js';
 import {preserveFurnitureDragSize} from './furniture-drag-size.js';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
@@ -38,7 +39,7 @@ export function bindFurnitureDrag(root,{getHome,select=()=>{},move,resize=()=>{}
  root.addEventListener('pointerdown',e=>{
   if(e.button!==0||drag||!root.querySelector('.home.is-editing')&&!root.matches('.home.is-editing')||e.target.closest('dialog,.furniture-edit-toolbar,[data-home-furniture-drawer]'))return;
   const room=e.target.closest('.room[data-room-key]');if(!room)return;
-  const hits=[...room.querySelectorAll('[data-furniture-placement]')].filter(el=>{const r=furnitureArt(el).getBoundingClientRect();return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom}).sort((a,b)=>Number(getComputedStyle(b).zIndex||0)-Number(getComputedStyle(a).zIndex||0)||(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?1:-1));if(!hits.length)return;
+  const hits=[...room.querySelectorAll('[data-furniture-placement]')].filter(el=>{const r=furniturePaintedBounds(furnitureArt(el));return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom}).sort((a,b)=>Number(getComputedStyle(b).zIndex||0)-Number(getComputedStyle(a).zIndex||0)||(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?1:-1));if(!hits.length)return;
   // Cycle layers only after a tap finishes. Starting another drag must not select the support underneath.
   stop(e);const key=hits.map(el=>el.dataset.furniturePlacement).join('|'),repeat=last?.key===key&&Math.hypot(e.clientX-last.x,e.clientY-last.y)<18,index=repeat?(last.index+1)%hits.length:0,element=hits[0];select(element);selectedCounter=element;stretch.hidden=element.dataset.furnitureKind!=='counter';length.value=element.dataset.counterSpan||1;
   const home=getHome(element.dataset.homeId),item=home.rooms[element.dataset.roomKey].furniturePlacements.find(p=>p.id===element.dataset.furniturePlacement),canvas=room.closest('[data-room-canvas]'),r=element.getBoundingClientRect();

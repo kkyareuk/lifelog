@@ -1,5 +1,5 @@
 #app.is-multiplayer-directory>main{padding:0!important;display:block;background:transparent!important;overflow:auto}
-.multiplayer-directory{container-type:inline-size;width:min(100%,600px);margin:0 auto;min-height:100dvh;background:#614632 url('./assets/multiplayer/reference-0.png') center top/auto 100% repeat-y;color:#1b0b03;font-family:'KCCHanbit',var(--ui-font),sans-serif;box-sizing:border-box;padding-bottom:4.6%}
+.multiplayer-directory{container-type:inline-size;width:min(100%,600px);margin:0 auto;min-height:100dvh;background:#614632 url('./assets/multiplayer/reference-0.png') center top/auto 100% repeat-y;color:#fff5df;-webkit-text-fill-color:currentColor;font-family:'KCCHanbit',var(--ui-font),sans-serif;box-sizing:border-box;padding-bottom:4.6%}
 .multiplayer-directory>*{--u:.242718cqw;box-sizing:border-box}
 .multiplayer-directory>.directory-header{position:relative;background:none!important;backdrop-filter:none;box-shadow:none;border:0;padding:0!important;height:calc(108*var(--u))}
 .multiplayer-directory h1{position:absolute;right:calc(53*var(--u));top:calc(58*var(--u));font-size:calc(32*var(--u));line-height:1;margin:0;color:#fff}
@@ -18,7 +18,8 @@ html[data-color-mode] body #app main .multiplayer-directory .directory-filters i
 .directory-filters input{width:auto;min-width:100px;flex:1 1 100px;padding:calc(5*var(--u));background:#fff5dd;border-radius:8px;color:#473227}
 .directory-paper{margin:0 calc(11*var(--u));padding:calc(9*var(--u));border:calc(1.5*var(--u)) solid #000;border-radius:calc(32*var(--u));background:#f1dab4}
 .directory-inner{min-height:calc(680*var(--u));padding:calc(25*var(--u)) calc(12*var(--u));border:calc(1.5*var(--u)) solid #735826;border-radius:calc(32*var(--u));background:#f5ecdd;box-sizing:border-box}
-.directory-tools{display:flex;justify-content:space-between;align-items:center;height:calc(26*var(--u));padding:0 calc(8*var(--u));margin-bottom:calc(14*var(--u));font-size:calc(13*var(--u))}
+.directory-slot-help{margin:0 20px 14px;color:#fff5df;font-size:14px;line-height:1.5;text-shadow:0 1px 2px #21150f}
+.directory-tools{color:#2d2119;display:flex;justify-content:space-between;align-items:center;height:calc(26*var(--u));padding:0 calc(8*var(--u));margin-bottom:calc(14*var(--u));font-size:calc(13*var(--u))}
 .directory-tools select{width:calc(98*var(--u));min-height:0;height:100%;border:1px solid #c8b597;border-radius:calc(10*var(--u));background:transparent;font:inherit;color:#473227;padding:0 calc(8*var(--u))}
 .directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:calc(10*var(--u)) calc(8*var(--u))}
 #app .multiplayer-directory .directory-card{display:flex;flex-direction:column;align-items:stretch;text-align:left;min-width:0;min-height:calc(192*var(--u));padding:calc(12*var(--u));border:calc(1.5*var(--u)) solid #c8b597;border-radius:calc(11*var(--u));box-shadow:0 3px 8px #51382010!important;background:#fff9ef!important;color:#49352a;font:inherit}
@@ -27,11 +28,11 @@ html[data-color-mode] body #app main .multiplayer-directory .directory-filters i
 .directory-portrait img{width:100%;height:100%;object-fit:cover}
 .directory-card b{margin:4px 0 10px;font-size:calc(15*var(--u));line-height:1.25;min-height:2.5em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
 .directory-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:auto;padding-top:10px;border-top:1px solid #dbc9b0;text-align:center}
-.directory-stats>span{display:grid;gap:3px;min-width:0}.directory-stats small{font-size:calc(10*var(--u));line-height:1.4;color:#89725a;overflow-wrap:anywhere}.directory-stats strong{font-size:calc(15*var(--u));line-height:1.2;font-weight:600}
+.directory-stats>span{display:grid;gap:3px;min-width:0}.directory-stats small{font-size:calc(10*var(--u));line-height:1.4;color:#5b4939;overflow-wrap:anywhere}.directory-stats strong{font-size:calc(15*var(--u));line-height:1.2;font-weight:600}
 #app .multiplayer-directory .directory-add{align-items:center;justify-content:center;text-align:center;gap:14px;border-style:dashed;background:#eee3d1!important}
 .directory-add-symbol{display:grid;place-items:center;width:58px;aspect-ratio:1;border:1px solid #c5ad8b;border-radius:50%;background:#faf3e6;color:#846447;font:36px/1 system-ui}
 .directory-add b{min-height:0;margin:0}
-.directory-inner>p{font-size:calc(13*var(--u));line-height:1.5}
+.directory-inner>p{color:#2d2119;font-size:calc(13*var(--u));line-height:1.5}
 .directory-create-dialog{width:min(92vw,480px);max-height:85dvh;overflow:auto;padding:20px;border:2px solid #735826;border-radius:24px;background:#f5ecdd;color:#1b0b03}
 .directory-create-dialog .multiplayer-entry-grid{grid-template-columns:1fr}
 .dictionary-transfer-actions{display:flex;gap:8px;flex-wrap:wrap;padding:8px}

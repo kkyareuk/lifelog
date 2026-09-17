@@ -1,7 +1,7 @@
 {
-  "version": "1.0.391",
-  "build": 443,
-  "sourceAndroidCode": 443,
+  "version": "1.0.392",
+  "build": 444,
+  "sourceAndroidCode": 444,
   "stage": "testing",
   "appStoreReady": false,
   "channel": "internal"

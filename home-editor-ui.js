@@ -1,3 +1,4 @@
+import {furniturePaintedBounds} from './furniture-painted-bounds.js';
 import {positionBedOccupants} from './bed-occupant-layout.js';
 import {bindEditorPosition} from './home-editor-position.js';
 import {furnitureSprite} from "./furniture-sprites.js?v=20260909dev305";
@@ -168,7 +169,7 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
 // rectangle for the selection outline, not the transparent footprint.
 export function fitFurnitureSelection(element){
   const art=element.querySelector('.furniture-sprite,.couple-bed-base,.room-furniture-art');if(!art)return;
-  const outer=element.getBoundingClientRect(),r=art.getBoundingClientRect(),sx=outer.width/Math.max(1,element.offsetWidth),sy=outer.height/Math.max(1,element.offsetHeight);
+  const outer=element.getBoundingClientRect(),r=furniturePaintedBounds(art),sx=outer.width/Math.max(1,element.offsetWidth),sy=outer.height/Math.max(1,element.offsetHeight);
   element.style.setProperty('--selection-inset-x',`${(r.left-outer.left)/sx}px`);
   element.style.setProperty('--selection-inset-y',`${(r.top-outer.top)/sy}px`);
 }

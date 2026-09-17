@@ -1,8 +1,15 @@
 diff --git a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java b/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
-index c629139..19a82d6 100644
+index c629139..0ad2460 100644
 --- a/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
 +++ b/node_modules/@capacitor-community/admob/android/src/main/java/com/getcapacitor/community/admob/banner/BannerExecutor.java
-@@ -108,15 +108,15 @@ public class BannerExecutor extends Executor {
+@@ -103,20 +103,20 @@ public class BannerExecutor extends Executor {
+                     break;
+             }
+ 
+-            // set Safe Area only for Android 15+
+-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
++            // Use the same safe area as the reserved game viewport, including older cutout devices.
++            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                  View rootView = activitySupplier.get().getWindow().getDecorView();
                  rootView.setOnApplyWindowInsetsListener((v, insets) -> {
                      int bottomInset = insets.getSystemWindowInsetBottom();
@@ -12,7 +19,7 @@ index c629139..19a82d6 100644
 -                        mAdViewLayoutParams.setMargins(0, topInset, 0, 0);
 -                    } else {
 -                        mAdViewLayoutParams.setMargins(0, 0, 0, bottomInset);
-+                    int topInset = insets.getInsets(android.view.WindowInsets.Type.statusBars() | android.view.WindowInsets.Type.displayCutout()).top;
++                    int topInset = androidx.core.view.WindowInsetsCompat.toWindowInsetsCompat(insets, v).getInsets(androidx.core.view.WindowInsetsCompat.Type.statusBars() | androidx.core.view.WindowInsetsCompat.Type.displayCutout()).top;
 +
 +                    int nextTop = "TOP_CENTER".equals(adOptions.position) ? topInset : 0;
 +                    int nextBottom = "TOP_CENTER".equals(adOptions.position) ? 0 : bottomInset;

@@ -4,7 +4,7 @@ import {adStep} from './ad-errors.js';
 const sdk=()=>window.Capacitor?.Plugins?.AdMob;
 export const adPlatform=()=>window.Capacitor?.getPlatform?.();
 export const adsAvailable=()=>!!AD_UNITS[adPlatform()]&&!!sdk()&&window.PARALLEL_CITY_CONFIG?.ads?.enabled===true;
-export const adsTesting=()=>window.DRAWER_VILLAGE_PLAZA_ENABLED===true||window.PARALLEL_CITY_CONFIG?.ads?.testing===true;
+export const adsTesting=()=>window.PARALLEL_CITY_CONFIG?.ads?.testing===true;
 let ready,fullScreen=false,interstitialLoad,interstitialReadyAt=0,lastInterstitialAt=0;
 async function bounded(promise){let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('ads-timeout')),20000)})])}finally{clearTimeout(timer)}}
 export async function initializeAds(){
