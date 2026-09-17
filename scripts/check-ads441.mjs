@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+let attempts=0,initialized=0;
+globalThis.window={Capacitor:{getPlatform:()=> 'android',Plugins:{AdMob:{requestConsentInfo:async()=>{if(++attempts===1)throw Error('Publisher misconfiguration: no forms configured');return {canRequestAds:true,status:'NOT_REQUIRED'}},initialize:async()=>{initialized++}}}},PARALLEL_CITY_CONFIG:{ads:{enabled:true,testing:true}}};
+const ads=await import('../native-ads.js');
+await assert.rejects(ads.initializeAds(),error=>error.adStage==='consent');
+assert.equal(initialized,0,'do not bypass failed consent');
+await Promise.all([ads.initializeAds(),ads.initializeAds()]);
+assert.equal(attempts,2,'failed initialization can retry, successful requests share a promise');
+assert.equal(initialized,1,'only initialize once');
+console.log('PASS441 consent stage, retry after failure, shared initialization and no consent bypass');

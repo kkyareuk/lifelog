@@ -27,3 +27,12 @@ Top banners now fit the screen width on Home, Town and House. Added ad loading s
 <ja-JP>
 ホーム・村・家の上部バナーを画面幅に合わせ、広告読み込みの案内と再試行を追加しました。キャラクターの全体設定を開く際に全画面広告を表示します。横向きタブレットの自分づくりアイコンとバナー下の配置を改善しました。広告削除の購入者にはバナー・全画面広告を表示しません。
 </ja-JP>
+
+## Build artifact
+AAB: C:/Users/Public/drawer-release433/drawer-village-1.0.389-441-internal.aab
+SHA256: d353ca049944a2792f3125595e7ea7d70764bcdc9e7ea25aaeedd4e1c84c16b5
+Android Gradle bundleRelease succeeded; jarsigner reports jar verified (self-signed upload certificate). Modified prepared module bytes match the AAB, including bundled CSS; index contains internal441/plaza enabled. iOS project preparation check passed, not Mac/device execution. Consent failure retry and shared initialization check passed.
+
+## Distribution
+Google Play internal release326: 441 (1.0.389), available to internal testers, September17 18:46 KST. No supported devices removed. One nonblocking deobfuscation warning; minification disabled. Public release unchanged. Source commit801a999 on dev.
+Test link: https://play.google.com/apps/internaltest/4701300702493397907
