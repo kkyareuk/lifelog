@@ -4942,12 +4942,12 @@ export function resolveHomeEncounter(c,current,otherScene,date){
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
   // Needs never interrupt a manual command, travel or a scheduled activity.
-  const need=!activeRoutine&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime()):'';
+  const need=!activeRoutine&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:sleepingNow(c,date)||!c.autonomousActivityBlocks?.includes('nap')}):'';
   if(need&&need!=='social'){
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type={sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,{needKey:need}));
     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
-      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
 
       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
     }

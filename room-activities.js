@@ -7,16 +7,25 @@ export function roomActivityKey(scene={}){
  const group={hygiene:'hygiene',rest:'rest',food:'eating',sleep:'sleep'}[task?.group];
  const kind=scene.meetingKind||scene.actionKind||scene.kind||task?.kind;
  if(task?.id?.includes('cook'))return 'cooking';
- if(['nap','sleep'].includes(kind)||scene.sleeping)return 'sleep';
+ if(group)return group;
+ if(scene.needKey)return {hunger:'eating',social:'talk'}[scene.needKey]||scene.needKey;
  if(group==='hygiene')return group;
  const key={meal:'eating',eat:'eating',eating:'eating',wash:'hygiene',rest:'rest',relax:'rest',read:'reading',study:'reading',research:'reading',chores:'cleaning',game:'games',music:'music',art:'art',exercise:'exercise',talk:'talk',hangout:'talk',debate:'talk',hug:'affection',kiss:'affection',affection:'affection',comfort:'care'}[kind];
  if(key)return key;
+ if(['nap','sleep'].includes(kind)||scene.sleeping)return 'sleep';
  if(scene.needKey)return {hunger:'eating',social:'talk'}[scene.needKey]||scene.needKey;
  const title=scene.baseTitle||scene.title||'';
  if(/샤워|씻|목욕|세수|양치|wash|shower|bath|入浴|シャワー|洗顔/i.test(title))return 'hygiene';
- return autonomousActivity({...scene,manualDirective:false,routineId:null,transit:false})||group||(/쉬|휴식|rest|relax|休憩/i.test(title)?'rest':'other');
+ return ({nap:'sleep'}[autonomousActivity({...scene,manualDirective:false,routineId:null,transit:false})]||autonomousActivity({...scene,manualDirective:false,routineId:null,transit:false}))||group||(/쉬|휴식|rest|relax|休憩/i.test(title)?'rest':'other');
 }
-export function roomActivityAllowed(room,scene){return !Array.isArray(room?.allowedActivities)||room.allowedActivities.includes(roomActivityKey(scene));}
+export function roomAllowedActivities(room={}){
+ const all=Object.keys(ROOM_ACTIVITIES),saved=room.allowedActivities;
+ if(Array.isArray(saved)&&(room.activityRulesCustom||saved.length!==all.length||!all.every(k=>saved.includes(k))))return saved;
+ const type=room.type||({침실:'bedroom',욕실:'bath',화장실:'bath',주방:'kitchen',거실:'living',서재:'study',현관:'entry'})[room.name]||'other';
+ const denied={bedroom:['toilet','hygiene','eating','cooking','gardening','exercise'],bath:['sleep','eating','cooking','reading','games','music','art','exercise','gardening','collecting','shopping'],bathroom:['sleep','eating','cooking','reading','games','music','art','exercise','gardening','collecting','shopping'],kitchen:['sleep','toilet','hygiene'],living:['toilet','hygiene','cooking'],study:['sleep','toilet','hygiene','cooking'],entry:['sleep','eating','toilet','hygiene','cooking','reading','games','music','art'],other:['toilet','hygiene','cooking']}[type]||['toilet','hygiene','cooking'];
+ return all.filter(k=>!denied.includes(k));
+}
+export function roomActivityAllowed(room,scene){return roomAllowedActivities(room).includes(roomActivityKey(scene));}
 export function applyRoomActivityPolicy(character,scene,world){
  if(!scene?.home||scene.transit||scene.meetingJourney||scene.meetingWaiting)return scene;
  const home=world.homes?.[scene.visitHomeId||character.homeId],room=home?.rooms?.[scene.room];

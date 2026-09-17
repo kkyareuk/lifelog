@@ -13,10 +13,10 @@ export const FURNITURE_TYPES=Object.freeze(["all","beds","sinks","tables","seati
 export function furnitureType(item){
   if(/침대/.test(item))return "beds";
   if(item==="세면대")return "sinks";
-  if(/식탁|책상|테이블|작업대|조리대|칵테일 바/.test(item))return "tables";
+  if(/식탁|책상|테이블|작업대|조리대|카운터|칵테일 바/.test(item))return "tables";
   if(/의자|소파/.test(item))return "seating";
   if(/선반|책장|진열|수납장|신발장|찬장|와인장|상자|옷장|옷걸이|협탁/.test(item))return "cabinets";
-  if(/TV|오디오|냉장고|오븐|머신|세척기|세탁기|건조기|프로젝터|컴퓨터|게임기|플레이어|턴테이블|홈시어터/.test(item))return "appliances";
+  if(/인덕션|TV|오디오|냉장고|오븐|머신|세척기|세탁기|건조기|프로젝터|컴퓨터|게임기|플레이어|턴테이블|홈시어터/.test(item))return "appliances";
   if(/화분|인형|거울|독서등/.test(item))return "decor";
   return "misc";
 }

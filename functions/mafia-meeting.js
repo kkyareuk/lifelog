@@ -19,12 +19,15 @@ module.exports=(base,previous,playback)=>{
  function grounds(g,p,a){
   const kinds=a.kind==='defend'?['none','autopsyMismatch','truthful','consistent']:a.kind==='oppose'?['fabricated','lie','impossible','insufficient']:['none','autopsy','route','lie','contradiction','behavior','voteRecord'];
   const reason=a.reason||'none';if(a.reason&&!kinds.includes(reason))throw Error('game-invalid-action');
-  if(a.cardId){const c=(g.cards[p.id]||[]).find(c=>c.id===a.cardId),type=category(c);if(!type)throw Error('game-private-card');const expected={autopsyMismatch:'autopsy',truthful:'lie',consistent:'contradiction',impossible:'route',fabricated:null,insufficient:null}[reason]||reason;if(!['fabricated','insufficient'].includes(reason)&&type!==expected)throw Error('game-invalid-action');}
+  if(a.reason==='insufficient'&&a.cardId)throw Error('game-invalid-action');
+  if(a.cardId){const c=(g.cards[p.id]||[]).find(c=>c.id===a.cardId),type=category(c);if(!type)throw Error('game-private-card');const expected={autopsyMismatch:'autopsy',truthful:'lie',lie:'contradiction',consistent:'contradiction',impossible:'route',fabricated:null,insufficient:null}[reason]||reason;if(!['fabricated','insufficient'].includes(reason)&&type!==expected&&!(reason==='lie'&&type==='lie'))throw Error('game-invalid-action');}
   return reason;
  }
  function evidence(g,p,a){
-  if(!a.cardId)return null;
+  if(a.reason==='insufficient'||!a.cardId)return null;
   const found=(g.cards[p.id]||[]).find(c=>c.id===a.cardId);if(!found)throw Error('game-private-card');
+  const claim=g.currentClaim,target=a.targetId||claim?.target;
+  if(['accuse','defend','oppose'].includes(a.kind)&&found.subject&&![target,...(a.kind==='oppose'?[claim?.speaker]:[])].includes(found.subject)&&!(found.kind==='autopsy'&&claim?.card?.place===found.place&&claim.card.day===found.day))throw Error('game-unrelated-evidence');
   if(a.forge){if(p.role!=='mafia'||g.forgeryUsed?.[p.id])throw Error('game-invalid-action');if(!g.locations.some(l=>l.id===a.forgePlace&&l.id!==found.place))throw Error('game-invalid-action');g.forgeryUsed[p.id]=true;return {...found,place:a.forgePlace,...(found.kind==='movement'?{to:a.forgePlace}:{}),forged:true,sourceChain:[p.id]}}
   return found;
  }
@@ -106,7 +109,7 @@ module.exports=(base,previous,playback)=>{
   if(g.status!=='playing')return g;
   if(g.nightCycle&&g.phase==='night'){
    if(now<g.deadlineAt)return g;
-   const votes={};for(const p of alive(g).filter(p=>p.role==='mafia')){const targets=g.preparation?base.preparation.targets(g,p):alive(g).filter(q=>q.role!=='mafia');const target=g.nightVotes?.[p.id]||targets[Math.floor(base.random(g.seed,'night',g.day,p.id)*targets.length)]?.id;if(target&&targets.some(q=>q.id===target))votes[target]=(votes[target]||0)+1}
+   const votes={};for(const p of alive(g).filter(p=>p.role==='mafia')){const targets=g.preparation?base.preparation.targets(g,p):alive(g).filter(q=>q.role!=='mafia');const target=g.nightVotes?.[p.id]||(base.preparation?.chooseTarget(g,p,targets)?.id||targets[0]?.id);if(target&&targets.some(q=>q.id===target))votes[target]=(votes[target]||0)+1}
    const selected=Object.keys(votes).sort((a,b)=>votes[b]-votes[a]||base.random(g.seed,g.day,a)-base.random(g.seed,g.day,b))[0];
    const victim=g.players.find(p=>p.id===selected);g.dawnVictim=victim?.id||'';g.dawnScene=null;g.day++;g.period=0;g.actionTick=0;
    if(g.preparation){const attacker=alive(g).find(p=>p.role==='mafia'&&g.nightVotes?.[p.id]===selected)||alive(g).find(p=>p.role==='mafia'&&base.preparation.targets(g,p).some(q=>q.id===selected));base.preparation.night(g,victim,attacker);}
@@ -133,14 +136,14 @@ module.exports=(base,previous,playback)=>{
   }
   if(g.phase==='reply'&&elapsed>=0){
    const p=alive(g).find(p=>p.id===g.currentClaim.target);
-   if(p?.delegated){const record=(g.dayActions?.[p.id]||[]).findLast(r=>r.day===g.day&&r.period===g.currentClaim.period),activity=record?.action==='investigate'?'investigate':record?.action==='talk'?'talk':['takeTool','watchTool','hideTool','scoutHome','secureHome'].includes(record?.action)?'tools':'rest';const c=(g.cards[p.id]||[]).find(proof);submit(g,p,{kind:g.currentClaim.kind==='defend'?'thank':g.currentClaim.kind==='accuse'?'oppose':'answer',answer:g.currentClaim.question==='activity'?activity:['tookTool','missingTool'].includes(g.currentClaim.question)?'unknown':'where',place:(g.dayActions?.[p.id]||[]).findLast(r=>r.day===g.day&&r.period===g.currentClaim.period)?.place||g.preparation?.people[p.id]?.sleepAt||p.place,...(c&&g.currentClaim.kind==='accuse'?{reason:'insufficient',cardId:c.id}:{})},Math.min(now,g.deadlineAt-1));return g}
+   if(p?.delegated){const record=(g.dayActions?.[p.id]||[]).findLast(r=>r.day===g.day&&r.period===g.currentClaim.period),activity=record?.action==='investigate'?'investigate':record?.action==='talk'?'talk':['takeTool','watchTool','hideTool','scoutHome','secureHome'].includes(record?.action)?'tools':'rest';const c=(g.cards[p.id]||[]).find(proof);submit(g,p,{kind:g.currentClaim.kind==='defend'?'thank':g.currentClaim.kind==='accuse'?'oppose':'answer',answer:g.currentClaim.question==='activity'?activity:['tookTool','missingTool'].includes(g.currentClaim.question)?'unknown':'where',place:(g.dayActions?.[p.id]||[]).findLast(r=>r.day===g.day&&r.period===g.currentClaim.period)?.place||g.preparation?.people[p.id]?.sleepAt||p.place,...(g.currentClaim.kind==='accuse'?{reason:'insufficient'}:{})},Math.min(now,g.deadlineAt-1));return g}
   }
   if(g.phase==='rebuttal'&&elapsed>=1000&&!g.npcReactionDone){
    g.npcReactionDone=true;g.meetingRevision=(g.meetingRevision||0)+1;
    const teammate=g.currentClaim.kind==='accuse'&&g.players.find(q=>q.id===g.currentClaim.target)?.role==='mafia'?npcs.find(q=>q.role==='mafia'&&![g.currentClaim.speaker,g.currentClaim.target].includes(q.id)&&!g.reactions.some(r=>r.speaker===q.id)):null;
    if(teammate){react(g,teammate,{kind:'oppose',reason:'insufficient'},now);return g;}
    const candidate=npcs.filter(p=>p.id!==g.currentClaim.speaker&&p.id!==g.currentClaim.target&&!g.reactions.some(r=>r.speaker===p.id)).map(p=>({p,c:(g.cards[p.id]||[]).find(c=>c.kind==='contradiction'&&c.subject===g.currentClaim.speaker),bias:(g.bias?.[p.id+':'+g.currentClaim.speaker]||0)+emotions.feelings(g,p.id,g.currentClaim.speaker).grudge-emotions.feelings(g,p.id,g.currentClaim.speaker).gratitude})).find(x=>x.c||Math.abs(x.bias)>=6&&base.random(g.seed,'react',g.phaseIndex,x.p.id)<.3);
-   if(candidate){const {p,c,bias}=candidate;react(g,p,{kind:c||bias>0?'oppose':'agree',...(c?{reason:'insufficient',cardId:c.id}:{})},now)}
+   if(candidate){const {p,c,bias}=candidate;react(g,p,{kind:c||bias>0?'oppose':'agree',...(c?{reason:'lie',cardId:c.id}:bias>0?{reason:'insufficient'}:{})},now)}
   }
   if(now<g.deadlineAt)return g;
   if(g.phase==='claim'){
@@ -162,6 +165,7 @@ module.exports=(base,previous,playback)=>{
   out.canChangeStance=(g.history||[]).some(h=>h.day===g.day&&h.speaker===p?.id&&['accuse','defend'].includes(h.kind)&&!h.withdrawn);
   out.voteHistory=g.voteHistory||[];out.allies=p?.role==='mafia'?g.players.filter(q=>q.role==='mafia'&&q.id!==p.id).map(q=>({id:q.id})):[];
   out.preparation=base.preparation.view(g,p);if(g.preparation){const known=new Set((g.cards[p?.id]||[]).filter(c=>c.kind==='autopsy').map(c=>c.originId));out.sceneReports=(out.sceneReports||[]).filter(r=>known.has(r.id));}out.voteResults=['voteResult','result'].includes(g.phase)||g.status==='finished'?g.voteResults||[]:[];
+  out.moods=Object.fromEntries(g.players.map(q=>{const relations=Object.entries(g.matchEmotions||{}).filter(([key])=>key.startsWith(q.id+':')).map(([,v])=>v),grudge=Math.max(0,...relations.map(v=>v.grudge||0)),gratitude=Math.max(0,...relations.map(v=>v.gratitude||0));return [q.id,grudge>=6?'angry':(g.claimIssues?.[q.id]||0)>=4?'tense':gratitude>=6?'warm':(q.voteTraits?.fear||0)>.6?'nervous':'calm'];}));
   out.replay=g.status==='finished'?g.replay||[]:[];
   return out;
  }

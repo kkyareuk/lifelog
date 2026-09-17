@@ -5,7 +5,7 @@ const clamp=(value,min,max,fallback=min)=>{
 };
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
 export function isHomeSleepScene(scene){
-  return scene?.actionKind==="sleep"||/자는 중|잠든|잠들어|낮잠|눈을 붙|눈 붙|수면|sleeping|asleep|睡眠|眠って|睡觉/i.test(`${scene?.title||""} ${scene?.mood||""}`);
+  return roomActivityKey(scene||{})==='sleep';
 }
 export function homeSleepAnimation(habit){
   const styles={

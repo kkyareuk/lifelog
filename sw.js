@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-internal428-20260917";
+const CACHE_VERSION="drawer-village-internal429-20260917";
 const CORE=[
   "./relationship-roles.js?v=20260909dev305","./relationship-roles-editor.js?v=20260909dev305","./relationship-housing.js?v=20260909dev305",
   "./personality-observation.js?v=20260909dev305", "./shared-create-resident.js?v=20260909dev305",

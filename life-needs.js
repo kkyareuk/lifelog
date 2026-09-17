@@ -24,11 +24,11 @@ export function advanceNeeds(c,scene,now=Date.now()){
  if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
  c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed:scene?.needKey||'',needStartedAt:scene?.needKey?(old?.activeNeed===scene.needKey?old.needStartedAt:now):0};return true;
 }
-export function urgentNeed(c,now=Date.now()){
+export function urgentNeed(c,now=Date.now(),{allowSleep=true}={}){
  if(c.needsFixed)return '';
  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
- if(current&&!blockedNeed(c,current)&&values[current]<75)return current;
- return Object.keys(NEEDS).filter(key=>!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
+ if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<75)return current;
+ return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
 }
 export function relationshipPolicy(characters,world={}){
  if(["fixed","score","dynamic"].includes(world.relationshipChangeMode))return world.relationshipChangeMode;

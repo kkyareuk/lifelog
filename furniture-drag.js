@@ -2,6 +2,11 @@ import {preserveFurnitureDragSize} from './furniture-drag-size.js';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 let cleanupActive=null;
 export const furnitureArt=el=>el.querySelector('.furniture-sprite,.couple-bed-base,.room-furniture-art')||el;
+export function counterSnap(point,own,neighbors){
+ let best=null;
+ for(const other of neighbors)for(const side of [-1,1]){const x=side<0?other.box.left-own.width/2+1:other.box.right+own.width/2-1,y=other.box.top+own.height/2,distance=Math.hypot(point.x-x,point.y-y);if(distance<Math.max(22,own.width*.4)&&(!best||distance<best.distance))best={x,y,distance};}
+ return best;
+}
 export function bindFurnitureDrag(root,{getHome,select=()=>{},move,language='ko'}){
  cleanupActive?.();cleanupActive=null;if(!root)return;const controller=new AbortController(),signal=controller.signal;let drag=null,last=null,frame=0;
  const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);let magnet=true;try{magnet=localStorage.getItem('drawer-chair-magnet')!=='off'}catch{}
@@ -20,6 +25,7 @@ export function bindFurnitureDrag(root,{getHome,select=()=>{},move,language='ko'
     if(distance<=Math.max(28,table.box.width*.32)&&(!best||distance<best.distance))best={distance,x:(ax-box.left)/box.width*100,y:(ay-box.top)/box.height*100,tableId:table.id,seatSide:side,rotation};
    }}if(best)pos={...pos,...best};
   }
+  if(d.item.item.startsWith('카운터')){const snap=counterSnap({x,y},furnitureArt(d.element).getBoundingClientRect(),target.counters.filter(c=>c.id!==d.item.id));if(snap)pos={...pos,x:(snap.x-box.left)/box.width*100,y:(snap.y-box.top)/box.height*100};}
   d.latest={...pos,roomKey:target.key};if(!d.ghost){d.ghost=d.element.cloneNode(true);d.ghost.removeAttribute('data-furniture-placement');d.ghost.classList.add('furniture-drag-preview');d.ghost.inert=true;preserveFurnitureDragSize(d.element,d.ghost);d.element.classList.add('furniture-drag-source');for(const part of d.parts){part.ghost=part.element.cloneNode(true);part.ghost.removeAttribute('data-furniture-placement');part.ghost.classList.add('furniture-drag-preview');part.ghost.inert=true;preserveFurnitureDragSize(part.element,part.ghost);part.element.classList.add('furniture-drag-source')}}
   if(d.ghost.parentElement!==target.layer)target.layer.append(d.ghost);d.ghost.style.setProperty('--furniture-x',pos.x+'%');d.ghost.style.setProperty('--furniture-y',pos.y+'%');for(const part of d.parts){if(part.ghost.parentElement!==target.layer)target.layer.append(part.ghost);part.ghost.style.setProperty('--furniture-x',(pos.x+part.dx)+'%');part.ghost.style.setProperty('--furniture-y',(pos.y+part.dy)+'%')}
  };
@@ -30,7 +36,7 @@ export function bindFurnitureDrag(root,{getHome,select=()=>{},move,language='ko'
   stop(e);const key=hits.map(el=>el.dataset.furniturePlacement).join('|'),repeat=last?.key===key&&Math.hypot(e.clientX-last.x,e.clientY-last.y)<18,index=repeat?(last.index+1)%hits.length:0,element=hits[index];last={key,index,x:e.clientX,y:e.clientY};select(element);
   const home=getHome(element.dataset.homeId),item=home.rooms[element.dataset.roomKey].furniturePlacements.find(p=>p.id===element.dataset.furniturePlacement),canvas=room.closest('[data-room-canvas]'),r=element.getBoundingClientRect();
   const linked=home.rooms[element.dataset.roomKey].furniturePlacements.filter(p=>p.id===item.id||item.item==='식탁'&&p.tableId===item.id);const parts=[...room.querySelectorAll('[data-furniture-placement],[data-chair-frame]')].filter(el=>el!==element&&linked.some(p=>p.id===(el.dataset.furniturePlacement||el.dataset.chairFrame))).map(el=>{const p=linked.find(p=>p.id===(el.dataset.furniturePlacement||el.dataset.chairFrame));return {element:el,dx:p.x-item.x,dy:p.y-item.y}});
-  drag={element,item,parts,pointer:e.pointerId,startX:e.clientX,startY:e.clientY,offsetX:r.left+r.width/2-e.clientX,offsetY:r.top+r.height/2-e.clientY,canvasBox:canvas.getBoundingClientRect(),rooms:[...canvas.querySelectorAll('.room[data-room-key]')].map(room=>({key:room.dataset.roomKey,layer:room.querySelector('.room-furniture-layer'),box:room.querySelector('.room-furniture-layer').getBoundingClientRect(),tables:[...room.querySelectorAll('[data-furniture-kind="table"]')].map(t=>({id:t.dataset.furniturePlacement,box:furnitureArt(t).getBoundingClientRect()}))}))};root.setPointerCapture(e.pointerId);
+  drag={element,item,parts,pointer:e.pointerId,startX:e.clientX,startY:e.clientY,offsetX:r.left+r.width/2-e.clientX,offsetY:r.top+r.height/2-e.clientY,canvasBox:canvas.getBoundingClientRect(),rooms:[...canvas.querySelectorAll('.room[data-room-key]')].map(room=>({key:room.dataset.roomKey,layer:room.querySelector('.room-furniture-layer'),box:room.querySelector('.room-furniture-layer').getBoundingClientRect(),counters:[...room.querySelectorAll('[data-furniture-kind^="counter"]')].map(t=>({id:t.dataset.furniturePlacement,box:furnitureArt(t).getBoundingClientRect()})),tables:[...room.querySelectorAll('[data-furniture-kind="table"]')].map(t=>({id:t.dataset.furniturePlacement,box:furnitureArt(t).getBoundingClientRect()}))}))};root.setPointerCapture(e.pointerId);
  },{capture:true,signal});
  root.addEventListener('pointermove',e=>{if(!drag||drag.pointer!==e.pointerId)return;stop(e);if(!drag.point&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<5)return;drag.point={x:e.clientX,y:e.clientY};if(!frame)frame=requestAnimationFrame(paint)},{capture:true,signal});
  const end=e=>{if(!drag||drag.pointer!==e.pointerId)return;stop(e);if(frame){cancelAnimationFrame(frame);paint()}const d=drag;drag=null;clearPreview(d);if(root.hasPointerCapture(e.pointerId))root.releasePointerCapture(e.pointerId);if(d.latest){last=null;move(d.element,d.latest)}};

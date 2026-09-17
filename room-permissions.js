@@ -1,4 +1,4 @@
-import {ROOM_ACTIVITIES} from './room-activities.js?v=20260909dev305';
+import {ROOM_ACTIVITIES,roomAllowedActivities} from './room-activities.js?v=20260909dev305';
 const esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 export const ROOM_PERMISSION_COPY={
  ko:{owners:"방 주인",all:"구성원 전체",selected:"직접 지정",none:"선택 안 함",access:"출입 허용",everyone:"모두",ownersOnly:"방 주인만",residents:"집 구성원",outsiders:"외부인",delivery:"배달원",repair:"수리기사",pets:"반려생물",cats:"고양이",characters:"캐릭터 지정",petList:"반려생물 지정",custom:"그 밖의 대상",customHint:"대상을 한 줄에 하나씩 입력",empty:"이 집에 구성원이 없어요."},
@@ -17,7 +17,7 @@ export function roomPermissionMarkup(home,room,state){
  <details><summary>${c.characters}</summary>${(state.order||[]).map(id=>state.characters[id]).filter(Boolean).map(p=>check("accessCharacterIds",p.id,p.name,room.accessCharacterIds?.includes(p.id))).join("")}</details>
  <details><summary>${c.petList}</summary>${(home.pets||[]).map(p=>check("accessPetIds",p.id,p.name,room.accessPetIds?.includes(p.id))).join("")}</details>
  <label>${c.custom}<textarea name="accessCustom" maxlength="1000" placeholder="${c.customHint}">${esc((room.accessCustom||[]).join("\n"))}</textarea></label>
- </div></fieldset><details class="room-permissions wide"><summary>${({ko:"세부 활동 설정",en:"Activity settings",ja:"活動の詳細設定"})[state.uiLanguage]||"세부 활동 설정"}</summary><div class="room-permission-options">${Object.entries(ROOM_ACTIVITIES).map(([key,labels])=>check("allowedActivities",key,labels[({ko:0,en:1,ja:2})[state.uiLanguage]||0],!Array.isArray(room.allowedActivities)||room.allowedActivities.includes(key))).join("")}</div></details>`;
+ </div></fieldset><details class="room-permissions wide"><summary>${({ko:"세부 활동 설정",en:"Activity settings",ja:"活動の詳細設定"})[state.uiLanguage]||"세부 활동 설정"}</summary><p>${({ko:"방 용도에 맞춘 기본값이에요. 필요한 행동은 직접 허용하거나 막을 수 있어요.",en:"Defaults follow the room purpose. You can allow or restrict each activity.",ja:"部屋の用途に合わせた初期設定です。各行動の許可・禁止を変更できます。"})[state.uiLanguage]||""}</p><div class="room-permission-options">${Object.entries(ROOM_ACTIVITIES).map(([key,labels])=>check("allowedActivities",key,labels[({ko:0,en:1,ja:2})[state.uiLanguage]||0],roomAllowedActivities(room).includes(key))).join("")}</div></details>`;
 }
 export function bindRoomPermissionEditor(root){
  const refresh=()=>{
@@ -30,7 +30,7 @@ export function bindRoomPermissionEditor(root){
 }
 export function readRoomPermissionEditor(root){
  const values=name=>[...root.querySelectorAll(`[name="${name}"]:checked`)].map(input=>input.value);
- return {allowedActivities:values("allowedActivities"),ownerMode:root.querySelector('[name="ownerAll"]').checked?"all":"selected",ownerCharacterIds:values("ownerCharacterIds"),accessMode:root.querySelector('[name="accessMode"]').value,accessGroups:values("accessGroups"),accessCharacterIds:values("accessCharacterIds"),accessPetIds:values("accessPetIds"),accessCustom:[...new Set(root.querySelector('[name="accessCustom"]').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean))].slice(0,40)};
+ return {activityRulesCustom:true,allowedActivities:values("allowedActivities"),ownerMode:root.querySelector('[name="ownerAll"]').checked?"all":"selected",ownerCharacterIds:values("ownerCharacterIds"),accessMode:root.querySelector('[name="accessMode"]').value,accessGroups:values("accessGroups"),accessCharacterIds:values("accessCharacterIds"),accessPetIds:values("accessPetIds"),accessCustom:[...new Set(root.querySelector('[name="accessCustom"]').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean))].slice(0,40)};
 }
 
 // Unassigned owner-only rooms are common space; explicit guest lists still apply.

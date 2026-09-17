@@ -1,0 +1,18 @@
+<ko-KR>
+방별 기본 행동 제한과 낮잠 금지를 추가하고 침대에서 다른 행동을 하던 표시를 수정했어요. 본가 변경 시 방 연결을 보완하고 침대 아이콘을 키웠어요.
+버튼 효과음·신발별 발소리·선택 팝업과 반응 연출을 추가했어요.
+마피아 반박 근거와 조사 문구를 바로잡고 3일차부터 NPC가 투표해요. 현장 단서·표적 선택·감정 표현과 반응 버튼을 개선했어요.
+화분 2·협탁·카운터·냉장고·인덕션 그림을 추가했어요. 카운터를 연결하고 카운터·협탁 상판에 소품을 놓을 수 있어요.
+</ko-KR>
+<en-US>
+Added room activity defaults and a nap ban. Fixed stale bed poses, improved home/bedroom links and enlarged bed icons.
+Added button sounds, shoe-based footsteps, selection popups and feedback.
+Mafia: relevant rebuttals, clearer wording, NPC voting from day 3, more scene clues, smarter targets, emotion animations and larger reaction buttons.
+Added a flower pot, nightstand, counters, fridge and induction hob. Snap counters together and place decorations within counter and nightstand tops.
+</en-US>
+<ja-JP>
+部屋別の基本行動制限と昼寝禁止を追加。別の行動中もベッドに寝ている表示を修正し、実家変更時の寝室連携とベッドのアイコンを改善しました。
+ボタン音、靴別の足音、選択ポップアップと反応演出を追加しました。
+マフィアの反論根拠と表現を修正し、NPCは3日目から投票します。現場の手掛かり、標的選び、感情表現と反応ボタンを改善しました。
+鉢植え2、ナイトテーブル、カウンター、冷蔵庫、IHを追加。カウンターを連結でき、カウンターとナイトテーブルの天板内に小物を置けます。
+</ja-JP>

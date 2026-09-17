@@ -35,7 +35,7 @@ html body #app .home-furniture-drawer .home-drawer-items b{display:grid;place-it
 .room.is-furniture-drop-target{outline:3px solid #f4d17e;outline-offset:-4px}
 html.native-app[data-active-tab="home"] .home-native-house-name>img{display:block;flex:0 0 30px;width:30px;height:30px;object-fit:contain;filter:none}
 html.native-app[data-active-tab="home"] .home-native-house-name>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-html body #app .is-using-couple-bed .home-person-visual>:is(.sprite,.avatar){width:var(--bed-face-size,36px)!important;height:var(--bed-face-size,36px)!important;max-width:none!important;object-fit:contain}
+html body #app .is-using-couple-bed .home-person-visual>:is(.sprite,.avatar){width:calc(var(--bed-face-size,36px)*1.12)!important;height:calc(var(--bed-face-size,36px)*1.12)!important;max-width:none!important;object-fit:contain}
 
 .home-native-bottom{position:absolute;z-index:35;right:14px;bottom:max(22px,env(safe-area-inset-bottom));display:grid;grid-template-rows:30px 30px;gap:10px;width:70px;height:70px;pointer-events:auto}
 html.native-app[data-active-tab="home"] .home-native-bottom .home-native-pill{position:relative!important;inset:auto!important;width:70px!important;--home-pill-height:30px}

@@ -371,3 +371,18 @@ html.native-app[data-active-tab="observe"] .scene-action-tea .native-character-s
   .character-manage-grid>.character-home-visual-choice{align-items:stretch!important;flex-direction:column!important}
   .character-home-visual-buttons{width:100%!important}.character-home-visual-buttons button{flex:1 1 0!important}
 }
+
+/* Shared single-choice dialog; the original select remains the form value. */
+.selection-popup[open]{display:flex;flex-direction:column}
+.selection-popup{box-sizing:border-box;width:min(420px,calc(100vw - 32px));max-height:min(75dvh,650px);padding:18px;border:2px solid #76583d;border-radius:22px;background:#fff8e8;color:#493723;box-shadow:0 14px 50px #1f12094d;overflow:hidden}
+.selection-popup::backdrop{background:#20170e80}
+.selection-popup header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:0;position:static;flex:none;background:transparent}
+.selection-popup h2{margin:0;font-size:20px;color:inherit}
+.selection-popup input{box-sizing:border-box;width:100%;margin-bottom:12px;padding:12px;background:#fff;color:#493723;border:1px solid #aa9273;border-radius:12px}
+.selection-popup button{min-height:44px;padding:10px 14px;border:1px solid #bda788;border-radius:12px;background:#f5e8ce;color:#493723;-webkit-text-fill-color:#493723;font:inherit;cursor:pointer}
+.selection-popup-options{display:grid;gap:8px;overflow:auto;min-height:0}
+.selection-popup-options button{text-align:left;background:#fffdf5}
+.selection-popup-options button[aria-pressed="true"]{border:2px solid #755124;background:#ead2a4;font-weight:700}
+.selection-popup button:focus-visible{outline:3px solid #aa7139;outline-offset:2px}
+.selection-popup button:disabled{opacity:.45;cursor:default}
+.selection-popup [hidden]{display:none}

@@ -44,6 +44,11 @@ module.exports=base=>{
   const tool=s.tools.find(x=>x.place===p.place&&(p.role!=='mafia'||x.type!=='lockKit'));if(tool&&m.inventory.length<2)return {kind:'takeTool',toolId:tool.id};if(p.role==='mafia'&&s.houses[p.place]&&!m.knownHomes.includes(p.place))return {kind:'scoutHome'};if(valid(g,p,{kind:'secureHome'}))return {kind:'secureHome'};return {kind:'investigate'};
  }
  function targets(g,p){return living(g).filter(q=>q.role!=='mafia');}
+ function chooseTarget(g,p,options=targets(g,p)){
+  const thoughtful=(p.gameSkills?.intelligenceSkill??50)>=65&&(p.voteTraits?.impulsivity??.5)<.5;
+  const score=q=>{const rows=g.history.filter(h=>h.target===q.id&&!h.withdrawn),trusted=rows.filter(h=>h.kind==='defend'||h.kind==='thank').length*3-rows.filter(h=>h.kind==='accuse').length*2-(g.claimIssues?.[q.id]||0),proofs=g.board.filter(c=>c.speaker===q.id).length;return trusted+proofs*2+(thoughtful?0:emotions.feelings(g,p.id,q.id).grudge*(p.voteTraits?.impulsivity??.5))+base.random(g.seed,'night-tie',g.day,p.id,q.id)*2;};
+  return [...options].sort((a,b)=>score(b)-score(a))[0];
+ }
  function night(g,victim,attacker){
   const s=g.preparation;if(victim&&attacker){const home=mine(g,victim).sleepAt,other=mine(g,attacker),tool=other.inventory.find(x=>x.type!=='lockKit'),locked=s.houses[home]?.locked;
    if(locked&&other.sleepAt!==home&&tool)other.inventory.splice(other.inventory.indexOf(tool),1);
@@ -55,14 +60,15 @@ module.exports=base=>{
    const appearance=staged?(plan.staging==='clean'?'planned':'impulsive'):methodWorked?plan.method:'impulsive';
    victim.alive=false;g.bodies.push({id:victim.id,place:home,day:g.day,tick:6,reported:true});
    const method=locked&&tool?.type==='crowbar'?'forcedLock':locked&&tool?.type==='masterKey'?'keyScratches':'unlocked';
+   g.traces.push({id:'footprint:'+g.day,day:g.day,tick:6,place:home,action:staged?'wiped':'footprint',shoe:attacker.shoeClue||'unknown'});
    g.traces.push({id:'night:'+g.day,day:g.day,tick:6,place:home,action:method});
-   g.sceneReports||=[];g.sceneReports.push({id:'scene:'+victim.id,bodyId:victim.id,day:g.day,place:home,clues:[{kind:'time',tick:6},{kind:method},{kind:appearance},{kind:staged?'tampered':'footprint'}]});
+   g.sceneReports||=[];g.sceneReports.push({id:'scene:'+victim.id,bodyId:victim.id,day:g.day,place:home,clues:[{kind:'time',tick:6},{kind:attacker.shoeClue==='boots'?'bootPrint':attacker.shoeClue==='heels'?'heelPrint':'footprint'},{kind:method},{kind:appearance},{kind:staged?'tampered':'footprint'}]});
    g.dawnScene={bodyId:victim.id,place:home,appearance,entry:method};g.history.push({kind:'discovery',target:victim.id,place:home,day:g.day});
-   for(const q of living(g).filter(q=>q.id!==attacker.id&&mine(g,q).sleepAt===home)){if(base.random(g.seed,'wake',g.day,q.id)<(/얕|light|浅/.test(q.traits||'')?.7:.3))base.addCard(g,q,{kind:'trace',action:'nightNoise',day:g.day,tick:6,place:home});}
+   for(const q of living(g).filter(q=>q.id!==attacker.id&&mine(g,q).sleepAt===home)){if(base.random(g.seed,'wake',g.day,q.id)<(/얕|light|浅/.test(q.traits||'')?.85:.6))base.addCard(g,q,{kind:'trace',action:'nightNoise',height:attacker.heightClue||'unknown',day:g.day,tick:6,place:home});}
    }
   }
   s.notices=s.missing.map(x=>({...x}));s.missing=[];for(const p of g.players){p.place=mine(g,p).sleepAt;mine(g,p).exposure=0;}restock(g);
  }
  function view(g,p){if(!g.preparation||!p)return null;const s=g.preparation,m=mine(g,p);return {...m,tools:s.tools.filter(x=>x.place===p.place),notices:s.notices,homeOptions:Object.entries(s.houses).map(([place,h])=>({place,capacity:h.capacity,occupied:living(g).filter(q=>mine(g,q).sleepAt===place).length})),canSecure:valid(g,p,{kind:'secureHome'}),canScout:!!s.houses[p.place]};}
- return {init,valid,act,auto,targets,night,view,allianceReply};
+ return {init,valid,act,auto,targets,chooseTarget,night,view,allianceReply};
 };

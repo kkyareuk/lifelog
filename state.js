@@ -1259,6 +1259,9 @@ export function updateCharacter(id,patch,persist=true){
     c.residences=Array.isArray(c.residences)?c.residences:[];
     if(!c.residences.some(item=>item.homeId===patch.homeId))c.residences.push({homeId:patch.homeId,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:state.homes[patch.homeId].rooms?.bedroom?"bedroom":Object.keys(state.homes[patch.homeId].rooms||{})[0]||""});
     c.residences.forEach(item=>item.isPrimary=item.homeId===patch.homeId);
+    const primary=c.residences.find(item=>item.isPrimary),home=state.homes[patch.homeId];
+    c.sleepRoomId=primary.sleepRoomId&&home.rooms?.[primary.sleepRoomId]?primary.sleepRoomId:Object.keys(home.rooms||{}).find(key=>home.rooms[key].type==="bedroom")||Object.keys(home.rooms||{})[0]||"";
+    primary.sleepRoomId=c.sleepRoomId;c.townId=home.townId||c.townId;
   }
   if(Object.hasOwn(patch,"sleepRoomId")&&c.homeId){
     const residence=(c.residences||[]).find(item=>item.homeId===c.homeId);
@@ -2000,6 +2003,7 @@ export function addFurnitureProp(homeId,roomKey,placementId,item){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return "";
   const placements=normalizeFurniturePlacements(room.furniturePlacements),index=placements.findIndex(entry=>entry.id===placementId);
   if(index<0||!supportsFurnitureProps(placements[index].item)||placements[index].props.length>=4)return "";
+  if(placements[index].props.some(p=>p.item==='인덕션')||item==='인덕션'&&(!placements[index].item.startsWith('카운터')||placements[index].props.length))return '';
   const id=`prop-${uid()}`,prop=newFurnitureProp(id,item,placements[index].props.length);if(!prop)return "";
   placements[index]=normalizeFurniturePlacement({...placements[index],props:[...placements[index].props,prop]},index);
   room.furniturePlacements=placements;save(true);return id;

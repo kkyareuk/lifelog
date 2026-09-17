@@ -1,5 +1,5 @@
 export const AUTONOMOUS_ACTIVITIES={
- sleep:['잠을 자지 않음','Do not sleep','眠らない'],eating:['밥을 먹지 않음','Do not eat','食事をしない'],toilet:['용변을 보지 않음','Do not use the toilet','用を足さない'],
+ sleep:['잠 금지 (모든 자동 수면)','No automatic sleep','自動睡眠を禁止'],nap:['낮잠 금지 (부족한 수면 보충 포함)','No naps or catch-up sleep','昼寝・睡眠不足の補填を禁止'],eating:['밥을 먹지 않음','Do not eat','食事をしない'],toilet:['용변을 보지 않음','Do not use the toilet','用を足さない'],
  art:['그림·창작','Art and crafts','絵・創作'],shopping:['쇼핑','Shopping','買い物'],grooming:['몸단장','Grooming','身支度'],gardening:['식물 돌보기','Gardening','植物の手入れ'],collecting:['수집·전시','Collecting','収集'],digital:['전자기기 만지기','Using devices','電子機器を使う'],conflict:['다툼 시작하기','Starting arguments','喧嘩を始める'],affection:['애정 표현','Affection','愛情表現'],care:['남을 챙기는 활동','Caring for others','人を気遣う'],
  talk:['서로의 생각을 나누는 활동','Exchanging thoughts','互いの考えを話す活動'],
  games:['게임하는 활동','Playing games','ゲームをする活動'],
@@ -10,7 +10,7 @@ export const AUTONOMOUS_ACTIVITIES={
  cooking:['요리하는 활동','Cooking','料理する活動']
 };
 export const ACTIVITY_SECTIONS=[
- {names:['욕구','Needs','欲求'],keys:['sleep','eating','toilet']},
+ {names:['욕구','Needs','欲求'],keys:['sleep','nap','eating','toilet']},
  {names:['취미·여가','Hobbies and leisure','趣味・余暇'],keys:['art','games','reading','music','digital','collecting']},
  {names:['생활·관리','Daily life and care','生活・手入れ'],keys:['shopping','grooming','gardening','cleaning','exercise','cooking']},
  {names:['대인관계','Social activities','対人関係'],keys:['talk','care','affection','conflict']}
@@ -19,6 +19,7 @@ export const activityLabel=(key,language='ko')=>AUTONOMOUS_ACTIVITIES[key]?.[{ko
 export function autonomousActivity(scene={}){
  const title=String(scene.baseTitle||scene.title||'');
  if(scene.manualDirective||scene.routineId||scene.transit)return null;
+ if(scene.activityFamily==='nap'||/낮잠|\bnap\b|昼寝/i.test(title))return 'nap';
  if(scene.sleeping===true||/자는 중|잠드는 중|잠들어|잠든|수면|기상|낮잠|\bsleep(?:ing)?\b|asleep|waking|nap|眠って|眠る|昼寝|起床/i.test(title))return 'sleep';
  if(/식사|먹는 중|(?:아침|점심|저녁|간식).*먹|\beating\b|having (?:a |the )?(?:meal|breakfast|lunch|dinner|snack)|食事|食べて/i.test(title))return 'eating';
  if(scene.lifeTaskId==='toilet'||/용변|화장실(?:을)? (?:사용|가)|using the toilet|use the toilet|用を足|トイレを使|トイレに行/i.test(title))return 'toilet';
@@ -27,12 +28,12 @@ export function autonomousActivity(scene={}){
  const patterns=[['art',/그림|스케치|색칠|만들기|공예|painting|sketch|craft|描|工作/i],['shopping',/쇼핑|구매|shopping|買い物/i],['grooming',/머리.*손질|화장|몸단장|groom|髪.*整/i],['gardening',/화분|식물.*돌|물.*주|gardening|植物/i],['collecting',/수집|진열|collect|収集/i],['digital',/전자기기|휴대폰|사진첩|device|phone|スマホ/i],['conflict',/다투|싸우|언쟁|arguing|fighting|喧嘩/i],['affection',/포옹|키스|손.*잡|hug|kiss|抱きしめ|キス/i],['care',/챙겨|위로|달래|comfort|気遣|慰め/i],['talk',/생각을 나누|대화|토론|이야기를 나누|exchanging.*views|exchanging.*thought|conversation|discuss|互いの考え|話し合|会話/i],['games',/게임|game|ゲーム/i],['cleaning',/청소|쓸고|먼지를 닦|정리하는|정돈하는|cleaning|tidying|掃除|整理|片づけ/i],['reading',/책을 읽|독서|reading|読書|本を読/i],['music',/음악을 듣|연주|music|音楽|演奏/i],['exercise',/운동|달리기|스트레칭|exercis|workout|stretch|運動|ストレッチ/i],['cooking',/요리|조리|cooking|料理|調理/i]];
  return patterns.find(([,pattern])=>pattern.test(title))?.[0]||null;
 }
-export const autonomousAllowed=(character,scene)=>!character?.autonomousActivityBlocks?.includes(autonomousActivity(scene));
+export const autonomousAllowed=(character,scene)=>{const key=autonomousActivity(scene),blocked=character?.autonomousActivityBlocks||[];return !blocked.includes(key)&&!(key==='nap'&&blocked.includes('sleep'));};
 export function applyAutonomousPolicy(character,scene,characters={},language='ko'){
  const participants=[character,...[...(scene.withIds||[]),scene.withId].filter(Boolean).map(id=>characters[id]).filter(Boolean)];
  if(participants.every(person=>autonomousAllowed(person,scene)))return scene;
  const copy={ko:['잠시 쉬는 중','하던 일을 멈추고 자기 자리에서 잠시 숨을 돌리고 있어요.'],en:['Taking a short break','They stop what they were doing and take a moment in their own space.'],ja:['少し休憩しているところ','していたことをやめ、自分の場所でひと息ついています。']}[language]||['잠시 쉬는 중','하던 일을 멈추고 잠시 쉬고 있어요.'];
- return {...scene,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],activityFamily:null,sleeping:false,actionKind:undefined,mood:'평온',groupInteraction:false,withId:undefined,withIds:[],participantOrder:[],interactionId:undefined,sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined,sharedFurnitureKey:undefined,autonomyAdjusted:true};
+ return {...scene,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],activityFamily:null,lifeTaskId:undefined,needKey:undefined,furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,sleeping:false,actionKind:undefined,mood:'평온',groupInteraction:false,withId:undefined,withIds:[],participantOrder:[],interactionId:undefined,sharedPerspectives:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined,sharedFurnitureKey:undefined,autonomyAdjusted:true};
 }
 
 export function applyEatingSleepSetting(c,scene,language='ko'){
