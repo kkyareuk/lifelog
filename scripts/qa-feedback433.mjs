@@ -62,8 +62,8 @@ try{
   target.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'mouse',pointerId:1,clientX:240,clientY:300}));target.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerType:'mouse',pointerId:1,clientX:80,clientY:300}));
   const sounds=qaSounds.slice(before).map(s=>s.split('/').at(-1));const {interactionSound}=await import('/interaction-sound-routing.js');const button=hud.querySelector('button'),clickSound=interactionSound(button,{activeTab:'observe'});hud.remove();return {selected,sounds,clickSound};
  });assert.equal(homeSound.selected,'b');assert.deepEqual(homeSound.sounds,['book-page.mp3']);assert.equal(homeSound.clickSound,'book-page');
- const closeRoutes=await page.evaluate(async()=>{const {interactionSound}=await import('/interaction-sound-routing.js');return ['data-dict-close','data-close-mail','data-shared-dialog-close','data-building-browser-back','data-back','data-close-full-character-settings'].map(attr=>{const b=document.createElement('button');b.setAttribute(attr,'');return interactionSound(b)})});
- assert.deepEqual(closeRoutes,['drawer-close','drawer-close','drawer-close','drawer-close','drawer-close','book-close']);
+ const closeRoutes=await page.evaluate(async()=>{const {interactionSound}=await import('/interaction-sound-routing.js');return ['data-dict-close','data-close-mail','data-shared-dialog-close','data-building-browser-back','data-back','data-close-full-character-settings','data-direct-simple-action','data-person'].map(attr=>{const b=document.createElement('button');b.setAttribute(attr,'');return interactionSound(b)})});
+ assert.deepEqual(closeRoutes,['drawer-close','drawer-close','drawer-close','drawer-close','drawer-close','book-close','ui-character','ui-character']);
  console.log('PASS433: narrow-room talking pair separation, single topic label, stable repeated layout, menu close sound routes');
  console.log('PASS432: KO/EN/JA modal surface selection/persistence, UI back hidden/restored, room heading depth, 5 exclusive sound routes/mute, shared material save');
 }finally{await browser.close();server.closeAllConnections();server.close()}

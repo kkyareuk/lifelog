@@ -3,7 +3,7 @@ export const isSurface=p=>p?.item==='카운터'||p?.item==='협탁';
 export const canPlaceOnSurface=p=>!isSurface(p)&&!/침대|소파|의자|냉장고|옷장|책장|식탁|테이블|세탁|욕조|변기|샤워/.test(p?.item||'');
 export function surfaceArea(p,box){
  const side=Math.abs(Number(p.rotation)||0)%180===90;
- const area=p.item==='협탁'?[.17,.12,.66,.27]:side?[.12,.12,.76,.76]:[.12,.08,.76,.43];
+ const area=p.item==='협탁'?[.17,.12,.66,.27]:side?[.12,.12,.76,.76]:[.05,.04,.90,.56];
  return {left:box.left+box.width*area[0],top:box.top+box.height*area[1],width:box.width*area[2],height:box.height*area[3]};
 }
 export function snapToSurface(point,item,surfaces,placements){

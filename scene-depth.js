@@ -1,3 +1,4 @@
+import {positionWorktopUsers} from './worktop-users.js';
 import {positionConversationPartners} from './scene-conversation-layout.js';
 import {groupSceneLabels,sharedSeatActivity} from './scene-label-groups.js';
 import {positionSurfaceFurniture} from './furniture-surfaces.js';
@@ -17,6 +18,7 @@ function paintedRect(image){
 }
 function furnitureRect(scene,furniture){
  const art=furniture.querySelector('.room-furniture-art')||furniture;
+ if(art.querySelector('.counter-stretch'))return art.getBoundingClientRect();
  const overlay=[...scene.querySelectorAll('.room-couple-bed-overlay')].find(el=>el.dataset.bedOverlay===furniture.dataset.furniturePlacement)||
   (scene.querySelectorAll('.is-couple-bed').length===1?scene.querySelector('.room-couple-bed-overlay'):null);
  const images=[...art.querySelectorAll('img'),...(overlay?[...overlay.querySelectorAll('img')]:[])];
@@ -29,6 +31,7 @@ export function scheduleSceneDepth(){
   frame=requestAnimationFrame(()=>{
     frame=0;if(!root?.isConnected)return;
     const updates=[],seats=[],pulls=[],meals=[],labels=[];
+    for(const scene of root.querySelectorAll('.room')){positionSurfaceFurniture(scene);positionWorktopUsers(scene)}
     for(const scene of root.querySelectorAll('.room,.world.town-environment')){
       const items=[...scene.querySelectorAll(scene.matches('.room')?actors:'.map-art-button,.person:not(.place-people),.meeting-walker')];
       const bounds=items.map(element=>{
@@ -178,7 +181,6 @@ export function scheduleSceneDepth(){
       occupied.push(placed);
     }
     for(const [element,z] of updates)element.style.zIndex=String(z);
-    for(const scene of root.querySelectorAll('.room'))positionSurfaceFurniture(scene);
   });
 }
 export function bindSceneDepth(nextRoot){

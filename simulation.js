@@ -1,3 +1,4 @@
+import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
 import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
 import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
 import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
@@ -4762,6 +4763,24 @@ function companionAlignedBaseEvent(c,current,date){
   if(!sameLocation)return current;
   return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
+const expressionChecks=new WeakMap();
+function automaticViewExpression(c,date){
+ const now=+date,stamp=Math.floor(now/60000),block=Math.floor(now/1800000);
+ if(Math.abs(Date.now()-now)>60000||expressionChecks.get(c)===stamp)return;
+ expressionChecks.set(c,stamp);
+ const occupied=person=>{const directive=state.characterDirectives?.[person.id];return directive?.endsAt>now||Math.floor(Number(directive?.startedAt)/1800000)===block||activeScheduledRoutine(person,date)};
+ if(occupied(c)||hash(c.id+':expression:'+block)%3!==0)return;
+ const base=baseEventFor(c,date),eligible=e=>e&&!e.transit&&!e.manualDirective&&!e.groupInteraction&&!isProtectedSoloActivity(e)&&!/먹|식사|씻|샤워|목욕|용변|요리|eating|washing|cooking|食事|入浴/.test((e.title||'')+' '+(e.desc||''));
+ if(!eligible(base))return;
+ const home=state.homes[base.visitHomeId||c.homeId],room=home?.rooms?.[base.room];if(!room)return;
+ for(const id of state.order){
+  const other=state.characters[id];if(!other||id===c.id||occupied(other))continue;
+  const scene=baseEventFor(other,date);if(!eligible(scene)||!sameExpressionPlace(base,scene,c,other))continue;
+  const kind=viewExpressionAction(c,other,readCharacterViewFor(c.id,id),readCharacterViewFor(id,c.id),room);
+  if(!kind||!contactAllowed(c,other,kind))continue;
+  if(directCharacterActivity(c.id,kind,{targetId:id,now,scenes:{[c.id]:base,[id]:scene}}))return;
+ }
+}
 const privacyChecks=new WeakMap();
 function privateLifeEvent(c,date){
  const stamp=Math.floor(+date/15000);if(privacyChecks.get(c)===stamp)return;privacyChecks.set(c,stamp);
@@ -4803,6 +4822,7 @@ function sharedFurnitureScene(c,current,date){
 }
 export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{
+    automaticViewExpression(c,date);
     privateLifeEvent(c,date);
     const current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
     if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,current,date.getTime()))save(false,false);

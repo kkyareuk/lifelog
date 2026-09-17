@@ -1,3 +1,4 @@
+import {uniqueManifestImages,photoManifestForState} from './cloud-image-manifest.js';
 import {imageSourceHash,reusableImage,retainImage} from './cloud-image-identity.js';
 import {needsCompressedCloudState,cloudDocumentLimitError} from './cloud-document-shape.js';
 import {giftError} from './mail-gifts.js?v=20260909dev305';
@@ -187,20 +188,10 @@ const googleLoginCopy=()=>({
 }[window.ParallelCity?.getState?.()?.uiLanguage]||{
   opening:"Google 계정 선택창을 여는 중이에요…",cancelled:"Google 로그인을 취소했어요."
 });
-const storedPhotoUrls=value=>{
-  const urls=new Set();
-  const walk=node=>{
-    if(typeof node==="string"&&/^https:\/\/(?:firebasestorage\.googleapis\.com|[^/]+\.firebasestorage\.app|storage\.googleapis\.com)\//.test(node)){urls.add(node);return}
-    if(!node||typeof node!=="object")return;
-    Object.values(node).forEach(walk);
-  };
-  walk(value);return urls;
+const normalizeManifest=(value,gameState)=>{
+  const manifest={items:uniqueManifestImages(value?.items,user?.uid),legacyCount:Math.max(0,Number(value?.legacyCount)||0)};
+  return gameState?photoManifestForState(manifest,gameState,user?.uid):manifest;
 };
-const countStoredPhotos=value=>storedPhotoUrls(value).size;
-const normalizeManifest=(value,gameState)=>({
-  items:Array.isArray(value?.items)?[...new Map(value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").map(item=>[item.hash,item])).values()]:[],
-  legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
-});
 const publishStorageUsage=(manifest,gameState)=>{
   const normalized=normalizeManifest(manifest,gameState);
   storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
@@ -574,7 +565,7 @@ async function uploadDataUrl(dataUrl,manifest,session,knownItems=manifest.items)
     new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),10000))
   ]);
   assertSession(session);
-  manifest.items.push({hash,sourceHash,size:blob.size,url});
+  retainImage(manifest,{hash,sourceHash,size:blob.size,url});
   return url;
 }
 
@@ -592,11 +583,10 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
   walk(next,[]);
   // Enforce quotas against this save's references, not replaced historical files.
   // Keep the previous value only where it may be needed if a new upload fails.
-  const retained=storedPhotoUrls(next);
-  for(const job of jobs){const old=job.path.reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,previousState);if(typeof old==='string')for(const url of storedPhotoUrls(old))retained.add(url);}
+  const retainedState=[next];
+  for(const job of jobs){const old=job.path.reduce((value,key)=>value&&typeof value==='object'?value[key]:undefined,previousState);if(typeof old==='string'){retainedState.push(old);}}
   const knownItems=manifest.items.slice();
-  manifest.items=manifest.items.filter(item=>retained.has(item.url));
-  manifest.legacyCount=Math.max(0,retained.size-manifest.items.length);
+  Object.assign(manifest,photoManifestForState(manifest,retainedState,session.uid));
   let photoFailures=0;const photoErrors=[];
   const photoJobs=new Map();
   await mapConcurrent(jobs,3,async(job,i)=>{
@@ -611,9 +601,7 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
       jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";
     }
   });
-  const usedUrls=storedPhotoUrls(next);
-  manifest.items=manifest.items.filter(item=>usedUrls.has(item.url));
-  manifest.legacyCount=Math.max(0,usedUrls.size-manifest.items.length);
+  Object.assign(manifest,photoManifestForState(manifest,next,session.uid));
   return {gameState:next,mediaManifest:manifest,uploadedCount:uploadPhotos?jobs.length-photoFailures:0,photoFailures,photoErrors};
 }
 
