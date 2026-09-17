@@ -28,3 +28,5 @@ Google Play internal release 325: 440 (1.0.388), "available to internal testers"
 Internal opt-in: https://play.google.com/apps/internaltest/4701300702493397907
 Play product active, KRW9,900. Actual device purchase verification remains pending.
 Android reward SSV URL verified by AdMob and saved; reopening the section showed the persisted URL. Account verification remains pending at Google.
+
+Both Android and iOS rewarded units now have the SSV URL verified by AdMob and saved. Reopened each section to confirm persistence. This does not mean AdMob account/app approval or actual device ad playback has completed.
