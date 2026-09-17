@@ -1,9 +1,9 @@
-import {homeGrid} from './room-layout.js?v=20260909dev305';
+import {homeGrid,scaleDefaultRooms} from './room-layout.js?v=20260909dev305';
 const positions=new Map();
 const text=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
 export function homeCanvasSettings(home,lang){
  const grid=homeGrid(home);
- return [['columns',text(lang,'집 가로 격자','House width (cells)','家の横幅（マス）'),12],['rows',text(lang,'집 세로 격자','House height (cells)','家の縦幅（マス）'),16]].map(([axis,label,min])=>`<label>${label}<input type="number" min="${min}" max="64" step="1" data-home-canvas-axis="${axis}" value="${grid[axis]}"></label>`).join('');
+ return [['columns',text(lang,'배치 영역 가로 격자','Placement area width (cells)','配置エリアの横幅（マス）'),12],['rows',text(lang,'배치 영역 세로 격자','Placement area height (cells)','配置エリアの縦幅（マス）'),16]].map(([axis,label,min])=>`<label>${label}<input type="number" min="${min}" max="64" step="1" data-home-canvas-axis="${axis}" value="${grid[axis]}"></label>`).join('');
 }
 export function resizeCanvas(home,columns,rows,defaults){
  const before=homeGrid(home),rooms=structuredClone(home.rooms),layouts={};
@@ -23,7 +23,7 @@ export function bindHomeCanvas(root,{home,apply,render,canEdit=true,scope='perso
   input.onchange=async()=>{
    if(!canEdit)return;
    const {mobileRoomLayout}=await import('./views.js?v=20260909dev305');
-   const defaults={};for(const floor of new Set(Object.values(home.rooms).map(r=>r.floor||1))){const keys=Object.keys(home.rooms).filter(key=>(home.rooms[key].floor||1)===floor);Object.assign(defaults,mobileRoomLayout(keys,home.rooms));}
+   const defaults={};for(const floor of new Set(Object.values(home.rooms).map(r=>r.floor||1))){const keys=Object.keys(home.rooms).filter(key=>(home.rooms[key].floor||1)===floor);Object.assign(defaults,scaleDefaultRooms(mobileRoomLayout(keys,home.rooms),home));}
    const current=homeGrid(home),value=Math.round(Number(input.value));if(!Number.isFinite(value))return;
    current[input.dataset.homeCanvasAxis]=value;
    apply(resizeCanvas(home,current.columns,current.rows,defaults));render();

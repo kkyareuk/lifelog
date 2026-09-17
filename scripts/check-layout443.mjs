@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {ensureHomeCanvas,scaleDefaultRooms,homeGrid} from '../room-layout.js';
+const calls=[];globalThis.window={Capacitor:{Plugins:{AdViewport:{reserve:async options=>calls.push(options)}}}};globalThis.document={documentElement:{classList:{toggle(){}}}};
+const {reserveAdViewport}=await import('../ad-viewport.js');
+for(let i=0;i<1000;i++)reserveAdViewport(64,'');
+await new Promise(r=>setTimeout(r,0));assert.equal(calls.length,1);
+reserveAdViewport(64,'retry');await new Promise(r=>setTimeout(r,0));assert.equal(calls.length,2);
+reserveAdViewport(0);await new Promise(r=>setTimeout(r,0));assert.equal(calls.length,3);
+const home={rooms:{r:{layout:{x:25,y:10,w:50,h:40},furniturePlacements:[{id:'v',x:20,y:30}]}}};
+ensureHomeCanvas(home);assert.equal(homeGrid(home).columns,24);assert.deepEqual(home.rooms.r.layout,{x:12.5,y:10,w:25,h:40});const saved=structuredClone(home);ensureHomeCanvas(home);assert.deepEqual(home,saved);assert.equal(home.rooms.r.furniturePlacements[0].x,20);
+const defaults=scaleDefaultRooms({r:{x:0,y:0,w:100,h:100}},home);assert.deepEqual(defaults.r,{x:0,y:0,w:50,h:100});
+const java=await readFile('android/app/src/main/java/com/drawervillage/app/AdViewportPlugin.java','utf8');assert(!java.includes('OnGlobalLayoutListener'));
+console.log('PASS443: 1000 identical viewport requests = 1 bridge call; changes still applied; legacy layout migration idempotent and furniture preserved');

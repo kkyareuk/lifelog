@@ -145,7 +145,7 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
         const destination=target;clear();target=null;
         if(event.type==='pointerup'&&dragging&&destination){
           const rect=destination.getBoundingClientRect();
-          const position=snapFurniturePosition((event.clientX-rect.left)/rect.width*100,(event.clientY-rect.top)/rect.height*100,furnitureGridForRoom(rect,canvas.getBoundingClientRect()),furnitureFootprint(button.dataset.homeAddFurniture));
+          const position=snapFurniturePosition((event.clientX-rect.left)/rect.width*100,(event.clientY-rect.top)/rect.height*100,furnitureGridForRoom(rect,Object.assign(canvas.getBoundingClientRect(),{columns:Number(canvas.dataset.roomGridCols)||12,rows:Number(canvas.dataset.roomGridRows)||16})),furnitureFootprint(button.dataset.homeAddFurniture));
           place(destination.dataset.roomKey,position);
         }
       };

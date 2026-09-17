@@ -1,3 +1,4 @@
+import {ensureHomeCanvas} from './room-layout.js?v=20260909dev305';
 import {restoreWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {withTownEditDraft} from './town-edit-draft.js?v=20260909dev305';
 import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260909dev305';
@@ -23,7 +24,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   const catalog={...base.catalog,...Object.fromEntries((snapshot.catalog||[]).map(c=>[c.id,structuredClone(c.items||[])]))};catalog.fashion??=[];
   const uid=globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid;
 
-  for(const item of snapshot.homes||[]){const layout=decodeShared(item.layoutJson),rooms=layout.rooms||{},floors=Object.values(rooms).map(r=>Number(r.floor)||1);homes[item.id]={...layout,...item,rooms,floorCount:Math.max(Number(layout.floorCount)||1,...floors),activeFloor:layout.activeFloor||Math.min(...floors,1),id:item.id}}
+  for(const item of snapshot.homes||[]){const layout=decodeShared(item.layoutJson),rooms=layout.rooms||{},floors=Object.values(rooms).map(r=>Number(r.floor)||1);homes[item.id]={...layout,...item,rooms,floorCount:Math.max(Number(layout.floorCount)||1,...floors),activeFloor:layout.activeFloor||Math.min(...floors,1),id:item.id};ensureHomeCanvas(homes[item.id]);}
   for(const r of snapshot.residents||[]){
     const raw=decodeShared(r.profileJson),local=r.ownerUid===uid&&!raw.wardrobeItems?globalThis.window?.ParallelCity?.getPersonalWardrobeForSharing?.(r.sourceCharacterId):null;
     const recovered=local&&!raw.wardrobeItems?{...raw,wardrobeItems:local}:raw;

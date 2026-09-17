@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.text.TextUtils;
 import android.widget.TextView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import com.getcapacitor.Plugin;
@@ -18,7 +18,6 @@ public class AdViewportPlugin extends Plugin {
     private int space;
     private TextView status;
     private ViewGroup host;
-    private ViewTreeObserver.OnGlobalLayoutListener listener;
 
     @PluginMethod
     public void reserve(PluginCall call) {
@@ -37,10 +36,8 @@ public class AdViewportPlugin extends Plugin {
                 status.setOnClickListener(v -> web.post(() -> getBridge().getWebView().evaluateJavascript(
                     "window.dispatchEvent(new Event('drawer-ad-retry'))", null)));
                 host.addView(status);
-                listener = this::layout;
-                host.getViewTreeObserver().addOnGlobalLayoutListener(listener);
             }
-            status.setText(message);
+            if (!TextUtils.equals(status.getText(), message)) status.setText(message);
             status.setVisibility(space > 0 ? View.VISIBLE : View.GONE);
             layout();
             call.resolve();
@@ -58,29 +55,5 @@ public class AdViewportPlugin extends Plugin {
             if (sp instanceof CoordinatorLayout.LayoutParams) ((CoordinatorLayout.LayoutParams) sp).gravity = Gravity.TOP;
             status.setLayoutParams(sp);
         }
-        // AdMob applies an obsolete status-bar inset on Android 15 even while
-        // our activity hides system bars. Its top banner must start at host y=0.
-        if (space > 0) for (int i=0; i<host.getChildCount(); i++) {
-            View child=host.getChildAt(i);
-            if (child==web || child==status || !containsBanner(child)) continue;
-            ViewGroup.LayoutParams raw=child.getLayoutParams();
-            if (raw instanceof ViewGroup.MarginLayoutParams) {
-                ViewGroup.MarginLayoutParams p=(ViewGroup.MarginLayoutParams)raw;
-                if (p.topMargin!=0) {p.topMargin=0;child.setLayoutParams(p);}
-            }
-            if (host.indexOfChild(child)<host.indexOfChild(status)) child.bringToFront();
-        }
-    }
-    private boolean containsBanner(View view) {
-        if (view.getClass().getName().equals("com.google.android.gms.ads.AdView")) return true;
-        if (view instanceof ViewGroup) {
-            ViewGroup group=(ViewGroup)view;
-            for(int i=0;i<group.getChildCount();i++) if(containsBanner(group.getChildAt(i))) return true;
-        }
-        return false;
-    }
-    @Override protected void handleOnDestroy() {
-        if(host!=null && listener!=null) host.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
-        super.handleOnDestroy();
     }
 }

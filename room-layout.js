@@ -30,3 +30,17 @@ export function snapRoomLayout(layout,grid=ROOM_LAYOUT_GRID){
   const yCells=clamp(Math.round(normalized.y/cellY),0,rows-heightCells);
   return{x:xCells*cellX,y:yCells*cellY,w:widthCells*cellX,h:heightCells*cellY};
 }
+
+// Upgrade only legacy percentage layouts; repeated loads must not shrink rooms.
+export function ensureHomeCanvas(home){
+  if(!home.canvasColumns){
+    for(const room of Object.values(home.rooms||{}))if(room?.layout){room.layout={...room.layout,x:room.layout.x/2,w:room.layout.w/2};}
+    home.canvasColumns=24;
+  }
+  home.canvasRows ||=16;
+  return home;
+}
+export function scaleDefaultRooms(layouts,home){
+  const grid=homeGrid(home);
+  return Object.fromEntries(Object.entries(layouts).map(([key,r])=>[key,{x:r.x*12/grid.columns,y:r.y*16/grid.rows,w:r.w*12/grid.columns,h:r.h*16/grid.rows}]));
+}

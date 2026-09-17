@@ -32,7 +32,7 @@ import {hospitalPurposes} from "./creative-options.js?v=20260909dev305";
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev305";
 import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev305";
-import {normalizeRoomLayout,homeGrid} from "./room-layout.js?v=20260909dev305";
+import {normalizeRoomLayout,homeGrid,ensureHomeCanvas} from "./room-layout.js?v=20260909dev305";
 import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev305";
 import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev305";
 import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev305";
@@ -693,6 +693,7 @@ function normalizeHomes(x){
     h.rooms=h.rooms&&typeof h.rooms==="object"&&!Array.isArray(h.rooms)?h.rooms:{};
     h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
     h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
+    ensureHomeCanvas(h);
     h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room],index)=>{
       room.name=String(room.name||"이름 없는 방");if(["다이닝룸","다이닝 룸"].includes(room.name))room.name="식당";room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
       room.image=String(room.image||"");
@@ -1195,7 +1196,7 @@ export function createCharacter(limit=5){
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cleanliness:100};
+  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),floorCount:1,activeFloor:1,canvasColumns:24,canvasRows:16,rooms:rooms(),pets:[],cleanliness:100};
   state.activeHomeId=id;
   state.routines[id]=[];
   state.monthlyRoutines[id]=[];
@@ -1419,7 +1420,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
 export function createHome({open=true}={}){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",iconPreset:"red-roof-home",createdAt:Date.now(),userCreated:true,...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",iconPreset:"red-roof-home",createdAt:Date.now(),userCreated:true,...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,canvasColumns:24,canvasRows:16,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   if(open){state.activeTab="home";state.homeEditMode=true}
   save(true);
