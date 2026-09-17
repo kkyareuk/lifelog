@@ -1,0 +1,9 @@
+<ko-KR>
+방·가구 크기를 유지하며 집의 배치 공간을 넓히고 스크롤할 수 있어요. 상판 위 소품과 침대 위치·선택 범위, 선택창 터치 오류를 수정했어요. 홈 설명 세 줄과 메뉴 배치를 개선했어요. 자아만들기는 계정당 10분 대기 또는 광고 시청 후 1회 이용할 수 있어요. 광고와 광고 제거 상품을 추가했어요. 광고 제공은 서비스 승인 상태에 따라 달라질 수 있어요. 광장은 준비 중이에요.
+</ko-KR>
+<en-US>
+Expand and scroll house placement space while keeping room and furniture sizes. Fixed tabletop props, bed positions and selection bounds, and popup taps. Improved three-line activity text and controls. Self-discovery has an account-wide 10-minute wait or one use after a rewarded ad. Added ads and a permanent ad-removal purchase. Ad availability depends on service approval. Plaza remains unavailable.
+</en-US>
+<ja-JP>
+部屋と家具の大きさを保ち、家の配置エリアを広げてスクロールできます。天板の小物、ベッド位置と選択範囲、選択画面のタップを修正しました。行動説明3行とボタン配置を改善しました。自分づくりはアカウント共通で10分待つか、広告視聴後に1回利用できます。広告と広告削除商品を追加しました。広告配信はサービスの承認状況によります。広場は準備中です。
+</ja-JP>
