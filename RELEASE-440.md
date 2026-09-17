@@ -22,3 +22,9 @@ AAB: C:/Users/Public/drawer-release433/drawer-village-1.0.388-440-internal.aab
 SHA256: ae36dc0f0bf14e62f975af078f7d4d5aa90a2a6a19995a6e60dce12aea83a650
 
 AdMob account remains under verification, and app review is pending. Production ad fill is not verified. SDK/data safety/privacy disclosures must be reviewed before public ad rollout.
+
+## Distribution result
+Google Play internal release 325: 440 (1.0.388), "available to internal testers", September 17, 18:14 KST. No device support was lost. One non-blocking missing deobfuscation-file warning; release has minifyEnabled=false. Public release unchanged.
+Internal opt-in: https://play.google.com/apps/internaltest/4701300702493397907
+Play product active, KRW9,900. Actual device purchase verification remains pending.
+Android reward SSV URL verified by AdMob and saved; reopening the section showed the persisted URL. Account verification remains pending at Google.
