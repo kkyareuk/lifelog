@@ -27,3 +27,7 @@ Rooms and furniture keep their previous display size, with extra placement space
 <ja-JP>
 部屋と家具の表示サイズを保ち、右側に空き配置スペースを追加しました。シングル・マルチで配置エリアの広さを調整し、横にスクロールできます。ホームの行動説明を3行まで表示し、長い文章は省略記号で表示します。場所名を行動選択ボタンの横へ移動しました。広告表示中の不要な画面更新を減らしました。
 </ja-JP>
+
+## Distribution
+Google Play internal release328: 443 (1.0.391), available to internal testers September17 19:48 KST. Source7bd29aa on dev. No supported devices removed. One nonblocking deobfuscation warning; minification disabled. Production unchanged.
+Test link: https://play.google.com/apps/internaltest/4701300702493397907
