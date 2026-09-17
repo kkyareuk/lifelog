@@ -7,9 +7,10 @@ const access=createDiscoveryAccess({db,clock:()=>now});
 for(const uid of ['admin','regular','qa']){db.put('users/'+uid+'/discoveryAdTickets/ticket',{used:false,expiresAt:now+60000});db.put('users/'+uid+'/activityLimits/discovery',{lastAt:now,rewardCredits:0});}
 await assert.rejects(()=>rewards.grant({uid:'regular',email:'kkyaareuk@gmail.com',email_verified:false},{ticketId:'ticket'}),e=>e.status===403);
 await assert.rejects(()=>rewards.grant({uid:'regular',email:'other@example.com',email_verified:true},{ticketId:'ticket',adTestAccess:true}),e=>e.status===403);
+db.put('users/regular',{adTestAccess:true});await assert.rejects(()=>rewards.grant({uid:'regular'},{ticketId:'ticket'}),e=>e.status===403);
 await rewards.grant({uid:'admin',email:'kkyaareuk@gmail.com',email_verified:true},{ticketId:'ticket'});
 assert.equal((await access.read('admin')).rewardCredits,1);assert((await access.use('admin',{requestId:'question'})).granted);assert(!(await access.use('admin',{requestId:'second'})).granted);
 await assert.rejects(()=>rewards.grant({uid:'admin',email:'kkyaareuk@gmail.com',email_verified:true},{ticketId:'ticket'}));
-db.put('users/qa',{adTestAccess:true});await rewards.grant({uid:'qa'},{ticketId:'ticket'});assert.equal((await access.read('qa')).rewardCredits,1);
+db.put('users/qa',{entitlements:{adTestAccess:true}});await rewards.grant({uid:'qa'},{ticketId:'ticket'});assert.equal((await access.read('qa')).rewardCredits,1);
 console.log('PASS442 QA reward: verified operator/server allowlist only, client flags rejected, one use, production cooldown retained');
 })().catch(e=>{console.error(e);process.exitCode=1});

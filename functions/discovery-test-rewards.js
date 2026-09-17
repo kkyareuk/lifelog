@@ -9,7 +9,7 @@ exports.createDiscoveryTestRewards=({db,clock=Date.now})=>({
    const target=user.collection('activityLimits').doc('discovery'),ticket=user.collection('discoveryAdTickets').doc(ticketId);
    const [u,t,a,deleted]=await Promise.all([tx.get(user),tx.get(ticket),tx.get(target),tx.get(db.collection('deletedAccounts').doc(identity.uid))]);
    const owner=identity.email_verified===true&&identity.email==='kkyaareuk@gmail.com';
-   if(deleted.exists||(!owner&&u.data()?.adTestAccess!==true))throw Object.assign(Error('ads-test-account-required'),{status:403});
+   if(deleted.exists||(!owner&&u.data()?.entitlements?.adTestAccess!==true))throw Object.assign(Error('ads-test-account-required'),{status:403});
    const v=t.data();if(!v||v.used||v.expiresAt<clock())throw Object.assign(Error('ads-invalid-reward'),{status:400});
    tx.update(ticket,{used:true,test:true,redeemedAt:clock()});tx.set(target,{...(a.data()||{}),rewardCredits:1,lastTestRewardAt:clock()});
    return {granted:1,test:true};

@@ -30,4 +30,6 @@ Fixed banners obscuring top/bottom controls and house editing tools. Set house w
 </ja-JP>
 
 ## Distribution
-Internal upload pending. Production unchanged.
+Google Play internal release327: 442 (1.0.390), available to internal testers September17 19:25 KST. Source82a5b33 on dev. No supported devices removed; one nonblocking deobfuscation warning (minification disabled). Production unchanged.
+Test link: https://play.google.com/apps/internaltest/4701300702493397907
+QA allowlist is read from server-protected entitlements.adTestAccess, not client-editable user profile fields.
