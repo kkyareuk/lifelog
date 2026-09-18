@@ -4,7 +4,7 @@ import {furnitureFootprint,isBedFurniture} from './furniture-layout.js';
 import {bedPerspective} from './bed-perspective.js?v=20260909dev305';
 import {fitFurnitureSelection} from './home-editor-ui.js';
 import {homeEditorCopy} from './home-editor-ui.js?v=20260909dev305';
-import {scheduleSceneDepth} from './scene-depth.js';
+import {scheduleSceneDepth} from './scene-depth.js?v=20260909dev305';
 
 function setFurniturePlacementStyle(element,placement){
   if(!element||!placement)return;

@@ -89,6 +89,7 @@ import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scen
 import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260909dev305";
 import {currentSceneFor,currentTimelineFor,nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev305";
 import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev305";
+import {usableMailOptions} from './character-mail-options.js';
 import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260909dev305";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260909dev305";
 import {SPEECH_STYLE_OPTIONS,bindSpeechStylePickers,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev305";
@@ -4592,6 +4593,7 @@ function bind(){
   document.querySelector('[data-compose-announcement]')?.addEventListener('click',()=>{navigationTabIntent="mailbox";composeAnnouncement(render)});
   bindSharedCharacters(render);
   bindMailbox(render,showToast);
+  if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindSharedUi({bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
@@ -5838,7 +5840,7 @@ function openDailyCharacterQuestion(question,now=new Date()){
   const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=state.characters[question.targetId]||targets[Math.floor(Math.random()*targets.length)];
   let options=question.kind==="weekend"?weekendOptions(character,now):question.kind==="work"?workOptions(character,now):question.kind==="gift"&&target?giftOptions(character,target,now):everydayOptions(character,now);
   const savedOptions=question.mailId&&contactMailbox.get(question.mailId)?.extra?.questionOptions;
-  if(Array.isArray(savedOptions)&&savedOptions.length)options=savedOptions.filter(option=>option.kind!=="gift"||state.characters[option.targetId]);
+  if(Array.isArray(savedOptions)&&savedOptions.length)options=usableMailOptions(savedOptions,state.characters);
   if(!options.length)options=everydayOptions(character,now);
   const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
   const basePrompt=kind==="gift"?copy.gift(target.name):copy[kind];

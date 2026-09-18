@@ -30,11 +30,11 @@ export function createContactMailbox(storage){
   }
   return {record,
     due:(characters,now=Date.now())=>read().filter(m=>m.at<=now&&(!characters||characters[m.extra?.characterId])).sort((a,b)=>b.at-a.at),
-    get:id=>read().find(m=>m.id===id),
+    get:id=>read().find(m=>String(m.id)===String(id)),
     nextAt:(now=Date.now())=>read().filter(m=>m.at>now).reduce((next,m)=>Math.min(next,m.at),Infinity),
     mark:(id,patch)=>{
       if(patch?.answered===true)writeAnswered([...readAnswered(),String(id)]);
-      return write(read().map(m=>m.id===id?{...m,...patch}:m));
+      return write(read().map(m=>String(m.id)===String(id)?{...m,...patch}:m));
     },
     remove:id=>removeMany([id]),
     removeMany,

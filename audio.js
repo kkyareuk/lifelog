@@ -3,10 +3,8 @@ import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?
 import {walkingGaitForElement} from "./walking-gaits.js?v=20260909dev305";
 
 const FOOTSTEP_URLS={
-  walk:"./assets/audio/step-walk.m4a",
-  heels:"./assets/audio/step-heels.m4a",
-  boots:"./assets/audio/step-boots.m4a",
-  run:"./assets/audio/shoe-running.m4a?v=20260826independent155"
+  walk:"./assets/audio/unified-walk448.m4a",
+  run:"./assets/audio/unified-run448.m4a"
 };
 const MAX_MOVEMENT_ACTORS=2;
 const RUNNING_SELECTOR=[".town-traveler.is-jogging",".town-traveler.is-scene-running",".home-life-running",".native-character-stage.is-scene-jogging"].join(",");
@@ -25,17 +23,13 @@ function actorId(element,index){
   return element.dataset.homePerson||element.dataset.person||element.dataset.characterId||element.closest("[data-character-id]")?.dataset.characterId||`visible-${index}`;
 }
 export function footstepMode(character,element,running=false){
- const indoors=element?.matches?.('.home-life-walking,.home-life-running,.meeting-walker'),shoe=indoors&&character?.indoorFootwear!=='신발을 벗지 않음'?'':character?.shoeStyle||'';
- if(/부츠|boots/i.test(shoe))return 'boots';
- if(/구두|하이힐|로퍼|비즈니스|옥스퍼드|더비|몽크|게타|heels|oxford|loafers/i.test(shoe))return 'heels';
- return 'walk';
+ return running?'run':'walk';
 }
-function soundCharacter(id){const own=latestState?.characters?.[id];if(own)return own;const resident=window.DrawerVillageGroups?.getSnapshot?.()?.residents?.find(r=>r.id===id);if(!resident)return null;try{return resident.profile||JSON.parse(resident.profileJson||'{}')}catch{return null}}
 function movingActors(){
   const actors=new Map();
   [...document.querySelectorAll(`${RUNNING_SELECTOR},${WALKING_SELECTOR}`)].forEach((element,index)=>{
     if(!visible(element))return;
-    const id=actorId(element,index),running=element.matches(RUNNING_SELECTOR),gait=walkingGaitForElement(element),mode=footstepMode(soundCharacter(id),element,running);
+    const id=actorId(element,index),running=element.matches(RUNNING_SELECTOR),gait=walkingGaitForElement(element),mode=footstepMode(null,element,running);
     if(!actors.has(id)||running)actors.set(id,{id,mode,gait,running});
   });
   return [...actors.values()];
@@ -57,7 +51,7 @@ function scheduleChannel(state,actor,initial=false){
   let channel=channels.get(actor.id);
   if(!channel||channel.mode!==actor.mode||channel.gait!==actor.gait.className){
     if(channel)stopChannel(actor.id);
-    const audio=new Audio(FOOTSTEP_URLS[actor.mode]);audio.preload="auto";audio.playsInline=true;
+    const audio=new Audio(FOOTSTEP_URLS[actor.mode]);audio.preload="auto";audio.playsInline=true;audio.loop=true;
     channel={audio,mode:actor.mode,gait:actor.gait.className,timer:0};channels.set(actor.id,channel);
   }
   clearTimeout(channel.timer);channel.audio.volume=Math.min(1,volume);
@@ -67,8 +61,9 @@ function scheduleChannel(state,actor,initial=false){
     if(!movingActors().some(item=>item.id===actor.id&&item.mode===actor.mode)){
       stopChannel(actor.id);syncMovementAudio(state);return;
     }
-    channel.audio.currentTime=0;channel.audio.playbackRate=actor.running?1.04:actor.gait.playbackRate+(hash(actor.id)%5)/100;
-    channel.audio.play().catch(()=>{});
+    channel.audio.playbackRate=actor.running?1:actor.gait.playbackRate+(hash(actor.id)%5)/100;
+    // These assets contain a full walking/running sequence, not a single step.
+    if(channel.audio.paused)channel.audio.play().catch(()=>{});
     const base=actor.running?610:actor.gait.footstepInterval,variance=hash(`${actor.id}:${Date.now()>>10}`)%Math.max(45,Math.round(base*.14));
     channel.timer=setTimeout(play,base+variance);
   };

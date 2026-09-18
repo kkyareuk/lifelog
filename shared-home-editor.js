@@ -36,6 +36,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  root.querySelectorAll('[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
  bindSharedHomeDeletion(root,s,render,toast,async id=>{const queueKey=uid+':'+s.activeGroupId+':'+id;await (queues.get(queueKey)?.done||Promise.resolve());queues.delete(queueKey)});
  root.querySelectorAll('[data-home-floor-count]').forEach(b=>b.disabled=!canEdit);
+ root.addEventListener('change',e=>{if(e.target.matches('[data-home-floor-select]')){stop(e);selection.floors??={};selection.floors[home.id]=Math.max(1,Math.min(home.floorCount||1,Number(e.target.value)||1));render()}},true);
  root.addEventListener('change',e=>{if(e.target.matches('[data-home-floor-count]')){stop(e);if(canEdit){change(()=>setHomeFloorCount(home.id,e.target.value));render()}}},true);
  root.addEventListener('click',e=>{
   const b=e.target.closest('button,[data-furniture-placement],[data-open-room-editor]');if(!b)return;
