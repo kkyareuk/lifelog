@@ -2,9 +2,11 @@
 
 - User confirmed the orphan daily letter fix in internal450 and authorized public Android/iOS, with plaza/Mafia disabled publicly and enabled only internally.
 - Public451 (1.0.399) source 1284138 adds iOS Apple sign-in and explicit existing-account linking, with Korean/English/Japanese copy. Linking uses the existing Firebase UID; no entitlement transfer or second registration grant.
-- Android451 signed AAB: SHA256 9E10DBA190597D359FD85571EC862B85B204B5109932356A494E8081EE53FEF6. All 473 staged assets match. Play upload pending.
-- iOS451 App Store eligible workflow 35327953857 started. Upload, Apple-device login/link verification and review submission are not yet confirmed.
+- Android451 signed AAB: SHA256 9E10DBA190597D359FD85571EC862B85B204B5109932356A494E8081EE53FEF6. All 473 staged assets match. Play production release32 uploaded; 451, ads declaration and data-safety changes submitted. Publishing overview says under review with automated checks pending; not yet publicly available. Old446 is not the submitted candidate.
+- iOS451 App Store eligible workflow 35327953857 succeeded. Apple accepted upload; signing report confirms Apple sign-in entitlement in app and profile. Device login/link verification, Apple processing and review submission remain outstanding. App Store Connect browser needs administrator login (requested).
 - Internal452 (1.0.400) preserves the public candidate fixes but enables plaza/Mafia. Separate explicit TestFlight request; no automatic public submission.
+- Android452 signed AAB SHA256 4C959312665BB5A267B828189A691A3E994ABDBFCE0E95B8DB0AE0C5248FD673; 473 assets match. Play internal release334 available September18 18:19 KST. iOS452 workflow35328681301 ongoing at time of entry.
+- EN2260/2993 (75.5%), JA2259/2993 (75.5%). Apple sign-in additions have Korean, English and Japanese copy.
 
 ## Town-slot gift must remain account-once
 
@@ -18,6 +20,6 @@
 
 ## Release gates
 
-- Play data-safety updates prepared for advertising data; public privacy document and Apple privacy/review still need completion.
+- Play data-safety and ads declarations submitted with451. Public privacy HTML alone updated on main c8f4ecc; Pages workflow35328867573 succeeded; live URL shows September18 date and Google/Apple sign-in. Apple privacy/review still need completion.
 - iOS411 settings-scroll report remains unverified. Do not announce it as fixed.
-- Game main is unchanged because it still drives an older independent public web deployment.
+- Main received only the privacy HTML change; game runtime stays on dev because main still drives an older independent public web deployment.
