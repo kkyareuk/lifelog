@@ -371,3 +371,7 @@ exports.reconcileDiamondPlayRefunds=require('firebase-functions/v2/scheduler').o
 exports.playerFeedbackApi=require("./player-feedback-trigger").api;
 exports.playerFeedbackEmail=require("./player-feedback-trigger").email;
 exports.questionFeedbackWeekly=require("./question-feedback-weekly").weekly;
+
+// Existing clients already consume the same server-owned entitlement field.
+// Retries and overlap with the one-off apology grant cannot add a second slot.
+exports.initializeTownSlots=require('firebase-functions/v1').region('asia-northeast3').runWith({failurePolicy:true,timeoutSeconds:60,memory:'256MB',maxInstances:3}).auth.user().onCreate(user=>require('./registration-town-slot').grant(db,user.uid));

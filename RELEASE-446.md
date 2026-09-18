@@ -15,3 +15,9 @@ Announcement: announcement446.json
 
 AdMob external blocker: account verification in progress and Android app verification fails despite expected text at public HTTPS developer endpoint. Recheck requested in previous turn, still failed. Approval not guaranteed by production submission.
 Sources: https://support.google.com/admob/answer/14538460?hl=en and https://support.google.com/admob/answer/9363762?hl=en
+
+## Compensation and new registrations (server deployed)
+- initializeTownSlots auth creation trigger deployed successfully in asia-northeast3. Server-owned transaction grants one slot over the existing two-slot base; current apps read that entitlement, so new accounts total three. No extra AAB required for this grant.
+- Existing 917 registered, nondeleted accounts received one slot each. 917 receipts verified. Fixed campaign ID shared with signup trigger prevents overlap/retry duplicates; all purchased entitlements preserved. docs/compensation446-result.json contains counts only.
+- Tests: scripts/check-registration-slots446.cjs passed legacy fallback, purchased slot preservation, duplicate/concurrent overlap, deleted account exclusion, and new-account total3.
+- Production446 saved in Play release31 but NOT submitted. New September18 reports are being checked before proceeding. Notice446 remains a draft and has NOT been sent. Play advertising declaration changed to ads included; data safety draft updating SDK collection/sharing remains unfinished.
