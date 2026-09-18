@@ -2,6 +2,8 @@
 
 Development branch: dev. Public Play baseline remains 437; production446 draft and announcement are still on hold. No public web/main rollout.
 
+Play internal release331: **available to internal testers**, September18 16:46 KST, verified in Console. Source commit cc6db26 pushed to origin/dev. Only warning: missing optional obfuscation mapping; supported devices unchanged.
+
 ## Changes
 - Multiplayer restoration preserves profile.job instead of replacing it with the display jobTitle stored at the resident root. Save/reconnect round-trip regression covers this. sharedTownApi deployed successfully.
 - Multiplayer character order stored per account and group, without modifying the personal village order.
