@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-16-internal426-mafia-meeting-spectators",
-  "version": "1.0.374",
-  "build": 426,
+  "request": "2026-09-18-internal452-apple-login-plaza-enabled",
+  "version": "1.0.400",
+  "build": 452,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
