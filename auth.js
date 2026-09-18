@@ -1,3 +1,4 @@
+import {iosAppleAvailable,chooseSignInProvider,authenticateApple,appleCopy} from './apple-login.js';
 import {uniqueManifestImages,photoManifestForState} from './cloud-image-manifest.js';
 import {imageSourceHash,reusableImage,retainImage} from './cloud-image-identity.js';
 import {needsCompressedCloudState,cloudDocumentLimitError} from './cloud-document-shape.js';
@@ -15,7 +16,7 @@ import {chooseProposalMode} from './proposal-mode.js?v=20260909dev305';
 import {sharedProfile} from './shared-world.js?v=20260909dev305';
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {getAuth,initializeAuth,indexedDBLocalPersistence,OAuthProvider,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getAuth,initializeAuth,indexedDBLocalPersistence,OAuthProvider,linkWithCredential,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
@@ -606,7 +607,16 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
   return {gameState:next,mediaManifest:manifest,uploadedCount:uploadPhotos?jobs.length-photoFailures:0,photoFailures,photoErrors};
 }
 
+async function appleLogin(linking=false){
+ if(loginBusy||!ready||!iosAppleAvailable())return false;
+ const c=appleCopy();if(linking&&!confirm(c.confirm))return false;
+ loginBusy=true;if(!linking)rememberGuestHandoffIntent();
+ try{await authenticateApple({auth,native:window.Capacitor.Plugins.FirebaseAuthentication,credential:options=>new OAuthProvider('apple.com').credential(options),signIn:signInWithCredential,link:linkWithCredential,linking});if(linking)toast(c.linked);return true}
+ catch(error){if(!linking)clearGuestHandoffIntent();if(!/cancel|1001/i.test(String(error?.code)+' '+String(error?.message)))alert(/credential-already-in-use|account-exists/.test(error?.code||'')?c.conflict:c.failed);return false}
+ finally{loginBusy=false;window.dispatchEvent(new Event('drawer-village-auth-busy'))}
+}
 async function login(){
+  if(iosAppleAvailable()){const provider=await chooseSignInProvider();if(!provider)return false;if(provider==='apple')return appleLogin();}
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){
     const language=window.DrawerVillageState?.uiLanguage||document.documentElement.lang||"ko";
     alert(language.startsWith("ja")?"iOS版のログインと同期は準備中です。端末内でのプレイは利用できます。":language.startsWith("en")?"Login and sync are not connected in this iOS preview. You can play locally.":"iOS 준비 버전은 로그인·동기화 연결 전이에요. 기기 안에서 플레이할 수 있어요.");
@@ -1394,7 +1404,7 @@ window.DrawerVillageAccountImages={
 window.ParallelCityAuth={
   friends:(action,input={})=>{if(!["readFriends","findFriend","requestFriend","respondFriend"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
   deleteOwnAccount,
-  login,upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
+  login,linkApple:()=>appleLogin(true),upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
   setAppleSandboxEntitlements:(value,uid)=>{if(!uid||uid!==user?.uid||!window.Capacitor?.isNativePlatform?.()||window.Capacitor?.getPlatform?.()!=="ios")return;appleSandboxEntitlements=normalizeEntitlements(value);appleSandboxUid=uid;window.ParallelCity?.setEntitlements?.(effectiveEntitlements())},
   refreshEntitlements:async()=>{const account=user?.uid;if(!account)return;const snapshot=await getDocFromServer(doc(db,"users",account));if(user?.uid===account)publishEntitlements(snapshot.data()?.entitlements)},
   logout:async()=>{

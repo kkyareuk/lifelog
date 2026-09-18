@@ -1,0 +1,6 @@
+.apple-login-dialog{width:min(90vw,420px);max-height:85dvh;overflow:auto;box-sizing:border-box;padding:24px;border:1px solid #806c55;border-radius:20px;background:#fffaf0;color:#251a13}
+.apple-login-dialog::backdrop{background:#0008}
+.apple-login-dialog h2{margin:0 0 12px;font-size:22px}
+.apple-login-dialog p{line-height:1.6;font-size:14px}
+.apple-login-dialog button{display:block;width:100%;min-height:48px;margin-top:12px;border:1px solid #888;border-radius:8px;background:#fff;color:#111;font:600 17px system-ui;cursor:pointer}
+.apple-login-dialog button[data-provider=apple]{background:#000;color:#fff;border-color:#000}

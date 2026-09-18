@@ -4144,6 +4144,7 @@ function bind(){
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-delete-own-account]")?.addEventListener("click",async event=>{const button=event.currentTarget;button.disabled=true;try{await window.ParallelCityAuth?.deleteOwnAccount()}catch(error){showToast(error.message)}finally{button.disabled=false}});
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
+  $("[data-link-apple]")?.addEventListener("click",()=>window.ParallelCityAuth?.linkApple?.());
   $("[data-auth]")?.addEventListener("click",async event=>{
     const button=event.currentTarget;
     const auth=window.ParallelCityAuth;if(!auth)return alert("계정 기능을 불러오는 중이에요.");
@@ -4155,7 +4156,7 @@ function bind(){
     })[state.uiLanguage]||"계정 데이터를 준비하고 있어요. 잠시만 기다려 주세요.");
     button.disabled=true;
     try{
-      if(info?.user){if(confirm("Google 계정에서 로그아웃할까요?"))await auth.logout();}
+      if(info?.user){if(confirm(({ko:"계정에서 로그아웃할까요?",en:"Sign out of this account?",ja:"ログアウトしますか？"})[state.uiLanguage]||"로그아웃할까요?"))await auth.logout();}
       else await auth.login();
     }finally{
       if(button.isConnected)button.disabled=false;

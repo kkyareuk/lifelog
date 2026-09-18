@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-15-public405-profile-layout-final",
-  "version": "1.0.353",
-  "build": 405,
+  "request": "2026-09-18-public451-mail-apple-login",
+  "version": "1.0.399",
+  "build": 451,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
