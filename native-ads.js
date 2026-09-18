@@ -1,6 +1,7 @@
 import {AD_UNITS} from './ad-units.js';
 import {showRewardedAd} from './rewarded-ad.js';
 import {adStep} from './ad-errors.js';
+import {discoveryAdsResolved,discoveryPremium} from './discovery-access.js';
 const sdk=()=>window.Capacitor?.Plugins?.AdMob;
 export const adPlatform=()=>window.Capacitor?.getPlatform?.();
 export const adsAvailable=()=>!!AD_UNITS[adPlatform()]&&!!sdk()&&window.PARALLEL_CITY_CONFIG?.ads?.enabled===true;
@@ -33,11 +34,13 @@ export async function runRewardAd(ticket,account){
  }finally{fullScreen=false;window.dispatchEvent(new Event('drawer-ads-update'))}
 }
 export async function prepareGameAd(){
+ if(!discoveryAdsResolved()||discoveryPremium())return;
  if(interstitialReadyAt&&Date.now()-interstitialReadyAt<50*60000)return;
  if(!interstitialLoad)interstitialLoad=(async()=>{const ad=await initializeAds();await adStep('interstitial',()=>bounded(ad.prepareInterstitial(adOptions('interstitial'))));interstitialReadyAt=Date.now();})().finally(()=>{interstitialLoad=null});
  return interstitialLoad;
 }
 export async function showGameAd(){
+ if(!discoveryAdsResolved()||discoveryPremium())return false;
  if(fullScreen||!interstitialReadyAt||Date.now()-interstitialReadyAt>=50*60000||Date.now()-lastInterstitialAt<60000)return false;
  interstitialReadyAt=0;lastInterstitialAt=Date.now();fullScreen=true;window.dispatchEvent(new Event('drawer-ads-update'));
  const handles=[];let timer;

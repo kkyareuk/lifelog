@@ -1,0 +1,9 @@
+<ko-KR>
+멀티 재접속 시 직업이 무직으로 바뀌는 문제와 캐릭터 순서 저장을 수정했습니다. 집 화면 맞춤, 방 전체 사진, UI 숨김 유지, 선택창 안정성, 태블릿 설정 메뉴를 개선했습니다. 멀티 메뉴를 친구·설정 사이로 옮겼습니다. 광고 제거 권한 확인, 사진 중복 집계, 수면 시간표, LD 설정 표시를 보완하고 역안·이레즈미를 추가했습니다.
+</ko-KR>
+<en-US>
+Fixed jobs resetting after multiplayer reconnection and saved character order. Improved home fitting, full-room photos, hidden UI persistence, selection dialogs and tablet settings. Multiplayer now sits between Friends and Settings. Improved ad-free entitlement checks, duplicate photo counts, sleep schedules and LD previews. Added black sclera and Irezumi options.
+</en-US>
+<ja-JP>
+マルチ再接続時に職業が無職に戻る問題とキャラクター順序の保存を修正。家の画面表示、部屋全体の写真、UI非表示の維持、選択画面、タブレット設定を改善しました。マルチメニューを友達と設定の間に移動。広告削除の権利確認、写真の重複集計、睡眠時間、LDプレビューを見直し、白黒反転の目と和彫りを追加しました。
+</ja-JP>

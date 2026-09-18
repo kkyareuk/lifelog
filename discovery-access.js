@@ -8,6 +8,7 @@ function entry(id=uid()){
 export function discoveryAccountLast(){const value=entry();return value.lastAt-value.offset}
 export function setDiscoveryEntitlement(adFree){const value=entry();value.adFree=adFree===true;value.interval=adFree?60000:600000;value.checkedAt=0;window.dispatchEvent(new Event('drawer-ads-update'));}
 export function discoveryPremium(){return entry().adFree===true}
+export function discoveryAdsResolved(){const info=window.ParallelCityAuth?.getInfo?.();return !!info?.ready&&!info.startupSyncing&&!info.startupError&&(uid()==='guest'||typeof entry().adFree==='boolean')}
 export function discoveryRemaining(){const value=entry();return value.rewardCredits>0?0:Math.max(0,(value.interval||600000)-(Date.now()-discoveryAccountLast()))}
 export function discoveryRewardCredit(){return entry().rewardCredits>0}
 async function request(action,body={}){

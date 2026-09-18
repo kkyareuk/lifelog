@@ -16,7 +16,7 @@ export function openSelectionPopup(select){
   if(changed){select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));}
  };list.append(button);}
  search.oninput=()=>{let visible=0;for(const b of rows){b.hidden=!b.textContent.toLocaleLowerCase().includes(search.value.toLocaleLowerCase());if(!b.hidden)visible++;}empty.hidden=visible>0};dialog.append(list,empty);
- dialog.onclose=()=>{if(current===dialog)current=null;dialog.remove();if(select.isConnected&&!document.querySelector('dialog[open]'))select.focus({preventScroll:true});};
+ dialog.onclose=()=>{if(current===dialog)current=null;dialog.remove();if(select.isConnected&&!document.querySelector('dialog[open]'))select.focus({preventScroll:true});window.dispatchEvent(new Event('drawer-selection-dismissed'));};
  document.body.append(dialog);dialog.showModal();(list.querySelector('[aria-pressed="true"]:not(:disabled)')||close).focus();playSelectionSound();
 }
 const eligible=target=>target?.closest?.('select:not([multiple]):not([data-native-select])');

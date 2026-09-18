@@ -61,7 +61,8 @@ export function considerDiscovery(c,scene,context={}){
  document.querySelector('[data-discovery-tools]')?.remove();clearTimeout(requestTimer);
  document.querySelectorAll('[data-discovery-locks-menu]').forEach(b=>b.onclick=()=>showDiscoveryGroups(c,context));
  const info=window.ParallelCityAuth?.getInfo?.();
- if(!c||!['observe','home'].includes(state.activeTab)||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
+ if(!c||!['observe','home'].includes(state.activeTab))return;
+ const owned=!context.groupId||!!sharedDiscoveryCharacter(context.groupId,c.id);
  const rail=document.querySelector('[data-home-discovery-slot],[data-web-discovery-rail]');if(!rail)return;
  const bar=document.createElement('div');bar.dataset.discoveryTools='';bar.className='discovery-rail-item';
  const button=document.createElement('button');button.type='button';button.className='game-hud-button discovery-rail-button';const icon=document.createElement('i');icon.className='discovery-question-icon';icon.setAttribute('aria-hidden','true');const label=document.createElement('em');button.append(icon,label);if(rail.matches('[data-home-discovery-slot],[data-web-discovery-rail]')){const caption=document.createElement('small');caption.className='discovery-menu-name';caption.textContent=t('자아만들기','Self-discovery','自分づくり');button.append(caption);}
@@ -74,6 +75,7 @@ export function considerDiscovery(c,scene,context={}){
  if(observedCharacterId()!==current.id)return;
  showDiscovery(current,scene||{},candidates[Math.floor(Math.random()*candidates.length)],context);clearTimeout(requestTimer);paint();});
  bar.append(button);rail.append(bar);paint();
+ if(!owned){clearTimeout(requestTimer);button.disabled=true;button.classList.add('is-cooling-down');label.textContent='';button.title=t('내 캐릭터만 자아만들기를 할 수 있어요.','Self-discovery is available for your own characters.','自分のキャラクターのみ利用できます。');button.setAttribute('aria-label',button.title);}
 }
 function showDiscoveryGroups(c,context){
  if(!c)return;

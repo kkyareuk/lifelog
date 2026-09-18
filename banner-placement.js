@@ -1,8 +1,5 @@
-// Keep banners on requested browsing screens, but hide them during play and purchases.
+// Character settings keep their full canvas. Other tabs share the banner slot.
 export function bannerScreenAllowed(doc){
  if(doc.querySelector('.routine-sheet-backdrop,.mafia-playback,.is-account-loading,.is-welcome'))return false;
- const dialogs=[...doc.querySelectorAll('dialog[open]')];
- const allowed='.plaza-games-dialog,.building-detail-dialog,.room-editor-dialog';
- if(dialogs.some(d=>!d.matches(allowed)))return false;
- return dialogs.length>0||['observe','town','home','plaza','shop','groups'].includes(doc.documentElement.dataset.activeTab);
+ return !!doc.documentElement.dataset.activeTab&&doc.documentElement.dataset.activeTab!=='character';
 }

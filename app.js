@@ -64,6 +64,7 @@ import {installSupporterCredits,openSupporterCredits} from './supporter-credits.
 let copiedViewSettings=null;
 import {receiveCharacterTransfers,personalState,characterEditorActive,runIsolatedWorld} from './state.js?v=20260909dev305';
 import {bindSharedCharacters,syncSharedCharacterEditor,leaveSharedCharacterEditor,saveSharedCharacter} from './shared-characters.js?v=20260909dev305';
+import {saveSharedCharacterOrder} from './shared-character-order.js';
 import {runBackgroundAction} from './background-actions.js?v=20260909dev305';
 import {TOUCH_REACTIONS,touchReactions} from "./touch-reactions.js?v=20260909dev305";
 import {nextRoutinePhaseAt} from './routine-scenes.js?v=20260909dev305';
@@ -1470,6 +1471,7 @@ function resumeAfterCommandDismissal(){
  scheduleHomeLifeRefresh();
 }
 window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
+window.addEventListener('drawer-selection-dismissed',()=>{resumeAfterCommandDismissal();scheduleLiveSceneRefresh()});
 function renderAfterCommand(){
  if(commandRenderQueued)return;
  commandRenderQueued=true;
@@ -1495,7 +1497,7 @@ window.addEventListener("pagehide",cleanupRenderedScreen);
 
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&document.querySelector('.direct-command-dialog[open],.context-action-menu[open]')){deferredCommandRender=true;return}
+  if(!force&&document.querySelector('.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -2005,7 +2007,7 @@ function setHomeUiHidden(page,hidden){
   if(!page)return false;
   page=page.closest(".home-page")||page;
   page.classList.toggle("home-ui-hidden",hidden);
-  if(state.homeEditMode)homeEditVisibility.ui=hidden;
+  homeEditVisibility.ui=hidden;
   const labels={ko:hidden?"UI 표시":"UI 숨김",en:hidden?"Show UI":"Hide UI",ja:hidden?"UIを表示":"UIを隠す"};
   page.querySelectorAll("[data-home-ui-toggle]").forEach(button=>{
     button.setAttribute("aria-pressed",String(hidden));
@@ -2015,7 +2017,7 @@ function setHomeUiHidden(page,hidden){
   page.querySelectorAll("[data-home-switcher-toggle]").forEach(item=>item.setAttribute("aria-expanded","false"));
   return hidden;
 }
-function toggleHomeUi(page){return setHomeUiHidden(page,!page?.classList.contains("home-ui-hidden"))}
+function toggleHomeUi(page){return setHomeUiHidden(page,!homeEditVisibility.ui)}
 function bindHomeCanvasGestures(){
   const canvas=document.querySelector("[data-room-canvas]");if(!canvas)return;
   let lastTapAt=0,lastTapX=0,lastTapY=0;
@@ -3081,7 +3083,16 @@ function bind(){
   $$("[data-sort]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
     if(el.closest("[data-mobile-character-reorder-dialog]"))mobileCharacterReorderOpen=true;
-    moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
+    const shared=activeShared();
+    if(shared){
+      const world=buildSharedWorld(shared,state.uiLanguage),order=world.order;
+      const from=order.indexOf(el.dataset.sort),to=from+Number(el.dataset.direction||0);
+      if(from>=0&&to>=0&&to<order.length){
+        [order[from],order[to]]=[order[to],order[from]];
+        saveSharedCharacterOrder(order,window.ParallelCityAuth?.getInfo?.()?.user?.uid,world.sharedContext.groupId);
+        if(state.sharedContext?.groupId===world.sharedContext.groupId)state.order=[...order];
+      }
+    }else moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
     render();
   });
   $$("[data-delete-character]").forEach(el=>el.onclick=()=>openCharacterDeleteDialog(el.dataset.deleteCharacter));
@@ -3131,7 +3142,8 @@ function bind(){
     button.setAttribute("aria-expanded",String(opening));
   });
   $$("[data-home-ui-toggle]").forEach(button=>button.onclick=()=>toggleHomeUi(button.closest(".home-page,.home-native-page")));
-  if(state.homeEditMode){const page=document.querySelector('.home-native-page');setHomeUiHidden(page,homeEditVisibility.ui);for(const key of ['furniture','names']){page?.classList.toggle('home-hide-'+key,homeEditVisibility[key]);document.querySelector('[data-home-visibility="'+key+'"]')?.setAttribute('aria-pressed',String(homeEditVisibility[key]));}}
+  setHomeUiHidden(document.querySelector('.home-native-page,.home-page'),homeEditVisibility.ui);
+  if(state.homeEditMode){const page=document.querySelector('.home-native-page');for(const key of ['furniture','names']){page?.classList.toggle('home-hide-'+key,homeEditVisibility[key]);document.querySelector('[data-home-visibility="'+key+'"]')?.setAttribute('aria-pressed',String(homeEditVisibility[key]));}}
   $$('[data-home-visibility]').forEach(button=>button.onclick=()=>{const key=button.dataset.homeVisibility;homeEditVisibility[key]=!homeEditVisibility[key];button.closest('.home-native-page,.home-page')?.classList.toggle('home-hide-'+key,homeEditVisibility[key]);button.setAttribute('aria-pressed',String(homeEditVisibility[key]));});
   $('[data-home-edit-cancel]')?.addEventListener('click',()=>{cancelHomeEdit();Object.keys(homeEditVisibility).forEach(k=>homeEditVisibility[k]=false);render();});
 
@@ -5733,7 +5745,7 @@ window.addEventListener("drawer-village-cloud-loaded",()=>{
 });
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
-const scheduleGroupRender=frameTask(()=>{if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(["groups","town","observe","home","relationship","mailbox","routine","character","catalog"].includes(state.activeTab))render()});
+const scheduleGroupRender=frameTask(()=>{if(document.querySelector(".home.is-editing,.selection-popup[open]"))return;if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(["groups","town","observe","home","relationship","mailbox","routine","character","catalog"].includes(state.activeTab))render()});
 window.addEventListener("drawer-village-groups",scheduleGroupRender);
 window.addEventListener("pagehide",()=>scheduleGroupRender.cancel());
 window.addEventListener("parallel-city-cloud-loaded",render);
@@ -6253,19 +6265,6 @@ document.addEventListener("visibilitychange",()=>{
 });
 window.addEventListener("parallel-city-saved",()=>scheduleAchievementRefresh());
 
-let automaticCloudSyncTimer=0;
-document.addEventListener("change",event=>{
-  // Cloud writes are explicit only. Form drafts must never overwrite a newer
-  // device or resurrect deleted characters, rooms, and relationships.
-  return;
-  if(!event.target?.matches("select,input,textarea"))return;
-  clearTimeout(automaticCloudSyncTimer);
-  automaticCloudSyncTimer=setTimeout(async()=>{
-    if(!window.ParallelCityAuth?.getInfo?.().user)return;
-    try{await window.ParallelCityAuth.upload?.({silent:true,reason:"자동 저장"})}
-    catch(error){console.warn("자동 동기화를 다음 변경 때 다시 시도합니다.",error)}
-  },1500);
-});
 const mobileSiteQuery=window.matchMedia?.("(max-width:720px)");
 mobileSiteQuery?.addEventListener?.("change",()=>render());
 // 사이트는 공유하거나 새로고침한 #tab 주소를 그대로 복원한다. Android

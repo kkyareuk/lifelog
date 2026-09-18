@@ -460,6 +460,7 @@ const normalizeEntitlements=value=>{
     iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
     dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
     purchases,
+    adFree:value?.adFree===true||purchases.includes("ad_free"),
     characterSingleSlots:Math.max(0,Number(value?.characterSingleSlots)||0),
     characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks ?? purchases.filter(x=>x==="character_slots_5").length)||0),
     townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||purchases.filter(x=>x==="town_slot_1").length),

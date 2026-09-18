@@ -3560,13 +3560,13 @@ function calculateBaseEvent(c,date=new Date()){
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title},date),c,state,date.getTime(),state.uiLanguage);
-  const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
     const existing=[...list].reverse().find(item=>Number(item.minute)===sleepMinute&&/자는 중|잠든|수면/.test(`${item.title||""} ${item.mood||""}`));
     if(existing)return withResidenceLocation(c,existing,date);
     return commitLiveEntry(c,date,withResidenceLocation(c,entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0,holdMinutes:Math.max(30,(n<wake?wake:1440)-sleepMinute)}),date));
   }
+  const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   const sources=giftSources(date);
   const past=list.filter(x=>autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
@@ -4847,7 +4847,7 @@ export function resolveHomeEncounter(c,current,otherScene,date){
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
   // Needs never interrupt a manual command, travel or a scheduled activity.
-  const need=!activeRoutine&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:sleepingNow(c,date)||!c.autonomousActivityBlocks?.includes('nap')}):'';
+  const need=!activeRoutine&&!isHomeSleepScene(rawCurrent)&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:sleepingNow(c,date)||!c.autonomousActivityBlocks?.includes('nap')}):'';
   if(need&&need!=='social'){
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type={sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,{needKey:need}));

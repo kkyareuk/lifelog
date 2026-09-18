@@ -1,10 +1,8 @@
 import {homeGrid,scaleDefaultRooms} from './room-layout.js?v=20260909dev305';
 const positions=new Map();
 const text=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
-export function homeCanvasSettings(home,lang){
- const grid=homeGrid(home);
- return [['columns',text(lang,'배치 영역 가로 격자','Placement area width (cells)','配置エリアの横幅（マス）'),12],['rows',text(lang,'배치 영역 세로 격자','Placement area height (cells)','配置エリアの縦幅（マス）'),16]].map(([axis,label,min])=>`<label>${label}<input type="number" min="${min}" max="64" step="1" data-home-canvas-axis="${axis}" value="${grid[axis]}"></label>`).join('');
-}
+// The house now fits its viewport; retain saved grid dimensions for furniture coordinates.
+export function homeCanvasSettings(){return "";}
 export function resizeCanvas(home,columns,rows,defaults){
  const before=homeGrid(home),rooms=structuredClone(home.rooms),layouts={};
  for(const [key,room] of Object.entries(rooms))layouts[key]=room.layout||defaults[key];

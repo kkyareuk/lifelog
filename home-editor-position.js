@@ -21,7 +21,8 @@ export function bindEditorPosition(root,homeId,language='ko'){
  handle.onkeydown=e=>{if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const r=dock.getBoundingClientRect();positions.set(homeId,{x:r.x+(e.key==='ArrowRight'?20:e.key==='ArrowLeft'?-20:0),y:r.y+(e.key==='ArrowDown'?20:e.key==='ArrowUp'?-20:0)});clamp()};
  host.addEventListener('furniture-selection',()=>show('furniture'));
  const observer=new MutationObserver(()=>{if(mode==='furniture'&&toolbar.hidden)show('')});observer.observe(toolbar,{attributes:true,attributeFilter:['hidden']});
- const controller=new AbortController();window.addEventListener('resize',clamp,{signal:controller.signal});
+ const controller=new AbortController();window.addEventListener('resize',clamp,{signal:controller.signal});window.visualViewport?.addEventListener('resize',clamp,{signal:controller.signal});
+ const sizes=new ResizeObserver(clamp);sizes.observe(dock);
  // The next bind owns cleanup; detached editor nodes must not retain window listeners.
- bindEditorPosition.cleanup?.();bindEditorPosition.cleanup=()=>{observer.disconnect();controller.abort()};show('');
+ bindEditorPosition.cleanup?.();bindEditorPosition.cleanup=()=>{observer.disconnect();sizes.disconnect();controller.abort()};show('');
 }

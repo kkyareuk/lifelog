@@ -19,17 +19,23 @@ export function ownedPhotoKeys(value,uid){
  if(uid)walk(value);return keys;
 }
 export function uniqueManifestImages(items,uid){
- const seen=new Set(),sources=new Set(),result=[];
+ const seen=new Map(),sources=new Map(),result=[];
  for(const item of items||[]){
   if(!item||typeof item.hash!=='string'||typeof item.url!=='string')continue;
   const key=cloudImageKey(item.url)||item.url;
   if(uid&&cloudImageKey(item.url)&&!ownedPhotoKeys(item.url,uid).size)continue;
-  if(seen.has(key)||sources.has(item.hash))continue;
-  seen.add(key);sources.add(item.hash);result.push(item);
+  const existing=seen.get(key)||sources.get(item.hash)||(item.sourceHash&&sources.get(item.sourceHash));
+  const urls=[item.url,...(Array.isArray(item.aliases)?item.aliases:[])].filter(url=>typeof url==='string'&&(!uid||ownedPhotoKeys(url,uid).size));
+  if(existing){existing.aliases=[...new Set([...(existing.aliases||[]),...urls])].filter(url=>url!==existing.url);continue;}
+  const entry={...item,aliases:urls.filter(url=>url!==item.url)};
+  seen.set(key,entry);sources.set(item.hash,entry);if(item.sourceHash)sources.set(item.sourceHash,entry);result.push(entry);
  }
  return result;
 }
 export function photoManifestForState(manifest,state,uid){
- const keys=ownedPhotoKeys(state,uid),items=uniqueManifestImages(manifest.items,uid).filter(item=>keys.has(cloudImageKey(item.url)));
- return {...manifest,items,legacyCount:Math.max(0,keys.size-items.length)};
+ const keys=ownedPhotoKeys(state,uid),urls=item=>[item.url,...(Array.isArray(item.aliases)?item.aliases:[])];
+ const referenced=(manifest.items||[]).filter(item=>item&&urls(item).some(url=>keys.has(cloudImageKey(url))));
+ const knownKeys=new Set(referenced.filter(item=>typeof item.hash==='string').flatMap(item=>urls(item).map(cloudImageKey)));
+ const items=uniqueManifestImages(referenced,uid);
+ return {...manifest,items,legacyCount:[...keys].filter(key=>!knownKeys.has(key)).length};
 }

@@ -119,6 +119,10 @@ export function scheduleSceneDepth(){
         labels.push({scene,furniture,status,x:r.left+r.width/2-sceneRect.left,y:r.bottom-sceneRect.top+6,anchorTop:r.top-sceneRect.top,z:20+bounds.length*3});
       }
       const heading=scene.querySelector(':scope > .room-heading');if(heading)updates.push([heading,30+bounds.length*3]);
+      if(scene.matches('.room')){
+        const back=bounds.filter(row=>row.element.dataset.furniturePlacement).reduce((value,row)=>Math.min(value,row.bottom),Infinity);
+        if(Number.isFinite(back))for(const row of bounds)if(row.element.matches('.home-person,.home-life-interaction')&&!row.element.dataset.seatId&&!row.element.dataset.coupleBedId&&!row.element.dataset.usingFurniture)row.bottom=Math.max(row.bottom,back+.1);
+      }
       bounds.sort((a,b)=>a.bottom-b.bottom);
       orderAttachedFurniture(bounds).forEach(({element},index)=>updates.push([element,10+index*3]));
       // Occupancy badges are UI labels, not actors standing behind buildings.
