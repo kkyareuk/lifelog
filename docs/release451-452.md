@@ -23,3 +23,8 @@
 - Play data-safety and ads declarations submitted with451. Public privacy HTML alone updated on main c8f4ecc; Pages workflow35328867573 succeeded; live URL shows September18 date and Google/Apple sign-in. Apple privacy/review still need completion.
 - iOS411 settings-scroll report remains unverified. Do not announce it as fixed.
 - Main received only the privacy HTML change; game runtime stays on dev because main still drives an older independent public web deployment.
+
+## Delivery status (September18, end of this pass)
+- iOS internal452 workflow35328681301 succeeded; Apple accepted the internal-only upload, source e5be7ef. Processing/availability was not yet returned by Apple (build:null immediately after upload). Both451/452 are uploaded, neither submitted for App Store review.
+- In-game notice “서랍마을 1.0.399 업데이트·사과 및 슬롯 안내” sent successfully. Sender서랍마을 / recipient서랍마을주민. Covers437→451, omits Mafia, clearly distinguishes Android review submission from availability and iOS pending review. No email/push and no slot grant operation.
+- App Store Connect is at Apple account sign-in; asked user to authenticate there and verify Apple linking on-device. This is the remaining actionable iOS submission blocker.
