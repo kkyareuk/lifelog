@@ -3456,7 +3456,7 @@ function mailboxLegacy(){
     ko:{delete:"삭제",deleteAll:"편지 모두 삭제"}
   }[state.uiLanguage||"ko"];
   const mailCards=letters.map(m=>`<article class="character-mail-card has-mail" data-mail-id="${esc(m.id)}"><div><small>${esc(new Date(m.at).toLocaleString(state.uiLanguage||"ko"))}</small><h2>${esc(m.title)}</h2><p>${esc(m.body)}</p></div><div class="mail-card-actions"><button type="button" data-open-contact-mail="${esc(m.id)}">${m.answered?t("답변 완료","답변 완료"):t("openLetter","편지 열기")}</button><button type="button" class="mail-delete-button" data-delete-contact-mail="${esc(m.id)}">${mailActionCopy.delete}</button></div></article>`).join("");
-  const pending=state.dailyQuestion&&!state.dailyQuestion.answered&&!state.dailyQuestion.mailId?state.dailyQuestion:null;
+  const pending=state.dailyQuestion&&state.characters[state.dailyQuestion.characterId]&&!state.dailyQuestion.answered&&!state.dailyQuestion.mailId?state.dailyQuestion:null;
   const sender=state.characters[pending?.characterId]||active()||state.characters[state.order[0]];
   const current=active()||sender,callCopy={
     en:{title:"Call home",help:"End an outing and ask a character to stay home until their next scheduled plan.",current:`Call ${current?.name||"character"} home`,all:"Call everyone home"},

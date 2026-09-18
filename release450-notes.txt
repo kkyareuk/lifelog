@@ -1,0 +1,12 @@
+<ko-KR>
+‘도착한 편지’가 내 프로필 사진으로 표시되고 눌러도 열리지 않던 임시 질문 오류를 수정했습니다.
+편지를 열 때 날짜가 바뀌어도 선택한 질문을 유지합니다.
+</ko-KR>
+<en-US>
+Fixed a temporary question letter that could display your profile photo and fail to open.
+Opening a letter now preserves the selected question across a date change.
+</en-US>
+<ja-JP>
+「届いた手紙」に自分のプロフィール画像が表示され、開けなくなる一時的な質問の不具合を修正しました。
+日付が変わっても、開く手紙の質問が切り替わらないようにしました。
+</ja-JP>

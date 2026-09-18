@@ -4087,8 +4087,8 @@ function bind(){
   });
   $$('[data-open-daily-question]').forEach(button=>button.onclick=()=>{
     button.closest('dialog[open]')?.close();
-    const question=ensureDailyQuestionSchedule();
-    if(question&&!question.answered)requestAnimationFrame(()=>openDailyCharacterQuestion({...question,shown:true}));
+    const question=state.dailyQuestion;
+    if(question&&!question.answered&&state.characters[question.characterId])requestAnimationFrame(()=>openDailyCharacterQuestion({...question,shown:true}));
   });
   $$('[data-open-contact-mail]').forEach(button=>button.onclick=()=>openContactMail(button.dataset.openContactMail));
   $$('[data-delete-contact-mail]').forEach(button=>button.onclick=()=>{
@@ -5788,7 +5788,7 @@ function availableDailyQuestionKinds(character){
 }
 function ensureDailyQuestionSchedule(now=new Date()){
   const day=localDateKey(now),current=state.dailyQuestion;
-  if(current?.day===day)return current;
+  if(current?.day===day&&(current.answered||current.mailId||state.characters[current.characterId]))return current;
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   if(!characters.length)return null;
   const character=characters[Math.floor(Math.random()*characters.length)],kinds=availableDailyQuestionKinds(character);
