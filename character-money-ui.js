@@ -1,0 +1,77 @@
+import {state,save} from './state.js?v=20260909dev305';
+import {ensureWallet,moneySettings,displayMoney,moneyFromDisplay,updateMoneySettings,setWalletSharing,moveCommonMoney} from './character-money.js';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
+
+const walletLoads=new Map();
+const words=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
+function context(){const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),shared=snapshot?.activeGroupId&&snapshot.group,world=shared?buildSharedWorld(snapshot,state.uiLanguage):state;const id=document.querySelector('[data-observed-character]')?.dataset.observedCharacter||world.activeId;return {world,c:world.characters[id],snapshot:shared?snapshot:null}}
+const errorText=(error,lang)=>error.message==='money-insufficient'?words(lang,'잔액이 부족해요.','Insufficient funds.','残高が不足しています。'):error.message;
+export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
+ const info=context(),{world,snapshot}=info,c=characterId?world.characters[characterId]:info.c;if(!c)return;
+ const tr=(ko,en,ja)=>words(world.uiLanguage,ko,en,ja),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',canEdit=!snapshot||c.ownerUid===uid,accountState=state;
+ if(!c.wallet&&!snapshot){ensureWallet(c);save(true)}
+ const d=document.createElement('dialog');d.className='character-money-dialog';let page=pane,busy=false;
+ const valid=()=>state===accountState&&(window.ParallelCityAuth?.getInfo?.()?.user?.uid||'')===uid&&(!snapshot||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===snapshot.activeGroupId);
+ const mutate=async(action,payload={})=>{
+  if(busy||!canEdit||!valid())return;busy=true;
+  try{
+   if(snapshot){const result=await window.DrawerVillageGroups.characterMoney({id:c.id,action,...payload});if(!valid())return;c.wallet=result.wallet;const record=snapshot.residents.find(r=>r.id===c.id);if(record)record.lifeJson=JSON.stringify({...JSON.parse(record.lifeJson||'{}'),wallet:result.wallet});if(payload.homeId&&result.commonWallet){world.homes[payload.homeId].commonWallet=result.commonWallet;const h=snapshot.homes.find(h=>h.id===payload.homeId);if(h)h.commonWallet=result.commonWallet}}
+   else{if(action==='settings')updateMoneySettings(c,payload.patch);else if(action==='share')setWalletSharing(world,c.id,payload.homeId,payload.enabled);else if(['deposit','withdraw'].includes(action))moveCommonMoney(world,c.id,payload.homeId,payload.amount,action,payload.requestId);if(!await save(true))throw Error(tr('저장하지 못했어요.','Could not save.','保存できませんでした。'))}
+   draw();
+  }catch(error){const p=d.querySelector('[role=status]');if(p)p.textContent=errorText(error,world.uiLanguage)}finally{busy=false}
+ };
+ function draw(){
+  d.replaceChildren();const head=document.createElement('header'),title=document.createElement('h2');title.textContent=c.name+' · '+tr('지갑 · 직장','Wallet · Work','財布・仕事');const close=document.createElement('button');close.textContent='×';close.onclick=()=>d.close();head.append(title,close);d.append(head);
+  const nav=document.createElement('nav');for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事'],['settings','설정','Settings','設定']]){const b=document.createElement('button');b.textContent=tr(ko,en,ja);b.setAttribute('aria-pressed',String(page===key));b.onclick=()=>{page=key;draw()};nav.append(b)}d.append(nav);
+  const balance=document.createElement('h3');balance.textContent=displayMoney(c.wallet?.balance||0,c,world.uiLanguage);d.append(balance);const content=document.createElement('section');d.append(content);
+  const field=(label,type,value)=>{const l=document.createElement('label');l.append(document.createTextNode(label));const input=document.createElement('input');input.type=type;input.value=value;input.disabled=!canEdit;l.append(input);content.append(l);return input};
+  const action=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=!canEdit;b.onclick=fn;content.append(b);return b};
+  if(page==='settings'){
+   const s=moneySettings(c),unit=field(tr('재화 단위 (직접 입력)','Currency name','通貨名（自由入力）'),'text',s.unit);unit.maxLength=20;
+   const meal=field(tr('평범한 밥 한 끼 가격','Price of an ordinary meal','普通の食事1回の価格'),'number',s.mealPrice);meal.min='0.0001';meal.step='any';
+   const help=document.createElement('p');help.textContent=tr('단위와 한 끼 가격을 바꿔도 실제 재산 가치는 유지돼요.','Changing the unit or meal price preserves the value of your money.','単位や食事の価格を変えても資産の価値は変わりません。');content.append(help);
+   const payment=document.createElement('select');payment.disabled=!canEdit;payment.setAttribute('aria-label',tr('데이트 계산 방식','Date payment preference','デートの支払い方'));for(const [v,ko,en,ja] of [['split','각자 계산','Split','割り勘'],['treat','내가 계산','My treat','自分が払う'],['request','상대에게 부탁','Ask companion','相手にお願いする']])payment.add(new Option(tr(ko,en,ja),v,false,s.datePayment===v));content.append(payment);
+   const frequency=field(tr('데이트에서 내가 계산하는 빈도 (%)','How often I pay on dates (%)','デートで自分が払う頻度（%）'),'number',s.datePayFrequency);frequency.min='0';frequency.max='100';
+   const choice=(label,values,current)=>{const l=document.createElement('label'),select=document.createElement('select');l.textContent=label;select.disabled=!canEdit;for(const [ko,en,ja] of values)select.add(new Option(tr(ko,en,ja),ko,false,ko===current));l.append(select);content.append(l);return select};
+   const wealth=choice(tr('재산 유형','Wealth','資産の種類'),[['설정하지 않음','Unspecified','未設定'],['형편이 어려움','Struggling','生活が苦しい'],['평범한 형편','Average','普通'],['여유 있는 편','Comfortable','余裕がある'],['부유함','Wealthy','裕福'],['대부호','Very wealthy','大富豪']],c.wealth||'평범한 형편');
+   const spending=choice(tr('소비 유형','Spending style','消費傾向'),[['절약 우선','Save first','節約優先'],['필요한 만큼 소비','Spend as needed','必要な分だけ使う'],['취향에는 아끼지 않음','Spend on favorites','好みには惜しまない'],['품질 우선','Quality first','品質優先'],['가격을 거의 신경 쓰지 않음','Rarely mind the price','価格をほぼ気にしない']],c.income||'필요한 만큼 소비');
+   action(tr('저장','Save','保存'),()=>mutate('settings',{patch:{unit:unit.value,mealPrice:Number(meal.value),datePayment:payment.value,datePayFrequency:Number(frequency.value),wealth:wealth.value,income:spending.value}}));
+  }else if(page==='work'){
+   const text=document.createElement('p');text.textContent=(c.jobTitle||c.job||tr('무직','Unemployed','無職'))+' · '+(world.world.places.find(p=>p.id===c.workplaceId)?.name||tr('직장 미지정','No workplace','職場未設定'));content.append(text);
+   const wage=field(tr('근무 1회 완료 시 급여','Pay per completed shift','勤務1回あたりの給与'),'number',moneySettings(c).wage/10000*moneySettings(c).mealPrice);wage.min='0';wage.step='any';
+   const hint=document.createElement('p');hint.textContent=tr('퇴근할 때 입금돼요. 무직·학생에게는 자동 급여가 없어요.','Paid when work ends. Unemployed characters and students receive no automatic salary.','退勤時に入金します。無職・学生には自動給与がありません。');content.append(hint);action(tr('급여 저장','Save pay','給与を保存'),()=>{try{void mutate('settings',{patch:{wage:moneyFromDisplay(wage.value,c)}})}catch(e){d.querySelector('[role=status]').textContent=errorText(e,world.uiLanguage)}});
+  }else{
+   const homes=Object.values(world.homes).filter(h=>c.homeId===h.id||c.residences?.some(r=>r.homeId===h.id));
+   for(const home of homes.filter(h=>!homeId||homeId===h.id)){
+    const row=document.createElement('label'),check=document.createElement('input');check.type='checkbox';check.disabled=!canEdit;check.checked=home.commonWallet?.members?.includes(c.id)||false;check.onchange=()=>mutate('share',{homeId:home.id,enabled:check.checked});row.append(check,document.createTextNode(home.name+' · '+tr('현재 동거인과 재산 공유','Share with housemates','同居人と資産を共有')));content.append(row);
+    const amount=document.createElement('p');amount.textContent=tr('공동지갑: ','Shared wallet: ','共同財布：')+displayMoney(home.commonWallet?.balance||0,c,world.uiLanguage);content.append(amount);
+    if(check.checked){const input=field(tr('입금 / 출금 금액','Deposit / withdraw amount','入金・出金額'),'number','');input.min='0';input.step='any';for(const [kind,ko,en,ja] of [['deposit','넣기','Deposit','入金'],['withdraw','꺼내기','Withdraw','出金']])action(tr(ko,en,ja),()=>{try{void mutate(kind,{homeId:home.id,amount:moneyFromDisplay(input.value,c),requestId:crypto.randomUUID()})}catch(e){d.querySelector('[role=status]').textContent=errorText(e,world.uiLanguage)}})}
+   }
+   const history=document.createElement('ol');for(const entry of c.wallet?.entries||[]){const li=document.createElement('li');const label=entry.kind==='wage'?tr('급여','Wages','給与'):entry.kind==='expense'?tr('이용료','Expense','利用料'):tr('공동지갑 이체','Shared-wallet transfer','共同財布への振替');li.textContent=label+' · '+displayMoney(entry.amount,c,world.uiLanguage);history.append(li)}content.append(history);
+  }
+  const status=document.createElement('p');status.setAttribute('role','status');d.append(status);
+ }
+ d.onclose=()=>{d.remove();window.dispatchEvent(new Event('drawer-money-updated'))};document.body.append(d);draw();d.showModal();if(snapshot&&canEdit)void mutate('read');return d;
+}
+export function bindCharacterMoney(){
+ const {world,c,snapshot}=context();if(!c)return;
+ if(snapshot&&!c.wallet&&c.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid){
+  const key=snapshot.activeGroupId+':'+c.id;
+  if(!walletLoads.has(key)){
+   const uid=c.ownerUid;
+   walletLoads.set(key,window.DrawerVillageGroups.characterMoney({id:c.id,action:'read'}).then(result=>{
+    if(window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid||window.DrawerVillageGroups.getSnapshot()?.activeGroupId!==snapshot.activeGroupId)return;
+    const current=window.DrawerVillageGroups.getSnapshot().residents.find(r=>r.id===c.id);
+    if(current){current.lifeJson=JSON.stringify({...JSON.parse(current.lifeJson||'{}'),wallet:result.wallet});window.dispatchEvent(new Event('drawer-money-updated'));}
+   }).catch(()=>{}));
+  }
+ }
+ if(!c.wallet&&!snapshot){ensureWallet(c);save(true)}
+ const hud=document.querySelector('.game-observe-hud,.standard-observe-view');
+ if(hud&&!hud.querySelector('[data-character-balance]')){
+  const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(c.wallet.balance,c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();(hud.querySelector('.home-town-picker')||hud).append(balance);
+  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事']]){const b=document.createElement('button');b.type='button';b.textContent=words(world.uiLanguage,ko,en,ja);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
+ }
+ document.querySelectorAll('[data-character-money-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('settings',b.dataset.characterMoneySettings));
+ const panel=document.querySelector('[data-home-feature="members"],[data-home-feature="residents"]');if(panel&&!panel.querySelector('[data-household-wallet]')){const b=document.createElement('button');b.dataset.householdWallet='';b.textContent=words(world.uiLanguage,'동거인 공동지갑 설정','Household wallet settings','同居人の共同財布設定');b.onclick=()=>openCharacterMoney('wallet',c.id,world.activeHomeId);panel.append(b)}
+}

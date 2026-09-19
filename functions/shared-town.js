@@ -31,6 +31,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
         const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command?now:Math.floor(now/60000)*60000,input.command||null);
+        for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
         for(const life of lives){
           const commanded=input.command?.characterId===life.id;
@@ -123,6 +124,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         }
         if(old)Object.assign(old,item);else town.decorations.push(item);
       }
+      if(Buffer.byteLength(JSON.stringify(towns),'utf8')>700000)fail('town-size-limit',409);
       tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
     }),
     saveTown:async(uid,input)=>db.runTransaction(async tx=>{
@@ -157,7 +159,8 @@ function createSharedTownService({db,engine,clock=Date.now}){
         const strings=['name','subtype','art','image','photo','description','open','close','audience','atmosphere','priceRange','reputation','fameLevel','lightingMode','lightOnTime','lightOffTime','iconPreset','interiorImage'];
         const numbers={imageScale:[.1,4],zIndex:[-100,1000],mapZ:[-100,1000],capacity:[0,10000],spicy:[0,10],sweet:[0,10]};
         for(const [field,value] of Object.entries(input.patch||{})){
-          if(strings.includes(field)){if(typeof value!=='string'||value.length>2000||/^(data:|blob:)/i.test(value))fail('invalid-building-value');place[field]=value}
+          if(field==='interior'){place.interior=require('./building-interior').validateBuildingInterior(value)}
+          else if(strings.includes(field)){if(typeof value!=='string'||value.length>2000||/^(data:|blob:)/i.test(value))fail('invalid-building-value');place[field]=value}
           else if(numbers[field]){const [lo,hi]=numbers[field];if(typeof value!=='number'||!Number.isFinite(value)||value<lo||value>hi)fail('invalid-building-value');place[field]=value}
           else if(['stock','audiences'].includes(field)){if(!Array.isArray(value)||value.length>200||value.some(v=>typeof v!=='string'||v.length>180))fail('invalid-building-value');place[field]=value}
           else if(field==='flipX'){if(typeof value!=='boolean')fail('invalid-building-value');place[field]=value}
@@ -166,6 +169,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         if(!place.name.trim())fail('name-required');
         if(old)Object.assign(old,place);else town.places.push(place);
       }
+      if(Buffer.byteLength(JSON.stringify(towns),'utf8')>700000)fail('town-size-limit',409);
       tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
     })
   };

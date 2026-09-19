@@ -1,3 +1,4 @@
+import {settleMoneyScene} from './character-money.js';
 import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
 import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
 import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
@@ -1166,10 +1167,10 @@ function workEvent(c,time,date){
   const matches=Object.entries(variants).find(([key])=>c.job===key||String(c.jobTitle||"").includes(key));
   const pool=matches?.[1]||[["직업 업무를 처리하는 중",`${c.jobTitle||c.job}에게 필요한 실무를 일정과 우선순위에 맞춰 진행하고 있어요.`]];
   const text=pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
-  if(!c.workplaceId||c.workplaceId==="home")return homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study");
+  if(!c.workplaceId||c.workplaceId==="home")return {...homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study"),economyWork:true};
   const workTypes=c.job==="가수"||c.job==="아이돌"?["공연장","극장","스튜디오","방송국","사무실"]:["사무실","회사","학교"];
   const p=(townFor(c,date)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(workTypes,`${c.id}:work`,c);
-  return entry(time,text[0],text[1],away(c,{placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
+  return entry(time,text[0],text[1],away(c,{economyWork:true,placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
 }
 
 function socialEvent(c,time,date){
@@ -4823,8 +4824,8 @@ export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{
     automaticViewExpression(c,date);
     privateLifeEvent(c,date);
-    const current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
-    if(Math.abs(Date.now()-date.getTime())<60000&&advanceNeeds(c,current,date.getTime()))save(false,false);
+    let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+    if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
     return current;
   })}catch(error){return sceneFailure(c,date,error)}
 }

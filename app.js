@@ -1,3 +1,7 @@
+import {bindCharacterMoney,openCharacterMoney} from './character-money-ui.js';
+import {bindHomeViewSwitch} from './home-view-switch.js';
+import {openBuildingInterior} from './building-interior.js';
+import {bindRoomGesture} from './room-geometry.js';
 import {bindSceneZoom} from './scene-zoom.js';
 import {mountTitleScreen} from './title-screen.js';
 import {bindHomeCanvas} from './home-canvas.js';
@@ -1233,47 +1237,7 @@ function captureRoomCanvasLayouts(canvas,world=state,update=updateRoom,saveAll=(
 }
 
 function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveAll=()=>save(true)}={}){
-  let pointerId=null,startX=0,startY=0,startLayout=null,room=null,canvas=null;
-  const cancel=()=>{
-    const captured=pointerId;pointerId=null;
-    if(startLayout&&room)setRoomLayoutStyle(room,startLayout);
-    room?.classList.remove('room-dragging');
-    if(captured!==null&&handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
-  };
-  handle.closest('.home-page')?.addEventListener('drawer-scene-pinch',cancel);
-  const finish=event=>{
-    if(pointerId===null)return;
-    const captured=pointerId;pointerId=null;
-    if(handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
-    room?.classList.remove("room-dragging");
-    if(startLayout&&room)update(handle.dataset.homeId,mode==="move"?handle.dataset.roomDrag:handle.dataset.roomResize,{layout:snapRoomLayout({
-      x:parseFloat(room.style.getPropertyValue("--mobile-room-x"))||0,
-      y:parseFloat(room.style.getPropertyValue("--mobile-room-y"))||0,
-      w:parseFloat(room.style.getPropertyValue("--mobile-room-w"))||startLayout.w,
-      h:parseFloat(room.style.getPropertyValue("--mobile-room-h"))||startLayout.h
-    },homeGrid(world.homes[handle.dataset.homeId]))},true);
-    event?.preventDefault?.();event?.stopPropagation?.();
-  };
-  handle.onclick=event=>{event.preventDefault();event.stopPropagation()};
-  handle.onpointerdown=event=>{
-    event.preventDefault();event.stopPropagation();
-    room=handle.closest(".room");canvas=handle.closest("[data-room-canvas]");if(!room||!canvas)return;
-    if(!world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout)captureRoomCanvasLayouts(canvas,world,update,saveAll);
-    const saved=world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout;if(!saved)return;
-    startLayout=snapRoomLayout(saved,homeGrid(world.homes[handle.dataset.homeId]));setRoomLayoutStyle(room,startLayout);startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;
-    handle.setPointerCapture(pointerId);room.classList.add("room-dragging");
-  };
-  handle.onpointermove=event=>{
-    if(pointerId!==event.pointerId||!startLayout||!canvas)return;
-    event.preventDefault();event.stopPropagation();
-    const box=canvas.getBoundingClientRect(),dx=(event.clientX-startX)/box.width*100,dy=(event.clientY-startY)/box.height*100;
-    if(mode==="move"){
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,x:startLayout.x+dx,y:startLayout.y+dy},homeGrid(world.homes[handle.dataset.homeId])));
-    }else{
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy},homeGrid(world.homes[handle.dataset.homeId])));
-    }
-  };
-  handle.onpointerup=finish;handle.onpointercancel=cancel;handle.onlostpointercapture=cancel;
+  bindRoomGesture(handle,mode,{world,update,setStyle:setRoomLayoutStyle,capture:canvas=>captureRoomCanvasLayouts(canvas,world,update,saveAll)});
 }
 
 // Home editor widgets share one state owner with the simulation and save handlers.
@@ -1483,6 +1447,7 @@ function resumeAfterCommandDismissal(){
 }
 window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-discovery-dismissed',resumeAfterCommandDismissal);
+window.addEventListener('drawer-money-updated',()=>render());
 window.addEventListener('drawer-scene-gesture-ended',resumeAfterCommandDismissal);
 window.addEventListener('drawer-selection-dismissed',()=>{resumeAfterCommandDismissal();scheduleLiveSceneRefresh()});
 function renderAfterCommand(){
@@ -1510,7 +1475,7 @@ window.addEventListener("pagehide",cleanupRenderedScreen);
 
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.querySelector('.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
+  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.documentElement.dataset.roomGesture==='1'||document.querySelector('.character-money-dialog[open],.building-interior-dialog[open],.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -4609,6 +4574,8 @@ function bind(){
   bindSharedCharacters(render);
   bindMailbox(render,showToast);
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
+  bindCharacterMoney();
+  bindHomeViewSwitch({tab:state.activeTab,language:state.uiLanguage,navigate:tab=>navigateToTab(tab)});
   bindSharedUi({bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
@@ -6220,6 +6187,7 @@ window.addEventListener("drawer-village-character-notification-received",event=>
 });
 async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options={companionIds:action.companionIds,workTask:action.workTask,topic:action.topic,subjectId:action.subjectId,payment:action.payment,...(action.unbound?{}:target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target}),...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
 installContextMenu({
+ openPlace:(id)=>openBuildingInterior(id,{snapshot:activeShared(),bindRoomGeometry:bindRoomGeometryHandle,toast:showToast}),
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},

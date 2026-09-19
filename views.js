@@ -1,3 +1,4 @@
+import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {iosAppleAvailable,appleCopy} from './apple-login.js';
 import {homeCanvasSettings} from './home-canvas.js';
 import {homeGrid,scaleDefaultRooms} from './room-layout.js?v=20260909dev305';
@@ -2190,8 +2191,7 @@ export function roomStyle(h,key,layout,mobileLayout){
   const floorImage=room.usePhoto&&(room.floorImage||room.image)?(room.floorImage||room.image):homeSurfaceImage(floorMaterial,room.floorImage,room.type);
   const fullRoomIllustration=Boolean((room.usePhoto??(floorMaterial==="custom"))&&(room.floorImage||room.image));
   const wallImage=fullRoomIllustration?"":wallSurfaceImage(wallMaterial,floorMaterial,room.floorImage,room.type);
-  const furnitureColumns=Math.max(1,Math.round((Number(resolvedMobile.w)||100)/100*homeGrid(h).columns));
-  const furnitureRows=Math.max(1,Math.round((Number(resolvedMobile.h)||100)/100*homeGrid(h).rows));
+  const {columns:furnitureColumns,rows:furnitureRows}=furnitureDisplayGrid(resolvedMobile);
   const parts=[
     `--room-x:${layout?.x||1}`,
     `--room-y:${layout?.y||1}`,
@@ -2346,12 +2346,12 @@ function home(sharedPass=false){
   }
   return `<section class="home-page"><div class="title"><div><h1>집과 생활 거점</h1><p>캐릭터 없이 집만 만들거나, 한 캐릭터에게 주거지·본가·별채·주말집을 여러 곳 연결할 수 있어요.</p></div><div class="home-top-actions"><button data-add-home>+ 집만 생성</button>${selected?`<button data-home-edit>${state.homeEditMode?"편집 완료":"집 편집"}</button>`:""}</div></div>${ids.length?`<div class="home-tabs">${ids.map(id=>{const h=state.homes[id]||{},members=groups[id]||[];return `<button data-home-select="${id}" class="${id===selected?"on":""}" style="--home-grad:${houseGradient(members)};${h.image?`--home-photo:url('${esc(h.image)}')`:""}">🏠 ${esc(h.name||"이름 없는 집")}<small>${esc(h.kind||"일반 주거")} · ${members.length?`${members.length}명 연결`:"빈집"}</small></button>`}).join("")}</div>`:"<section class='panel empty-mini'><b>아직 만든 집이 없어요.</b><p>‘집만 생성’을 눌러 캐릭터와 별개로 집부터 만들 수 있어요.</p></section>"}<div class="home-grid">${selected?homeCard(selected,groups[selected]||[]):""}</div></section>`;
 }
-function homeCard(id,chars){
+export function homeCard(id,chars){
   const h=state.homes[id]||{id,name:"이름 없는 집",rooms:{}};
   const nativeHome=Boolean(document.documentElement?.classList?.contains?.("native-app"));
   const currentScenes=new Map((state.homeEditMode?[]:state.order).map(characterId=>state.characters[characterId]).filter(Boolean).map(c=>[c.id,eventFor(c)]));
   const sceneFor=c=>currentScenes.get(c.id);
-  const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
+  const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&(h.placeId?sceneFor(c)?.placeId===h.placeId:sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id));
   const edit=state.homeEditMode;
   const lifeAgents=edit?{}:{...(h.lifeSimulation?.agents||{})};
   const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))&&(!furniturePatternForScene(scene)||furniturePatternForScene(scene).test(scene.meetingFurniture.item))};
@@ -2359,7 +2359,7 @@ function homeCard(id,chars){
 
   // Do not render an old bed reservation as the pose for a new needs action.
   for(const c of inside){const a=lifeAgents[c.id],scene=sceneFor(c),pattern=furniturePatternForScene(scene);if(a&&isLayeredBed(a)&&pattern&&!pattern.test(a.item))lifeAgents[c.id]={...a,furnitureId:'',item:'',actionKind:scene.actionKind,phase:'using',roomKey:scene.room,x:50,y:75};}
-  const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:sceneFor(character)?.room;
+  const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:h.placeId?(h.rooms?.[sceneFor(character)?.room]?sceneFor(character).room:Object.keys(h.rooms)[0]):sceneFor(character)?.room;
   const roomKeys=Object.keys(h.rooms||{}).sort((a,b)=>(Number(h.rooms[a]?.order)||0)-(Number(h.rooms[b]?.order)||0));
   const floorCount=Math.max(1,Math.min(5,Number(h.floorCount)||1)),activeFloor=Math.max(1,Math.min(floorCount,Number(h.activeFloor)||1));
   const visibleRoomKeys=roomKeys.filter(key=>(Number(h.rooms[key]?.floor)||1)===activeFloor);
@@ -3093,8 +3093,7 @@ function character(){
     <label class="overview-field overview-family-home"><b>${t("본가","본가")}</b><select data-field="homeId">${overviewHomes.map(home=>`<option value="${home.id}" ${home.id===(overviewHome?.id||"")?"selected":""}>${esc(home.name)}</option>`).join("")}</select></label>
     <label class="overview-field overview-speech"><b>${t("캐릭터 말투","캐릭터 말투")}</b>${overviewSelect("speechStyle",SPEECH_STYLE_OPTIONS,c.speechStyle||SPEECH_STYLE_OPTIONS[0])}</label>
     <label class="overview-field overview-license"><b>${t("운전면허","운전면허")}</b>${overviewSelect("driverLicense",["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"],c.driverLicense||"면허 없음")}</label>
-    <label class="overview-field overview-wealth"><b>${t("재산","재산")}</b>${overviewSelect("wealth",["설정하지 않음","형편이 어려움","평범한 형편","여유 있는 편","부유함","대부호"],c.wealth||"평범한 형편")}</label>
-    <label class="overview-field overview-spending"><b>${t("소비유형","소비유형")}</b>${overviewSelect("income",INCOMES,c.income||"필요한 만큼 소비")}</label>
+    <button type="button" class="overview-field" data-character-money-settings="${esc(c.id)}">${({ko:"재산 · 소비 · 데이트 계산 설정",en:"Wealth, spending & date payments",ja:"資産・消費・デートの支払い設定"}[state.uiLanguage])}</button>
     <label class="overview-field overview-smoking"><b>${t("흡연 여부","흡연 여부")}</b>${overviewSelect("smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}</label>
     <label class="overview-field overview-alcohol"><b>${t("주량","주량")}</b>${overviewSelect("alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</label>
   </section>`;

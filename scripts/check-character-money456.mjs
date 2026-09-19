@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {ensureWallet,updateMoneySettings,displayMoney,moneyFromDisplay,payActivity,activityPrice,setWalletSharing,moveCommonMoney,settleMoneyScene} from '../character-money.js';
+const a={id:'a',name:'A',wealth:'평범한 형편',job:'회사원',homeId:'h'},b={id:'b',name:'B',wealth:'형편이 어려움',homeId:'h'};
+const world={characters:{a,b},homes:{h:{id:'h'}},world:{places:[{id:'cafe',type:'카페',priceRange:'보통'}]},uiLanguage:'ko'};
+ensureWallet(a,1);assert.equal(a.wallet.balance,500000);a.wealth='대부호';ensureWallet(a,2);assert.equal(a.wallet.balance,500000);
+updateMoneySettings(a,{unit:'골드',mealPrice:10},3);assert.equal(displayMoney(a.wallet.balance,a),'500 골드');assert.equal(moneyFromDisplay(5,a),5000);
+assert.equal(activityPrice(world.world.places[0],{kind:'tea'}),5000);assert.equal(activityPrice(world.world.places[0],{kind:'talk'}),0);
+assert(payActivity(world,['a'],5000,'first',4));assert.equal(a.wallet.balance,495000);assert(payActivity(world,['a'],5000,'first',5));assert.equal(a.wallet.balance,495000);assert.equal(payActivity(world,['b'],60000,'poor',5),false);assert.equal(b.wallet.balance,50000);
+setWalletSharing(world,'a','h',true);setWalletSharing(world,'b','h',true);moveCommonMoney(world,'a','h',100000,'deposit','deposit1',6);assert.equal(a.wallet.balance,395000);assert.equal(world.homes.h.commonWallet.balance,100000);moveCommonMoney(world,'a','h',100000,'deposit','deposit1',7);assert.equal(a.wallet.balance,395000);
+assert(payActivity(world,['a','b'],5000,'together',8));assert.equal(world.homes.h.commonWallet.balance,90000);assert.equal(b.wallet.balance,50000);
+const before=a.wallet.balance;settleMoneyScene(world,a,{kind:'work',placeId:'job'},10000);settleMoneyScene(world,a,{kind:'rest',home:true},20000);assert.equal(a.wallet.balance,before+100000);settleMoneyScene(world,a,{kind:'rest',home:true},30000);assert.equal(a.wallet.balance,before+100000);
+setWalletSharing(world,'b','h',false);assert.throws(()=>moveCommonMoney(world,'b','h',1,'withdraw','withdraw1',8));
+console.log('PASS character money: one grant, meal conversion, expenses, insufficient funds, shared opt-in, replay protection, work exit');

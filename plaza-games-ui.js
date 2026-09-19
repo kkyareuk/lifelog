@@ -33,7 +33,7 @@ export async function refreshHomeGames(){
    if(revision!==homeRevision||!slot.isConnected||uid()!==owner||(window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId||personalGameGroups()[0]?.id)!==groupId)return;
    if(Date.now()-entry.at>60000){refreshHomeGames();return}
    const hud=slot.closest('.game-observe-hud'),profile=hud?.querySelector('.game-hud-profile-frame');
-   if(hud&&profile)slot.style.setProperty('--home-games-top',Math.ceil(profile.getBoundingClientRect().bottom-hud.getBoundingClientRect().top+18)+'px');
+   if(hud&&profile)slot.style.setProperty('--home-games-top',Math.ceil(Math.max(profile.getBoundingClientRect().bottom,hud.querySelector('.character-money-shortcuts')?.getBoundingClientRect().bottom||0)-hud.getBoundingClientRect().top+18)+'px');
    slot.querySelectorAll('[data-game-countdown]').forEach(el=>{const secs=Math.max(0,Math.ceil((Number(el.dataset.gameCountdown)-Date.now())/1000));el.textContent=secs?`${Math.floor(secs/3600)}:${String(Math.floor(secs/60)%60).padStart(2,'0')}:${String(secs%60).padStart(2,'0')}`:t('진행 확인','Check game','進行を確認');el.setAttribute('aria-label',t('단계 마감까지 ','Time left in phase: ','段階終了まで ')+el.textContent)});
    homeTimer=setTimeout(tick,1000);
   }tick();

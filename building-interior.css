@@ -1,0 +1,14 @@
+.building-interior-dialog{box-sizing:border-box;position:fixed;inset:0;width:100%;max-width:none;height:var(--game-viewport-height,100dvh);max-height:none;margin:0;padding:0;border:0;background:#eee5cf;overflow:hidden}
+.building-interior-dialog .building-interior-page{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column;height:100%!important;width:100%!important;overflow:hidden}
+.building-interior-dialog .building-interior-heading{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:none;padding:8px;background:#553d2d;color:#fff;z-index:50}
+.building-interior-heading strong{flex:1;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.building-interior-heading button,.building-interior-heading select{min-height:38px;padding:6px 10px;font-size:14px}
+.building-interior-dialog .building-interior-home{position:relative!important;inset:auto!important;flex:1;min-height:0;width:100%!important;height:auto!important;overflow:hidden}
+.building-interior-dialog .home-canvas-viewport{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+.building-interior-dialog .rooms>.room{position:absolute;left:calc(var(--mobile-room-x) + 4px);top:calc(var(--mobile-room-y) + 4px);width:calc(var(--mobile-room-w) - 8px);height:calc(var(--mobile-room-h) - 8px);box-sizing:border-box;min-width:0;min-height:0;margin:0;padding:7px;background-position:center,var(--room-floor-position,center top);background-size:100% 100%,var(--room-floor-size,250px);background-repeat:no-repeat,var(--room-floor-repeat,repeat)}
+.building-interior-status{margin:0;padding:4px 8px;min-height:0;font-size:13px;color:#842c16}
+.home-view-switch{display:flex;gap:4px;position:absolute;z-index:60;left:10px;top:calc(var(--safe-top,0px) + 110px);padding:4px;border-radius:18px;background:#f7efdc;color:#503725}
+.home-view-switch button{font:inherit;font-size:13px;padding:7px 10px;border-radius:14px;border:1px solid #94785b;background:#fff8e8;color:#503725}
+.home-view-switch button[aria-pressed=true]{background:#62452f;color:#fff}
+.mobile-town-shell>.home-view-switch{top:auto;bottom:12px}
+.home-native-page>.home-view-switch{top:auto;bottom:12px}

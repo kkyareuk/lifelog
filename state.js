@@ -1,3 +1,4 @@
+import {activityPrice,payActivity,moneySettings} from './character-money.js';
 import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {normalizeLanguageFields} from './character-language.js';
@@ -1583,7 +1584,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const contactRejected=['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(kind)&&rejectsContact(characterViewFor(target.id,character.id),kind);
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   if(kind==="drinks"&&[character,target].some(c=>!isAdultAge(c?.ageGroup)))return false;
-  options={...options,contactRejected,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
+  options={...options,contactRejected,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:moneySettings(character).datePayment,payerName:options.payment==="request"?target?.name:character.name};
   const startedAt=Number.isFinite(options.now)?options.now:Date.now(),copy=options.giftSource&&giftCopyResolver?giftCopyResolver(character,options.giftSource,new Date(startedAt)):definition.social?socialDirectiveCopy(kind,character,target,subject,options.topic,options):Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
   if(!target&&(!task||task.id==='hobby_auto')&&['read','music','game','art','research'].includes(kind)){const topic=kind==='music'?(character.musicGenres||[]).join(' '):kind==='read'?(character.favoriteStoryGenres||[]).join(' '):kind==='game'?'게임':kind==='art'?(character.hobbies||[]).join(' '):'자료';for(const language of ['ko','en','ja']){const story=leisureNarrative(character,topic,startedAt,language);copy[language]={...copy[language],desc:story.text}}}
   const directiveId=uid(),withIds=target?[character.id,target.id]:[];
@@ -1635,6 +1636,9 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
 
   const sharedHomeId=journey?.to.homeId||"";
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
+  const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
+  const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
+  if(!payActivity(state,[characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean),expense,'directive:'+directiveId,startedAt,options.payment))return false;
   const replacing=new Set([characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}
   for(const [id,old] of Object.entries(state.characterDirectives)){if(oldIds.has(old.id)){delete state.characterDirectives[id];if(state.characters[id]){state.characters[id].timelineResetAt=startedAt;delete state.dailyPlans?.[id]}}}

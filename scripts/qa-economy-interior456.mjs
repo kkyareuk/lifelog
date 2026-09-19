@@ -1,0 +1,56 @@
+import {createServer} from 'node:http';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=process.cwd(),out=resolve('tmp/qa-456');await mkdir(out,{recursive:true});
+const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname;const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root))throw Error();let body=await readFile(pathname==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(pathname==='/app.js')body=body.toString()+'\nwindow.qaRender=render;window.qaBindRoomGeometry=bindRoomGeometryHandle;window.qaActivityGroups=DIRECT_ACTIVITY_GROUPS;window.qaRoomEditor=openRoomEditor;window.qaBindCharacterSwipe=bindNativeObserveCharacterSwipe;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+const useWebKit=process.argv.includes('--webkit'); const browser=await (useWebKit?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
+try{
+ const page=await browser.newPage({viewport:{width:384,height:832},serviceWorkers:'block'});
+ await page.addInitScript(()=>{window.qaSounds=[];HTMLMediaElement.prototype.play=function(){window.qaSounds.push(this.src);return Promise.resolve()}});
+ page.on('console',m=>{if(m.type()==='error')console.log(m.text().slice(0,300))});page.on('pageerror',e=>console.error('PAGE ERROR',e.message));await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin+"/?native-preview");await page.waitForFunction(()=>window.DrawerVillageNavigation);await page.getByRole('button',{name:'게스트',exact:true}).click();
+
+ await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');const a=g.createCharacter(),b=g.createCharacter();window.qaIds=[a,b];g.state.characters[a].name='A';g.state.characters[b].name='B';g.setActive(a);window.DRAWER_VILLAGE_NATIVE=true;document.documentElement.classList.add('native-app','native-platform');window.DrawerVillageNavigation.go('observe');qaRender();document.querySelectorAll('dialog[open]').forEach(d=>d.close());});
+ await page.waitForTimeout(700);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+
+ await page.locator('.character-money-shortcuts button').first().click();
+ await page.locator('.character-money-dialog nav button').last().click();
+ await page.locator('.character-money-dialog input[type=text]').fill('골드');
+ await page.locator('.character-money-dialog input[type=number]').first().fill('10');
+ await page.getByRole('button',{name:'저장',exact:true}).click();await page.waitForTimeout(250);
+ assert.equal(await page.locator('.character-money-dialog h3').innerText(),'500 골드');
+ await page.locator('.character-money-dialog header button').click();await page.waitForTimeout(150);
+ assert.equal(await page.locator('[data-character-balance]').innerText(),'500 골드');
+ await page.screenshot({path:out+'/money456.png'});console.log('PASS456 currency conversion and HUD');
+ const boxes=await page.evaluate(()=>Object.fromEntries(['.home-town-picker','[data-character-balance]','[data-home-discovery-slot]'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,{top:r.top,bottom:r.bottom}]})));
+ assert(boxes['[data-character-balance]'].top>=boxes['.home-town-picker'].bottom);
+ assert(boxes['[data-character-balance]'].bottom<boxes['[data-home-discovery-slot]'].top);
+ await page.locator('.home-view-switch button').last().click();
+ await page.waitForTimeout(150);
+ await page.evaluate(async()=>{const {openBuildingInterior}=await import('/building-interior.js');window.qaPlace=g.state.world.places[0];window.qaDialog=openBuildingInterior(qaPlace.id,{bindRoomGeometry:qaBindRoomGeometry});});
+ await page.getByRole('button',{name:'꾸미기',exact:true}).click();
+ await page.getByRole('button',{name:'+ 방',exact:true}).click();
+ assert.equal(await page.locator('.building-interior-dialog .room').count(),2);
+ const grip=await page.locator('.building-interior-dialog .home-tools-grip').boundingBox();await page.mouse.move(grip.x+grip.width/2,grip.y+grip.height/2);await page.mouse.down();await page.mouse.move(grip.x+grip.width/2,grip.y-120,{steps:6});await page.mouse.up();
+ const handle=page.locator('.building-interior-dialog [data-room-resize]').first();
+ // A left/up resize must keep the opposite corner fixed.
+ const before=await page.locator('.building-interior-dialog .room').first().boundingBox();
+ const h=await handle.boundingBox();await page.mouse.move(h.x+h.width/2,h.y+h.height/2);await page.mouse.down();await page.mouse.move(h.x-50,h.y-60,{steps:8});await page.mouse.up();await page.waitForTimeout(150);
+ const after=await page.locator('.building-interior-dialog .room').first().boundingBox();
+ await page.screenshot({path:out+'/resize456.png'});assert(Math.abs(after.x-before.x)<2);assert(Math.abs(after.y-before.y)<2);assert(after.width<before.width);
+ await page.locator('.building-interior-dialog .home-tools-header').getByRole('button',{name:'가구 추가',exact:true}).click();
+ await page.locator('.building-interior-dialog [data-home-add-furniture]:not([disabled])').first().click();
+ await page.waitForTimeout(100);
+ assert(await page.locator('.building-interior-dialog [data-furniture-placement]').count()>0);
+ await page.getByRole('button',{name:'편집 완료',exact:true}).first().click();
+ await page.waitForTimeout(200);
+ assert.equal(await page.evaluate(()=>Object.keys(qaPlace.interior.rooms).length),2);
+ await page.screenshot({path:out+'/interior456.png'});
+ await page.getByRole('button',{name:'‹ 마을',exact:true}).click();
+ await page.evaluate(async()=>{const {openBuildingInterior}=await import('/building-interior.js');openBuildingInterior(qaPlace.id,{bindRoomGeometry:qaBindRoomGeometry})});
+ assert.equal(await page.locator('.building-interior-dialog .room').count(),2);
+ console.log('PASS456 currency placement, building resize, reopening persistence');
+}finally{await browser.close();server.closeAllConnections();server.close()}
