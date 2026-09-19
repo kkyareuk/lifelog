@@ -18,7 +18,13 @@ Approved dev scope: supplied title artwork, house/town pinch zoom, group activit
 
 ## Outstanding / release status
 - S25 FE startup failure and actual Apple login failure are not reproduced from the supplied reports. No claim of resolution or real-device performance improvement.
-- Internal AAB and iOS upload status to be recorded after completion. No public submission or user announcement for453 yet. Main runtime remains unchanged because it still deploys an older separate web release.
+- Android internal delivery and iOS upload are recorded below. No public submission or user announcement for453 yet. Main runtime remains unchanged because it still deploys an older separate web release.
+
+## Delivery
+- Source ecad177 pushed to dev. Android453 Play internal release335 available September19 18:31 KST; no supported-device loss, only optional mapping-file warning.
+- Signed AAB: `C:/Users/Public/drawer-releases/drawervillage-1.0.401-453-internal.aab`; SHA256 `7ED58A5F92F40541F72C2644063AE4FF5E7BC70DAF535841D4D7F48B9EAB70D3`. All480 prepared assets match byte-for-byte.
+- sharedTownApi deployed successfully; first discovery attempt timed out, second with a longer discovery window succeeded. Other functions and slot grants were not deployed or rerun.
+- iOS internal workflow35434790419 succeeded. App Store Connect shows1.0.401(453) uploaded September19 18:34 KST and processing; tester availability is not yet confirmed. Public iOS451 remains unsubmitted while actual login/startup reports are unresolved.
 
 ## Play notes
 <ko-KR>
@@ -30,3 +36,7 @@ New title screen. Pinch to zoom in homes and towns. Multiple characters can shar
 <ja-JP>
 新しいタイトル画面を追加しました。家と村でピンチによる拡大・縮小ができます。複数のキャラクターが会話・食事・遊びに参加し、再接続後も活動が続きます。設定した睡眠時間と自動就寝時のベッド選択を修正し、詳細設定の長い項目をスクロールしやすくしました。
 </ja-JP>
+
+## Additional verification
+- Post-pinch fixed UI button touch passes Chromium and WebKit after dismissing the first-visit guide.
+- Legacy check-shared-life passes basic simulation and200-resident isolation, but its no-homes paired meal fixture fails the expected meal after55seconds. This suite is not a full pass and needs follow-up; valid-place shared-context431 and the new multi-participant behavior checks pass.

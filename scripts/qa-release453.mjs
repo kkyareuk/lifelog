@@ -20,6 +20,7 @@ try{
  assert.equal(await page.locator('.drawer-title').count(),0);
  await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');const a=g.createCharacter();g.setActive(a);window.DRAWER_VILLAGE_NATIVE=true;document.documentElement.classList.add('native-app','native-platform');g.state.activeHomeId=g.state.characters[a].homeId;window.DrawerVillageNavigation.go('home');qaRender();document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
  await page.waitForTimeout(300);
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
  console.log('zoom',await page.locator('[data-zoom-bound]').count());
  const pinch=async selector=>page.locator(selector).evaluate(view=>{
   const r=view.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
@@ -28,6 +29,8 @@ try{
   const child=view.querySelector(':scope > .rooms,:scope > .world');console.log(view.className,view.dataset.zoomBound,child.style.transform);return getComputedStyle(child).transform;
  });
  assert.match(await pinch('.home-canvas-viewport'),/^matrix\(2,/,'house scene pinches independently of fixed controls');
+ await page.locator('[data-home-ui-toggle]').first().tap();
+ assert(await page.locator('.home-page').evaluate(el=>el.classList.contains('home-ui-hidden')),'fixed controls respond after pinching');
  await page.screenshot({path:out+'/home453.png'});
  await page.evaluate(()=>{window.DrawerVillageNavigation.go('character');g.state.characterSettingsView='full';g.state.characterPane='personality';g.state.characterPersonalityPane='core';qaRender();document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
  console.log('scroll grids',await page.locator('.book-form-grid').evaluateAll(els=>els.map(el=>({h:el.clientHeight,scroll:el.scrollHeight,max:getComputedStyle(el).maxHeight}))));
