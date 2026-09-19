@@ -1,3 +1,4 @@
+import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {iosAppleAvailable,appleCopy} from './apple-login.js';
 import {homeCanvasSettings} from './home-canvas.js';
 import {homeGrid,scaleDefaultRooms} from './room-layout.js?v=20260909dev305';
@@ -2190,8 +2191,7 @@ export function roomStyle(h,key,layout,mobileLayout){
   const floorImage=room.usePhoto&&(room.floorImage||room.image)?(room.floorImage||room.image):homeSurfaceImage(floorMaterial,room.floorImage,room.type);
   const fullRoomIllustration=Boolean((room.usePhoto??(floorMaterial==="custom"))&&(room.floorImage||room.image));
   const wallImage=fullRoomIllustration?"":wallSurfaceImage(wallMaterial,floorMaterial,room.floorImage,room.type);
-  const furnitureColumns=Math.max(1,Math.round((Number(resolvedMobile.w)||100)/100*homeGrid(h).columns));
-  const furnitureRows=Math.max(1,Math.round((Number(resolvedMobile.h)||100)/100*homeGrid(h).rows));
+  const {columns:furnitureColumns,rows:furnitureRows}=furnitureDisplayGrid(resolvedMobile);
   const parts=[
     `--room-x:${layout?.x||1}`,
     `--room-y:${layout?.y||1}`,

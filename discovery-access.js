@@ -6,7 +6,7 @@ function entry(id=uid()){
  return cache.get(id);
 }
 export function discoveryAccountLast(){const value=entry();return value.lastAt-value.offset}
-export function setDiscoveryEntitlement(adFree){const value=entry();value.adFree=adFree===true;value.interval=adFree?60000:600000;value.checkedAt=0;window.dispatchEvent(new Event('drawer-ads-update'));}
+export function setDiscoveryEntitlement(adFree){const value=entry();const changed=value.adFree!==(adFree===true);value.adFree=adFree===true;value.interval=adFree?60000:600000;if(changed)value.checkedAt=0;window.dispatchEvent(new Event('drawer-ads-update'));}
 export function discoveryPremium(){return entry().adFree===true}
 export function discoveryAdsResolved(){const info=window.ParallelCityAuth?.getInfo?.();return !!info?.ready&&!info.startupSyncing&&!info.startupError&&(uid()==='guest'||typeof entry().adFree==='boolean')}
 export function discoveryRemaining(){const value=entry();return value.rewardCredits>0?0:Math.max(0,(value.interval||600000)-(Date.now()-discoveryAccountLast()))}
@@ -15,7 +15,7 @@ async function request(action,body={}){
  const account=uid(),token=await window.ParallelCityAuth?.getIdToken?.();if(account==='guest'||!token)throw Error('discovery-login');
  const response=await fetch(window.PARALLEL_CITY_CONFIG.diamonds.backendUrl+'/discovery/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)});
  const value=await response.json();if(account!==uid())throw Error('account-changed');if(!response.ok)throw Error(value.code||'discovery-unavailable');
- const old=entry(account);if(Number.isFinite(value.lastAt)){Object.assign(old,{lastAt:Math.max(old.lastAt,value.lastAt),offset:value.serverNow-Date.now(),checkedAt:Date.now(),rewardCredits:value.rewardCredits||0,interval:value.interval||600000,adFree:value.adFree===true});localStorage.setItem(key(account),String(old.lastAt));}return value;
+ const old=entry(account);if(Number.isFinite(value.lastAt)&&(!Number.isFinite(value.serverNow)||value.serverNow>=(old.serverStamp||0))){Object.assign(old,{serverStamp:value.serverNow||0,lastAt:Math.max(0,value.lastAt),offset:Number.isFinite(value.serverNow)?value.serverNow-Date.now():old.offset,checkedAt:Date.now(),rewardCredits:value.rewardCredits||0,interval:value.interval||600000,adFree:value.adFree===true});localStorage.setItem(key(account),String(old.lastAt));}return value;
 }
 export function refreshDiscoveryAccess(){const value=entry();if(uid()==='guest'||Date.now()-value.checkedAt<300000)return Promise.resolve();if(!value.pending)value.pending=request('read').finally(()=>{value.pending=null});return value.pending}
 export async function consumeDiscoveryAccess(){

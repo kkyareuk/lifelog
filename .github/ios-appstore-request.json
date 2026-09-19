@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-19-public455-title-sleep-settings",
-  "version": "1.0.403",
-  "build": 455,
+  "request": "2026-09-19-public457-affection-settings",
+  "version": "1.0.405",
+  "build": 457,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

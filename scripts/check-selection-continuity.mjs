@@ -38,6 +38,7 @@ assert.equal(state.activeId,null);
 state.catalog={gift:[{id:"tea",name:"차"}]};
 state.characters.source.favorites={};
 toggleFavorite("source","gift","tea",true);
+await stateModule.save(true);
 assert.deepEqual(state.characters.source.favorites.gift,["tea"]);
 assert.deepEqual(JSON.parse(storage.get("drawer-village-game-v1")).characters.source.favorites.gift,["tea"]);
 
@@ -45,6 +46,7 @@ const comfortOptions=["정하지 않음","함께 있으면 매우 불편하고 �
 for(const comfort of comfortOptions){
   state.characterViews={source:{target:{comfort:"함께 있는 건 편하지만 대화 호흡은 평범함",spaceComfort:"같이 있어도 편안함",rapport:"대화 호흡은 평범함"}}};
   assert.equal(updateCharacterView("source","target","comfort",comfort,{persist:true}),true);
+  await stateModule.save(true);
   const stored=JSON.parse(storage.get("drawer-village-game-v1"));
   assert.equal(stored.characterViews.source.target.comfort,comfort);
   assert.equal(Object.hasOwn(stored.characterViews.source.target,"spaceComfort"),false);
@@ -54,7 +56,7 @@ for(const comfort of comfortOptions){
 }
 
 const residenceBinding=app.match(/\$\$\("\[data-residence-field\]"\)[\s\S]*?\$\$\("\[data-residence-day\]"\)/)?.[0]||"";
-assert.match(residenceBinding,/if\(el\.tagName==="SELECT"\)el\.onchange=apply;else el\.oninput=apply/);
+assert.match(residenceBinding,/if\(el\.tagName==="SELECT"\|\|el\.type==="checkbox"\)el\.onchange=apply;else el\.oninput=apply/);
 assert.doesNotMatch(residenceBinding,/renderPreservingPageScroll/);
 assert.match(app,/homeContext[\s\S]*data-open-home-feature/);
 assert.match(app,/townPanelPosition[\s\S]*\.town-editor-panel/);

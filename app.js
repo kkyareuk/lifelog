@@ -1,3 +1,4 @@
+import {bindRoomGesture} from './room-geometry.js';
 import {bindSceneZoom} from './scene-zoom.js';
 import {mountTitleScreen} from './title-screen.js';
 import {bindHomeCanvas} from './home-canvas.js';
@@ -1233,47 +1234,7 @@ function captureRoomCanvasLayouts(canvas,world=state,update=updateRoom,saveAll=(
 }
 
 function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveAll=()=>save(true)}={}){
-  let pointerId=null,startX=0,startY=0,startLayout=null,room=null,canvas=null;
-  const cancel=()=>{
-    const captured=pointerId;pointerId=null;
-    if(startLayout&&room)setRoomLayoutStyle(room,startLayout);
-    room?.classList.remove('room-dragging');
-    if(captured!==null&&handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
-  };
-  handle.closest('.home-page')?.addEventListener('drawer-scene-pinch',cancel);
-  const finish=event=>{
-    if(pointerId===null)return;
-    const captured=pointerId;pointerId=null;
-    if(handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
-    room?.classList.remove("room-dragging");
-    if(startLayout&&room)update(handle.dataset.homeId,mode==="move"?handle.dataset.roomDrag:handle.dataset.roomResize,{layout:snapRoomLayout({
-      x:parseFloat(room.style.getPropertyValue("--mobile-room-x"))||0,
-      y:parseFloat(room.style.getPropertyValue("--mobile-room-y"))||0,
-      w:parseFloat(room.style.getPropertyValue("--mobile-room-w"))||startLayout.w,
-      h:parseFloat(room.style.getPropertyValue("--mobile-room-h"))||startLayout.h
-    },homeGrid(world.homes[handle.dataset.homeId]))},true);
-    event?.preventDefault?.();event?.stopPropagation?.();
-  };
-  handle.onclick=event=>{event.preventDefault();event.stopPropagation()};
-  handle.onpointerdown=event=>{
-    event.preventDefault();event.stopPropagation();
-    room=handle.closest(".room");canvas=handle.closest("[data-room-canvas]");if(!room||!canvas)return;
-    if(!world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout)captureRoomCanvasLayouts(canvas,world,update,saveAll);
-    const saved=world.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout;if(!saved)return;
-    startLayout=snapRoomLayout(saved,homeGrid(world.homes[handle.dataset.homeId]));setRoomLayoutStyle(room,startLayout);startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;
-    handle.setPointerCapture(pointerId);room.classList.add("room-dragging");
-  };
-  handle.onpointermove=event=>{
-    if(pointerId!==event.pointerId||!startLayout||!canvas)return;
-    event.preventDefault();event.stopPropagation();
-    const box=canvas.getBoundingClientRect(),dx=(event.clientX-startX)/box.width*100,dy=(event.clientY-startY)/box.height*100;
-    if(mode==="move"){
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,x:startLayout.x+dx,y:startLayout.y+dy},homeGrid(world.homes[handle.dataset.homeId])));
-    }else{
-      setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy},homeGrid(world.homes[handle.dataset.homeId])));
-    }
-  };
-  handle.onpointerup=finish;handle.onpointercancel=cancel;handle.onlostpointercapture=cancel;
+  bindRoomGesture(handle,mode,{world,update,setStyle:setRoomLayoutStyle,capture:canvas=>captureRoomCanvasLayouts(canvas,world,update,saveAll)});
 }
 
 // Home editor widgets share one state owner with the simulation and save handlers.
@@ -1510,7 +1471,7 @@ window.addEventListener("pagehide",cleanupRenderedScreen);
 
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.querySelector('.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
+  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.documentElement.dataset.roomGesture==='1'||document.querySelector('.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -1702,7 +1663,8 @@ function setNestedObjectValue(target,path,value){
 function syncCharacterControls(source,attribute){
   const key=source?.getAttribute?.(attribute);
   if(!key)return;
-  document.querySelectorAll(`[${attribute}="${CSS.escape(key)}"]`).forEach(target=>{
+  const aliases=["data-field","data-personality-field"].includes(attribute)?["data-field","data-personality-field"]:[attribute];
+  document.querySelectorAll(aliases.map(name=>`[${name}="${CSS.escape(key)}"]`).join(",")).forEach(target=>{
     if(target===source)return;
     if(target.type==="checkbox")target.checked=source.checked;
     else if("value" in target)target.value=source.value;
@@ -3410,7 +3372,8 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,manualDiscoveryPatch(active(),{[el.dataset.personalityField]:el.value}),false);
     syncCharacterControls(el,"data-personality-field");
-    if(!mobileDraft)save(true);
+    // Queue large saves after the choice has painted, as in the book editor.
+    if(!mobileDraft)save();
   });
   $$("[data-personality-type]").forEach(el=>el.onclick=()=>{
     const character=active(),value=el.dataset.personalityType,current=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
