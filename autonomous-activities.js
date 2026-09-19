@@ -20,7 +20,7 @@ export function autonomousActivity(scene={}){
  const title=String(scene.baseTitle||scene.title||'');
  if(scene.manualDirective||scene.routineId||scene.transit)return null;
  if(scene.activityFamily==='nap'||/낮잠|\bnap\b|昼寝/i.test(title))return 'nap';
- if(scene.sleeping===true||/자는 중|잠드는 중|잠들어|잠든|수면|기상|낮잠|\bsleep(?:ing)?\b|asleep|waking|nap|眠って|眠る|昼寝|起床/i.test(title))return 'sleep';
+ if(scene.sleeping===true||/자는 중|잠드는 중|잠들어|잠든|수면|기상|낮잠|\bsleep(?:ing)?\b|asleep|waking|nap|眠って|眠る|睡眠|昼寝|起床/i.test(title))return 'sleep';
  if(/식사|먹는 중|(?:아침|점심|저녁|간식).*먹|\beating\b|having (?:a |the )?(?:meal|breakfast|lunch|dinner|snack)|食事|食べて/i.test(title))return 'eating';
  if(scene.lifeTaskId==='toilet'||/용변|화장실(?:을)? (?:사용|가)|using the toilet|use the toilet|用を足|トイレを使|トイレに行/i.test(title))return 'toilet';
  if(/치료|복약|treatment|治療/i.test(title))return null;

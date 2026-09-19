@@ -615,8 +615,9 @@ async function appleLogin(linking=false){
  catch(error){if(!linking)clearGuestHandoffIntent();if(!/cancel|1001/i.test(String(error?.code)+' '+String(error?.message)))alert(/credential-already-in-use|account-exists/.test(error?.code||'')?c.conflict:c.failed);return false}
  finally{loginBusy=false;window.dispatchEvent(new Event('drawer-village-auth-busy'))}
 }
-async function login(){
-  if(iosAppleAvailable()){const provider=await chooseSignInProvider();if(!provider)return false;if(provider==='apple')return appleLogin();}
+async function login(requestedProvider){
+  if(requestedProvider==='apple'&&!iosAppleAvailable())return false;
+  if(iosAppleAvailable()){const provider=['google','apple'].includes(requestedProvider)?requestedProvider:await chooseSignInProvider();if(!provider)return false;if(provider==='apple')return appleLogin();}
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){
     const language=window.DrawerVillageState?.uiLanguage||document.documentElement.lang||"ko";
     alert(language.startsWith("ja")?"iOS版のログインと同期は準備中です。端末内でのプレイは利用できます。":language.startsWith("en")?"Login and sync are not connected in this iOS preview. You can play locally.":"iOS 준비 버전은 로그인·동기화 연결 전이에요. 기기 안에서 플레이할 수 있어요.");

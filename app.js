@@ -1,3 +1,5 @@
+import {bindSceneZoom} from './scene-zoom.js';
+import {mountTitleScreen} from './title-screen.js';
 import {bindHomeCanvas} from './home-canvas.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
@@ -1232,10 +1234,18 @@ function captureRoomCanvasLayouts(canvas,world=state,update=updateRoom,saveAll=(
 
 function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveAll=()=>save(true)}={}){
   let pointerId=null,startX=0,startY=0,startLayout=null,room=null,canvas=null;
+  const cancel=()=>{
+    const captured=pointerId;pointerId=null;
+    if(startLayout&&room)setRoomLayoutStyle(room,startLayout);
+    room?.classList.remove('room-dragging');
+    if(captured!==null&&handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
+  };
+  handle.closest('.home-page')?.addEventListener('drawer-scene-pinch',cancel);
   const finish=event=>{
     if(pointerId===null)return;
-    if(handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId);
-    pointerId=null;room?.classList.remove("room-dragging");
+    const captured=pointerId;pointerId=null;
+    if(handle.hasPointerCapture(captured))handle.releasePointerCapture(captured);
+    room?.classList.remove("room-dragging");
     if(startLayout&&room)update(handle.dataset.homeId,mode==="move"?handle.dataset.roomDrag:handle.dataset.roomResize,{layout:snapRoomLayout({
       x:parseFloat(room.style.getPropertyValue("--mobile-room-x"))||0,
       y:parseFloat(room.style.getPropertyValue("--mobile-room-y"))||0,
@@ -1263,7 +1273,7 @@ function bindRoomGeometryHandle(handle,mode,{world=state,update=updateRoom,saveA
       setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy},homeGrid(world.homes[handle.dataset.homeId])));
     }
   };
-  handle.onpointerup=finish;handle.onpointercancel=finish;handle.onlostpointercapture=()=>{if(pointerId!==null)finish()};
+  handle.onpointerup=finish;handle.onpointercancel=cancel;handle.onlostpointercapture=cancel;
 }
 
 // Home editor widgets share one state owner with the simulation and save handlers.
@@ -2523,6 +2533,7 @@ document.addEventListener("click",event=>{
 });
 
 function bind(){
+  bindSceneZoom();
   document.querySelectorAll("[data-intro-tour]").forEach(button=>button.onclick=()=>startIntroTour({language:state.uiLanguage,hasCharacter:()=>state.order.length>0,go:tab=>window.DrawerVillageNavigation.go(tab)}));
   installLogOrder(document);
   $("[data-auth-retry]")?.addEventListener("click",()=>location.reload());
@@ -6204,7 +6215,7 @@ window.addEventListener('drawer-village-auth-busy',()=>notificationOpenQueue.flu
 window.addEventListener("drawer-village-character-notification-received",event=>{
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
-async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options={workTask:action.workTask,topic:action.topic,subjectId:action.subjectId,payment:action.payment,...(action.unbound?{}:target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target}),...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
+async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options={companionIds:action.companionIds,workTask:action.workTask,topic:action.topic,subjectId:action.subjectId,payment:action.payment,...(action.unbound?{}:target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target}),...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
 installContextMenu({
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
@@ -6285,6 +6296,7 @@ if(document.documentElement.dataset.drawerRendered!=="1")setNavigationTabIntent(
 if(startupTab==="character")state.characterSettingsView="hub";
 if(startupTab==="settings")setSettingsPane(startupSettingsPane||"home");
 recordTabHistory(state.activeTab,true);
+mountTitleScreen({getState:()=>state,onEnter:()=>render()});
 render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();

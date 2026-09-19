@@ -3,6 +3,9 @@ export function bindCharacterFolds(root=document){
  for(const grid of root.querySelectorAll('.character-book-form-page .book-form-grid')){
   grid.dataset.flatFields='true';
   const controls=grid.parentElement.querySelector('.book-section-controls');
-  if(controls&&controls.offsetTop>grid.offsetTop)grid.style.maxHeight=Math.max(80,controls.offsetTop-grid.offsetTop-12)+'px';
+  const bottom=controls&&controls.offsetTop>grid.offsetTop?controls.offsetTop:grid.parentElement.clientHeight*.84;
+  grid.style.maxHeight=Math.max(80,bottom-grid.offsetTop-12)+'px';
+  grid.style.pointerEvents='auto';
+  grid.style.touchAction='pan-y';
  }
 }

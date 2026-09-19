@@ -1,3 +1,4 @@
+import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
 import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
 import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
 import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
@@ -91,13 +92,9 @@ const resolveEntityParticles=text=>{
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 const nowMin=(d=new Date())=>d.getHours()*60+d.getMinutes();
 const jitter=(c,kind,d=new Date())=>(hash(`${c.id}:${dayKey(d)}:${kind}`)%21)-10;
-const wakeAt=(c,d)=>Math.max(0,mins(c.wake)+jitter(c,"wake",d));
-const sleepAt=(c,d)=>Math.max(0,mins(c.sleep)+jitter(c,"sleep",d));
-const sleepingNow=(c,d)=>{
-  if(c.autonomousActivityBlocks?.includes('sleep'))return false;
-  const n=nowMin(d), wake=wakeAt(c,d), sleep=sleepAt(c,d);
-  return sleep<=wake ? n>=sleep&&n<wake : n>=sleep||n<wake;
-};
+const wakeAt=(c,d)=>sleepWindow(c,d).wake;
+const sleepAt=(c,d)=>sleepWindow(c,d).sleep;
+const sleepingNow=scheduledSleeping;
 const MINOR_AGE_GROUPS=new Set(["영아","유아","어린이","청소년"]);
 const isMinorCharacter=character=>MINOR_AGE_GROUPS.has(String(character?.ageGroup||""));
 const mixedAdultMinor=(first,second)=>Boolean(first&&second)&&isMinorCharacter(first)!==isMinorCharacter(second);
@@ -3568,7 +3565,7 @@ function calculateBaseEvent(c,date=new Date()){
   }
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   const sources=giftSources(date);
-  const past=list.filter(x=>autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){

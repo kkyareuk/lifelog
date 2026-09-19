@@ -1,3 +1,4 @@
+import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {normalizeLanguageFields} from './character-language.js';
 import {repairProfileInteractionTargets} from './profile-interaction-targets.js';
@@ -1571,7 +1572,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(options.lifeTask==='smoke'){if(!isAdultAge(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
-  if(['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
+  if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
@@ -1619,15 +1620,22 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     const goal=chosen.furniture?{homeId:home.id,room:chosen.key,point:{x:Number(chosen.furniture.x)||50,y:Number(chosen.furniture.y)||60}}:null;
     if(goal){destination.goal=goal;destination.furniture=chosen.furniture;}
   }
+  if(options.companionIds?.length){
+    if(!Array.isArray(options.companionIds))return false;
+    destination=groupDestination(state,character,target,options.companionIds,kind,destination,roomEntryAllowed);
+    if(!destination)return false;
+  }
+  const extraMembers=planGroupActivity({world:state,actor:character,target,kind,ids:options.companionIds,scene,destination,now:startedAt,contactAllowed,roomAllowed:roomEntryAllowed});
+  if(!extraMembers)return false;
   const journey=planMeetingJourney(state,character,target||character,startedAt,sourceScene,destination,positions||{});
-  if(kind==='affection'||target&&options.contextTarget?.type==='place'){
+  if(kind==='affection'||target&&(options.contextTarget?.type==='place'||extraMembers.length)){
     otherJourney=planMeetingJourney(state,target,character,startedAt,targetScene,destination,positions||{});
     const arrival=Math.max(journey.arrivesAt,otherJourney.arrivesAt);journey.arrivesAt=arrival;otherJourney.arrivesAt=arrival;
   }
 
   const sharedHomeId=journey?.to.homeId||"";
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
-  const replacing=new Set([characterId,target?.id].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
+  const replacing=new Set([characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}
   for(const [id,old] of Object.entries(state.characterDirectives)){if(oldIds.has(old.id)){delete state.characterDirectives[id];if(state.characters[id]){state.characters[id].timelineResetAt=startedAt;delete state.dailyPlans?.[id]}}}
   state.characterDirectives[characterId]=directive;
@@ -1641,6 +1649,12 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     if(!contactRejected)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,SOCIAL_ACTIVITIES[kind]?.negative?-1:1,false,kind);
   }
 
+  if(extraMembers.length){
+    const ids=[characterId,target.id,...extraMembers.map(m=>m.character.id)],groupCopy=groupActivityCopy(kind,ids.map(id=>state.characters[id].name));
+    const arrival=Math.max(journey.arrivesAt,otherJourney?.arrivesAt||0,...extraMembers.map(m=>m.journey.arrivesAt));
+    for(const member of extraMembers){state.characterDirectives[member.character.id]={...directive,journey:member.journey,targetId:characterId};member.character.timelineResetAt=startedAt;delete state.dailyPlans?.[member.character.id]}
+    for(const id of ids){const d=state.characterDirectives[id];d.withIds=ids;d.copy=groupCopy;d.journey.arrivesAt=arrival;d.endsAt=Math.max(d.endsAt,arrival+definition.minutes*60000)}
+  }
   save();
   return true;
 }
@@ -2017,7 +2031,7 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
 }
 export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
-  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],sleepRoomId:(state.characters[cid]?.residences||[]).find(r=>r.homeId===homeId)?.sleepRoomId||state.characters[cid]?.sleepRoomId||"",allowedRoomKeys:Object.keys(home.rooms||{}).filter(key=>roomEntryAllowed(state.characters[cid],home,home.rooms[key])&&roomActivityAllowed(home.rooms[key],contexts[cid])),seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
+  const seatingContexts=Object.fromEntries(characterIds.map(cid=>[cid,{...contexts[cid],sleepRoomId:(state.characters[cid]?.residences||[]).find(r=>r.homeId===homeId)?.sleepRoomId||state.characters[cid]?.sleepRoomId||"",allowedRoomKeys:Object.keys(home.rooms||{}).filter(key=>roomEntryAllowed(state.characters[cid],home,home.rooms[key])&&roomActivityAllowed(home.rooms[key],contexts[cid]?.scene||{})),seatCloseIds:characterIds.filter(other=>other!==cid&&(hasRomanticRelationship(state.relationships,cid,other)||/친구로 좋아|소중|연애 감정|깊이 사랑/.test(characterViewFor(cid,other).overall||'')))}]));
   const needsChanged=characterIds.map(id=>state.characters[id]&&advanceNeeds(state.characters[id],contexts[id]?.scene,now)).some(Boolean);
   const result=advanceLifeSimulation(home,characterIds,seatingContexts,now);
   result.changed ||= needsChanged;

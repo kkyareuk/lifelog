@@ -169,7 +169,7 @@ img.sprite,.char-row>.sprite,.char-row>.avatar,.home-person>.sprite,.home-person
 /* 화면·집·로그 안정화 */
 .observe{align-items:start}
 .viewport{width:100%;height:auto;min-height:420px;aspect-ratio:1672/941;overflow:auto;touch-action:pan-x pan-y;overscroll-behavior:contain}
-.viewport .world{width:max(100%,1200px);height:max(100%,676px);transform:none!important}
+.viewport .world{width:max(100%,1200px);height:max(100%,676px);transform:none}
 .world-bg{object-fit:contain}
 .place{width:11.33%;height:15.5%;min-height:0;padding:clamp(3px,.7vw,8px);border-width:3px}
 .place.has-art{width:12.5%;height:19.5%;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible}
@@ -8072,4 +8072,5 @@ body #app .character-book-v8 .discovery-title{display:flex!important;align-items
 
 /* A single transient action menu, shared by all scene targets. */
 .context-action-menu{box-sizing:border-box;position:fixed;inset:auto;margin:0;width:min(270px,calc(100vw - 16px));max-height:calc(var(--game-viewport-height,100dvh) - 16px);overflow:auto;padding:14px;border:2px solid #806045;border-radius:20px;background:#fff6e5;color:#392b21;box-shadow:0 6px 20px #29180d55}
+.context-action-menu .group-companions{min-width:0;margin:12px 0;padding:8px;border:1px solid #b59a75;border-radius:10px;font-size:14px}.context-action-menu .group-companions label{display:flex;align-items:center;gap:8px;min-height:44px;overflow-wrap:anywhere}.context-action-menu .group-companions input{width:20px;height:20px;min-height:20px;flex:none;margin:0;accent-color:#77533a}
 .context-action-menu::backdrop{background:#21130922}.context-action-menu h2{font-size:18px;margin:0 30px 10px 0}.context-action-menu>button,.context-action-list>button,.context-action-menu select{display:block;min-height:44px;width:100%;margin:5px 0;border:1px solid #b59a75;border-radius:12px;background:#f2e3c9;color:#392b21;font:inherit}.context-action-menu>button:first-child{float:right;width:32px;min-height:32px;margin:0}.context-action-menu p{font-size:13px;margin:7px 0 0}.context-action-menu button:disabled{opacity:.55}

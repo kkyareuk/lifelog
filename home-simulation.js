@@ -5,6 +5,7 @@ const clamp=(value,min,max,fallback=min)=>{
 };
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
 export function isHomeSleepScene(scene){
+  if(scene?.sleeping===false||/^(기상|Waking(?: up)?|起床)$/i.test(scene?.baseTitle||scene?.title||''))return false;
   return roomActivityKey(scene||{})==='sleep';
 }
 export function homeSleepAnimation(habit){
@@ -235,7 +236,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const contextRooms=new Set(members.map(id=>contexts?.[id]?.scene?.room||contexts?.[id]?.roomKey||current.agents[id]?.roomKey).filter(Boolean));
     if(contextRooms.size!==1){members.forEach(id=>{const agent=current.agents[id];if(agent?.interactionId===interactionId){agent.interactionId="";agent.approachingInteraction=false}});return}
     const preferred=contexts?.[members[0]]?.partnerIds||[];
-    const ordered=[...members].sort((a,b)=>{const ai=preferred.indexOf(a),bi=preferred.indexOf(b);return (ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b)}).slice(0,2);
+    const ordered=[...members].sort((a,b)=>{const ai=preferred.indexOf(a),bi=preferred.indexOf(b);return (ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b)}).slice(0,8);
     const agents=ordered.map(id=>current.agents[id]).filter(Boolean);if(agents.length<2)return;
     const roomKey=[...contextRooms][0];
     if(agents.some(agent=>agent.roomKey!==roomKey))return;
@@ -248,7 +249,9 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     ordered.forEach((characterId,index)=>{
       // participantOrder의 첫 인물은 항상 화면 왼쪽, 두 번째 인물은 오른쪽에
       // 둔다. 관계 설정에서 정한 좌우 순서가 집 장면에서도 뒤집히지 않는다.
-      const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,...safeHomePoint(anchorX+(index?gap:-gap),anchorY+(index?2:-2))};
+      const angle=Math.PI+index*2*Math.PI/ordered.length;
+      const offset=ordered.length>2?{x:22*Math.cos(angle),y:16*Math.sin(angle)}:{x:index?gap:-gap,y:index?2:-2};
+      const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,...safeHomePoint(anchorX+offset.x,anchorY+offset.y)};
       const alreadyHeading=agent.interactionId===interactionId&&agent.roomKey===roomKey&&Math.hypot(Number(agent.x)-destination.x,Number(agent.y)-destination.y)<1;
       agent.interactionId=interactionId;
       if(hydrateInteraction){Object.assign(agent,{phase:"using",fromRoomKey:roomKey,roomKey,fromX:destination.x,fromY:destination.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now,interactionId,approachingInteraction:false});return}

@@ -8,7 +8,7 @@ let measuredHeight=56,requestedWidth=0;
 const ad=()=>window.Capacitor?.Plugins?.AdMob;
 const t=(ko,en,ja)=>document.documentElement.lang?.startsWith('ja')?ja:document.documentElement.lang?.startsWith('en')?en:ko;
 function reserve(height){reserveAdViewport(height,slot?.textContent||'');document.documentElement.style.setProperty('--game-ad-height',height+'px');document.documentElement.style.setProperty('--game-viewport-height',height&&!window.Capacitor?.Plugins?.AdViewport?`calc(100dvh - ${height}px)`:'100dvh');document.documentElement.classList.toggle('has-game-banner',height>0);if(slot)slot.hidden=!height;}
-function wanted(){return adsAvailable()&&discoveryAdsResolved()&&!discoveryPremium()&&!document.hidden&&!adIsFullScreen()&&bannerScreenAllowed(document)}
+function wanted(){return !document.documentElement.classList.contains('title-visible')&&adsAvailable()&&discoveryAdsResolved()&&!discoveryPremium()&&!document.hidden&&!adIsFullScreen()&&bannerScreenAllowed(document)}
 function status(error){
  if(!slot){slot=document.createElement('aside');slot.className='game-ad-slot';slot.setAttribute('aria-label',t('광고','Advertisement','広告'));document.body.append(slot);}
  slot.replaceChildren();

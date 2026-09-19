@@ -31,7 +31,7 @@ const includedDirectories=new Set([
   "world-assets"
 ]);
 
-const includedFiles=new Set(["apple-login.js","apple-login.css",
+const includedFiles=new Set(["apple-login.js","apple-login.css","title-screen.css",
   "banner-ads.css","diamond-shop.css","diamond-shop.js",
   "relationship-context.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",

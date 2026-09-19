@@ -1,4 +1,5 @@
 import {roomActivityKey} from './room-activities.js?v=20260909dev305';
+import {sleepNeedAfter} from './sleep-clock.js';
 export const NEEDS={sleep:['수면','Sleep','睡眠'],hunger:['허기','Hunger','空腹'],toilet:['용변','Toilet','排泄'],hygiene:['청결','Hygiene','清潔'],social:['사교','Social','交流']};
 export const needLabel=(key,lang='ko')=>NEEDS[key][{ko:0,en:1,ja:2}[lang]||0];
 const clamp=n=>Math.max(0,Math.min(100,Number.isFinite(Number(n))?Number(n):80));
@@ -8,7 +9,8 @@ export function needsAt(c,now=Date.now()){
  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
  const recovery={sleep:4,hunger:8,toilet:100,hygiene:8,social:4};
- return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key])+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
+ const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
+ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key])+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
 }
 export function advanceNeeds(c,scene,now=Date.now()){
  const old=c.lifeNeeds,values=needsAt(c,now);

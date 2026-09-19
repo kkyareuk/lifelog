@@ -64,7 +64,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
   max-height:none!important;
   aspect-ratio:auto!important;
   overflow:hidden!important;
-  transform:none!important;
+  transform:none;
   touch-action:pan-x pan-y!important;
 }
 :is(.town-map-scroll,.standard-observe-view .viewport) .world-bg{
