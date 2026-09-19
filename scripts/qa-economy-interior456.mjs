@@ -28,7 +28,14 @@ try{
  const boxes=await page.evaluate(()=>Object.fromEntries(['.home-town-picker','[data-character-balance]','[data-home-discovery-slot]'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,{top:r.top,bottom:r.bottom}]})));
  assert(boxes['[data-character-balance]'].top>=boxes['.home-town-picker'].bottom);
  assert(boxes['[data-character-balance]'].bottom<boxes['[data-home-discovery-slot]'].top);
- await page.locator('.home-view-switch button').last().click();
+ assert.equal(await page.locator('.home-view-switch').count(),0);
+ await page.locator('.character-money-shortcuts button').last().click();
+ assert.match(await page.locator('.character-money-dialog h2').innerText(),/직장/);
+ assert.equal(await page.locator('.character-money-dialog nav').count(),0);
+ assert.equal(await page.locator('.character-money-dialog h3').count(),0);
+ assert(await page.getByRole('button',{name:'급여 저장',exact:true}).isVisible());
+ await page.locator('.character-money-dialog header button').click();
+ await page.evaluate(()=>DrawerVillageNavigation.go('world'));
  await page.waitForTimeout(150);
  await page.evaluate(async()=>{const {openBuildingInterior}=await import('/building-interior.js');window.qaPlace=g.state.world.places[0];window.qaDialog=openBuildingInterior(qaPlace.id,{bindRoomGeometry:qaBindRoomGeometry});});
  await page.getByRole('button',{name:'꾸미기',exact:true}).click();

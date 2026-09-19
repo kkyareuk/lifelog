@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-19-internal456-wallet-interiors",
-  "version": "1.0.404",
-  "build": 456,
+  "request": "2026-09-19-internal458-affection-settings",
+  "version": "1.0.406",
+  "build": 458,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

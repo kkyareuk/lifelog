@@ -10,7 +10,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
  const info=context(),{world,snapshot}=info,c=characterId?world.characters[characterId]:info.c;if(!c)return;
  const tr=(ko,en,ja)=>words(world.uiLanguage,ko,en,ja),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',canEdit=!snapshot||c.ownerUid===uid,accountState=state;
  if(!c.wallet&&!snapshot){ensureWallet(c);save(true)}
- const d=document.createElement('dialog');d.className='character-money-dialog';let page=pane,busy=false;
+ const d=document.createElement('dialog');d.className='character-money-dialog';const isWork=pane==='work';d.dataset.moneyScreen=isWork?'work':'wallet';let page=pane,busy=false;
  const valid=()=>state===accountState&&(window.ParallelCityAuth?.getInfo?.()?.user?.uid||'')===uid&&(!snapshot||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===snapshot.activeGroupId);
  const mutate=async(action,payload={})=>{
   if(busy||!canEdit||!valid())return;busy=true;
@@ -21,9 +21,9 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
   }catch(error){const p=d.querySelector('[role=status]');if(p)p.textContent=errorText(error,world.uiLanguage)}finally{busy=false}
  };
  function draw(){
-  d.replaceChildren();const head=document.createElement('header'),title=document.createElement('h2');title.textContent=c.name+' · '+tr('지갑 · 직장','Wallet · Work','財布・仕事');const close=document.createElement('button');close.textContent='×';close.onclick=()=>d.close();head.append(title,close);d.append(head);
-  const nav=document.createElement('nav');for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事'],['settings','설정','Settings','設定']]){const b=document.createElement('button');b.textContent=tr(ko,en,ja);b.setAttribute('aria-pressed',String(page===key));b.onclick=()=>{page=key;draw()};nav.append(b)}d.append(nav);
-  const balance=document.createElement('h3');balance.textContent=displayMoney(c.wallet?.balance||0,c,world.uiLanguage);d.append(balance);const content=document.createElement('section');d.append(content);
+  d.replaceChildren();const head=document.createElement('header'),title=document.createElement('h2');title.textContent=c.name+' · '+(isWork?tr('직장','Work','仕事'):tr('지갑','Wallet','財布'));const close=document.createElement('button');close.textContent='×';close.onclick=()=>d.close();head.append(title,close);d.append(head);
+  const nav=document.createElement('nav');for(const [key,ko,en,ja] of (isWork?[]:[['wallet','재화','Money','お金'],['settings','설정','Settings','設定']])){const b=document.createElement('button');b.textContent=tr(ko,en,ja);b.setAttribute('aria-pressed',String(page===key));b.onclick=()=>{page=key;draw()};nav.append(b)}if(!isWork)d.append(nav);
+  const balance=document.createElement('h3');balance.textContent=displayMoney(c.wallet?.balance||0,c,world.uiLanguage);if(!isWork)d.append(balance);const content=document.createElement('section');d.append(content);
   const field=(label,type,value)=>{const l=document.createElement('label');l.append(document.createTextNode(label));const input=document.createElement('input');input.type=type;input.value=value;input.disabled=!canEdit;l.append(input);content.append(l);return input};
   const action=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=!canEdit;b.onclick=fn;content.append(b);return b};
   if(page==='settings'){
@@ -70,7 +70,7 @@ export function bindCharacterMoney(){
  const hud=document.querySelector('.game-observe-hud,.standard-observe-view');
  if(hud&&!hud.querySelector('[data-character-balance]')){
   const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(c.wallet.balance,c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();(hud.querySelector('.home-town-picker')||hud).append(balance);
-  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事']]){const b=document.createElement('button');b.type='button';b.textContent=words(world.uiLanguage,ko,en,ja);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
+  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事']]){const b=document.createElement('button');b.type='button';const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src=key==='wallet'?'./assets/character-ui/wallet.webp':'./assets/home-ui/routine.webp';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
  }
  document.querySelectorAll('[data-character-money-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('settings',b.dataset.characterMoneySettings));
  const panel=document.querySelector('[data-home-feature="members"],[data-home-feature="residents"]');if(panel&&!panel.querySelector('[data-household-wallet]')){const b=document.createElement('button');b.dataset.householdWallet='';b.textContent=words(world.uiLanguage,'동거인 공동지갑 설정','Household wallet settings','同居人の共同財布設定');b.onclick=()=>openCharacterMoney('wallet',c.id,world.activeHomeId);panel.append(b)}

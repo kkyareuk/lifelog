@@ -7108,7 +7108,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   align-content:start!important;gap:0!important;width:16.75vw!important;height:34.35dvh!important;overflow:visible!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:2.91vw!important;top:12.87dvh!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{right:max(10px,env(safe-area-inset-right))!important;top:max(calc(env(safe-area-inset-top) + 158px),calc(5.45dvh + 114px))!important;gap:12px!important;width:44px!important;height:auto!important;grid-template-rows:repeat(4,50px)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{right:max(10px,env(safe-area-inset-right))!important;top:max(calc(env(safe-area-inset-top) + 184px),calc(5.45dvh + 140px))!important;gap:12px!important;width:44px!important;height:auto!important;grid-template-rows:repeat(4,50px)!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button{
   position:relative!important;display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;padding:0!important;

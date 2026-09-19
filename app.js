@@ -1,5 +1,4 @@
 import {bindCharacterMoney,openCharacterMoney} from './character-money-ui.js';
-import {bindHomeViewSwitch} from './home-view-switch.js';
 import {openBuildingInterior} from './building-interior.js';
 import {bindRoomGesture} from './room-geometry.js';
 import {bindSceneZoom} from './scene-zoom.js';
@@ -1667,7 +1666,8 @@ function setNestedObjectValue(target,path,value){
 function syncCharacterControls(source,attribute){
   const key=source?.getAttribute?.(attribute);
   if(!key)return;
-  document.querySelectorAll(`[${attribute}="${CSS.escape(key)}"]`).forEach(target=>{
+  const aliases=["data-field","data-personality-field"].includes(attribute)?["data-field","data-personality-field"]:[attribute];
+  document.querySelectorAll(aliases.map(name=>`[${name}="${CSS.escape(key)}"]`).join(",")).forEach(target=>{
     if(target===source)return;
     if(target.type==="checkbox")target.checked=source.checked;
     else if("value" in target)target.value=source.value;
@@ -3375,7 +3375,8 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,manualDiscoveryPatch(active(),{[el.dataset.personalityField]:el.value}),false);
     syncCharacterControls(el,"data-personality-field");
-    if(!mobileDraft)save(true);
+    // Queue large saves after the choice has painted, as in the book editor.
+    if(!mobileDraft)save();
   });
   $$("[data-personality-type]").forEach(el=>el.onclick=()=>{
     const character=active(),value=el.dataset.personalityType,current=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
@@ -4575,7 +4576,6 @@ function bind(){
   bindMailbox(render,showToast);
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindCharacterMoney();
-  bindHomeViewSwitch({tab:state.activeTab,language:state.uiLanguage,navigate:tab=>navigateToTab(tab)});
   bindSharedUi({bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
