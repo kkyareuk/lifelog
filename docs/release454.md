@@ -31,3 +31,11 @@ Fixed title loading progress. Pinching homes or towns no longer triggers room ed
 - sharedTownApi successfully deployed; no new service, no compensation grant rerun.
 - iOS internal workflow35436002705 running; public submission and tester availability not claimed.
 - General update email is an unsent draft in update-mail454-draft.md. Public release has not been requested for454.
+
+## Follow-up reports / September 19
+- Rechecked the repeated sleep report against current454 without changing runtime code or creating455. Ten-character fixture, low sleep need, eight times for both07:00–23:00 and01:00–03:00 awake windows: scheduled sleep matches actual scenes; awake-time low energy selects coffee. Does not reproduce the reporter's private saved data or claim physical-device verification.
+- WebKit402×820 and393×798: scroll controls into view, touch morality/aggression selectors, select an option, assert state and rerender persistence. This verifies reachable scroll bounds and touch selection; programmatic scrollIntoView is not a physical iPhone swipe test.
+- Old411 book form could lack a bounded list height while its outer book page clipped overflow, and did not explicitly enable touch scrolling on the list.453 already adds the height fallback and list pointer/pan-y handling. This is app layout/input configuration, not proof of an iPhone hardware or OS defect.
+- Tests: scripts/check-reported-sleep454.mjs and scripts/qa-reported-settings454.mjs --webkit pass.
+- Email rewritten cumulatively from1.0.399 through454; spouse reaction item removed from the email only. No notice sent and no additional compensation granted.
+- iOS workflow35436002705 completed successfully; App Store processing/tester availability and public submission are not inferred from workflow success.
