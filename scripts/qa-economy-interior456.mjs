@@ -17,6 +17,7 @@ try{
  await page.waitForTimeout(700);await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
 
  await page.locator('.character-money-shortcuts button').first().click();
+ assert.match(await page.locator('.character-money-dialog').evaluate(el=>getComputedStyle(el).backgroundImage),/wood/);
  await page.locator('.character-money-dialog nav button').last().click();
  await page.locator('.character-money-dialog input[type=text]').fill('골드');
  await page.locator('.character-money-dialog input[type=number]').first().fill('10');

@@ -365,7 +365,7 @@ html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on{
 /* Final Baroque authority: the compatibility layer above must not return the
    ornamental theme to the standard navy settings skin. */
 html.native-app[data-color-mode][data-visual-theme="baroque"] body>header,
-html.native-app[data-color-mode][data-visual-theme="baroque"] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html.native-app[data-color-mode][data-visual-theme="baroque"] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-bottom:1px solid #a77a4f!important;
   background:linear-gradient(180deg,#17191f 0%,#0d0f13 100%)!important;
   box-shadow:0 9px 28px #08090c55,inset 0 -1px #d0a06655!important;
@@ -540,7 +540,7 @@ html[data-color-mode][data-visual-theme] main:not(.web-drawer-content){
     var(--bg)!important;
 }
 html[data-color-mode][data-visual-theme] body>header,
-html[data-color-mode][data-visual-theme] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header),
+html[data-color-mode][data-visual-theme] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
 html[data-color-mode][data-visual-theme].native-app .native-sub-header{
   border-color:var(--theme-border)!important;
   background:linear-gradient(135deg,var(--theme-surface-strong),var(--panel))!important;
@@ -565,19 +565,19 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   background:radial-gradient(circle at 5% 1%,color-mix(in srgb,var(--s) 14%,transparent),transparent 28%),linear-gradient(155deg,var(--theme-wash),var(--bg))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *):not(.relationship-fullscreen-dialog *),
+html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-money-dialog *):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *):not(.relationship-fullscreen-dialog *),
 html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.meeting-walker):not(.meeting-pair *):not(.character-book-v8 *):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-full-tab):not(.character-full-save):not(.character-full-image-slot):not(.character-full-placement-card):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item):not(.home-exterior-choice){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode][data-visual-theme] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -593,11 +593,11 @@ html[data-color-mode][data-visual-theme="baroque"] body{
   background:radial-gradient(circle at 12% -3%,#fee39f88,transparent 30%),radial-gradient(circle at 88% 8%,#efbb554d,transparent 28%),linear-gradient(145deg,var(--bg),color-mix(in srgb,#ad6d15 13%,var(--bg)))!important;
 }
 html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;background:linear-gradient(135deg,#fff9e8,#fee39f 58%,#efbb55)!important;color:#441004!important;box-shadow:0 10px 32px #79380b24,inset 0 -1px #ad6d1566!important;
 }
 html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;background:linear-gradient(135deg,#180b03,#2a1306 58%,#79380b)!important;color:#fff2cf!important;
 }
 html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab="settings"] .settings-shell,
@@ -632,7 +632,7 @@ html[data-color-mode] main:not(.web-drawer-content){
     var(--bg)!important;
 }
 html[data-color-mode] body>header,
-html[data-color-mode] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header),
+html[data-color-mode] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
 html[data-color-mode].native-app .native-sub-header{
   border-color:var(--theme-border)!important;
   background:linear-gradient(135deg,var(--theme-surface-strong),var(--panel))!important;
@@ -662,19 +662,19 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationsh
     linear-gradient(155deg,var(--theme-wash),var(--bg))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode] :is(input,select,textarea):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *):not(.relationship-fullscreen-dialog *),
+html[data-color-mode] :is(input,select,textarea):not(.character-money-dialog *):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *):not(.relationship-fullscreen-dialog *),
 html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.meeting-walker):not(.meeting-pair *):not(.character-book-v8 *):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-full-tab):not(.character-full-save):not(.character-full-image-slot):not(.character-full-placement-card):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item):not(.home-exterior-choice){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode] :is(dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
+html[data-color-mode] :is(dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -700,14 +700,14 @@ html[data-visual-theme="baroque"] body{
     linear-gradient(145deg,var(--bg),color-mix(in srgb,#ad6d15 13%,var(--bg)))!important;
 }
 html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;
   background:linear-gradient(135deg,#fff9e8,#fee39f 58%,#efbb55)!important;
   color:#441004!important;
   box-shadow:0 10px 32px #79380b24,inset 0 -1px #ad6d1566!important;
 }
 html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;
   background:linear-gradient(135deg,#180b03,#2a1306 58%,#79380b)!important;
   color:#fff2cf!important;
@@ -756,7 +756,7 @@ dialog.visual-theme-dialog::backdrop{background:#121418aa;backdrop-filter:blur(5
 
 /* Princess Pink: antique blush silk, pearl cream, powder blue-grey and warm gilt. */
 html[data-color-mode="light"][data-visual-theme="rose"] body{background:radial-gradient(circle at 12% 2%,#fffaf6 0 4%,transparent 30%),linear-gradient(145deg,#eee9e4,#d7ccae 155%)}
-html[data-color-mode="light"][data-visual-theme="rose"] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){background:linear-gradient(180deg,#fffaf7f5,#f3e9e5f2);border-bottom-color:#c0af99;box-shadow:0 8px 28px #8a625018}
+html[data-color-mode="light"][data-visual-theme="rose"] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){background:linear-gradient(180deg,#fffaf7f5,#f3e9e5f2);border-bottom-color:#c0af99;box-shadow:0 8px 28px #8a625018}
 html[data-color-mode="light"][data-visual-theme="rose"] :is(.panel,.setting-card,.sync-panel){border-color:#c0af99;background:linear-gradient(145deg,#fffaf7,#f4ece8)}
 html[data-color-mode="light"][data-visual-theme="rose"] :is(button.primary,header nav button.on,.color-mode-options button.on){background:linear-gradient(135deg,#b57873,#cfb4ab)!important;border-color:#a56b67!important;color:#fffaf6!important;-webkit-text-fill-color:#fffaf6!important}
 html[data-color-mode][data-visual-theme="rose"] .visual-theme-options button[data-visual-theme="rose"]{overflow:hidden;border-color:#b57873;background:linear-gradient(120deg,#fff8f4 0 34%,#d7ccae 34% 57%,#b2babc 57% 72%,#cfb4ab 72% 100%)}
@@ -786,7 +786,7 @@ html[data-visual-theme="baroque"] :is(h1,h2,h3,.title>b,.native-observe-top b):n
   font-family:Georgia,"Times New Roman","Noto Serif KR","Batang",serif;
   letter-spacing:-.025em;
 }
-html[data-visual-theme="baroque"] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-visual-theme="baroque"] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-bottom-color:#a77a4f!important;
   background:linear-gradient(180deg,#17191f 0%,#0d0f13 100%)!important;
   box-shadow:0 9px 28px #08090c38,inset 0 -1px #d0a06655!important;
@@ -1128,7 +1128,7 @@ html[data-color-mode="light"] body{
   background:#f5f1ea!important;
   color:#302a25;
 }
-html[data-color-mode="light"] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header),
+html[data-color-mode="light"] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
 html[data-color-mode="light"].native-app .native-sub-header{
   border-color:#d9d0c7!important;
   background:color-mix(in srgb,var(--p) 18%,#fff)!important;
@@ -5285,7 +5285,7 @@ html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(p,s
 html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(input,select,textarea){background:#f7f9fc!important;color:#172231!important;-webkit-text-fill-color:#172231!important}
 html[data-color-mode="light"],
 html[data-color-mode="light"] body{background:#f5f1ea!important;color:#302a25!important}
-html[data-color-mode="light"] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header),
+html[data-color-mode="light"] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
 html[data-color-mode="light"].native-app .native-sub-header{border-color:#d9d0c7!important;background:color-mix(in srgb,var(--p) 18%,#fff)!important;color:#2f2924!important}
 html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]),
 html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) body,
@@ -5412,29 +5412,29 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
 @keyframes room-sleep-z{0%,100%{opacity:.25;translate:0 3px}50%{opacity:1;translate:4px -5px}}
 
 /* 다크 모드 팝업은 제목과 같은 어두운 면, 화이트 모드는 밝은 면을 사용한다. */
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{
   border-color:#ffffff20!important;
   background:#101a28!important;
   color:#f4f7fb!important;
 }
 html[data-color-mode="dark"] dialog::backdrop{background:#050a12c9!important;backdrop-filter:blur(5px)}
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
-html[data-color-mode="dark"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
+html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] dialog button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--p),var(--s))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 .view-copy-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.view-copy-actions button{min-width:0;min-height:44px;white-space:normal}
 html[data-color-mode="dark"] dialog :is(.relation,.empty-mini,.room-editor-photo,.room-image-choice button,.relationship-color-legend span){border-color:#ffffff1b!important;background:#172536!important;color:#f4f7fb!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas{border:1px solid #ffffff1d!important;background:radial-gradient(circle at center,#25374a 0 32%,#101a28 100%)!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas svg text{paint-order:stroke;fill:#f8fafc!important;stroke:#101a28!important}
 html[data-color-mode="dark"] .official-relation-dialog .relation{background:linear-gradient(145deg,#172536,#203449)!important}
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
-html[data-color-mode="light"] dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
+html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
 /* 넓은 화면에서도 선택한 화면 모드가 헤더·패널·입력창까지 끊기지 않게 한다. */
 @media(min-width:721px){
@@ -6380,7 +6380,7 @@ html[data-color-mode="dark"] :is(.character-editor>.form,.desktop-character-edit
 }
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.relationship-page:not(.relationship-redesign),.character-view-editor:not(.relationship-stage)) :is(h1,h2,h3,h4,b,strong,label,legend):not(.character-book-v8 *){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.relationship-page:not(.relationship-redesign),.character-view-editor:not(.relationship-stage)) :is(p,small,em):not(.room-edit-hint):not(.character-book-v8 *){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
-html[data-color-mode="dark"] :is(.character-editor,.home-page,.relationship-page:not(.relationship-redesign),.character-view-editor:not(.relationship-stage)) :is(input,select,textarea):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *),
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.relationship-page:not(.relationship-redesign),.character-view-editor:not(.relationship-stage)) :is(input,select,textarea):not(.character-money-dialog *):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *),
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.relationship-page:not(.relationship-redesign),.character-view-editor:not(.relationship-stage)) button:not(.meeting-walker):not(.meeting-pair *):not(.character-book-v8 *):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-full-tab):not(.character-full-save):not(.character-full-image-slot):not(.character-full-placement-card):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item):not(.home-exterior-choice){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
 
 /* 집 생활 카드는 아이콘과 현재 행동을 짧게 함께 보여 준다. 긴 설명과
@@ -6846,8 +6846,8 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog{
     width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;height:calc(var(--game-viewport-height,100dvh) - 12px)!important;max-height:calc(var(--game-viewport-height,100dvh) - 12px)!important;margin:auto!important;overflow:hidden!important;
   }
-  dialog.relation-editor-dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form,
-  dialog.character-view-dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+  dialog.relation-editor-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form,
+  dialog.character-view-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
   dialog.relation-editor-dialog form *,
   dialog.character-view-dialog form *{min-width:0;max-width:100%;box-sizing:border-box}
   dialog.relation-editor-dialog :is(select,input,textarea,button),
@@ -6859,7 +6859,7 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog .character-view-dialog-direction{display:grid!important;grid-template-columns:52px 20px 52px minmax(0,1fr);align-items:center;gap:5px!important;width:100%}
   dialog.character-view-dialog .character-view-dialog-direction :is(.avatar,.sprite){width:48px!important;height:48px!important}
   dialog.character-view-dialog .character-view-dialog-direction>span{min-width:0!important;overflow-wrap:anywhere}
-  dialog.character-view-dialog:not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
+  dialog.character-view-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
 }
 
 /* 관계 편집기의 체크박스를 모바일 공통 입력 너비 규칙에서 제외한다. */
@@ -6968,7 +6968,7 @@ html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on,
 
 /* Baroque Salon is intentionally the final visual authority. */
 html[data-color-mode][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode][data-visual-theme="baroque"][data-active-tab] header:not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-bottom:1px solid #a77a4f!important;
   background:linear-gradient(180deg,#17191f,#0d0f13)!important;
   box-shadow:0 9px 28px #08090c55,inset 0 -1px #d0a06655!important;

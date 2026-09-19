@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-19-internal458-affection-settings-menu-style",
-  "version": "1.0.406",
-  "build": 458,
+  "request": "2026-09-19-internal459-wallet-work-ui",
+  "version": "1.0.407",
+  "build": 459,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
