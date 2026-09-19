@@ -24,11 +24,13 @@ try{
  console.log('zoom',await page.locator('[data-zoom-bound]').count());
  const pinch=async selector=>page.locator(selector).evaluate(view=>{
   const r=view.getBoundingClientRect(),x=r.x+r.width/2,y=r.y+r.height/2;
-  const fire=(type,id,dx)=>view.dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,pointerType:'touch',pointerId:id,clientX:x+dx,clientY:y}));
+  const fire=(type,id,dx)=>(type==='pointerdown'&&id===71?(view.querySelector('[data-home-room-hold]')||view):view).dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,pointerType:'touch',pointerId:id,clientX:x+dx,clientY:y}));
   fire('pointerdown',71,-40);fire('pointerdown',72,40);fire('pointermove',71,-80);fire('pointermove',72,80);fire('pointerup',71,-80);fire('pointerup',72,80);
   const child=view.querySelector(':scope > .rooms,:scope > .world');console.log(view.className,view.dataset.zoomBound,child.style.transform);return getComputedStyle(child).transform;
  });
  assert.match(await pinch('.home-canvas-viewport'),/^matrix\(2,/,'house scene pinches independently of fixed controls');
+ await page.waitForTimeout(650);
+ assert.equal(await page.locator('dialog[open]').count(),0,'pinching cancels the room long-press timer');
  await page.locator('[data-home-ui-toggle]').first().tap();
  assert(await page.locator('.home-page').evaluate(el=>el.classList.contains('home-ui-hidden')),'fixed controls respond after pinching');
  await page.screenshot({path:out+'/home453.png'});

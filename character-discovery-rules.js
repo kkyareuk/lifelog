@@ -31,14 +31,14 @@ export function manualDiscoveryPatch(c,patch){
  return {...result,discovery:{...c.discovery,version:c.discovery?.version||0,scores,affinities,locks:{...c.discovery?.locks,...profileLocks,...Object.fromEntries(fields.map(f=>[f,true]))}}};
 }
 export function discoveryAnswered(c){return [...new Set([...(c.discovery?.answered||[]),...(c.discovery?.recent||[])])];}
-export function discoveryEligible(c,q){
- if(!q.repeatable&&discoveryAnswered(c).includes(q.id))return false;
+export function discoveryEligible(c,q,answered=new Set(discoveryAnswered(c))){
+ if(!q.repeatable&&answered.has(q.id))return false;
  if(q.id==='profile-tattoo-encounter'&&discoveryLocked(c,'bodyProfile.tattoos'))return false;
  if(q.fields&&q.fields.every(f=>discoveryLocked(c,f)))return false;
  if(['height','weight','medications','hospital'].includes(q.form)&&q.fields.some(f=>c.discovery?.known?.[f]))return false;
  if(q.field&&(discoveryLocked(c,q.field)||c.discovery?.known?.[q.field]&&q.field!=='bodyProfile.tattoos'))return false;
  if(q.requires?.tattoo&&!c.bodyProfile?.tattoos?.length)return false;
- if(q.requires?.answered&&!discoveryAnswered(c).includes(q.requires.answered))return false;
+ if(q.requires?.answered&&!answered.has(q.requires.answered))return false;
  if(q.requires?.known&&(!profileValue(c,q.requires.known)||profileValue(c,q.requires.known)==='설정하지 않음'))return false;
  return true;
 }
@@ -51,7 +51,7 @@ export function discoveryChoices(c,q,random=Math.random){
 export function discoveryCandidates(c,scene){
  if(!scene||scene.sceneUnavailable||scene.remote||/수면|잠을 자|자는 중|sleeping|asleep|睡眠|眠って/.test([scene.title,scene.kind].join(' ')))return [];
 
- return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.setting&&!discoveryLocked(c,o.setting.field))||(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.entries(o.targets||o.effects||{}).some(([f,v])=>v!==null&&!discoveryLocked(c,f)))));
+ const answered=new Set(discoveryAnswered(c)); return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q,answered)&&(q.form||q.field||q.choices.some(o=>(o.setting&&!discoveryLocked(c,o.setting.field))||(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.entries(o.targets||o.effects||{}).some(([f,v])=>v!==null&&!discoveryLocked(c,f)))));
 }
 export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
  if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)&&!q.story&&!(q.repeatable&&DISCOVERY_EVENTS.some(e=>e.id===q.id&&!e.field&&!e.form&&!e.setting))||!Number.isInteger(index)||!q.choices[index])return null;

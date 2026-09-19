@@ -1482,6 +1482,8 @@ function resumeAfterCommandDismissal(){
  scheduleHomeLifeRefresh();
 }
 window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
+window.addEventListener('drawer-discovery-dismissed',resumeAfterCommandDismissal);
+window.addEventListener('drawer-scene-gesture-ended',resumeAfterCommandDismissal);
 window.addEventListener('drawer-selection-dismissed',()=>{resumeAfterCommandDismissal();scheduleLiveSceneRefresh()});
 function renderAfterCommand(){
  if(commandRenderQueued)return;
@@ -1508,7 +1510,7 @@ window.addEventListener("pagehide",cleanupRenderedScreen);
 
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&document.querySelector('.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]')){deferredCommandRender=true;return}
+  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.querySelector('.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -2043,6 +2045,7 @@ function bindHomeCanvasGestures(){
   canvas.querySelectorAll("[data-home-room-hold]").forEach(room=>{
     let timer=0,startX=0,startY=0,pointerId=null;
     const cancel=()=>{clearTimeout(timer);timer=0;pointerId=null};
+    canvas.closest('.home-page')?.addEventListener('drawer-scene-pinch',cancel);
     room.addEventListener("pointerdown",event=>{
       if(event.target.closest("button,[data-home-occupant],[data-furniture-placement],.room-drag-handle,.room-resize-handle"))return;
       startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;

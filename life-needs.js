@@ -1,5 +1,6 @@
 import {roomActivityKey} from './room-activities.js?v=20260909dev305';
 import {sleepNeedAfter} from './sleep-clock.js';
+import {isDrinkingCoffee} from './coffee-needs.js';
 export const NEEDS={sleep:['수면','Sleep','睡眠'],hunger:['허기','Hunger','空腹'],toilet:['용변','Toilet','排泄'],hygiene:['청결','Hygiene','清潔'],social:['사교','Social','交流']};
 export const needLabel=(key,lang='ko')=>NEEDS[key][{ko:0,en:1,ja:2}[lang]||0];
 const clamp=n=>Math.max(0,Math.min(100,Number.isFinite(Number(n))?Number(n):80));
@@ -21,6 +22,7 @@ export function advanceNeeds(c,scene,now=Date.now()){
  if(!moving){
   const activity=roomActivityKey(scene),need={sleep:'sleep',eating:'hunger',toilet:'toilet',hygiene:'hygiene'}[activity];
   if(need)recovering.push(need);
+  if(isDrinkingCoffee(scene)&&!recovering.includes('sleep'))recovering.push('sleep');
   if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
  }
  if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;

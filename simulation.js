@@ -4,6 +4,8 @@ import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRep
 import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
 import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
 import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
+import {spousePrivacyExempt} from './private-scene-policy.js';
+import {coffeeCopy} from './coffee-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
@@ -4789,7 +4791,7 @@ function privateLifeEvent(c,date){
  const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
  if(privateOther){
   const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
-  if(ids.includes(c.id)||poly)return;
+  if(ids.includes(c.id)||poly||spousePrivacyExempt(state.relationships,c.id,privateOther.id,e))return;
   const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
   const exit=Object.keys(home.rooms||{}).find(key=>key!==base.room&&key===entranceRoom(home))||Object.keys(home.rooms||{}).find(key=>key!==base.room);if(!exit)return;
   const journey=planMeetingJourney(state,c,c,now,base,{home:true,visitHomeId:homeId,room:exit,townId:c.townId});
@@ -4844,13 +4846,15 @@ export function resolveHomeEncounter(c,current,otherScene,date){
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
   // Needs never interrupt a manual command, travel or a scheduled activity.
-  const need=!activeRoutine&&!isHomeSleepScene(rawCurrent)&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:sleepingNow(c,date)||!c.autonomousActivityBlocks?.includes('nap')}):'';
+  const need=!activeRoutine&&!isHomeSleepScene(rawCurrent)&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:true}):'';
   if(need&&need!=='social'){
-    const home=state.homes[rawCurrent.visitHomeId||c.homeId],type={sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
-    const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,{needKey:need}));
+    const coffee=need==='sleep'&&!sleepingNow(c,date);
+    const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
+    const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,coffee?{actionKind:'eating'}:{needKey:need}));
     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
       const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
 
+      if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
     }
   }

@@ -13,7 +13,7 @@ import {state,active,updateCharacter,save,saveDiscoveryPatch} from './state.js?v
 import {fixedDiscoveryKnown,DISCOVERY_FIELDS,DISCOVERY_AXES,discoveryChoices,discoveryLocked,createDiscoverySession,discoveryAnswer,discoveryCandidates,discoveryWait,discoveryMetric} from './character-discovery-rules.js?v=20260909dev305';
 const session=createDiscoverySession();let pending=null,pendingCheck=null,worldKey='';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
-const close=()=>{pending?.close();pending?.remove();pending=null;pendingCheck=null};
+const close=()=>{pending?.close();pending?.remove();pending=null;pendingCheck=null;window.dispatchEvent(new Event('drawer-discovery-dismissed'))};
 export const observedCharacterId=()=>document.querySelector('[data-observed-character]')?.dataset.observedCharacter||active()?.id;
 const uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
 export function sharedDiscoveryCharacter(groupId,id){

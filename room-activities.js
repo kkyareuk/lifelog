@@ -2,6 +2,7 @@ import {autonomousActivity} from './autonomous-activities.js?v=20260909dev305';
 import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
 export const ROOM_ACTIVITIES={sleep:['잠자기','Sleeping','睡眠'],eating:['식사','Eating','食事'],toilet:['용변','Using the toilet','排泄'],hygiene:['씻기','Washing','入浴・洗顔'],rest:['휴식','Resting','休憩'],reading:['독서·공부','Reading and studying','読書・勉強'],cooking:['요리','Cooking','料理'],cleaning:['청소·정리','Cleaning and tidying','掃除・整理'],games:['게임','Games','ゲーム'],music:['음악','Music','音楽'],art:['창작','Arts and crafts','創作'],exercise:['운동','Exercise','運動'],grooming:['몸단장','Grooming','身支度'],gardening:['식물 돌보기','Plant care','植物の手入れ'],digital:['전자기기','Using devices','電子機器'],collecting:['수집·전시','Collecting','収集・展示'],shopping:['쇼핑','Shopping','買い物'],talk:['대화·교류','Conversation','会話・交流'],affection:['애정 표현','Affection','愛情表現'],care:['돌봄','Caring for others','世話'],conflict:['다툼','Arguments','喧嘩'],other:['기타 활동','Other activities','その他の活動']};
 export function roomActivityKey(scene={}){
+ if(scene.coffeeRecovery)return 'eating';
  if(/^(기상|Waking(?: up)?|起床)$/i.test(scene.baseTitle||scene.title||''))return 'rest';
  const task=LIFE_TASKS.find(t=>t.id===(scene.lifeTaskId||scene.lifeTask));
  if(task?.id==='toilet')return 'toilet';

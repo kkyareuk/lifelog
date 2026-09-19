@@ -17,7 +17,7 @@ async function request(action,body={}){
  const value=await response.json();if(account!==uid())throw Error('account-changed');if(!response.ok)throw Error(value.code||'discovery-unavailable');
  const old=entry(account);if(Number.isFinite(value.lastAt)){Object.assign(old,{lastAt:Math.max(old.lastAt,value.lastAt),offset:value.serverNow-Date.now(),checkedAt:Date.now(),rewardCredits:value.rewardCredits||0,interval:value.interval||600000,adFree:value.adFree===true});localStorage.setItem(key(account),String(old.lastAt));}return value;
 }
-export function refreshDiscoveryAccess(){const value=entry();if(uid()==='guest'||Date.now()-value.checkedAt<15000)return Promise.resolve();if(!value.pending)value.pending=request('read').finally(()=>{value.pending=null});return value.pending}
+export function refreshDiscoveryAccess(){const value=entry();if(uid()==='guest'||Date.now()-value.checkedAt<300000)return Promise.resolve();if(!value.pending)value.pending=request('read').finally(()=>{value.pending=null});return value.pending}
 export async function consumeDiscoveryAccess(){
  const account=uid(),value=entry();
  if(account==='guest'){if(Date.now()-value.lastAt<600000)return false;value.lastAt=Date.now();localStorage.setItem(key(account),String(value.lastAt));return true}
