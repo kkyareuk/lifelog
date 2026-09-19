@@ -24,7 +24,7 @@ try{
  assert.equal(await page.locator('.character-money-dialog h3').innerText(),'500 골드');
  await page.locator('.character-money-dialog header button').click();await page.waitForTimeout(150);
  assert.equal(await page.locator('[data-character-balance]').innerText(),'500 골드');
- await page.screenshot({path:out+'/money456.png'});console.log('PASS456 currency conversion and HUD');
+ assert.equal(await page.locator('.character-money-shortcuts button').first().evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');await page.screenshot({path:out+'/money456.png'});console.log('PASS456 currency conversion and HUD');
  const boxes=await page.evaluate(()=>Object.fromEntries(['.home-town-picker','[data-character-balance]','[data-home-discovery-slot]'].map(s=>{const r=document.querySelector(s).getBoundingClientRect();return [s,{top:r.top,bottom:r.bottom}]})));
  assert(boxes['[data-character-balance]'].top>=boxes['.home-town-picker'].bottom);
  assert(boxes['[data-character-balance]'].bottom<boxes['[data-home-discovery-slot]'].top);
