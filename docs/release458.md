@@ -1,4 +1,6 @@
-# Internal 1.0.406 / 458
+# Intermediate 1.0.406 / 458 — NOT DISTRIBUTED
+
+Superseded by459 after final visual QA. Removed from Play draft338 before release; iOS458 was not assigned to testers. The hash below refers to an intermediate artifact, not a delivered release.
 
 Public companion457 excludes economy. Internal retains character wallets, wages, activity costs, common wallets and building interiors. Observation/village switch removed entirely. Wallet and Work now open separate dictionary-style screens, with top banner eligibility under existing entitlement rules. Left shortcuts use icon over label; balance spacing improved. No multiple-job, investment, debt or savings expansion included pending design decision.
 
@@ -12,4 +14,4 @@ Improved affection settings and save responsiveness. Removed the observation/vil
 愛情表現の設定と保存時の反応を改善しました。観察・村の切替を削除しました。財布と仕事を別々の辞典風画面に分け、上部バナー、左側のアイコンと名前、残高の間隔を整えました。資産・給与・消費・共同財布と建物の内装編集は内部テストで引き続き利用できます。
 </ja-JP>
 
-Validation: Chrome/WebKit mobile wallet conversion, separate Work screen, balance/discovery spacing and interior persistence pass. Money grant/conversion/expense/insufficient funds and actual work payment pass. Signed Android492 assets byte-identical; SHA256 5F6533CFA582FC0E1131C665F5409D9F3C43CD3F5B595F80717EE3B7FF620CC3. New UI KO/EN/JA. Whole inventory EN2258/2988(75.6%), JA2257/2988(75.5%). Delivery pending.
+Validation: Chrome/WebKit mobile wallet conversion, separate Work screen, balance/discovery spacing and interior persistence pass. Money grant/conversion/expense/insufficient funds and actual work payment pass. Signed Android492 assets byte-identical; SHA256 5F6533CFA582FC0E1131C665F5409D9F3C43CD3F5B595F80717EE3B7FF620CC3. New UI KO/EN/JA. Whole inventory EN2258/2988(75.6%), JA2257/2988(75.5%). Superseded; not distributed.
