@@ -28,7 +28,13 @@ Added Wallet, Work and character balances. Name your currency and set the price 
 ## Artifact
 Signed Android AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.404-456-internal.aab
 SHA256:042674E46668DA76D94B69454DADDC6F843D5EFF6232D9306426EF2FDD755621
-All492 assets match the prepared Android bundle byte-for-byte. Store delivery pending.
+All492 assets match the prepared Android bundle byte-for-byte. Google Play internal delivery verified; iOS status is recorded below.
 
 ## Backend compatibility
 The wallet handler checks group membership and resident ownership. Common-wallet changes and personal balances are transactional. Existing shared residents without wallet data are not charged by the new simulation; owned characters opt in when the new Wallet UI initializes. Ordinary display conversion makes no network call and does not use real exchange rates. No real-money purchases or compensation grants are changed.
+
+## Delivery
+- Source d7f87f8 pushed to dev.
+- sharedTownApi deployed successfully; other functions and real-money products unchanged. Initial discovery timeout resolved by allowing 60 seconds for CLI source analysis.
+- Google Play internal release337: 456 (1.0.404), available to internal testers September19 22:39KST. No supported devices removed. One nonblocking missing deobfuscation-file warning.
+- iOS internal TestFlight workflow35446347704 succeeded. Apple accepted signed1.0.404(456), internal-only, source d7f87f8. Signed Apple login entitlement verified. Apple build processing has not yet produced an installable record (bounded status check build:null); tester availability is not confirmed. No public review submitted for456. Public455 remains Waiting for Review in App Store Connect.
