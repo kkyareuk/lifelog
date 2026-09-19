@@ -1,5 +1,7 @@
 # Public 1.0.405 / 457
 
+Delivery (September 19, 2026): Android production release34 submitted for review, automatic full rollout after approval. iOS signed workflow35448879333 succeeded from source070e791; build ac072bfd-9b98-4bd2-a067-aae8cd5279c6. App457 and ad_free both Waiting for Review in submission a1d94db3-aa3b-444d-82aa-41f67e37d1a7 at23:47KST. Approval/live release is not claimed. Game main remains unchanged because it is older than current public source and connected to Pages.
+
 Based on released public455 (f564b2e), not the economy development branch. Character money, Wallet, Work and observation/village switching are absent. Plaza/Mafia remain locked.
 
 <ko-KR>
@@ -12,4 +14,5 @@ Improved affection-setting persistence and save responsiveness. Fixed self-disco
 愛情表現の設定値の保持と保存時の反応を改善しました。自分づくりの残り時間、家具の表示サイズ、部屋のサイズ変更時に逆方向へ動いたり跳ねたりする問題を改善しました。
 </ja-JP>
 
-Validation: Chrome and WebKit402x820 touch selection, rerender and reload persistence pass. Original report is iOS411; exact old-device failure was not reproduced in current source. Synchronized duplicate book/legacy inputs and queued legacy save after input. Settings scroll/selection continuity, anchored resizing, furniture grid and server-authoritative countdown tests pass. Selection test updated to await asynchronous persistence and recognize existing checkbox handling. Signed Android AAB485 assets byte-identical; SHA256 DB4C9EDBE452B4D5C86B69DD4258074D657480F500AB32DC5B385D859DFDA7BC. EN2260/2993(75.5%), JA2259/2993(75.5%). Store delivery pending.
+Validation: Chrome and WebKit402x820 touch selection, rerender and reload persistence pass. Original report is iOS411; exact old-device failure was not reproduced in current source. Synchronized duplicate book/legacy inputs and queued legacy save after input. Settings scroll/selection continuity, anchored resizing, furniture grid and server-authoritative countdown tests pass. Selection test updated to await asynchronous persistence and recognize existing checkbox handling. Signed Android AAB485 assets byte-identical; SHA256 DB4C9EDBE452B4D5C86B69DD4258074D657480F500AB32DC5B385D859DFDA7BC. EN2260/2993(75.5%), JA2259/2993(75.5%). Store review submissions recorded above.
+
