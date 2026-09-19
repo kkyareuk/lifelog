@@ -16,5 +16,14 @@ Added a new title screen with real loading progress. More characters can share c
 ## Verification inherited from454
 WebKit402×820/393×798 morality/aggression touch selection and retained values; ten-character sleep/coffee scenes across normal and overnight awake windows; title, pinch, long-press cancellation, groups and assigned-bed checks pass. Real iPhone sign-in and reported S25FE startup failure have not been reproduced; do not claim all-device resolution. No new runtime text; static EN/JA75.5% each.
 
-## Delivery
-Pending build, upload and store review submission. Upload success alone is not public availability.
+## Delivery — September 19, 2026
+- Android production455 (1.0.403) submitted for full rollout (100%, existing177 countries). Publishing overview: changes under review. Managed publishing disabled, so approval publishes automatically. No supported-device loss; optional mapping-file warning only.
+- Signed AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.403-455-public.aab.
+- SHA256: 5179592459F0DE8520896C3B87EAC484AF2B6EFA7140408BD6043440AFB67C11. All483 assets match source; public plaza flag false.
+- iOS workflow35436888521 succeeded fromf564b2ed208daa8a80b523f8425732a63ecc1b5c. Signed Apple sign-in entitlements and provisioning capability verified. Store build455 processed and selected; OS-only encryption declaration completed.
+- App Store iOS1.0.403(455) AND non-consumable com.drawervillage.app.ad_free submitted together. Authoritative UI: two items submitted, September19 approximately19:37KST. Submission1b570c2d-1c7c-4076-b0f3-f4f08327beb0. Automatic release after approval; immediate rollout to all users; existing ratings retained.
+- Ad-free product6813834469: Korean base KRW9,900, Apple-converted storefront prices, permanent banner/interstitial removal and account-wide self-discovery one-minute cooldown, optional rewarded ads. KO/EN/JA descriptions and actual local iOS-preview shop review screenshot supplied; no live purchase claimed.
+- Apple privacy updated and published for Mobile Ads data: coarse location, device ID, ad data, crash and performance data, product interaction purposes. Existing user-data disclosures preserved. Based on native-ads.js (npa:true, UMP before requests, no ATT request) and https://developers.google.com/admob/ios/privacy/data-disclosure .
+- KO/EN/JA release notes saved to both stores. Spouse reaction details and Mafia omitted from player notes. Public Plaza/Mafia locked; internal454 unaffected.
+- Submission success is not approval or availability. No production server changes, public website deploy, compensation rerun or notice sending this turn.
+- Game changes remain on origin/dev; main has separate older web automatic deployment and was intentionally not merged. Board recorded separately on its main.
