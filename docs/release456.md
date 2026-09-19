@@ -38,3 +38,6 @@ The wallet handler checks group membership and resident ownership. Common-wallet
 - sharedTownApi deployed successfully; other functions and real-money products unchanged. Initial discovery timeout resolved by allowing 60 seconds for CLI source analysis.
 - Google Play internal release337: 456 (1.0.404), available to internal testers September19 22:39KST. No supported devices removed. One nonblocking missing deobfuscation-file warning.
 - iOS internal TestFlight workflow35446347704 succeeded. Apple accepted signed1.0.404(456), internal-only, source d7f87f8. Signed Apple login entitlement verified. Apple build processing has not yet produced an installable record (bounded status check build:null); tester availability is not confirmed. No public review submitted for456. Public455 remains Waiting for Review in App Store Connect.
+
+### Final Apple confirmation
+App Store Connect subsequently completed processing build2ec80e38-7b07-4564-bddc-5bd1b4051098. Existing OS-only encryption answer saved (same implementation as455). Status: Ready to Test; assigned existing internal group 나만 테스트 (one tester). Korean test instructions saved. iOS456 is internal-only, not submitted to public review.
