@@ -14,8 +14,8 @@ Improved affection settings and save responsiveness. Removed the observation/vil
 愛情表現の設定と保存時の反応を改善しました。観察・村の切替を削除しました。財布と仕事を別々の辞典風画面に分け、上部バナー、左側のアイコンと名前、残高の間隔を整えました。資産・給与・消費・共同財布と建物の内装編集は内部テストで引き続き利用できます。
 </ja-JP>
 
-Validation: Chrome/WebKit mobile wallet conversion, separate Work screen, balance/discovery spacing and interior persistence pass. Money grant/conversion/expense/insufficient funds and actual work payment pass. Signed Android492 assets byte-identical; SHA256 recorded above. New UI KO/EN/JA. Whole inventory EN2258/2988(75.6%), JA2257/2988(75.5%). Android delivered; iOS upload accepted, Apple processing pending.
+Validation: Chrome/WebKit mobile wallet conversion, separate Work screen, balance/discovery spacing and interior persistence pass. Money grant/conversion/expense/insufficient funds and actual work payment pass. Signed Android492 assets byte-identical; SHA256 recorded above. New UI KO/EN/JA. Whole inventory EN2258/2988(75.6%), JA2257/2988(75.5%). Android and iOS internal delivery verified.
 
 Phone/landscape-tablet WebKit screens checked. Common theme no longer overrides dictionary-style wallet/work. Intermediate458 not distributed.
 
-Signed iOS workflow35449320616 succeeded from0d2a6de; Apple upload accepted internalOnly=true. Signed app and profile both contain Apple Sign In entitlement. Apple processing pending before group assignment.
+Signed iOS workflow35449320616 succeeded from0d2a6de; Apple upload accepted internalOnly=true. Signed app and profile both contain Apple Sign In entitlement. Apple build7a19a906-7257-4639-813c-9c182a135d0a is Ready to Test, existing internal group 나만 테스트 (one tester) assigned; Korean test instructions saved.
