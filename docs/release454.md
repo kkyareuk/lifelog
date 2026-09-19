@@ -24,3 +24,10 @@ Fixed title loading progress. Pinching homes or towns no longer triggers room ed
 <ja-JP>
 タイトルの読み込み表示を修正しました。家・村の拡大中に部屋編集が開く問題を修正し、画面更新の負荷を軽減しました。自分探しの質問処理を改善しました。コーヒーで睡眠欲求が回復し、設定した就寝時間外ではコーヒーを優先します。夫婦間の私的な場面への反応を調整しました。
 </ja-JP>
+
+## Delivery
+- Source58fe649 pushed to dev. Play internal release336,1.0.402(454), available September19 18:57 KST. No lost supported devices; optional mapping-file warning only.
+- Signed AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.402-454-internal.aab. SHA256:69F8125E43F321405C15365109FF09E2A778F6F0004A3533DD55A146A0A7DF79.483 prepared assets match.
+- sharedTownApi successfully deployed; no new service, no compensation grant rerun.
+- iOS internal workflow35436002705 running; public submission and tester availability not claimed.
+- General update email is an unsent draft in update-mail454-draft.md. Public release has not been requested for454.
