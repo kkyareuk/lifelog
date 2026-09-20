@@ -4,7 +4,7 @@ module.exports=function fixture(){
   ['groups/g',{ownerUid:'host',courtTheme:'court',rules:{relationshipChangeMode:'dynamic'}}],
   ...['host','member','other','manager'].map(uid=>['groups/g/members/'+uid,{role:uid==='host'?'owner':uid==='manager'?'manager':'member'}]),
   ...[['a','member','세은'],['b','other','리아'],['c','member','가람']].map(([id,ownerUid,name])=>['groups/g/residents/'+id,{ownerUid,name,townId:'t'}]),
-  ...['a','b','c'].map(id=>['groups/g/courtProfiles/'+id,{role:'noble',faction:'neutral',trait:id==='b'?'privacy':'courtesy',bio:'궁정에 초대받은 손님',enabled:true,revision:1}])
+  ...['a','b','c'].map(id=>['groups/g/courtProfiles/'+id,{ownerUid:id==='b'?'other':'member',role:'noble',faction:'neutral',trait:id==='b'?'privacy':'courtesy',bio:'궁정에 초대받은 손님',enabled:true,revision:1}])
  ]);
  const ref=(path,collection=false)=>({path,id:path.split('/').at(-1),collection:name=>ref(path+'/'+name,true),doc:name=>ref(path+'/'+name),isCollection:collection});
  const snap=path=>({id:path.split('/').at(-1),exists:data.has(path),data:()=>structuredClone(data.get(path))});

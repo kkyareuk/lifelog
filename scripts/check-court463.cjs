@@ -43,6 +43,12 @@ async function main(){
  assert.equal(result.socialDistance,90);assert.deepEqual(result.response,c.responses.publicBarrier);
  data.get('groups/g').rules.relationshipChangeMode='fixed';tick(3600000);
  start=await s.beginCourtDialogue('member',input);result=await s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'});assert.equal(result.rewarded,false);
+ data.get('groups/g/residents/b').ownerUid='manager';
+ await assert.rejects(s.beginCourtDialogue('member',input),/court-consent-required/);
+ assert.equal((await s.readCourt('manager',input)).residents.find(r=>r.id==='b').profile,null);
+ await s.saveCourtProfile('manager',{groupId:'g',characterId:'b',revision:0,profile:p});
+ assert.equal(data.get('groups/g/courtProfiles/b').ownerUid,'manager');
+ data.get('groups/g/residents/b').ownerUid='other';
  await s.saveCourtTheme('host',{groupId:'g',theme:'basic'});await assert.rejects(s.beginCourtDialogue('member',input),e=>e.status===409);
  const {socialDistance,relationMetrics,changeRelationMetrics}=await import('../relationship-metrics.js');
  for(const roleA of Object.keys(c.roles))for(const roleB of Object.keys(c.roles))for(const factionA of Object.keys(c.factions))for(const factionB of Object.keys(c.factions)){

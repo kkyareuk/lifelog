@@ -24,7 +24,7 @@ module.exports=function createCourtService({db,clock=Date.now}){
   if(actor.townId!==target.townId)fail('court-invalid-target');
   const members=await Promise.all([tx.get(root.collection('members').doc(actor.ownerUid)),tx.get(root.collection('members').doc(target.ownerUid))]);
   if(members.some(s=>!s.exists))fail('group-membership-required',403);
-  if(!ap.exists||!bp.exists||!ap.data().enabled||!bp.data().enabled)fail('court-consent-required',409);
+  if(!ap.exists||!bp.exists||ap.data().ownerUid!==actor.ownerUid||bp.data().ownerUid!==target.ownerUid||!ap.data().enabled||!bp.data().enabled)fail('court-consent-required',409);
   await require('./user-safety').allowContact(db,tx,uid,target.ownerUid);
   return {actor,target,actorProfile:ap.data(),targetProfile:bp.data()};
  }
@@ -43,7 +43,7 @@ module.exports=function createCourtService({db,clock=Date.now}){
    const [residents,profiles,pairs,journal]=await Promise.all([tx.get(root.collection('residents')),tx.get(root.collection('courtProfiles')),tx.get(root.collection('courtPairs')),tx.get(root.collection('courtJournals').doc(uid))]);
    const rs=rows(residents),ps=rows(profiles),mine=new Set(rs.filter(r=>r.ownerUid===uid).map(r=>r.id));
    return {theme:group.courtTheme||'basic',manager,roles:content.roles,factions:content.factions,traits:content.traits,
-    residents:rs.map(r=>({id:r.id,name:r.name,ownerUid:r.ownerUid,townId:r.townId,profile:ps.find(p=>p.id===r.id)||null})),
+    residents:rs.map(r=>({id:r.id,name:r.name,ownerUid:r.ownerUid,townId:r.townId,profile:ps.find(p=>p.id===r.id&&p.ownerUid===r.ownerUid)||null})),
     pairs:rows(pairs).filter(p=>manager||p.members.some(i=>mine.has(i))),
     scenes:content.scenes.map(({id,title,formal})=>({id,title,formal})),history:(journal.data()?.entries||[]).slice(-20).reverse()};
   }),
@@ -57,8 +57,9 @@ module.exports=function createCourtService({db,clock=Date.now}){
    if(!resident.exists||resident.data().ownerUid!==uid)fail('character-owner-required',403);
    const p=input.profile;if(!p||!Object.hasOwn(content.roles,p.role)||!Object.hasOwn(content.factions,p.faction)||!Object.hasOwn(content.traits,p.trait)||typeof p.enabled!=='boolean'||typeof p.bio!=='string'||p.bio.length>500)fail('court-invalid-profile');
    const ref=root.collection('courtProfiles').doc(resident.id),old=await tx.get(ref);
-   if(Number(input.revision||0)!==Number(old.data()?.revision||0))fail('court-stale',409);
-   tx.set(ref,{role:p.role,faction:p.faction,trait:p.trait,bio:p.bio.trim(),enabled:p.enabled,revision:Number(old.data()?.revision||0)+1});return {saved:true};
+   const revision=old.data()?.ownerUid===uid?Number(old.data()?.revision||0):0;
+   if(Number(input.revision||0)!==revision)fail('court-stale',409);
+   tx.set(ref,{ownerUid:uid,role:p.role,faction:p.faction,trait:p.trait,bio:p.bio.trim(),enabled:p.enabled,revision:revision+1});return {saved:true};
   }),
   saveCourtDistance:async(uid,input)=>db.runTransaction(async tx=>{
    const {root,manager}=await context(tx,input,uid);if(!manager)fail('manager-required',403);
