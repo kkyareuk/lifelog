@@ -3,10 +3,10 @@ import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
 import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url),{chromium}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const require=createRequire(import.meta.url),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
 const root=resolve(process.argv[2]||'.'),old=process.argv.includes('--before');
 const server=createServer(async(req,res)=>{try{const pathname=new URL(req.url,'http://localhost').pathname,file=resolve(root,'.'+pathname);if(!file.startsWith(root+sep))throw Error();const body=pathname==='/fixture'?'<html></html>':await readFile(file);res.setHeader('Content-Type',['.js','.mjs'].includes(extname(file))?'text/javascript':extname(file)==='.css'?'text/css':'text/html');res.end(body)}catch{res.writeHead(404).end()}});
-await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({channel:'chrome',headless:true}),origin=`http://127.0.0.1:${server.address().port}`;
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await (process.env.QA_ENGINE==='webkit'?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true})),origin=`http://127.0.0.1:${server.address().port}`;
 try{
  for(const scenario of ['other-account','old-backup','recover-primary','unrecoverable']){
   const context=await browser.newContext({serviceWorkers:'block'}),page=await context.newPage();page.on('console',m=>{if(m.type()==='error')console.log(m.text())});await page.goto(origin+'/fixture');
