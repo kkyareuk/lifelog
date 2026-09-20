@@ -88,13 +88,17 @@
         const loading=document.querySelector("#app-loading"),card=loading?.querySelector(".app-loading-card");
         if(!loading||!card)return;
         const language=(navigator.language||"ko").toLowerCase(),copy=language.startsWith("ja")
-          ?["アプリ画面を開けませんでした","データは削除されていません。最新版を確認して、もう一度お試しください。","再試行"]
+          ?["アプリ画面を開けませんでした","保存データを保護しています。再試行しても開かない場合は、再インストールやデータ削除をせず、この画面を開発者にお知らせください。","再試行"]
           :language.startsWith("en")
-            ?["The app could not open","Your data was not deleted. Check for the latest version and try again.","Try again"]
-            :["앱 화면을 열지 못했어요","데이터는 지워지지 않았어요. 최신 버전인지 확인한 뒤 다시 시도해 주세요.","다시 시도"];
+            ?["The app could not open","Your saved data is being protected. If retrying does not help, send this screen to the developer without reinstalling or clearing app data.","Try again"]
+            :["앱 화면을 열지 못했어요","저장 데이터를 보호하고 있어요. 다시 시도해도 열리지 않으면 재설치하거나 앱 데이터를 지우지 말고 이 화면을 개발자에게 알려 주세요.","다시 시도"];
         failed=true;loading.classList.add("is-failed");
         card.querySelector("strong").textContent=copy[0];
         card.querySelector("span").textContent=copy[1];
+        const diagnostic=document.createElement('small');
+        const reason=document.documentElement.dataset.drawerBootError||'';
+        diagnostic.textContent=`${window.DRAWER_VILLAGE_APP_VERSION||'web'} (${window.DRAWER_VILLAGE_VERSION_CODE||'-'}) · ${/snapshot|database/i.test(reason)?'SAVE_READ':reason?'START_SCRIPT':'START_TIMEOUT'}`;
+        card.append(diagnostic);
         if(!card.querySelector("button")){
           const retry=document.createElement("button");retry.type="button";retry.textContent=copy[2];retry.onclick=()=>location.reload();card.append(retry);
         }
