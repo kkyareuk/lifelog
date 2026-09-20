@@ -1,6 +1,6 @@
 # Account and backup recovery — 1.0.410 / Android 462
 
-2026-09-20. Public-source hotfix branch `codex/account-recovery462`, following public461. Internal testing only; production promotion of this version has not been requested. No experimental dev features included.
+2026-09-20. Public-source hotfix branch `codex/account-recovery462`, following public461. User explicitly requested production promotion after internal delivery. No experimental dev features included.
 
 ## Reports and diagnosis
 
@@ -26,7 +26,7 @@ Reproduced: an existing empty account snapshot prevents explicit guest handoff. 
 
 ## Artifact
 
-Google Play internal release341: **available to internal testers**, September20 13:08 KST. All three release-note languages accepted. No production promotion or user notice sent for462.
+Google Play internal release341: **available to internal testers**, September20 13:08 KST. All three release-note languages accepted. Follow-up: production release36 promoted at 100% for all existing target countries and review request accepted on September20 around13:13KST. Publishing overview shows 462 under review with automated prechecks running; checks must pass before review proceeds. Managed publishing is disabled. Approval/public availability is not yet confirmed. No user notice sent.
 
 `C:/Users/Public/drawer-releases/drawervillage-1.0.410-462-hotfix.aab`
 
@@ -36,7 +36,7 @@ Runtime commit f424545; Android version cf62ca5; compatible test be3fe8b. Main c
 
 ## Reply draft — not sent
 
-안녕하세요. 로그인 후 기존 캐릭터가 보이지 않거나 백업을 불러올 때 사진이 빠지는 문제로 불편을 드려 죄송합니다. 로그인 전 기기 데이터와 계정 데이터를 연결하는 부분, 백업의 사진을 기기에 남아 있는 원본과 연결하는 부분을 수정해 1.0.410 버전을 내부 테스트 중입니다. 아직 일반 스토어 업데이트로 배포된 상태는 아닙니다. 보내 주신 진단에는 캐릭터 2명과 사진 원본 복원 기록이 확인되므로, 앱 삭제·재설치나 데이터 초기화는 하지 말고 현재 기기와 백업 파일을 보관해 주세요. 이미 원본이 삭제된 사진은 백업에 포함되어 있지 않다면 자동 복원되지 않을 수 있습니다.
+안녕하세요. 로그인 후 기존 캐릭터가 보이지 않거나 백업을 불러올 때 사진이 빠지는 문제로 불편을 드려 죄송합니다. 로그인 전 기기 데이터와 계정 데이터를 연결하는 부분, 백업의 사진을 기기에 남아 있는 원본과 연결하는 부분을 수정한 1.0.410 버전을 Google Play 프로덕션 심사에 제출했습니다. 아직 승인 전이라 일반 스토어에 업데이트가 표시되지 않을 수 있습니다. 보내 주신 진단에는 캐릭터 2명과 사진 원본 복원 기록이 확인되므로, 앱 삭제·재설치나 데이터 초기화는 하지 말고 현재 기기와 백업 파일을 보관해 주세요. 이미 원본이 삭제된 사진은 백업에 포함되어 있지 않다면 자동 복원되지 않을 수 있습니다.
 
 ## Play notes
 
