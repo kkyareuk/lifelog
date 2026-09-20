@@ -4541,21 +4541,23 @@ function bind(){
   });
   $("[data-import-file]")?.addEventListener("click",()=>{
     const input=document.createElement("input");input.type="file";input.accept=".json,application/json";
+    const restoreOwner=localStorage.scope;
     input.onchange=async()=>{
       const file=input.files?.[0];if(!file)return;
       try{
-        const parsed=JSON.parse(await file.text()),next=["drawer-village-backup","parallel-city-backup"].includes(parsed?.format)?parsed.gameState:parsed;
-        if(!next||typeof next!=="object"||!next.characters)throw new Error("invalid-backup");
-        const incoming=informationOnlyState(next),incomingCount=Array.isArray(incoming.characters)?incoming.characters.length:Object.keys(incoming.characters||{}).length;
-        if(!incomingCount)throw new Error("empty-backup");
-        const imported=mergeImportedBackupState(cloneState(),incoming),resultCount=Object.keys(imported.characters||{}).length;
-        if(resultCount<incomingCount)throw new Error("incomplete-backup-merge");
+        const parsed=JSON.parse(await file.text());
+        if(localStorage.scope!==restoreOwner)throw Error('backup-account-changed');
+        const restoreState=state;
+        const {prepareBackupRestore}=await import('./backup-restore.js');
+        const {imported,incomingCount,media}=await prepareBackupRestore(parsed,cloneState(),localStorage);
+        if(localStorage.scope!==restoreOwner||state!==restoreState)throw Error('backup-account-changed');
         window.ParallelCity.replaceState(imported);
         try{localStorage.setItem(ONBOARDING_KEY,"done")}catch{}
-        showToast(`백업의 캐릭터 ${incomingCount}명을 불러왔습니다 · 기기의 기존 캐릭터와 사진도 유지했습니다`);
+        showToast((media.pending?{ko:`캐릭터 ${incomingCount}명을 불러왔어요. 원본을 찾지 못한 사진이 있어요.`,en:`Restored ${incomingCount} characters. Some original photos could not be found.`,ja:`${incomingCount}人を読み込みました。一部の写真の元データが見つかりません。`}:{ko:`캐릭터 ${incomingCount}명과 기기·파일에서 찾은 사진을 불러왔어요.`,en:`Restored ${incomingCount} characters with available device and backup photos.`,ja:`${incomingCount}人と、端末・ファイルで見つかった写真を読み込みました。`})[state.uiLanguage]||"Backup restored");
       }catch(error){
         console.error(error);
-        showToast(error?.code==="backup-storage-full"?"기기 저장 공간이 부족해 불러오기를 중단했습니다 · 기존 데이터는 바꾸지 않았습니다":"캐릭터가 들어 있는 서랍마을 백업 파일인지 확인해 주세요");
+        const message=error?.message==='backup-account-changed'?{ko:"계정이나 저장 데이터가 바뀌어 불러오기를 중단했어요. 다시 시도해 주세요.",en:"The account or saved data changed. Please try importing again.",ja:"アカウントまたは保存データが変わったため中断しました。もう一度お試しください。"}:error?.code==="backup-storage-full"?{ko:"기기 저장 공간이 부족해 불러오기를 중단했습니다 · 기존 데이터는 바꾸지 않았습니다",en:"Not enough device storage. Your existing data was kept.",ja:"端末の空き容量が足りないため中断しました。既存のデータは保持されています。"}:{ko:"캐릭터가 들어 있는 서랍마을 백업 파일인지 확인해 주세요",en:"Please choose a Drawer Village backup containing characters.",ja:"キャラクターを含む引き出し村のバックアップを選んでください。"};
+        showToast(message[state.uiLanguage]||message.ko);
       }
     };
     input.click();
