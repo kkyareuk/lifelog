@@ -30,7 +30,7 @@ import {withSharedWorld} from './shared-world.js?v=20260909dev305';
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260909dev305";
+import {state,active,characterViewFor,explicitCharacterViewFor,advanceHomeLifeSimulation} from "./state.js?v=20260909dev305";
 import {renderDictionary,itemArt} from "./dictionary.js?v=20260909dev305";
 import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260909dev305";
 import {characterMood} from "./character-mood.js?v=20260909dev305";
@@ -54,8 +54,8 @@ const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
   ja:{brandName:"ひきだし村",observe:"観察",mailbox:"郵便箱",home:"家",character:"人物",catalog:"辞典",relationship:"関係",routine:"予定",statistics:"統計",town:"村",shop:"店",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",gridEdit:"グリッド編集",floorUp:"一つ上の階へ",floorDown:"一つ下の階へ",floorLabel:n=>`${n}階`,language:"言語",languageHelp:"日本語は基本画面に対応し、生活シーンや関係文もアップデートごとに翻訳を増やしています。",languageNote:"日本語ベータ・基本画面と一部の生活シーンに対応。翻訳範囲を継続して拡大します。",mailArrived:"手紙が届きました",mailReady:"準備ができたら手紙を開いてください。選択は実際の生活予定に反映されます。",mailEmpty:"届いた手紙はまだありません",mailEmptyHelp:"キャラクターからの質問・選択・悩み・近況はここに届きます。",mailboxHelp:"キャラクターからの手紙をここでまとめて確認できます。",openLetter:"手紙を開く",characterPicker:"観察する人物を選ぶ",currentTownResidents:"この村の人物",moveToAnotherTown:"別の村へ移動",close:"閉じる",noSleepingRoom:"その他・なし（宿泊しない）",locationExterior:"現在の建物の外観",inTransit:"移動中",outAndAbout:"外出中",emptyTownTitle:"この村にはまだキャラクターが住んでいません",emptyTownHelp:"キャラクター画面で生活する村を選んでください。",openCharacterSettings:"キャラクター設定を開く"}
 };
-Object.assign(I18N.en,{"병명·건강 기록":"Health records","건강 기록":"Health record","추가 LD 사진":"Additional LD photos","사진 검색":"Search photos","사진 추가":"Add photo","추가 사진은 캐릭터마다 30개까지 등록할 수 있어요.":"Add up to 30 extra photos per character."});
-Object.assign(I18N.ja,{"병명·건강 기록":"病名・健康記録","건강 기록":"健康記録","추가 LD 사진":"追加LD画像","사진 검색":"画像を検索","사진 추가":"画像を追加","추가 사진은 캐릭터마다 30개까지 등록할 수 있어요.":"追加画像はキャラクターごとに30枚まで登録できます。"});
+Object.assign(I18N.en,{"1인 침대":"Single bed","가구 숨김":"Hide furniture","병명·건강 기록":"Health records","건강 기록":"Health record","추가 LD 사진":"Additional LD photos","사진 검색":"Search photos","사진 추가":"Add photo","추가 사진은 캐릭터마다 30개까지 등록할 수 있어요.":"Add up to 30 extra photos per character."});
+Object.assign(I18N.ja,{"1인 침대":"シングルベッド","가구 숨김":"家具を非表示","병명·건강 기록":"病名・健康記録","건강 기록":"健康記録","추가 LD 사진":"追加LD画像","사진 검색":"画像を検索","사진 추가":"画像を追加","추가 사진은 캐릭터마다 30개까지 등록할 수 있어요.":"追加画像はキャラクターごとに30枚まで登録できます。"});
 Object.assign(I18N.en,{"가족":"Family","연락이 끊긴 사이":"No longer in contact","서로 불편한 사이":"Uncomfortable with each other","필요할 때만 연락함":"Contact only when needed","무난한 가족":"An ordinary family bond","서로 의지하는 가족":"Family who rely on each other","무척 각별한 가족":"An especially close family","과거의 가족":"Former family relationship"});
 Object.assign(I18N.ja,{"가족":"家族","연락이 끊긴 사이":"連絡が途絶えた仲","서로 불편한 사이":"互いに居心地の悪い仲","필요할 때만 연락함":"必要な時だけ連絡する","무난한 가족":"穏やかな家族関係","서로 의지하는 가족":"互いに頼り合う家族","무척 각별한 가족":"とても特別な家族","과거의 가족":"過去の家族関係"});
 Object.assign(I18N.en,dictionaryCopy.en);Object.assign(I18N.ja,dictionaryCopy.ja);
@@ -2341,6 +2341,12 @@ function homeCard(id,chars){
   const sceneFor=c=>currentScenes.get(c.id);
   const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;
+  // Shared homes are rendered inside a fresh isolated world, after the personal
+  // home's prepare callback. Hydrate furniture positions in that world too.
+  if(state.sharedContext&&!edit){
+    const contexts=Object.fromEntries(inside.map(c=>[c.id,{scene:sceneFor(c),roomKey:sceneFor(c)?.room,animateMovement:false}]));
+    advanceHomeLifeSimulation(id,inside.map(c=>c.id),contexts,renderSceneDate.getTime(),false);
+  }
   const lifeAgents=edit?{}:{...(h.lifeSimulation?.agents||{})};
   const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&['소파','의자','커플 침대'].includes(scene?.meetingFurniture?.item)};
   for(const c of inside){if(usesAnchoredFurniture(c)){const scene=sceneFor(c),bed=scene.meetingFurniture;lifeAgents[c.id]={...lifeAgents[c.id],phase:'using',roomKey:scene.room,furnitureId:bed.id,item:bed.item,x:bed.x,y:bed.y};}}
