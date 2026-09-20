@@ -15,7 +15,7 @@ try{
  await p.evaluate(()=>photoQA.openBuildingShapeDialog(hid,'home'));
  await p.locator('.building-photo-choice input').setInputFiles(file);await p.waitForFunction(()=>g.state.homes[hid].exteriorImage?.startsWith('data:image/'));
  console.log('PASS personal house exterior upload');
- await p.evaluate(()=>photoQA.openRoomEditor(hid,roomKey));await p.locator('[data-room-surface-picker=floorMaterial]').click();const choose=p.waitForEvent('filechooser');await p.getByRole('button',{name:'바닥 이미지 첨부',exact:true}).click();await (await choose).setFiles(file);await p.waitForFunction(()=>g.state.homes[hid].rooms[roomKey].floorImage?.startsWith('data:image/'));
+ await p.evaluate(()=>photoQA.openRoomEditor(hid,roomKey));await p.locator('[data-room-surface-picker=floorMaterial]').click();if(process.argv.includes('--webkit')){await p.getByRole('button',{name:'바닥 이미지 첨부',exact:true}).click();await p.locator('[data-drawer-image-picker]').setInputFiles(file)}else{const choose=p.waitForEvent('filechooser');await p.getByRole('button',{name:'바닥 이미지 첨부',exact:true}).click();await (await choose).setFiles(file)}await p.waitForFunction(()=>g.state.homes[hid].rooms[roomKey].floorImage?.startsWith('data:image/'));
  console.log('PASS personal full-room image upload');
  const saved=await p.evaluate(()=>({hid,roomKey}));await p.reload();await p.waitForFunction(()=>window.photoQA);
  assert(await p.evaluate(async({hid,roomKey})=>{window.g=await import('/state.js?v=20260909dev305');window.hid=hid;window.roomKey=roomKey;await (await import('/local-media.js?v=20260909dev305')).initializeLocalMediaState(g.state);return [g.state.homes[hid].exteriorImage,g.state.homes[hid].rooms[roomKey].floorImage].every(v=>v.startsWith('data:image/'))},saved));
