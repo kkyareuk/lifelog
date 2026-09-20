@@ -1,3 +1,4 @@
+import {bindCourtWorld,isCourtWorld} from './court-world-ui.js';
 import {bindCharacterMoney,openCharacterMoney} from './character-money-ui.js';
 import {openBuildingInterior} from './building-interior.js';
 import {bindRoomGesture} from './room-geometry.js';
@@ -1516,7 +1517,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
   // 앱에서는 window가 아니라 main이 실제 세로 스크롤을 담당한다. 이 값을
   // 따로 보존하지 않으면 취향 도감의 모든 재렌더가 화면을 맨 위로 보낸다.
   const previousGroup=document.querySelector('[data-management-pane]'),groupScroll=previousGroup?.querySelector('.multiplayer-detail-scroll');
-  const groupContext=previousGroup?{id:previousGroup.dataset.groupId,pane:previousGroup.dataset.managementPane,top:groupScroll?.scrollTop||0,fields:[...previousGroup.querySelectorAll('[data-group-dirty]')].map(e=>({name:e.name,value:e.value,checked:e.checked}))}:null;
+  const groupContext=previousGroup?{id:previousGroup.dataset.groupId,pane:previousGroup.dataset.managementPane,top:groupScroll?.scrollTop||0,fields:[...previousGroup.querySelectorAll('[data-group-dirty]')].map(e=>({name:e.name,value:e.value,checked:e.checked,rankForm:e.closest("[data-rank-edit]")?.dataset.rankEdit}))}:null;
   const previousMain=document.querySelector("#app>main"),previousMainLeft=previousMain?.scrollLeft||0,previousMainTop=previousMain?.scrollTop||0;
   // 마을 지도는 main이 아니라 전용 양방향 스크롤러가 좌표를 가진다.
   // 건물/장식 편집으로 DOM을 다시 만들 때 이 좌표를 잃으면 지도가 항상
@@ -1605,7 +1606,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
       }
     }
     const nextGroup=document.querySelector('[data-management-pane]');
-    if(groupContext&&nextGroup?.dataset.groupId===groupContext.id&&nextGroup?.dataset.managementPane===groupContext.pane){const scroller=nextGroup.querySelector('.multiplayer-detail-scroll');if(scroller)scroller.scrollTop=groupContext.top;for(const f of groupContext.fields)if(f.name){const el=[...nextGroup.querySelectorAll('[name]')].find(e=>e.name===f.name);if(el){el.value=f.value;el.checked=f.checked;el.dataset.groupDirty='1'}}}
+    if(groupContext&&nextGroup?.dataset.groupId===groupContext.id&&nextGroup?.dataset.managementPane===groupContext.pane){const scroller=nextGroup.querySelector('.multiplayer-detail-scroll');if(scroller)scroller.scrollTop=groupContext.top;for(const f of groupContext.fields)if(f.name){const el=[...nextGroup.querySelectorAll('[name]')].find(e=>e.name===f.name&&e.closest('[data-rank-edit]')?.dataset.rankEdit===f.rankForm);if(el){el.value=f.value;el.checked=f.checked;el.dataset.groupDirty='1'}}}
     if(settingsPosition){
       const scroller=document.querySelector("[data-settings-scroll]");
       if(scroller?.dataset.settingsScroll===settingsPosition.pane){scroller.scrollTop=settingsPosition.top;scroller.scrollLeft=settingsPosition.left}
@@ -2402,16 +2403,17 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
+const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,2),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(2)];
 const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
 function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
 }
 function openCharacterBookPage(next){
   if(state.characterProfileBook&&!["visual","overview-basic"].includes(next))return false;
-  if(!CHARACTER_BOOK_PAGES.includes(next))return false;
+  if(!characterBookPages().includes(next))return false;
   if(next.startsWith("overview-")){
     state.characterPane="profile";
-    state.characterOverviewPane=next.endsWith("life")?"life":"basic";
+    state.characterOverviewPane=next.endsWith("court")?"court":next.endsWith("life")?"life":"basic";
   }else if(next.startsWith("body-")){
     state.characterPane="body";
     state.characterBodyPane=next.endsWith("accessibility")?"accessibility":next.endsWith("appearance")?"appearance":"figure";
@@ -2422,15 +2424,15 @@ function openCharacterBookPage(next){
   save(true);render();return true;
 }
 function moveCharacterBookPage(direction){
-  const currentIndex=CHARACTER_BOOK_PAGES.indexOf(currentCharacterBookPage());
+  const currentIndex=characterBookPages().indexOf(currentCharacterBookPage());
   if(currentIndex<0)return false;
-  return openCharacterBookPage(CHARACTER_BOOK_PAGES[currentIndex+direction]);
+  return openCharacterBookPage(characterBookPages()[currentIndex+direction]);
 }
 function moveCharacterBookSpread(direction){
-  const currentIndex=CHARACTER_BOOK_PAGES.indexOf(currentCharacterBookPage());
+  const currentIndex=characterBookPages().indexOf(currentCharacterBookPage());
   if(currentIndex<0)return false;
   const spreadStart=Math.floor(currentIndex/2)*2;
-  return openCharacterBookPage(CHARACTER_BOOK_PAGES[spreadStart+direction*2]);
+  return openCharacterBookPage(characterBookPages()[spreadStart+direction*2]);
 }
 function bindCharacterBookSwipe(){
   const page=document.querySelector(".character-book-v8.is-open .character-book-v8-page");
@@ -2535,6 +2537,7 @@ function bind(){
   };
   document.querySelector('[data-management-pane]')?.addEventListener('input',e=>{if(e.target.matches('input:not([type=file]),textarea,select'))e.target.dataset.groupDirty='1'});
   $$('[data-group-manage]').forEach(button=>button.onclick=async()=>{const {selectManagementPane}=await import('./groups.js?v=20260909dev305');selectManagementPane(button.dataset.groupManage);render()});
+  bindCourtWorld();
   $('[data-group-presentation]')?.addEventListener('submit',event=>{event.preventDefault();runGroupAction(event.submitter,()=>groupApi.saveGroupPresentation(Object.fromEntries(new FormData(event.currentTarget))))});
   $('[data-group-catalog-publish]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const {chooseCatalog}=await import('./settings-transfer.js?v=20260909dev305');const chosen=await chooseCatalog(state.catalog);if(chosen)await groupApi.publishCatalog(chosen)}));
   $('[data-group-catalog-import]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const transfer=await import('./settings-transfer.js?v=20260909dev305');transfer.mergeCatalogFile({format:'drawer-village-catalog',version:1,catalog:Object.fromEntries((groupApi.getSnapshot().catalog||[]).map(c=>[c.id,c.items||[]]))});render()}));
@@ -3967,7 +3970,7 @@ function bind(){
     el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });
   $$("[data-character-overview-pane]").forEach(el=>el.onclick=()=>{
-    state.characterOverviewPane=el.dataset.characterOverviewPane==="life"?"life":"basic";
+    state.characterOverviewPane=el.dataset.characterOverviewPane==="court"&&isCourtWorld()?"court":el.dataset.characterOverviewPane==="life"?"life":"basic";
     save();
     el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });

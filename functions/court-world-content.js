@@ -1,0 +1,6 @@
+// Shared catalogue; scripts/sync-court-world.mjs exports the browser copy.
+const jobs={
+ none:['미설정','Unassigned','未設定'], monarch:['군주','Monarch','君主'], heir:['왕위 계승자','Heir','王位継承者'], lord:['영주','Lord','領主'], diplomat:['외교관','Diplomat','外交官'], minister:['궁정 관료','Court official','宮廷官僚'], knight:['기사','Knight','騎士'], guard:['근위병','Royal guard','近衛兵'], mage:['궁정 마법사','Court mage','宮廷魔術師'], scholar:['학자','Scholar','学者'], healer:['치유사','Healer','治療師'], priest:['성직자','Cleric','聖職者'], attendant:['시종','Attendant','侍従'], maid:['시녀','Lady’s maid','侍女'], steward:['집사','Steward','執事'], cook:['궁정 요리사','Court cook','宮廷料理人'], bard:['음유시인','Bard','吟遊詩人'], merchant:['상인','Merchant','商人'], artisan:['장인','Artisan','職人'], farmer:['농민','Farmer','農民'], adventurer:['모험가','Adventurer','冒険者'], spy:['정보원','Informant','情報員'], other:['기타','Other','その他']
+};
+const ranks=[['sovereign',100,['군주','Sovereign','君主']],['royalty',85,['왕족','Royalty','王族']],['duke',70,['공작','Duke','公爵']],['marquis',60,['후작','Marquess','侯爵']],['count',50,['백작','Count','伯爵']],['viscount',40,['자작','Viscount','子爵']],['baron',30,['남작','Baron','男爵']],['gentry',20,['준귀족','Gentry','準貴族']],['commoner',0,['평민','Commoner','平民']]].map(([id,level,labels])=>({id,level,labels,name:labels[0]}));
+module.exports={jobs,ranks};

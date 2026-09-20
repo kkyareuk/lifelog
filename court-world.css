@@ -1,0 +1,18 @@
+.court-world-settings,.court-character-page{min-width:0;color:inherit;overflow-wrap:anywhere}
+.court-world-settings form,.court-rank-request{display:grid;gap:10px;margin:12px 0;padding:12px;border:1px solid #cbbba4;border-radius:10px;background:#fffaf0}
+.court-world-settings label,.court-character-page label{display:grid;gap:6px;min-width:0}
+.court-world-settings input,.court-world-settings select,.court-character-page input,.court-character-page select,.court-character-page textarea{box-sizing:border-box;width:100%;min-width:0;max-width:100%;font:inherit;padding:8px;color:#3e352e;background:#fff;border:1px solid #bba98d;border-radius:6px}
+.court-world-settings button,.court-character-page button{min-height:40px;font:inherit}
+.court-world-settings p,.court-character-page p{font-size:13px;line-height:1.65}
+.court-world-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.court-world-wide{grid-column:1/-1}
+.court-character-page{position:absolute;inset:15% 9% 14%;display:flex;flex-direction:column;gap:10px;min-height:0;pointer-events:auto!important}
+.court-character-content{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:0 4px 16px}
+.court-character-content h2{font-size:20px;margin:0 0 10px}
+.court-page-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.court-page-controls button{min-width:42px;border:1px solid #aa9272;border-radius:20px;background:#fffaf0;color:#493b2e}
+.character-book-spread-leaf .court-character-page{inset:16% 8% 13% 12%}
+.character-book-spread-leaf .court-page-controls{display:none}
+.court-rank-list form{grid-template-columns:minmax(0,2fr) minmax(65px,1fr) auto;align-items:end}
+.court-rank-list [role=status]{grid-column:1/-1;margin:0}
+@media(max-width:400px){.court-world-fields{grid-template-columns:1fr}.court-rank-list form{grid-template-columns:minmax(0,1fr) 70px}.court-rank-list button{grid-column:1/-1}}

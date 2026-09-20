@@ -42,14 +42,14 @@ const responses={
 };
 const metricKeys=['closeness','affection','trust','comfort','tension'];
 const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
-function distance(a,b){const rank={royal:3,noble:2,knight:1,official:1,mage:1,attendant:0};return clamp(Math.abs(rank[a.role]-rank[b.role])*15+(a.faction===b.faction?0:a.faction==='neutral'||b.faction==='neutral'?15:45));}
+function distance(a,b,ranks=require('./court-world-content').ranks){if(a.rankId&&b.rankId){const x=ranks.find(r=>r.id===a.rankId),y=ranks.find(r=>r.id===b.rankId);if(x&&y)return clamp(Math.abs(x.level-y.level)*0.55+(a.faction===b.faction?0:a.faction==='neutral'||b.faction==='neutral'?15:45));}const rank={royal:3,noble:2,knight:1,official:1,mage:1,attendant:0};return clamp(Math.abs(rank[a.role]-rank[b.role])*15+(a.faction===b.faction?0:a.faction==='neutral'||b.faction==='neutral'?15:45));}
 function resolve(scene,choiceId,profile,metrics,socialDistance=0){
  const selected=scene.choices.find(c=>c.id===choiceId);if(!selected)throw Object.assign(Error('court-invalid-choice'),{status:400});
  let reaction='neutral',delta={...selected.effect};
  if(selected.style==='intrusive')reaction='hurt';
  else if(scene.id==='rest'&&selected.id==='ask'&&profile.trait==='privacy'&&metrics.trust<50){reaction='guarded';delta={comfort:-2,tension:1};}
  else if(selected.style===profile.trait){reaction=metrics.comfort>=60?'close':'pleased';delta.comfort=(delta.comfort||0)+1;}
- if(scene.id==='greeting'&&selected.id==='welcome'&&socialDistance>=60){reaction='publicBarrier';delta.comfort=-1;}
+ if(scene.id==='greeting'&&selected.id==='welcome'&&socialDistance>=60&&(profile.awareness??50)>=50){reaction='publicBarrier';delta.comfort=-1;}
  const next=Object.fromEntries(metricKeys.map(k=>[k,clamp(metrics[k]+(delta[k]||0))]));
  return {reaction,metrics:next,delta:Object.fromEntries(metricKeys.map(k=>[k,next[k]-metrics[k]]))};
 }

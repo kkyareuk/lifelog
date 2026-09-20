@@ -848,7 +848,7 @@ async function submitFeedback({category,message,allowReply=false}={}){
 // 그룹 멀티 데이터는 개인 게임 저장본과 분리한다. 그룹에서 주민을
 // 내보내거나 집 공개를 취소해도 users/{uid}/sync 및 기기 원본에는 손대지 않는다.
 const emptyGroupState=()=>({
-  loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],courtProfiles:[],courtPairs:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],
+  loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],courtProfiles:[],courtPairs:[],courtRankRequests:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],
   selectedTownId:"",selectedResidentId:"",visitingHomeId:""
 });
 const groupContextKey="drawer-village-multiplayer-context-v1";
@@ -980,7 +980,7 @@ function watchActiveGroup(groupId,{force=false}={}){
   const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
   const selectedResidentId=sameGroup?groupState.selectedResidentId:remembered.groupId===nextGroupId?remembered.residentId:"";
   const previousGroupState=groupState;
-  groupState={...groupState,activeGroupId:nextGroupId,error:null,loadedCollections:[],subscriptionErrors:{},group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],courtProfiles:[],courtPairs:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
+  groupState={...groupState,activeGroupId:nextGroupId,error:null,loadedCollections:[],subscriptionErrors:{},group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],courtProfiles:[],courtPairs:[],courtRankRequests:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
   // Reconnecting the same group must retain its last usable data.
   if(sameGroup&&nextGroupId)groupState={...previousGroupState,error:null,subscriptionErrors:{}};
   writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
@@ -1022,7 +1022,7 @@ function watchActiveGroup(groupId,{force=false}={}){
   // page empties the multiplayer roster shown on the home screen.
   groupUnsubscribers=[
     listen(refs.group,"group",false),listen(refs.members,"members",true),
-    listen(collection(db,"groups",groupId,"schedules"),"schedules",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true),listen(refs.catalog,"catalog",true),listen(refs.relationships,"relationships",true),listen(collection(db,"groups",groupId,"characterGroups"),"characterGroups",true),listen(refs.perceptions,"perceptions",true),listen(collection(db,"groups",groupId,"courtProfiles"),"courtProfiles",true),listen(collection(db,"groups",groupId,"courtPairs"),"courtPairs",true)
+    listen(collection(db,"groups",groupId,"schedules"),"schedules",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true),listen(refs.catalog,"catalog",true),listen(refs.relationships,"relationships",true),listen(collection(db,"groups",groupId,"characterGroups"),"characterGroups",true),listen(refs.perceptions,"perceptions",true),listen(collection(db,"groups",groupId,"courtProfiles"),"courtProfiles",true),listen(collection(db,"groups",groupId,"courtPairs"),"courtPairs",true),listen(collection(db,"groups",groupId,"courtRankRequests"),"courtRankRequests",true)
   ];
 }
 
@@ -1252,7 +1252,7 @@ async function removeGroupMember(uid){return sharedTownRequest('removeMember',{u
 let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
-  court:(action,input={})=>{if(!["readCourt","saveCourtTheme","saveCourtProfile","saveCourtDistance","beginCourtDialogue","chooseCourtDialogue"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
+  court:(action,input={})=>{if(!["saveCourtRank","requestCourtRank","respondCourtRank","readCourt","saveCourtTheme","saveCourtProfile","saveCourtDistance","beginCourtDialogue","chooseCourtDialogue"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
   games:(action,input={})=>{if(!["cancelGame","leaveGame","readGames","setGameConsent","createGame","joinGame","startGame","submitGame","advanceGame"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
   previewMemberProfile:async rawCode=>{
     const account=requireGroupUser(),invite=await getDoc(doc(db,'groupInvites',cleanInviteCode(rawCode)));

@@ -1,3 +1,4 @@
+import {courtWorldData} from './court-world-data.js';
 export const RELATION_METRICS={closeness:['친밀도','Closeness','親密度'],affection:['애정도','Affection','愛情度'],trust:['신뢰','Trust','信頼'],comfort:['편안함','Comfort','安心感'],tension:['갈등도','Tension','葛藤度'],socialDistance:['사회적 거리 · 고정','Social distance · fixed','社会的距離・固定']};
 const clamp=n=>Math.max(0,Math.min(100,Number(n)||0));
 export function socialDistance(world,a,b){
@@ -5,6 +6,8 @@ export function socialDistance(world,a,b){
  if(Number.isInteger(pair?.distance))return clamp(pair.distance);
  const x=world.courtProfiles?.find(p=>p.id===a),y=world.courtProfiles?.find(p=>p.id===b);
  if(!x||!y)return 0;
+ const ranks=world.courtRanks||courtWorldData.ranks,rx=ranks.find(r=>r.id===x.rankId),ry=ranks.find(r=>r.id===y.rankId);
+ if(rx&&ry)return clamp(Math.abs(rx.level-ry.level)*0.55+(x.faction===y.faction?0:x.faction==='neutral'||y.faction==='neutral'?15:45));
  const rank={royal:3,noble:2,knight:1,official:1,mage:1,attendant:0};
  return clamp(Math.abs(rank[x.role]-rank[y.role])*15+(x.faction===y.faction?0:x.faction==='neutral'||y.faction==='neutral'?15:45));
 }

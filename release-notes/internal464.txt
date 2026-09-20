@@ -1,0 +1,18 @@
+<ko-KR>
+멀티 그룹의 스토리 관리에서 서랍마을과 왕정 세계관을 선택할 수 있어요.
+왕정 세계관에서는 간편·전체설정에 전용 직업이 표시되고, 기본 프로필 다음에 궁정 설정이 열려요.
+공용 신분·위계와 추가 신청·승인, 캐릭터의 정치적 성향·배경·신분 의식을 설정할 수 있어요.
+광장의 궁정 놀이 항목을 없애고 그룹 배경 설정으로 연결했어요.
+</ko-KR>
+<en-US>
+Choose Drawer Village or Monarchy in your multiplayer group’s Story settings.
+Monarchy adds dedicated jobs to quick and full character settings, plus a Court settings page after the basic profile.
+Manage shared statuses and ranks, request new ones for approval, and set each character’s allegiance, background and attention to status.
+Court setting is now part of group management instead of a plaza game.
+</en-US>
+<ja-JP>
+マルチグループのストーリー管理で、引き出し村と王政世界を選べます。
+王政世界では簡易・詳細設定に専用の職業が表示され、基本プロフィールの次に宮廷設定が開きます。
+共通の身分・階級、追加申請と承認、キャラクターの政治的立場・背景・身分への意識を設定できます。
+広場の宮廷ゲーム項目をなくし、グループの背景設定に移しました。
+</ja-JP>

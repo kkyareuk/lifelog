@@ -233,7 +233,7 @@ body #app .character-book-v8 :is(.personality-type-book,.personality-direct-choi
   html.native-app[data-active-tab="character"] .tablet-character-book .character-book-v8-back{display:block!important}
   html.native-app[data-active-tab="character"] .character-tablet-settings-entry{display:none!important}
   /* Form pages use available paper width and scrolling flow, independent of the art coordinates. */
-  html.native-app[data-active-tab="character"] body #app .character-book-spread-leaf>.character-book-v8-page:has(.character-profile-overview-page,.personality-book-page,.personality-emotion-book-page,.wardrobe-book-page){width:100%!important}
+  html.native-app[data-active-tab="character"] body #app .character-book-spread-leaf>.character-book-v8-page:has(.character-profile-overview-page,.personality-book-page,.personality-emotion-book-page,.wardrobe-book-page,.court-character-page){width:100%!important}
   html.native-app[data-active-tab="character"] body #app .character-book-spread-leaf .character-profile-overview-page{inset:16% 8% 13% 12%!important;width:auto!important;height:auto!important;overflow:auto!important;pointer-events:auto!important}
   html.native-app[data-active-tab="character"] body #app .character-book-spread-leaf .character-overview-portrait{display:none!important}
   html.native-app[data-active-tab="character"] body #app .character-book-spread-leaf :is(.character-overview-basic,.character-overview-life){position:relative!important;inset:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;align-content:start!important;gap:16px 18px!important;width:100%!important;height:auto!important;padding:4px!important;pointer-events:auto!important}

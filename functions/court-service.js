@@ -28,13 +28,13 @@ module.exports=function createCourtService({db,clock=Date.now}){
   await require('./user-safety').allowContact(db,tx,uid,target.ownerUid);
   return {actor,target,actorProfile:ap.data(),targetProfile:bp.data()};
  }
- async function relation(tx,root,actor,target,ap,bp){
+ async function relation(tx,root,actor,target,ap,bp,group){
   const ref=root.collection('perceptions').doc(target.id+'~'+actor.id),pairRef=root.collection('courtPairs').doc(pairId(actor.id,target.id));
   const [perception,pair,relationships]=await Promise.all([tx.get(ref),tx.get(pairRef),tx.get(root.collection('relationships'))]);
   const view=json(perception.data()?.viewJson),r=rows(relationships).find(r=>r.temporalStatus!=='past'&&[r.a,r.b].includes(actor.id)&&[r.a,r.b].includes(target.id));
   const initial={...defaults(r),...r?.metrics,...view.courtMetrics};
   const metrics=Object.fromEntries(content.metricKeys.map(k=>[k,content.clamp(initial[k])]));
-  const socialDistance=Number.isInteger(pair.data()?.distance)?pair.data().distance:content.distance(ap,bp);
+  const socialDistance=Number.isInteger(pair.data()?.distance)?pair.data().distance:content.distance(ap,bp,group.courtRanks);
   return {ref,view,metrics,socialDistance};
  }
  return {
@@ -59,7 +59,7 @@ module.exports=function createCourtService({db,clock=Date.now}){
    const ref=root.collection('courtProfiles').doc(resident.id),old=await tx.get(ref);
    const revision=old.data()?.ownerUid===uid?Number(old.data()?.revision||0):0;
    if(Number(input.revision||0)!==revision)fail('court-stale',409);
-   tx.set(ref,{ownerUid:uid,role:p.role,faction:p.faction,trait:p.trait,bio:p.bio.trim(),enabled:p.enabled,revision:revision+1});return {saved:true};
+   tx.set(ref,{...(old.data()?.ownerUid===uid?old.data():{}),ownerUid:uid,role:p.role,faction:p.faction,trait:p.trait,bio:p.bio.trim(),enabled:p.enabled,revision:revision+1});return {saved:true};
   }),
   saveCourtDistance:async(uid,input)=>db.runTransaction(async tx=>{
    const {root,manager}=await context(tx,input,uid);if(!manager)fail('manager-required',403);
@@ -70,7 +70,7 @@ module.exports=function createCourtService({db,clock=Date.now}){
   beginCourtDialogue:async(uid,input)=>db.runTransaction(async tx=>{
    const {root,group}=await context(tx,input,uid);enabled(group);
    const p=await participants(tx,root,uid,input),scene=content.scenes.find(s=>s.id===input.sceneId);if(!scene)fail('court-invalid-scene');
-   const r=await relation(tx,root,p.actor,p.target,p.actorProfile,p.targetProfile),now=clock();
+   const r=await relation(tx,root,p.actor,p.target,p.actorProfile,p.targetProfile,group),now=clock();
    const ref=root.collection('courtSessions').doc(uid),old=await tx.get(ref);
    if(now-Number(old.data()?.createdAt||0)<2000)fail('court-rate-limit',429);
    const session={token:crypto.randomUUID(),actorId:p.actor.id,targetId:p.target.id,sceneId:scene.id,createdAt:now,expiresAt:now+600000,actorRevision:p.actorProfile.revision,targetRevision:p.targetProfile.revision,result:null};
@@ -84,7 +84,7 @@ module.exports=function createCourtService({db,clock=Date.now}){
    const p=await participants(tx,root,uid,s);
    if(s.result){if(s.choiceId!==input.choiceId)fail('court-stale',409);return s.result;}
    if(clock()>s.expiresAt||s.actorRevision!==p.actorProfile.revision||s.targetRevision!==p.targetProfile.revision)fail('court-stale',409);
-   const r=await relation(tx,root,p.actor,p.target,p.actorProfile,p.targetProfile),scene=content.scenes.find(x=>x.id===s.sceneId);
+   const r=await relation(tx,root,p.actor,p.target,p.actorProfile,p.targetProfile,group),scene=content.scenes.find(x=>x.id===s.sceneId);
    const resolved=content.resolve(scene,input.choiceId,p.targetProfile,r.metrics,r.socialDistance),now=clock();
    const cooldownRef=root.collection('courtCooldowns').doc(pairId(s.actorId,s.targetId)),cooldown=await tx.get(cooldownRef);
    const rewarded=now-Number(cooldown.data()?.at||0)>=3600000&&group.rules?.relationshipChangeMode!=='fixed';

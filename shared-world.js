@@ -1,3 +1,4 @@
+import {courtJobName} from './court-world-ui.js';
 import {ensureHomeCanvas} from './room-layout.js?v=20260909dev305';
 import {sharedCharacterOrder} from './shared-character-order.js';
 import {restoreWardrobe} from './shared-wardrobe.js?v=20260909dev305';
@@ -17,7 +18,7 @@ export function sharedProfile(value){
     return v??null;
   };return clean(value);
 }
-export function buildSharedWorld(snapshot,language='ko'){
+export function buildSharedWorld(snapshot,language='ko',options={}){
   snapshot=withTownEditDraft(snapshot);
   const base=emptyWorld(),group=snapshot.group||{},characters={},homes={},routines={},monthlyRoutines={},characterDirectives={},characterViews={};
   const towns=(group.towns||[]).map(t=>({...base.world,...t,places:t.places||[],decorations:t.decorations||[]}));
@@ -35,6 +36,7 @@ export function buildSharedWorld(snapshot,language='ko'){
     characters[r.id]={...profile,wallet:life.wallet||profile.wallet,gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
       residences:Array.isArray(r.residences)?r.residences.filter(item=>homes[item.homeId]):homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
       wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};
+    if(group.courtTheme==='court'&&!options.editor){characters[r.id].job=courtJobName(profile.courtJob,language);characters[r.id].jobTitle=profile.courtJobTitle||'';}
     if(life.directive)characterDirectives[r.id]=life.directive;
     routines[r.id]=remap(schedule.routines);monthlyRoutines[r.id]=remap(schedule.monthlyRoutines);
   }
@@ -48,7 +50,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
   const activeId=state.activeTab==='routine'&&sharedSelection(snapshot).routineCharacter&&characters[sharedSelection(snapshot).routineCharacter]?sharedSelection(snapshot).routineCharacter:snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
-  return {...base,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
+  return {...base,courtRanks:group.courtRanks,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
     characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
     sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0};
 }
