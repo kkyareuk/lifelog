@@ -1282,10 +1282,14 @@ if(ready){
         if(epoch!==accountEpoch)return;
         const guestHandoff=next?takeGuestHandoff():null;
         window.ParallelCity.switchAccount(next?.uid||null);
-        const targetHadSnapshot=Boolean(localStorage.getItem("drawer-village-game-v1"));
         let adoptedGuest=false;
-        if(guestHandoff&&!targetHadSnapshot&&(window.ParallelCity.getCharacterCount?.()??characterCount(window.ParallelCity.getState()))===0){
-          window.ParallelCity.replaceState(guestHandoff);
+        if(guestHandoff){
+          // An earlier failed login can leave an empty account snapshot. The
+          // explicit guest login intent carries actual data, not just a flag
+          // saying whether the target key exists. Preserve both populated worlds.
+          const accountState=window.ParallelCity.getState();
+          const combined=characterCount(accountState)>0?mergeDeviceAndCloudState(guestHandoff,accountState):guestHandoff;
+          window.ParallelCity.replaceState(combined);
           adoptedGuest=true;
         }
         uploadedCache.clear();mediaEpoch="";

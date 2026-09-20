@@ -190,7 +190,7 @@ export function informationOnlyState(root){
   walk(next);return next;
 }
 
-export function preserveDevicePhotos(deviceState,incomingState){
+export function preserveDevicePhotos(deviceState,incomingState,{onlyMissing=false}={}){
   const next=clone(incomingState);
   const walk=(local,remote)=>{
     if(!local||!remote||typeof local!=="object"||typeof remote!=="object")return;
@@ -208,7 +208,7 @@ export function preserveDevicePhotos(deviceState,incomingState){
       // record still exists.  It must never replace a downloadable cloud URL:
       // after WebView storage loss that used to turn a successful cloud restore
       // back into dozens of unresolved local-media:// placeholders.
-      if(isData(value)||(isLocalRef(value)&&!isData(remote[key])&&!isRemoteImage(remote[key])))remote[key]=value;
+      if((!onlyMissing||!remote[key]||isLocalRef(remote[key]))&&(isData(value)||(isLocalRef(value)&&!isData(remote[key])&&!isRemoteImage(remote[key]))))remote[key]=value;
       else if(value&&typeof value==="object"&&remote[key]&&typeof remote[key]==="object")walk(value,remote[key]);
     });
   };
