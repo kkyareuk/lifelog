@@ -41,4 +41,3 @@ try{
  await member.evaluate(()=>{snap.group.courtTheme='basic';testState.characterSettingsView='hub';draw({quick:true})});assert.equal(await member.locator('#app [data-field=courtJob]').count(),0);assert.ok(await member.locator('#app [data-field=job]').count());
  assert.deepEqual(errors,[]);console.log('PASS464 '+(useWebKit?'WebKit':'Chromium')+': story switch, manager-only ranks, member request and approval, common-list character select, real quick/full editor and court next page, basic story fallback, KO/EN/JA responsive layout.');
 }finally{await browser.close();server.close()}
-

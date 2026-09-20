@@ -35,5 +35,5 @@ try{
  for(const [lang,width]of [['ko',360],['en',390],['ja',768]]){const page=await setup('member',lang,width);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.locator('details').first().locator('summary').click();await page.screenshot({path:resolve(out,lang+'-profile.png'),fullPage:true});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.close()}
  await member.evaluate(async()=>{const {gameLobby}=await import('/plaza-lobby.js?v=20260909dev305');await gameLobby(document.querySelector('#root'),{groups:[{id:'g',name:'Court'}],selected:'g',call:async()=>({games:[]}),current:()=>true,open:()=>{},setup:()=>{},join:()=>{},manage:()=>{}})});
  assert.equal(await member.locator('[data-court-open]').count(),0); // Court belongs to group story settings since 464.
- assert.deepEqual(errors,[]);console.log('PASS Court463 '+(useWebKit?'WebKit':'Chromium')+': host/member separation, two-account consent, real service choices/history, plaza entry/back, KO/EN/JA and mobile/tablet layout.');
+ assert.deepEqual(errors,[]);console.log('PASS Court463 '+(useWebKit?'WebKit':'Chromium')+': host/member separation, two-account consent, real service choices/history, court plaza entry removed, KO/EN/JA and mobile/tablet layout.');
 }finally{await browser.close();server.close()}

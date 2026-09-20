@@ -18,4 +18,4 @@
 
 ## Delivery
 
-Android signed AAB built and verified: 497 prepared web assets match byte-for-byte. SHA256 2AB4F91990D97E4C4F9F50C97A942EF5955785381F88D27EA245FA09F517142B. File C:/Users/Public/drawer-releases/drawervillage-1.0.412-464-internal.aab. sharedTownApi and Firestore rules deployed successfully. Play release343 upload in progress; availability not yet verified.
+Android signed AAB built and verified: 497 prepared web assets match byte-for-byte. SHA256 2AB4F91990D97E4C4F9F50C97A942EF5955785381F88D27EA245FA09F517142B. File C:/Users/Public/drawer-releases/drawervillage-1.0.412-464-internal.aab. sharedTownApi and Firestore rules deployed successfully. Play release343: internal testers available, verified 2026-09-20 16:30 KST. KO/EN/JA notes attached. Only the existing non-obfuscated-build mapping-file warning; no errors. Unauthenticated requestCourtRank returns HTTP401. Implementation c4b8bb99 pushed to origin/dev. Game main and production unchanged.
