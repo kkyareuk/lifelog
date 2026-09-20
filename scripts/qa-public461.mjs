@@ -38,5 +38,11 @@ try{
  console.log('PASS cross-village letter portrait after delayed account fetch without selecting sender village');
  assert.deepEqual(errors,[]);
  await p.screenshot({path:'tmp/qa461-mail.png'});
+ const cid=await p.evaluate(()=>{g.setCharacterBodyChoices(c.id,'appearance.eyeFeatures',['역안']);g.updateCharacter(c.id,{bodyProfile:{...c.bodyProfile,tattoos:[{name:'문신',location:'등',type:'이레즈미'}]}});return c.id});
+ await p.reload();await p.waitForFunction(()=>window.ParallelCity);
+ const body=await p.evaluate(id=>window.ParallelCity.getState().characters[id].bodyProfile,cid);
+ assert.deepEqual(body.appearance.eyeFeatures,['역안']);assert.equal(body.tattoos[0].type,'이레즈미');
+ const viewSource=await readFile('views.js','utf8');assert(viewSource.includes('EYE_FEATURE_OPTIONS=["역안"'));assert(viewSource.includes('TATTOO_TYPE_OPTIONS=["설정하지 않음","이레즈미"'));
+ console.log('PASS existing black sclera and Irezumi choices survive saved reload');
 }finally{await browser.close();server.closeAllConnections();server.close()}
 
