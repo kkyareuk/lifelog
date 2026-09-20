@@ -954,9 +954,11 @@ function normalizeHomes(x){
   return renameBrand(repairProfileInteractionTargets(x));
 }
 function load(){
+  let readError=null;
+  const read=key=>{try{return localStorage.getItem(key)}catch(error){readError=error;return null}};
   const parse=raw=>{try{return raw?replayAnswerDeltas(localStorage,migrate(JSON.parse(raw))):null}catch{return null}};
   const count=value=>Object.keys(value?.characters||{}).length;
-  const primary=parse(localStorage.getItem(KEY));
+  const primary=parse(read(KEY)),primaryReadError=readError;
   if(count(primary)>0||primary?.gameResetAt)return primary;
   // 클라우드의 빈 계정 문서가 기기 데이터를 덮었던 구버전에서 복구한다.
   // 사용자가 실제로 캐릭터를 삭제한 기록이 있으면 오래된 데이터를
@@ -964,13 +966,14 @@ function load(){
   const deliberateDeletes=Array.isArray(primary?.deletedCharacterIds)&&primary.deletedCharacterIds.length>0;
   if(!deliberateDeletes){
     const candidates=[
-      localStorage.getItem(LAST_NONEMPTY_KEY),
-      localStorage.getItem("drawer-village-recovery-before-cloud"),
-      localStorage.getItem("parallel-city-game-v4"),
-      localStorage.getItem("parallel-city-game-v3"),
-      localStorage.getItem(oldKey)
-    ].map(parse).filter(value=>count(value)>0).sort((a,b)=>count(b)-count(a)||Number(b.lastSaved||0)-Number(a.lastSaved||0));
+      read(LAST_NONEMPTY_KEY),
+      read("drawer-village-recovery-before-cloud"),
+      read("parallel-city-game-v4"),
+      read("parallel-city-game-v3"),
+      read(oldKey)
+    ].map(parse).filter(value=>count(value)>0).sort((a,b)=>primaryReadError?Number(b.lastSaved||0)-Number(a.lastSaved||0):count(b)-count(a)||Number(b.lastSaved||0)-Number(a.lastSaved||0));
     if(candidates[0]){
+      if(primaryReadError)localStorage.copyItem(KEY,`drawer-village-unreadable-primary-v1:${Date.now()}`);
       try{
         const recovered=stringifyLocalMediaState(candidates[0]);
         localStorage.setItem(KEY,recovered);
@@ -980,6 +983,8 @@ function load(){
       return candidates[0];
     }
   }
+  // Never silently create/save an empty village over an unreadable saved world.
+  if(!primary&&readError)throw readError;
   return primary||normalizeHomes(fresh());
 }
 
