@@ -1,0 +1,25 @@
+.court-shell { color:#392f38; background:#fffaf1; border:1px solid #c9b79d; border-radius:14px; max-width:680px; margin:auto; padding:16px; }
+.court-heading { display:block; padding:14px 0; border-bottom:1px solid #bfa98b; }
+.court-heading h2 { font-size:1.5rem; margin:12px 0 8px; }
+.court-shell label { display:grid; gap:6px; margin:12px 0; }
+.court-shell select,.court-shell input,.court-shell textarea { box-sizing:border-box; width:100%; min-width:0; font:inherit; padding:10px; border:1px solid #a79885; border-radius:8px; color:#342b35; background:#fffdf8; }
+.court-card { margin:16px 0; padding:16px; border:1px solid #c9b79d; border-radius:14px; background:var(--panel,#fffaf1); }
+.court-card summary { cursor:pointer; font-weight:700; padding:4px 0; }
+.court-shell form { display:grid; gap:10px; align-items:stretch; margin:14px 0; }
+.court-shell button { min-height:44px; padding:10px 14px; border:1px solid #ab9779; border-radius:10px; background:#f6ecda; color:#392d3c; font:inherit; cursor:pointer; overflow-wrap:anywhere; }
+.court-shell button:disabled { opacity:.55; cursor:wait; }
+.court-shell button:focus-visible,.court-shell summary:focus-visible { outline:3px solid #775391; outline-offset:3px; }
+.court-fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0 12px; }
+.court-shell .court-check { display:flex; align-items:flex-start; gap:10px; }
+.court-check input { width:20px; height:20px; flex-shrink:0; margin-top:2px; }
+.court-note,.court-shell small { font-size:.85rem; line-height:1.6; }
+.court-scenes,.court-choices { display:grid; gap:10px; margin:16px 0; }
+.court-scenes button,.court-choices button { display:grid; gap:5px; text-align:start; }
+.court-dialogue blockquote { margin:16px 0; padding:16px; border-left:3px solid #a78bba; background:#efe7f3; color:#392d3c; }
+.court-dialogue>small { display:block; margin-top:16px; }
+.court-meters label { display:grid; grid-template-columns:minmax(90px,1fr) minmax(40px,1fr) auto; gap:10px; align-items:center; font-size:.85rem; }
+.court-meters meter { width:100%; min-width:0; }
+.court-meters b { min-width:30px; text-align:end; }
+.court-distance { padding-top:10px; border-top:1px dashed #bfa98b; }
+.court-history { padding:12px 0; border-bottom:1px solid #d8cbb9; }
+.court-shell p,.court-shell blockquote { overflow-wrap:anywhere; white-space:pre-wrap; line-height:1.65; }

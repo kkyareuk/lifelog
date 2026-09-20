@@ -1,0 +1,57 @@
+const assert=require('node:assert/strict');
+const fixture=require('./court-fixture.cjs');
+const c=require('../functions/court-content');
+async function main(){
+ const {data,db,tick,service:s}=fixture();
+ const input={groupId:'g',actorId:'a',targetId:'b',sceneId:'rest'};
+ await assert.rejects(s.readCourt('outsider',input),e=>e.status===403);
+ await assert.rejects(s.saveCourtTheme('member',{...input,theme:'basic'}),e=>e.status===403);
+ await assert.rejects(s.saveCourtProfile('member',{...input,characterId:'b',profile:{}}),e=>e.status===403);
+ await assert.rejects(s.beginCourtDialogue('other',input),e=>e.status===403);
+ let start=await s.beginCourtDialogue('member',input);
+ assert.equal(start.socialDistance,0);
+ assert.equal(start.scene.choices.length,3);assert.equal(start.scene.choices[0].effect,undefined);
+ await assert.rejects(s.chooseCourtDialogue('member',{...input,token:start.token,choiceId:'injected',metrics:{trust:100}}),e=>e.status===400);
+ let result=await s.chooseCourtDialogue('member',{...input,token:start.token,choiceId:'ask',metrics:{trust:100}});
+ assert.equal(result.metrics.trust,10);assert.equal(result.delta.comfort,-2);
+ const retries=await Promise.all(Array.from({length:5},()=>s.chooseCourtDialogue('member',{...input,token:start.token,choiceId:'ask'})));
+ retries.forEach(r=>assert.deepEqual(r,result));assert.equal(data.get('groups/g/courtJournals/member').entries.length,1);
+ await assert.rejects(s.chooseCourtDialogue('member',{...input,token:start.token,choiceId:'quiet'}),e=>e.status===409);
+ assert.equal((await s.readCourt('other',input)).history.length,0);
+ tick(3000);start=await s.beginCourtDialogue('member',input);
+ result=await s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'});
+ assert.equal(result.rewarded,false);assert.equal(result.socialDistance,0);
+ tick(3600000);start=await s.beginCourtDialogue('member',input);
+ result=await s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'});
+ assert.equal(result.rewarded,true);assert.equal(result.delta.comfort,4);
+ data.set('users/member/safety/settings',{blocked:[{uid:'other'}]});
+ await assert.rejects(s.beginCourtDialogue('member',input),e=>e.status===403);data.delete('users/member/safety/settings');
+ const p=data.get('groups/g/courtProfiles/b');
+ await s.saveCourtProfile('other',{groupId:'g',characterId:'b',revision:1,profile:{...p,enabled:false}});
+ await assert.rejects(s.beginCourtDialogue('member',input),e=>e.status===409);
+ await assert.rejects(s.saveCourtProfile('other',{groupId:'g',characterId:'b',revision:1,profile:p}),e=>e.status===409);
+ await s.saveCourtProfile('other',{groupId:'g',characterId:'b',revision:2,profile:p});
+ tick(3000);start=await s.beginCourtDialogue('member',input);tick(600001);
+ await assert.rejects(s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'}),e=>e.status===409);
+ tick(3000);start=await s.beginCourtDialogue('member',input);
+ await s.saveCourtProfile('other',{groupId:'g',characterId:'b',revision:3,profile:{...p,trait:'honesty'}});
+ await assert.rejects(s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'}),e=>e.status===409);
+ await assert.rejects(s.saveCourtDistance('member',{...input,distance:90}),e=>e.status===403);
+ await s.saveCourtDistance('manager',{...input,distance:90});
+ tick(3600000);start=await s.beginCourtDialogue('member',{...input,sceneId:'greeting'});
+ result=await s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'welcome'});
+ assert.equal(result.socialDistance,90);assert.deepEqual(result.response,c.responses.publicBarrier);
+ data.get('groups/g').rules.relationshipChangeMode='fixed';tick(3600000);
+ start=await s.beginCourtDialogue('member',input);result=await s.chooseCourtDialogue('member',{groupId:'g',token:start.token,choiceId:'quiet'});assert.equal(result.rewarded,false);
+ await s.saveCourtTheme('host',{groupId:'g',theme:'basic'});await assert.rejects(s.beginCourtDialogue('member',input),e=>e.status===409);
+ const {socialDistance,relationMetrics,changeRelationMetrics}=await import('../relationship-metrics.js');
+ for(const roleA of Object.keys(c.roles))for(const roleB of Object.keys(c.roles))for(const factionA of Object.keys(c.factions))for(const factionB of Object.keys(c.factions)){
+  const a={id:'a',role:roleA,faction:factionA},b={id:'b',role:roleB,faction:factionB};assert.equal(socialDistance({courtProfiles:[a,b]},'a','b'),c.distance(a,b));
+ }
+ const world={courtTheme:'court',courtPairs:[{members:['a','b'],distance:90}],characterViews:{b:{a:{courtMetrics:{closeness:80,affection:70,trust:60,comfort:50,tension:0}}}}};
+ const m=relationMetrics(world,'a','b');assert.equal(m.trust,60);assert.equal(m.socialDistance,90);assert.equal(changeRelationMetrics(m,'fight',-1).socialDistance,90);assert.notEqual(relationMetrics(world,'b','a').trust,60);
+ const reset=require('../functions/shared-relations').createService({db,clock:()=>1});await reset.saveView('other',{groupId:'g',sourceId:'b',targetId:'a',reset:true});assert.ok(JSON.parse(data.get('groups/g/perceptions/b~a').viewJson).courtMetrics);
+ let count=0;const walk=v=>{if(!v||typeof v!=='object')return;if('ko'in v){for(const lang of ['ko','en','ja'])assert.ok(typeof v[lang]==='string'&&v[lang].length);count++;}else Object.values(v).forEach(walk)};walk([c.roles,c.factions,c.traits,c.scenes,c.responses]);
+ console.log(`Court463 passed: ownership, consent, blocking, stale/expired sessions, idempotency, cooldown, fixed mode, directional metrics, 324 distance combinations, ${count} translated content entries.`);
+}
+main().catch(e=>{console.error(e);process.exitCode=1});

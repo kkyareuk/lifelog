@@ -73,7 +73,7 @@ function createService({db,clock=Date.now,engine}){
       let view={};try{view=JSON.parse(old.data()?.viewJson||'{}')}catch{}
       const value=bounded(input.value??input.overall,300);
       if(field==='touchIntensity'&&value==='성인 간 친밀한 접촉까지'&&[a,b].some(r=>{try{return ['영아','유아','어린이','청소년'].includes(JSON.parse(r.data().profileJson||'{}').ageGroup)}catch{return true}}))fail('adult-characters-required');
-      if(input.reset)view={};else view[field]=value;
+      if(input.reset)view=view.courtMetrics?{courtMetrics:view.courtMetrics}:{};else view[field]=value;
       tx.update(root,{lifeUpdatedAt:0});
       tx.set(ref,{sourceId:a.id,targetId:b.id,viewJson:JSON.stringify(view),updatedAt:clock()});return {saved:true};
     });

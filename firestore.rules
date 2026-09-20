@@ -149,6 +149,8 @@ service cloud.firestore {
       match /catalog/{id} {
         allow read: if hasGroupMembership(groupId);
       }
+      match /courtProfiles/{id} { allow read: if hasGroupMembership(groupId); }
+      match /courtPairs/{id} { allow read: if hasGroupMembership(groupId); }
       match /perceptions/{id} {
         allow read: if hasGroupMembership(groupId);
       }

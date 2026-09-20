@@ -34,7 +34,7 @@ for(const asset of gameWebp.assets){
  if(!useGameWebp||excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
 }
 const includedFiles=new Set(["apple-login.js","apple-login.css","title-screen.css",
-  "character-money.css","building-interior.css","home-canvas.css","banner-ads.css","diamond-shop.css","diamond-shop.js",
+  "court.css","character-money.css","building-interior.css","home-canvas.css","banner-ads.css","diamond-shop.css","diamond-shop.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css","home-editor-position.css",
   "index.html","intro-tour.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
