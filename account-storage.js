@@ -33,16 +33,18 @@ export function createAccountStorage(storage,encode=encodeSnapshot,persistent=nu
   const key=name=>scope==="guest"?name:`drawer-account:${encodeURIComponent(scope)}:${name}`;
   const revisions=new Map(),decoded=new Map();
   const changed=target=>{const revision=(revisions.get(target)||0)+1;revisions.set(target,revision);return revision};
+  const read=(target,name)=>{
+    const stored=storage.getItem(target),raw=stored?.startsWith(SNAPSHOT_REF)?persistent?.get(stored):stored;
+    if(stored?.startsWith(SNAPSHOT_REF)&&raw==null)throw Error('Saved snapshot is unavailable');
+    if(decoded.get(target)?.raw===raw)return decoded.get(target).value;
+    try{const value=isSnapshot(name)?unpack(raw):raw;if(isSnapshot(name))decoded.set(target,{raw,value});return value}catch{return raw}
+  };
   return {
     get scope(){return scope},
-    getItem:name=>{
-      const target=key(name),stored=storage.getItem(target),raw=stored?.startsWith(SNAPSHOT_REF)?persistent?.get(stored):stored;
-      if(stored?.startsWith(SNAPSHOT_REF)&&raw==null)throw Error('Saved snapshot is unavailable');
-      if(decoded.get(target)?.raw===raw)return decoded.get(target).value;
-      // Leave malformed snapshots intact for recovery; the state loader can
-      // reject their non-JSON contents and try another existing recovery copy.
-      try{const value=isSnapshot(name)?unpack(raw):raw;if(isSnapshot(name))decoded.set(target,{raw,value});return value}catch{return raw}
-    },
+    getItem:name=>read(key(name),name),
+    // Only an explicit file restore uses the guest recovery donor. Do not
+    // switch scopes, flush saves, or search any other signed-in account.
+    getGuestSnapshot:name=>{if(!snapshots.has(name))throw Error('Invalid guest snapshot key');return read(name,name)},
     setItem:(name,value)=>{
       const target=key(name),raw=String(value),previous=storage.getItem(key(name));
       changed(target);
