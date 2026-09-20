@@ -1,7 +1,6 @@
 import {runBackgroundAction} from './background-actions.js?v=20260909dev305';
 import {state,save} from './state.js?v=20260909dev305';
 const copy=()=>({ko:['유저 프로필','어떻게 불러드릴까요?','프로필 사진','저장','나중에','멀티 구성원에게 이 이름과 사진이 표시돼요.','저장 중…'],en:['User profile','What should we call you?','Profile photo','Save','Later','Group members will see this name and photo.','Saving…'],ja:['ユーザープロフィール','何とお呼びしましょうか？','プロフィール写真','保存','あとで','グループのメンバーにこの名前と写真が表示されます。','保存中…']}[["ko","en","ja"].includes(state.uiLanguage)?state.uiLanguage:"ko"]);
-let promptedUid='';
 export function openUserProfile(){
  if(document.querySelector('[data-user-profile-dialog]'))return;
  const auth=window.ParallelCityAuth,info=auth?.getInfo?.();if(!info?.user){auth?.login?.();return}
@@ -17,4 +16,5 @@ export function openUserProfile(){
  d.onclose=()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);d.remove()};d.showModal();
 }
 document.addEventListener('click',e=>{if(e.target.closest('[data-user-profile]'))openUserProfile()});
-window.addEventListener('drawer-village-auth-busy',()=>{const info=window.ParallelCityAuth?.getInfo?.();if(!info?.user||info.busy||!info.ready||info.profileSetupComplete||promptedUid===info.user.uid)return;promptedUid=info.user.uid;openUserProfile()});
+// Profile editing is an explicit Settings action. Signing in already supplies
+// identity information and must never prompt for a second registration step.

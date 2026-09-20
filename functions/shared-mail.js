@@ -21,6 +21,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  const key=id(input.requestId),ref=root.collection('mail').doc(key),old=await tx.get(ref);if(old.exists){if(old.data().senderUid!==uid)fail('request-id-conflict',409);return {id:key}}
  const targetId=id(input.targetId),sourceId=input.sourceId?id(input.sourceId):'',[target,source]=await Promise.all([tx.get(root.collection('residents').doc(targetId)),sourceId?tx.get(root.collection('residents').doc(sourceId)):null]);
  if(!target.exists||sourceId&&(!source?.exists||source.data().ownerUid!==uid||sourceId===targetId))fail('character-owner-required',403);
+ const senderPhoto=sourceId?require('./mail-portrait')(source.data()):member.photoURL||'';
  if(sent.length>=30)fail('mail-rate-limit',429);
  const recipientUid=target.data().ownerUid,recipient=await tx.get(root.collection('members').doc(recipientUid));if(!recipient.exists)fail('recipient-left-group',409);
  await require('./user-safety').allowContact(db,tx,uid,recipientUid);
@@ -28,7 +29,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  if(input.gift&&recipientUid!==uid&&input.giftWorkflow===2){
   if(group.rules?.allowGifts===false)fail('gifts-disabled',403);
   const pendingGift=require('./mail-gift-receipts').giftValue(input.gift,source?.data().name||member.displayName||'Village owner'),commitGift=await require('./mail-gift-receipts').reserve(db,tx,uid,clock());
-  reserve();commitGift();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
+  reserve();commitGift();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
   notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
  }
  let gift=null,catalogRef,catalogItems,profile;
@@ -36,7 +37,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
   catalogRef=root.collection('catalog').doc(kind);const catalog=await tx.get(catalogRef);catalogItems=catalog.exists?catalog.data().items||[]:[];const itemId=id(item.id),existing=catalogItems.find(i=>i.id===itemId);const value=existing||{id:itemId,name:item.name.slice(0,80),image:/^https:\/\//.test(item.image||'')?item.image.slice(0,2000):''};if(!existing){const allCatalog=await tx.get(root.collection('catalog'));if(allCatalog.docs.reduce((n,d)=>n+(d.data().items||[]).length,0)>=80)fail('catalog-limit',409);catalogItems=[...catalogItems,value]}gift={kind,item:value};try{profile=JSON.parse(target.data().profileJson||'{}')}catch{fail('invalid-profile')};profile.inventory??={};profile.inventory[kind]=Array.isArray(profile.inventory[kind])?profile.inventory[kind]:[];if(kind==='fashion'&&!profile.inventory[kind].includes(itemId)&&profile.inventory[kind].length>=30)fail('wardrobe-limit',409);if(!profile.inventory[kind].includes(itemId))profile.inventory[kind].push(itemId);if(kind==='fashion'){profile.wardrobeItems=Array.isArray(profile.wardrobeItems)?profile.wardrobeItems:[];if(!profile.wardrobeItems.some(i=>i.id===itemId))profile.wardrobeItems.push({...value,ownerId:targetId});}
  }
  let giftLives=[];if(gift&&source&&engine){const homes=await tx.get(root.collection("homes")),allResidents=await affectedResidents(tx,root,source,target,sourceId,targetId),advance=await engine();giftLives=advance({group:{id:root.id,...group},residents:allResidents.map(d=>({...d,...(d.id===targetId?{profileJson:JSON.stringify(profile)}:{})})),homes:homes.docs.map(d=>({id:d.id,...d.data()})),catalog:[{id:gift.kind,items:catalogItems}]},clock(),{characterId:sourceId,targetId,kind:"gift",positions:input.positions,topic:gift.item.name,itemId:gift.item.id,itemKind:gift.kind})}
- const value={senderUid:uid,recipientUid,sourceId,targetId,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift,createdAt:clock()};
+ const value={senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift,createdAt:clock()};
  reserve();if(gift){tx.set(catalogRef,{items:catalogItems},{merge:true});tx.update(root.collection('residents').doc(targetId),{profileJson:JSON.stringify(profile),updatedAt:clock()});tx.update(root,{lifeUpdatedAt:0})}
  for(const life of giftLives)tx.update(root.collection("residents").doc(life.id),{lifeJson:life.lifeJson});
  tx.create(ref,value);if(recipientUid!==uid)notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};

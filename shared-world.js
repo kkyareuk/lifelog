@@ -43,6 +43,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   // Room ownership references must use group resident IDs, not personal IDs.
   for(const h of Object.values(homes))for(const room of Object.values(h.rooms||{})){
     for(const key of ['ownerCharacterIds','ownerIds','characterIds','accessCharacterIds','allowedCharacterIds'])if(Array.isArray(room[key]))room[key]=room[key].map(id=>(snapshot.residents||[]).find(r=>r.ownerUid===h.ownerUid&&r.sourceCharacterId===id)?.id||id);
+    for(const furniture of room.furniturePlacements||[])if(Array.isArray(furniture.assignedCharacterIds))furniture.assignedCharacterIds=furniture.assignedCharacterIds.map(id=>(snapshot.residents||[]).find(r=>r.ownerUid===h.ownerUid&&r.sourceCharacterId===id)?.id||id);
   }
   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
