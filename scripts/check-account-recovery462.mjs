@@ -1,6 +1,8 @@
-import {uniqueManifestImages,photoManifestForState} from '../cloud-image-manifest.js';
-import {imageSourceHash,reusableImage,retainImage} from '../cloud-image-identity.js';
-import {needsCompressedCloudState,cloudDocumentLimitError} from '../cloud-document-shape.js';
+// Older public-web main does not import the newer cloud media helpers.
+const optional=async path=>fs.existsSync(new URL(path,import.meta.url))?import(path):{};
+const {uniqueManifestImages,photoManifestForState}=await optional('../cloud-image-manifest.js');
+const {imageSourceHash,reusableImage,retainImage}=await optional('../cloud-image-identity.js');
+const {needsCompressedCloudState,cloudDocumentLimitError}=await optional('../cloud-document-shape.js');
 import {accountIdentity} from "../account-identity.js";
 import {bootstrapAuth} from '../auth-bootstrap.js';
 import {mapConcurrent} from '../bounded-work.js';
