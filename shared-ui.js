@@ -20,11 +20,11 @@ const town=s=>s.group.towns?.find(t=>t.id===s.selectedTownId)||s.group.towns?.[0
 let serial=Promise.resolve();
 function enqueue(run,toast){const next=serial.then(run);serial=next.catch(e=>toast(e.code==='groups/edit-conflict'?'다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.':e.message||e.code||'저장하지 못했어요'));return next.catch(()=>false)}
 function applyTown(s,result){if(result.town&&activeShared()?.activeGroupId===s.activeGroupId){const current=snapshot();current.group.towns=current.group.towns.map(t=>t.id===result.town.id?result.town:t);current.group.buildingRevision=result.revision}}
-export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPanel,setPlacement,openMap,openShape,openRelation,openGroup,openRoutine,openMonthly,newRoutine,newMonthly}){
+export function bindSharedUi({prepareImage,bindRoomGeometry,render,toast:notify,setMode,setPanel,setPlacement,openMap,openShape,openRelation,openGroup,openRoutine,openMonthly,newRoutine,newMonthly}){
  const toast=value=>notify(value==='character-slot-required'?residentText('남은 캐릭터 슬롯이 없어요.','No character slots available.','空きキャラクタースロットがありません。'):value==='resident-limit'?residentText('이 그룹의 캐릭터 정원에 도달했어요.','This group’s character limit has been reached.','このグループのキャラクター上限に達しました。'):tr(value));
  const s=activeShared();if(!s)return;const root=document.querySelector('.relationship-page,.mobile-town-shell,.home-page,.routine-shell');if(!root)return;
  const removeSharedHome=root.matches('.home-page')?null:bindSharedHomeDeletion(root,s,render,toast);
- if(root.matches('.home-page'))bindSharedHome(root,s,render,toast,bindRoomGeometry);
+ if(root.matches('.home-page'))bindSharedHome(root,s,render,toast,bindRoomGeometry,null,prepareImage);
  if(root.matches('.mobile-town-shell')&&townEditDraft(s)){const cancel=document.createElement('button');cancel.type='button';cancel.disabled=!!townEditDraft(s).saving;cancel.className='home-native-pill';cancel.innerHTML='<span>'+residentText('편집 취소','Cancel edits','編集を取り消す')+'</span>';cancel.onclick=()=>{if(!discardTownEdit(s))return;setMode('');setPlacement();render()};root.querySelector('[data-mobile-town-decoration-mode]')?.parentElement.append(cancel)}
  const select=sharedSelection(s),owned=id=>canEditShared(s)||s.residents?.find(r=>r.id===id)?.ownerUid===uid();
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};

@@ -101,7 +101,7 @@ import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMe
 import {SPEECH_STYLE_OPTIONS,bindSpeechStylePickers,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev305";
 import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260909dev305";
 import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260909dev305";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260909dev305";
+import {sharedImageSession} from './shared-home-photo.js';
 import {normalizeRoomLayout,snapRoomLayout,homeGrid} from "./room-layout.js?v=20260909dev305";
 import {installDirectSteps} from './direct-steps.js?v=20260909dev305';
 import {furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition} from "./furniture-layout.js?v=20260909dev305";
@@ -535,6 +535,7 @@ function openOutfitEditor(outfitId=""){
   document.body.append(dialog);dialog.showModal();
 }
 function openBuildingShapeDialog(targetId,targetKind="place",sharedSave){
+  const imageSession=sharedSave?sharedImageSession():null,targetWorld=state;
   const returnHomeInfo=Boolean(document.querySelector('.home-design-info.open'));
   const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
   const buildingType=isHome?"집":target.type;
@@ -548,10 +549,10 @@ function openBuildingShapeDialog(targetId,targetKind="place",sharedSave){
   photo.querySelector('input').onchange=async event=>{
     const file=event.target.files?.[0];if(!file)return;event.target.disabled=true;
     try{const data=await prepareLargeArt(file);if(!data)return;
-      if(sharedSave){const blob=await(await fetch(data)).blob();const url=await groupApi.uploadHomeMemberImage(blob);const result=await sharedSave({[isHome?'exteriorImage':'image']:url});if(result===false)return;}
-      else await applyImage(isHome?'homeExterior':'place',targetId,'',data);
+      if(sharedSave){const url=await imageSession.upload(data);if(!dialog.isConnected)return;const result=await sharedSave({[isHome?'exteriorImage':'image']:url});if(result===false)return;}
+      else await applyImage(isHome?'homeExterior':'place',targetId,'',data,targetWorld);
       dialog.close();render();showToast(({ko:'건물 사진을 바꿨어요.',en:'Building image updated.',ja:'建物画像を変更しました。'}[state.uiLanguage]));
-    }catch(error){showToast(({ko:'사진을 저장하지 못했어요. 다시 시도해 주세요.',en:'Could not save the image. Please try again.',ja:'画像を保存できませんでした。もう一度お試しください。'}[state.uiLanguage]));}finally{event.target.disabled=false;event.target.value='';}
+    }catch(error){console.error('Building image save failed',error);showToast(({ko:'사진을 저장하지 못했어요. 다시 시도해 주세요.',en:'Could not save the image. Please try again.',ja:'画像を保存できませんでした。もう一度お試しください。'}[state.uiLanguage]));}finally{event.target.disabled=false;event.target.value='';}
   };
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
@@ -4581,7 +4582,7 @@ function bind(){
   bindMailbox(render,showToast);
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindCharacterMoney();
-  bindSharedUi({bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
+  bindSharedUi({prepareImage:cropImage,bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
 async function applyImage(type,id,room,data,targetWorld=state){
