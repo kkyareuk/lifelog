@@ -1,4 +1,5 @@
 import {bindHomeCanvas} from './home-canvas.js';
+import {addSharedRoomPhotos} from './shared-home-photo.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
@@ -10,7 +11,7 @@ import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev305';
 import {mt} from './mailbox-center.js?v=20260909dev305';
 import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev305';
 const queues=new Map();
-export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
+export function bindSharedHome(root,s,render,toast,bindRoomGeometry,prepareImage){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=uid+':'+s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
@@ -61,6 +62,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
 
  function dialog(title,exitEdit=false){const d=document.createElement('dialog');d.className='mail-reader shared-home-dialog';const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.textContent=mt('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>{if(exitEdit)selection.homeEditMode=false;d.remove();render()};document.body.append(d);d.showModal();return d}
  function roomDialog(roomKey){const room=home.rooms[roomKey];if(!room)return;const d=dialog(mt('방 편집','Edit room','部屋の編集'),true);for(const [key,label,type] of [['name',mt('방 이름','Room name','部屋名'),'text'],['floor',mt('층','Floor','階'),'number']]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type=type;input.value=room[key]||1;if(type==='number'){input.min=1;input.max=home.floorCount||1}input.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[key]:type==='number'?Math.max(1,Math.min(home.floorCount||1,Number(input.value))):input.value}));l.append(input);d.append(l)}const choose=(field,label,values)=>{const l=document.createElement('label');l.textContent=label;const select=document.createElement('select');for(const [value,ko,en,ja] of values){const o=document.createElement('option');o.value=value;o.textContent=mt(ko,en,ja);select.append(o)}select.name=field;select.value=room[field]||values[0][0];select.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[field]:select.value}));l.append(select);d.append(l);if(['wallMaterial','floorMaterial'].includes(field))bindRoomSurfacePicker(select,{room,language:state.uiLanguage})};
+ if(prepareImage)addSharedRoomPhotos(d,{room,prepareImage,language:state.uiLanguage,toast,apply:async patch=>{Object.assign(room,patch);await commit()}});
  choose('type',mt('방 유형','Room type','部屋の種類'),[['living','거실','Living room','リビング'],['bedroom','침실','Bedroom','寝室'],['kitchen','주방','Kitchen','キッチン'],['bath','욕실','Bathroom','浴室'],['study','서재','Study','書斎'],['balcony','발코니','Balcony','バルコニー']]);
  choose('accessMode',mt('출입 허용','Access','入室許可'),[['everyone','모두','Everyone','全員'],['owners','방 주인만','Owners only','部屋の持ち主のみ']]);
  choose('wallMaterial',mt('벽지','Wallpaper','壁紙'),[['cream-panel','크림 몰딩 벽','Cream panel','クリームの壁'],['cream-plain','크림 벽','Cream wall','クリームの壁'],['stone-panel','석재 벽','Stone wall','石の壁'],['taupe-panel','토프 몰딩 벽','Taupe panel','トープの壁'],['sky-tile','하늘색 타일','Sky tile','空色タイル'],['navy-tile','남색 타일','Navy tile','紺色タイル'],['amber-tile','호박색 타일','Amber tile','琥珀色タイル']]);
