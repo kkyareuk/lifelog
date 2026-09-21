@@ -42,7 +42,7 @@ export function bindFurnitureEditor(root,{state,updateFurniturePlacement,moveFur
   let selected=null;
   const positionToolbar=()=>{
     if(!selected?.isConnected||toolbar.hidden)return;
-    toolbar.style.removeProperty('top');toolbar.style.removeProperty('bottom');
+    if(!toolbar.closest('.home-editor-dock')){toolbar.style.removeProperty('top');toolbar.style.removeProperty('bottom');}
 
   };
   root?.addEventListener('scroll',positionToolbar,true);

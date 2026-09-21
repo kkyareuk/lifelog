@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {advanceHomeLifeSimulation} from '../home-simulation.js';
+const now=1800000000000,ctx=id=>({scene:{room:'kitchen',title:'아침 식사',minute:480},sceneKey:id,animateMovement:false});
+const home={rooms:{kitchen:{furniturePlacements:[{id:'table',item:'식탁',x:50,y:50}]}}};
+let result=advanceHomeLifeSimulation(home,['a'],{a:ctx('a')},now);assert.equal(result.simulation.agents.a.furnitureId,'table');
+home.rooms.kitchen.furniturePlacements.push({id:'seat',item:'의자',x:50,y:60,tableId:'table'});
+result=advanceHomeLifeSimulation(home,['a','b'],{a:ctx('a'),b:ctx('b')},now);
+assert.equal(Object.values(result.simulation.agents).filter(a=>a.furnitureId==='seat').length,1);
+assert.equal(Object.values(result.simulation.agents).filter(a=>a.furnitureId==='table').length,0);
+home.lifeSimulation=result.simulation;result=advanceHomeLifeSimulation(home,['a','b'],{a:ctx('a'),b:ctx('b')},now+5000);
+assert.equal(Object.values(result.simulation.agents).filter(a=>a.furnitureId==='seat').length,1);
+console.log('PASS table without chairs, occupied attached chair, repeated simulation');

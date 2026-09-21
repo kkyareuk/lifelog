@@ -26,7 +26,7 @@ export function positionBedOccupants(root){
     person.style.removeProperty('left');person.style.removeProperty('top');
     person.style.setProperty('--life-x',`${lifeX}px`);
     person.style.setProperty('--life-y',`${lifeY}px`);
-    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(12,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(10,Math.min(underCover?64:56,paintedWidth*(bed.dataset.bedSingle==='true'?.56:underCover?.30:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(12,Math.min(56,paintedHeight*.36*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(10,Math.min(underCover?76:56,paintedWidth*(bed.dataset.bedSingle==='true'?.68:underCover?.38:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
     person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{
