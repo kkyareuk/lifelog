@@ -2003,7 +2003,7 @@ export function wardrobeCount(characterId){const ids=new Set(state.characters[ch
 export function addCatalogItem(kind,data){
   if(kind==="fashion"&&data?.ownerId&&wardrobeCount(data.ownerId)>=30)return null;
   if(!state.catalog[kind])state.catalog[kind]=[];
-  if(!(kind==="fashion"&&data?.ownerId)&&Object.entries(state.catalog).reduce((n,[k,items])=>n+items.filter(item=>k!=="fashion"||!item.ownerId).length,0)>=80)return null;
+  if(!(kind==="fashion"&&data?.ownerId)&&Object.entries(state.catalog).reduce((n,[k,items])=>n+items.filter(item=>k!=="fashion"||!item.ownerId).length,0)>=100)return null;
   const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",createdAt:Date.now(),userCreated:true,...data};
   state.catalog[kind].push(item);if(kind==="fashion"&&state.characters[data?.ownerId]){const c=state.characters[data.ownerId];c.inventory??={};c.inventory.fashion=[...new Set([...(c.inventory.fashion||[]),item.id])];}save(true);return item.id;
 }

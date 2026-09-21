@@ -18,7 +18,7 @@ export const creativeCopy=[
  ["조부모·손자녀","Grandparent and grandchild","祖父母と孫"],["친척","Relatives","親戚"],["그 외 가족","Other family","その他の家族"],["보호자·피보호자","Guardian and dependent","保護者と被保護者"],["같은 가문","Same family line","同じ一族"],["선택한 가족","Chosen family","選んだ家族"],
  ["나의 역할·호칭","My role / title","自分の役割・呼称"],["상대의 역할·호칭","Their role / title","相手の役割・呼称"],["혈연·법적 관계와 별개로 역할을 적을 수 있고, 같은 두 사람에게 여러 관계를 함께 설정할 수 있어요.","Roles can differ from biological or legal ties. The same pair can have multiple relationships.","血縁や法的関係とは別に役割を記入でき、同じ二人に複数の関係を設定できます。"],
  ["소다","Soda","ソーダ"],["모히토","Mojito","モヒート"],["무알코올 모히토","Alcohol-free mojito","ノンアルコールモヒート"],["에이드","Fruit ade","フルーツエード"],["스무디","Smoothie","スムージー"],
- ["사전은 항목 종류마다 80개까지 추가할 수 있어요.","Each dictionary category can contain up to 80 items.","辞典は種類ごとに80件まで追加できます。"]
+ ["사전은 전체 100개까지 추가할 수 있어요.","The dictionary can contain up to 100 items in total.","辞典は合計100件まで追加できます。"]
 ];
 export function careRoutineFor(character,date,world){
  const profile=character.bodyProfile||{},stored=profile.carePlan||{},weekdays=["월","화","수","목","금"];
