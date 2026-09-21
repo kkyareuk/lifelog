@@ -168,7 +168,10 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
     // Select actual seats for dining and screen viewing, not the tabletop/TV.
     const diningTables=candidates.filter(item=>item.item==='식탁');
-    if(diningTables.length)candidates=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&diningTables.some(table=>item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
+    if(diningTables.length)candidates=diningTables.flatMap(table=>{
+      const chairs=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&(item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
+      return chairs.length?chairs:[table];
+    }).filter((item,index,all)=>all.findIndex(other=>other.id===item.id)===index);
     const watching=/TV|홈시어터|프로젝터|빔프로젝터/.test(candidates[0]?.item||'');
     const sofas=placements.filter(item=>item.roomKey===roomKey&&item.item==='소파'&&(occupied.get(item.id)||0)<2);
     const resting=/쉬|휴식|relax|resting|休む|休ん/.test(scene.title||'');

@@ -1554,7 +1554,7 @@ function prepareActiveHomeLife(now=new Date()){
     // 제목을 sceneKey에 넣으면 화면 재진입 때마다 새 행동으로 오인해 두 사람이
     // 다시 서로에게 달려가는 문제가 생기므로 안정적인 interactionId를 쓴다.
     const sceneKey=interactionId?`interaction:${interactionId}`:`${sceneMinute}:${scene.title||""}:${scene.room||""}:${scene.withId||""}`;
-    contexts[characterId]={blockedFurnitureIds:[...document.querySelectorAll("[data-seat-unavailable]")].filter(el=>el.dataset.homeId===homeId).map(el=>el.dataset.furniturePlacement),scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey,interactionId,partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000,animateMovement};
+    contexts[characterId]={scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey,interactionId,partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000,animateMovement};
     return true;
   });
   return advanceHomeLifeSimulation(homeId,characterIds,contexts,now.getTime(),true);
