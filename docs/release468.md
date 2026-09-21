@@ -26,7 +26,7 @@
 - 정적 전체 번역 EN2260/2988(75.6%), JA2259/2988(75.6%). 새 소재18개와 연결문구는 한영일100%.
 
 ## 배포
-- Play 내부468 업로드 진행. 최종 제공 여부는 아래 기록.
+- Play 내부 release347: 2026-09-21 16:02 KST 내부 테스터에게 제공됨 확인. 소스 c3ef69b0, origin/dev 반영 완료.
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.416-468-internal.aab
 - SHA256: D5AD04BEFC82FAAA00DE478791E57AAE2DDCE614F89AE0DE710B7D89A3B3E201
 
