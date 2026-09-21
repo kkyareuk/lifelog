@@ -1,3 +1,4 @@
+import {finishCoffee} from './coffee-crafting.js';
 import {recentNarrativeEntries,pickHomeNarrative,homeNarrativeKey,mayFollowUp} from './narrative-selection.js';
 import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
 import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
@@ -4817,6 +4818,7 @@ function sharedFurnitureScene(c,current,date){
 }
 export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{
+    if(Math.abs(Date.now()-date.getTime())<60000&&finishCoffee(state,c,date.getTime()))save(false,false);
     automaticViewExpression(c,date);
     privateLifeEvent(c,date);
     const current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);

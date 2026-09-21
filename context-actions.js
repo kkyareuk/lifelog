@@ -1,3 +1,4 @@
+import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
 import {placeActions} from './place-activities.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {relationMetrics} from './relationship-metrics.js';
@@ -12,6 +13,7 @@ export function contextActions(target){
  {kind:'talk',label:label('대화하기','Talk','話す')},{kind:'hug',label:label('포옹하기','Hug','抱きしめる')},{kind:'debate',label:label('토론하기','Discuss','議論する')},{kind:'hangout',label:label('함께 시간 보내기','Spend time together','一緒に過ごす')}];
  if(target.type==='place')return placeActions(target.place);
  const item=target.item||'';
+ if(isCoffeeMachine(item))return [...COFFEE_TASKS.map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),{kind:'chores',lifeTask:'clean',label:label('커피머신 청소하기','Clean the coffee machine','コーヒーメーカーを掃除する')}];
  if(/오디오|턴테이블|플레이어|audio|stereo/i.test(item))return [{kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')}];
  const affection={kind:'affection',companion:true,label:label('스킨십하기','Physical affection','スキンシップ')};
  if(/침대|bed/i.test(item))return [{kind:'nap',lifeTask:'sleep',label:label('잠자기','Go to sleep','眠る')},{kind:'nap',label:label('잠깐 눈 붙이기','Take a nap','少し眠る')},{kind:'rest',label:label('침대에서 쉬기','Rest in bed','ベッドで休む')},{kind:'read',label:label('책 읽기','Read a book','本を読む')},...LIFE_TASKS.filter(t=>['early_sleep','sleep_in'].includes(t.id)).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),affection];

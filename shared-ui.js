@@ -1,3 +1,4 @@
+import {sharedCapacity} from './shared-capacity.js';
 import {canEditSharedHome} from './shared-home-access.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
 import {showSharedResidentCreator} from './shared-create-resident.js?v=20260909dev305';
@@ -94,11 +95,23 @@ export function bindSharedUi({prepareImage,bindRoomGeometry,render,toast:notify,
   root.querySelector('[data-resident-reconnect]')?.addEventListener('click',()=>api().select(s.activeGroupId,{force:true}));
   root.querySelector('[data-resident-search]')?.addEventListener('input',e=>root.querySelectorAll('[data-resident-name]').forEach(card=>card.hidden=!card.dataset.residentName.includes(e.target.value.toLocaleLowerCase())));
  const residenceForm=root.querySelector('[data-residence-request]');
- if(residenceForm?.dataset.residenceRequest==='admission')residenceForm.addEventListener('change',()=>{select.moveChecked=[...residenceForm.querySelectorAll('input:checked')].map(e=>e.value);residenceForm.querySelector('[type=submit]').disabled=select.moveLoading||!residenceForm.querySelector('input:checked')});
- residenceForm?.addEventListener('submit',async e=>{stop(e);if(select.moveBusy)return;const form=e.currentTarget,data=new FormData(form),input=Object.fromEntries(data),ids=data.getAll('characterId');if(form.dataset.residenceRequest==='admission'&&!ids.length)return;
+ if(residenceForm?.dataset.residenceRequest==='admission')residenceForm.addEventListener('change',()=>{select.moveChecked=[...residenceForm.querySelectorAll('input:checked')].map(e=>e.value);residenceForm.querySelector('[type=submit]').disabled=select.moveBusy||select.moveLoading||!select.moveChecked.length||select.moveChecked.length>sharedCapacity(s,uid()).remaining});
+ residenceForm?.addEventListener('submit',async e=>{stop(e);if(select.moveBusy)return;const form=e.currentTarget,data=new FormData(form),input=Object.fromEntries(data),ids=data.getAll('characterId');if(form.dataset.residenceRequest==='admission'&&(!ids.length||ids.length>sharedCapacity(api().getSnapshot(),uid()).remaining))return;
  const cross=ids.filter(id=>String(id).startsWith('group:'));if(cross.length){select.moveBusy=true;const dialog=document.createElement('dialog');dialog.className='relation-dialog';const title=document.createElement('h2');title.textContent=residentText('다른 멀티에서 이사할까요?','Move from another group?','別のグループから引っ越しますか？');const message=document.createElement('p');message.textContent=cross.map(id=>{const c=(select.moveCandidates||[]).find(c=>c.id===id);return (c?.name||'')+' · '+(c?.originName||'')}).join('\n')+' → '+s.group.name;const help=document.createElement('p');help.textContent=residentText('입주가 수락되면 원래 멀티에서 떠납니다. 거절되면 원래 소속에 남아요.','Characters leave their original group only after acceptance. Declined requests leave them in place.','入居が承認された後に元のグループを離れます。辞退された場合は元の所属に残ります。');const cancel=document.createElement('button'),ok=document.createElement('button');cancel.textContent=residentText('취소','Cancel','キャンセル');ok.textContent=residentText('확인하고 계속','Confirm and continue','確認して続ける');dialog.append(title,message,help,cancel,ok);document.body.append(dialog);const confirmed=await new Promise(resolve=>{dialog.onclose=()=>{resolve(dialog.returnValue==='yes');dialog.remove()};cancel.onclick=()=>dialog.close();ok.onclick=()=>dialog.close('yes');dialog.showModal()});select.moveBusy=false;if(!confirmed)return;}
- select.moveBusy=true;form.setAttribute('aria-busy','true');form.querySelector('[type=submit]').disabled=true;const progress=document.createElement('p');progress.setAttribute('role','status');progress.textContent=residentText('이사 처리 중이에요. 사진과 설정을 옮기고 있으니 잠시 기다려 주세요.','Moving photos and settings. Please wait for the character to appear.','写真と設定を移動中です。表示されるまで少しお待ちください。');form.append(progress);
- enqueue(async()=>{try{if(form.dataset.residenceRequest==='admission'){for(const id of ids){if(api().getSnapshot().activeGroupId!==s.activeGroupId)throw Error('Group changed');await api().requestAdmission(id);const checkbox=[...form.querySelectorAll('input[name=characterId]')].find(e=>e.value===id);if(checkbox){checkbox.checked=false;checkbox.disabled=true;select.moveChecked=(select.moveChecked||[]).filter(value=>value!==id);checkbox.closest('label').dataset.complete='true'}}}else await api().requestCohabitation(input);select.residentForm='';select.residentDetail='';toast(residentText('이사 요청을 처리했어요.','Move requests processed.','引っ越しリクエストを処理しました。'));render()}finally{select.moveBusy=false;form.removeAttribute('aria-busy');progress.remove();if(form.isConnected)form.querySelector('[type=submit]').disabled=form.dataset.residenceRequest==='admission'?!form.querySelector('input:checked'):false}},toast)});
+ const account=uid(),groupId=s.activeGroupId,townId=s.selectedTownId||s.group.towns[0].id;
+ const requests=ids.map(id=>({id,requestId:crypto.randomUUID(),name:(select.moveCandidates||[]).find(c=>c.id===id)?.name||window.ParallelCity?.getState?.()?.characters?.[id]?.name||id}));
+ select.moveBusy=true;select.residentForm='';select.residentDetail='';render();
+ void runBackgroundAction('resident-move:'+account+':'+groupId,async()=>{
+  try{
+   if(form.dataset.residenceRequest==='admission')for(const request of requests){
+    if(uid()!==account)throw Error('Account changed');
+    await api().requestAdmission(request.id,{groupId,townId,requestId:request.requestId});
+    select.moveChecked=(select.moveChecked||[]).filter(id=>id!==request.id);
+   }else{if(uid()!==account)throw Error('Account changed');await api().requestCohabitation({...input,groupId})}
+   if(uid()===account&&api().getSnapshot().activeGroupId===groupId)render();
+  }finally{select.moveBusy=false}
+ },{title:requests.length?requests.map(r=>r.name).join(', ')+residentText(' 이사 중🚌',' moving 🚌',' 引っ越し中🚌'):residentText('이사 중🚌','Moving 🚌','引っ越し中🚌')});
+ });
 
  root.addEventListener('change',e=>{
   const el=e.target;

@@ -1,0 +1,17 @@
+const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:5,labels,details,ingredient,product:id});
+export const COFFEE_TASKS=[
+ recipe('capsule',['캡슐 커피 만들기','Brew capsule coffee','カプセルコーヒーを淹れる'],['캡슐을 끼우고 잔을 받친 뒤, 추출되는 커피의 향을 맡고 있어요.','They insert a capsule and set a cup under the fragrant stream of coffee.','カプセルをセットしてカップを置き、抽出されるコーヒーの香りを楽しんでいます。']),
+ recipe('espresso',['에스프레소 내리기','Pull an espresso','エスプレッソを淹れる'],['작은 잔에 진한 에스프레소를 내리며 크레마가 올라오는 모습을 지켜봐요.','They watch crema form as a rich espresso fills a small cup.','小さなカップに濃いエスプレッソを抽出し、クレマが浮かぶ様子を見ています。']),
+ recipe('americano',['아메리카노 만들기','Make an Americano','アメリカーノを作る'],['에스프레소에 뜨거운 물을 조금씩 부으며 원하는 농도를 맞춰요.','They add hot water to espresso a little at a time to adjust its strength.','エスプレッソにお湯を少しずつ加えて好みの濃さにしています。']),
+ recipe('iced',['아이스 커피 만들기','Make iced coffee','アイスコーヒーを作る'],['얼음을 채운 유리잔에 커피를 천천히 부어 차갑게 식혀요.','They slowly pour coffee over ice in a glass.','氷を入れたグラスにコーヒーをゆっくり注いで冷やしています。']),
+ recipe('whipped_milk',['휘핑 우유 만들기','Whip milk foam','ミルクフォームを作る'],['우유를 데우고 곱고 부드러운 거품을 내요. 완성한 휘핑 우유는 소지품에 보관해요.','They warm milk and whip a fine foam, then keep it in their inventory.','牛乳を温めてきめ細かな泡を作り、完成したミルクフォームを持ち物に入れます。']),
+ recipe('latte',['라떼 만들기 · 휘핑 우유 1개','Make a latte · 1 milk foam','ラテを作る・ミルクフォーム1個'],['에스프레소 위로 준비해 둔 휘핑 우유를 부으며 부드러운 라떼를 만들어요.','They pour prepared milk foam into espresso to make a smooth latte.','用意しておいたミルクフォームをエスプレッソに注ぎ、まろやかなラテを作っています。'],'whipped_milk'),
+ recipe('cappuccino',['카푸치노 만들기 · 휘핑 우유 1개','Make a cappuccino · 1 milk foam','カプチーノを作る・ミルクフォーム1個'],['커피 위에 휘핑 우유를 도톰하게 올리고 잔 가장자리를 정리해요.','They spoon a thick layer of milk foam over coffee and wipe the cup rim.','コーヒーにミルクフォームをたっぷりのせ、カップの縁を拭いています。'],'whipped_milk')
+];
+export const coffeeRecipe=id=>COFFEE_TASKS.find(r=>r.id===id);
+export const isCoffeeMachine=item=>/커피\s*머신|에스프레소\s*머신|coffee\s*(machine|maker)|espresso\s*machine|コーヒーメーカー/i.test(item||'');
+export function canCraftCoffee(character,id){const r=coffeeRecipe(id);return !r||!r.ingredient||Number(character?.coffeeInventory?.[r.ingredient]||0)>=1}
+export function reserveCoffee(character,directive){const r=coffeeRecipe(directive.lifeTask);if(!r)return;character.coffeeInventory??={};if(r.ingredient)character.coffeeInventory[r.ingredient]=Math.max(0,(Number(character.coffeeInventory[r.ingredient])||0)-1);directive.coffeeProduct=r.product;}
+export function finishCoffee(world,character,now){const d=world.characterDirectives?.[character.id],r=coffeeRecipe(d?.lifeTask);if(!r||d.coffeeProduct!==r.product||d.coffeeSettled||now<d.endsAt)return false;character.coffeeInventory??={};character.coffeeInventory[r.product]=Math.min(99,(Number(character.coffeeInventory[r.product])||0)+1);d.coffeeSettled=true;return true;}
+const names={capsule:['캡슐 커피','Capsule coffee','カプセルコーヒー'],espresso:['에스프레소','Espresso','エスプレッソ'],americano:['아메리카노','Americano','アメリカーノ'],iced:['아이스 커피','Iced coffee','アイスコーヒー'],whipped_milk:['휘핑 우유','Milk foam','ミルクフォーム'],latte:['라떼','Latte','ラテ'],cappuccino:['카푸치노','Cappuccino','カプチーノ']};
+export function coffeeInventoryMarkup(c,lang='ko'){const index={ko:0,en:1,ja:2}[lang]||0,items=Object.entries(names).filter(([id])=>Number(c.coffeeInventory?.[id])>0);return items.length?`<section class="crafted-coffee-inventory"><h3>${['직접 만든 음료·재료','Crafted drinks and ingredients','作った飲み物・材料'][index]}</h3>${items.map(([id,label])=>`<p>${label[index]} × ${Math.min(99,Number(c.coffeeInventory[id])||0)}</p>`).join('')}</section>`:'';}

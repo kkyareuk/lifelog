@@ -1,14 +1,14 @@
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status})};
 module.exports=({db,membership,notify,clock,id})=>{
  const clean=(s,max=120000)=>{if(typeof s!=='string'||Buffer.byteLength(s)>max)fail('invalid-profile');let v;try{v=JSON.parse(s)}catch{fail('invalid-profile')}if(!v||typeof v!=='object'||Array.isArray(v))fail('invalid-profile');return s};
- const limit=(group,member)=>Math.max(1,Math.min(100,Number(group.rules?.[['owner','manager','operator'].includes(member.role)?'managerCharacterLimit':'memberCharacterLimit'])||(['owner','manager','operator'].includes(member.role)?100:20)));
+ const {limit,pending}=require('./resident-capacity');
  async function apply(tx,root,p){
   const [sender,group,residents]=await Promise.all([tx.get(root.collection('members').doc(p.senderUid)),tx.get(root),tx.get(root.collection('residents'))]);
   if(!sender.exists)fail('recipient-left-group',409);
   if(p.kind==='admission'){
    if(group.data().ownerUid!==p.recipientUid&&!(p.appliedByAuthority&&p.recipientUid===p.senderUid&&['owner','manager','operator'].includes(sender.data().role)))fail('recipient-changed',409);
    if(residents.docs.some(r=>r.id===p.sourceId))fail('already-resident',409);
-   if(residents.docs.filter(r=>r.data().ownerUid===p.senderUid).length>=limit(group.data(),sender.data())||residents.docs.length>=200)fail('resident-limit',409);
+   if(residents.docs.filter(r=>r.data().ownerUid===p.senderUid).length>=limit(group.data(),sender.data(),p.senderUid)||residents.docs.length>=200)fail('resident-limit',409);
    if(!group.data().towns?.some(t=>t.id===p.resident.townId))fail('town-missing',409);
    const move=await require('./character-transfer').prepareMove(db,tx,p,root.id,clock());
    if(p.home){const old=await tx.get(root.collection('homes').doc(p.home.id));if(!old.exists)tx.create(root.collection('homes').doc(p.home.id),p.home)}
@@ -34,6 +34,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    const recent=await tx.get(root.collection('proposals').where('senderUid','==',uid));if(recent.docs.filter(d=>d.data().createdAt>clock()-3600000).length>=20)fail('proposal-rate-limit',429);
    let p={kind,senderUid:uid,createdAt:clock(),status:'pending'};
    if(kind==='admission'){
+    const roster=await tx.get(root.collection('residents'));if(roster.docs.filter(d=>d.data().ownerUid===uid).length+pending(recent.docs)>=limit(group,member,uid)||roster.docs.length>=200)fail('resident-limit',409);
     let r=input.resident;if(input.sourceGroupId){const origin=id(input.sourceGroupId);if(origin===root.id)fail('already-resident');const sourceRoot=db.collection('groups').doc(origin),[sourceMember,source]=await Promise.all([tx.get(sourceRoot.collection('members').doc(uid)),tx.get(sourceRoot.collection('residents').doc(id(input.sourceResidentId)))]);if(!sourceMember.exists||!source.exists||source.data().ownerUid!==uid)fail('character-owner-required',403);r={...source.data(),sourceCharacterId:source.data().sourceCharacterId||source.id,townId:input.townId};p.sourceGroupId=origin;p.sourceResidentId=source.id;const homeId=source.data().sharedHomeId||uid+'_'+source.data().sourceHomeId;if(homeId){const home=await tx.get(sourceRoot.collection('homes').doc(homeId));if(home.exists&&home.data().ownerUid===uid)input.home={sourceHomeId:r.sourceHomeId,name:home.data().name,layoutJson:home.data().layoutJson}}}if(!r||typeof r.name!=='string'||!r.name.trim()||r.name.length>40)fail('invalid-profile');
     const source=id(r.sourceCharacterId),sourceId=uid+'_'+source.replace(/[^A-Za-z0-9_-]/g,'_');
     const resident={ownerName:String(member.displayName||'').slice(0,40),sourceCharacterId:source,name:r.name,job:String(r.job||'').slice(0,60),townId:id(r.townId),sourceHomeId:String(r.sourceHomeId||''),profileJson:clean(r.profileJson),scheduleJson:clean(r.scheduleJson),photo:String(r.photo||'').slice(0,2000),icon:String(r.icon||'').slice(0,2000)};

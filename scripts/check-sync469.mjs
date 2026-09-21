@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {stageTownEdit,withTownEditDraft,commitTownEdit} from '../town-edit-draft.js';
+import {applyConfirmedTown} from '../shared-confirmed-state.js';
+import {sharedCapacity} from '../shared-capacity.js';
+const s={activeGroupId:'g',selectedTownId:'t',group:{buildingRevision:0,towns:[{id:'t',name:'Town'}],rules:{memberCharacterLimit:4}},homes:[{id:'h',name:'Old',layoutJson:'old',layoutRevision:0}],residents:[],members:[]};
+stageTownEdit(s,'saveHomePlacement',{id:'h',patch:{name:'New'}});
+const incoming={...s,homes:[{...s.homes[0],layoutJson:'new interior',layoutRevision:1}]};
+assert.equal(withTownEditDraft(incoming).homes[0].layoutJson,'new interior');
+assert.equal(withTownEditDraft(incoming).homes[0].name,'New');
+assert.equal(withTownEditDraft({...incoming,homes:[]}).homes.length,0,'Deleted home must not reappear in a town draft');
+await commitTownEdit(s,{saveTownEdit:async()=>({saved:true})});
+const confirmed=applyConfirmedTown(s,'saveHomeLayout',{revision:1,home:{...s.homes[0],layoutJson:'new interior',layoutRevision:1}});
+assert.equal(confirmed.homes[0].layoutJson,'new interior');
+assert.equal(applyConfirmedTown(confirmed,'saveHomeLayout',{home:s.homes[0]}).homes[0].layoutJson,'new interior');
+const quota=sharedCapacity({...s,residents:[1,2,3].map(id=>({id,ownerUid:'u'})),outgoingProposals:[{kind:'admission',senderUid:'u',sourceId:'four',status:'pending'}]},'u');
+assert.equal(quota.remaining,0);
+console.log('PASS active draft preserves incoming interior and deletion, confirmed edits visible immediately, late reply ignored, pending quota');
