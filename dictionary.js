@@ -17,20 +17,20 @@ const ui={kind:'',place:'',search:'',sort:'default',limit:30,editing:null,draft:
 let cfg,actions,owner,saving=false;
 const drafts=new Map();
 const copy={
- 'catalog-limit':['The shared dictionary is full (80 items total).','共有辞典は合計80項目までです。'],
+ 'catalog-limit':['The shared dictionary is full (100 items total).','共有辞典は合計100項目までです。'],
  'catalog-id-conflict':['An item ID conflicts with an existing item. Nothing was overwritten.','既存の項目とIDが競合しています。上書きしていません。'],
  '내 사전':['My dictionary','個人の辞典'],'멀티 그룹':['Multiplayer groups','マルチグループ'],
  '방장과 관리자만 공유 사전을 편집할 수 있어요.':['Only the owner and managers can edit this shared dictionary.','共有辞典はオーナーと管理者のみ編集できます。'],
  '공유 사전에 저장됨':['Saved to the shared dictionary','共有辞典に保存しました'],
  '저장하지 못했어요. 다시 시도해 주세요.':['Could not save. Please try again.','保存できませんでした。もう一度お試しください。']};
-const koErrors={'catalog-limit':'공유 사전은 그룹 전체 합계 80개까지예요.','catalog-id-conflict':'기존 물품과 ID가 겹쳐 추가하지 않았어요. 원래 사전은 유지했어요.'};
+const koErrors={'catalog-limit':'공유 사전은 그룹 전체 합계 100개까지예요.','catalog-id-conflict':'기존 물품과 ID가 겹쳐 추가하지 않았어요. 원래 사전은 유지했어요.'};
 const tr=s=>(state.uiLanguage==='ko'&&koErrors[s])||copy[s]?.[state.uiLanguage==='en'?0:state.uiLanguage==='ja'?1:-1]||cfg?.translate?.(s,s)||s;
 let sharedCatalog={},scope='';
 const catalog=()=>scope?sharedCatalog:state.catalog;
 const manager=()=>!scope||cfg.shared?.group?.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(cfg.shared?.members?.find(m=>(m.uid||m.id)===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role);
 const canAdd=()=>manager()||cfg.shared?.group?.rules?.allowMemberCatalogAdd===true;
 const canEdit=()=>manager()||canAdd()&&!!ui.editing&&!ui.original;
-function addCatalogItem(kind,item){if(!scope)return addPersonal(kind,item);if(entries().length>=80)return null;const id=crypto.randomUUID();(sharedCatalog[kind]??=[]).push({...item,id});return id}
+function addCatalogItem(kind,item){if(!scope)return addPersonal(kind,item);if(entries().length>=100)return null;const id=crypto.randomUUID();(sharedCatalog[kind]??=[]).push({...item,id});return id}
 function updateCatalogItem(kind,id,item){if(!scope)return updatePersonal(kind,id,item);sharedCatalog[kind]=sharedCatalog[kind].map(old=>old.id===id?{...old,...item,id}:old)}
 async function deleteCatalogItem(kind,id){if(!scope)return deletePersonal(kind,id);const groupId=scope;await window.DrawerVillageGroups.saveCatalogItem({groupId,kind,id,remove:true,expected:ui.original});if(scope===groupId)sharedCatalog[kind]=sharedCatalog[kind].filter(item=>item.id!==id)}
 function entries(){return Object.entries(catalog()||{}).flatMap(([kind,items])=>items.map(item=>({...item,kind})))}
@@ -56,7 +56,7 @@ function options(values,value){
 function list(){
   const groups=cfg.shared?.groups||[];ui.scope=scope;
   const filter=(key,label,type)=>`<button type="button" data-dict-${type}="${esc(key)}" aria-current="${ui[type]===key?'true':'false'}">${esc(tr(label))}</button>`;
-  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-scopes" aria-label="${tr('멀티 그룹')}">${filter('','내 사전','scope')}${groups.map(g=>filter(g.id,g.name||g.id,'scope')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 80</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div>${scope?`<div class="dictionary-transfer-actions"><button type="button" data-dict-export>${({ko:'사진 포함 내보내기',en:'Export with photos',ja:'写真付きで書き出す'})[state.uiLanguage]||'사진 포함 내보내기'}</button>${canAdd()?`<button type="button" data-dict-share>${({ko:'내 사전에서 추가',en:'Add from my dictionary',ja:'個人辞典から追加'})[state.uiLanguage]||'내 사전에서 추가'}</button><button type="button" data-dict-import>${({ko:'JSON에서 추가',en:'Add from JSON',ja:'JSONから追加'})[state.uiLanguage]||'JSON에서 추가'}</button>`:''}</div>`+(!canEdit()?`<p>${tr('방장과 관리자만 공유 사전을 편집할 수 있어요.')}</p>`:''):`<div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div>`}<div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
+  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-scopes" aria-label="${tr('멀티 그룹')}">${filter('','내 사전','scope')}${groups.map(g=>filter(g.id,g.name||g.id,'scope')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 100</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div>${scope?`<div class="dictionary-transfer-actions"><button type="button" data-dict-export>${({ko:'사진 포함 내보내기',en:'Export with photos',ja:'写真付きで書き出す'})[state.uiLanguage]||'사진 포함 내보내기'}</button>${canAdd()?`<button type="button" data-dict-share>${({ko:'내 사전에서 추가',en:'Add from my dictionary',ja:'個人辞典から追加'})[state.uiLanguage]||'내 사전에서 추가'}</button><button type="button" data-dict-import>${({ko:'JSON에서 추가',en:'Add from JSON',ja:'JSONから追加'})[state.uiLanguage]||'JSON에서 추가'}</button>`:''}</div>`+(!canEdit()?`<p>${tr('방장과 관리자만 공유 사전을 편집할 수 있어요.')}</p>`:''):`<div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div>`}<div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
 }
 function editor(){
   const d=ui.draft,kind=ui.editing.kind;
@@ -107,7 +107,7 @@ function bindFields(shell){
   shell.querySelectorAll('[data-dict-keyword]').forEach(el=>el.onchange=()=>{ui.draft.keywords=[...shell.querySelectorAll('[data-dict-keyword]:checked')].map(e=>e.dataset.dictKeyword)});
   shell.querySelector('form.dictionary-editor-fields')?.addEventListener('submit',e=>e.preventDefault());
 }
-function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 80`;actions?.translate?.(r)}
+function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 100`;actions?.translate?.(r)}
 export function mountDictionary(callbacks){
   actions=callbacks;const shell=document.querySelector('[data-dictionary]');if(!shell)return;bindFields(shell);
   shell.addEventListener('click',async event=>{
@@ -127,7 +127,7 @@ export function mountDictionary(callbacks){
     if(b.dataset.dictOpen)open(b.dataset.kind,b.dataset.dictOpen);
     if(b.hasAttribute('data-dict-more')){ui.limit+=30;refreshResults()}
     if(b.hasAttribute('data-dict-add')){
-      const add=kind=>{const id=addCatalogItem(kind,{name:tr('새 항목'),category:cfg.categories[kind]?.[0]||'기타'});if(!id){actions.toast('전체 80개까지 추가할 수 있어요.');return}open(kind,id)};
+      const add=kind=>{const id=addCatalogItem(kind,{name:tr('새 항목'),category:cfg.categories[kind]?.[0]||'기타'});if(!id){actions.toast(tr('전체 100개까지 추가할 수 있어요.'));return}open(kind,id)};
       if(ui.kind)add(ui.kind);else{const d=popup('카테고리 선택',`<div class="dictionary-category-choices">${Object.entries(cfg.labels).map(([k,v])=>`<button type="button" data-kind="${k}">${cfg.icons[k]} ${tr(v)}</button>`).join('')}</div>`);d.querySelectorAll('[data-kind]').forEach(e=>e.onclick=()=>{d.close();add(e.dataset.kind)})}
     }
     if(b.hasAttribute('data-dict-close')||b.hasAttribute('data-dict-save')){
@@ -151,7 +151,7 @@ export function mountDictionary(callbacks){
       return;
     }
     if(b.hasAttribute('data-dict-delete')&&confirm(tr('이 항목을 삭제할까요?'))){const editing=ui.editing;try{await deleteCatalogItem(editing.kind,editing.id);if(ui.editing!==editing)return}catch{actions.toast(tr('저장하지 못했어요. 다시 시도해 주세요.'));return}ui.editing=null;ui.draft=null;redraw()}
-    if(b.hasAttribute('data-dict-copy')){collect();const {id,...copy}=ui.draft;const newId=addCatalogItem(ui.editing.kind,{...copy,name:`${copy.name} (${tr('복제')})`});if(newId)open(ui.editing.kind,newId);else actions.toast('전체 80개까지 추가할 수 있어요.')}
+    if(b.hasAttribute('data-dict-copy')){collect();const {id,...copy}=ui.draft;const newId=addCatalogItem(ui.editing.kind,{...copy,name:`${copy.name} (${tr('복제')})`});if(newId)open(ui.editing.kind,newId);else actions.toast(tr('전체 100개까지 추가할 수 있어요.'))}
     if(b.hasAttribute('data-dict-tag-add')){collect();const d=popup('태그 추가',`<input maxlength="40" aria-label="${tr('태그')}" autofocus><button type="button" data-add>${tr('추가')}</button>`);d.querySelector('[data-add]').onclick=()=>{const tag=d.querySelector('input').value.trim().replace(/^#+/,'');if(tag)ui.draft.tags=[...new Set([...(ui.draft.tags||[]),tag])];d.close();redraw()}}
     if(b.hasAttribute('data-dict-remove-tag')){collect();ui.draft.tags.splice(Number(b.dataset.dictRemoveTag),1);redraw()}
     if(b.hasAttribute('data-dict-photo')){

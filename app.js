@@ -446,7 +446,7 @@ function openClothingEditor(itemId=""){
   const isNew=!itemId;let item=state.catalog.fashion.find(value=>value.id===itemId);
   if(!item){
     const id=addCatalogItem("fashion",{name:"새 옷",category:"의상",image:"",iconImage:"",ldImage:"",sceneLayout:{sd:{x:0,y:0,scale:1,rotation:0},ld:{x:0,y:0,scale:1,rotation:0}},materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
-    if(!id){showToast("종류별로 80개까지 추가할 수 있어요.");return}
+    if(!id){showToast("전체 100개까지 추가할 수 있어요.");return}
     if(!id){showToast(translateText("옷장은 캐릭터마다 30개까지 등록할 수 있어요."));return}
     character.inventory.fashion=[...new Set([...(character.inventory.fashion||[]),id])];
     item=state.catalog.fashion.find(value=>value.id===id);save(true);
@@ -3813,7 +3813,7 @@ function bind(){
       if(button.dataset.addCatalog){
         event.preventDefault();
         const kind=button.dataset.addCatalog,itemId=addCatalogItem(kind,{name:"새 항목",category:"기타"});
-        if(!itemId){showToast("종류별로 80개까지 추가할 수 있어요.");return}
+        if(!itemId){showToast("전체 100개까지 추가할 수 있어요.");return}
         appendCatalogCard(kind,itemId);
         return;
       }

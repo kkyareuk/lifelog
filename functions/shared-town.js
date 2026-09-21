@@ -46,7 +46,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
     saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);const patch={};if(input.photoURL!==undefined){if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');patch.photoURL=input.photoURL}if(input.name!==undefined){patch.name=String(input.name).trim().slice(0,80);if(!patch.name)fail('name-required')}if(input.description!==undefined)patch.description=String(input.description).slice(0,500);tx.update(ref,patch);return {saved:true}}),
     saveHomeMember:async(uid,input)=>db.runTransaction(tx=>require('./home-members')({context,clock,id})(uid,{...input,tx})),
     saveHomeLayout:async(uid,input)=>db.runTransaction(async tx=>{
-      const {ref,member}=await context(tx,input.groupId,uid),homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);const home=snap.data();if(home.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('home-owner-required',403);const revision=Number(home.layoutRevision)||0;if(Number(input.revision)!==revision)fail('groups/edit-conflict',409);
+      const {ref,member}=await context(tx,input.groupId,uid),homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);const home=snap.data();if(home.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role)&&!await require('./home-access').isCohabitant(tx,ref,homeRef.id,uid))fail('home-owner-required',403);const revision=Number(home.layoutRevision)||0;if(Number(input.revision)!==revision)fail('groups/edit-conflict',409);
       const layout=input.layout;if(!layout||typeof layout!=='object'||Array.isArray(layout)||JSON.stringify(layout).length>180000||!layout.rooms||Object.keys(layout.rooms).length>50)fail('invalid-layout');
       for(const room of Object.values(layout.rooms)){if(!room||typeof room!=='object'||(room.furniturePlacements||[]).length>200)fail('invalid-layout')}
       const clean={rooms:layout.rooms,deletedRoomKeys:Array.isArray(layout.deletedRoomKeys)?layout.deletedRoomKeys.filter(k=>typeof k==='string').slice(-100):[],floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
@@ -68,7 +68,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         require('./catalog-media').validateCatalogMedia(input.item);
       }
       const next=items.filter(i=>i.id!==itemId);if(!input.remove)next.push({...input.item,kind:input.kind});
-      if(existing.reduce((n,c)=>n+(c.items||[]).length,0)-items.length+next.length>80)fail('catalog-limit',409);
+      if(existing.reduce((n,c)=>n+(c.items||[]).length,0)-items.length+next.length>100)fail('catalog-limit',409);
       if(JSON.stringify(next).length>100000)fail('catalog-size-limit');
       tx.set(ref.collection('catalog').doc(input.kind),{items:next,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {saved:true,items:next};
     }),
@@ -81,9 +81,9 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const existing=rows(await tx.get(ref.collection('catalog')));
       let total=existing.reduce((n,c)=>n+(c.items||[]).length,0);
       for(const kind of Object.keys(input.catalog)){
-        const incoming=input.catalog[kind];if(!kinds.includes(kind)||!Array.isArray(incoming)||incoming.length>80)fail('catalog-limit');
+        const incoming=input.catalog[kind];if(!kinds.includes(kind)||!Array.isArray(incoming)||incoming.length>100)fail('catalog-limit');
         if(incoming.some(item=>!item||typeof item!=='object'||typeof item.id!=='string'||typeof item.name!=='string'||item.id.length>180||item.name.length>200))fail('invalid-catalog-item');
-        const items=require('./catalog-media').mergeCatalogItems(existing.find(c=>c.id===kind)?.items||[],incoming,kind,manager);total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
+        const items=require('./catalog-media').mergeCatalogItems(existing.find(c=>c.id===kind)?.items||[],incoming,kind,manager);total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>100)fail('catalog-limit',409);
         if(JSON.stringify(items).length>100000)fail('catalog-size-limit');
         tx.set(ref.collection('catalog').doc(kind),{items,updatedAt:clock()});
       }
@@ -92,7 +92,9 @@ function createSharedTownService({db,engine,clock=Date.now}){
     saveHomePlacement:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);
       const homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists&&!input.create)fail('home-missing',404);
-      if(!['owner','manager','operator'].includes(member.role)&&(!snap.exists||snap.data().ownerUid!==uid||input.create))fail('home-owner-required',403);
+      const privileged=['owner','manager','operator'].includes(member.role)||snap.exists&&snap.data().ownerUid===uid;
+      if(!privileged&&(input.create||!snap.exists||!await require('./home-access').isCohabitant(tx,ref,homeRef.id,uid)))fail('home-owner-required',403);
+      if(!privileged&&Object.keys(input.patch||{}).some(k=>['ownerKind','ownerName','ownerCharacterId','ownershipType'].includes(k)))fail('home-owner-required',403);
       if(input.create){if(snap.exists)fail('home-exists',409);const homes=await tx.get(ref.collection('homes'));if(homes.docs.length>=200)fail('home-limit',409);if(!group.towns?.some(t=>t.id===input.townId))fail('town-missing',404)}
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
       const home=snap.exists?snap.data():{ownerUid:uid,sourceHomeId:input.id,townId:input.townId,name:'새 집',mapX:50,mapY:50,layoutJson:JSON.stringify({floorCount:1,rooms:{living:{name:'거실',type:'living',furniture:['소파','TV'],size:'보통 방',floor:1,x:0,y:0,w:2,h:2},bedroom:{name:'침실',type:'bedroom',furniture:['침대','옷장'],size:'보통 방',floor:1,x:2,y:0,w:2,h:2},kitchen:{name:'주방',type:'kitchen',furniture:['식탁','냉장고'],size:'보통 방',floor:1,x:0,y:2,w:2,h:2},bathroom:{name:'욕실',type:'bath',furniture:['세면대'],size:'보통 방',floor:1,x:2,y:2,w:2,h:2}}}),residentNames:[],visitPolicy:'members'},patch=input.patch||{},numbers={mapX:[5,95],mapY:[5,95],mapScale:[.1,4],mapZ:[-100,1000]};
