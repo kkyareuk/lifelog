@@ -1,3 +1,4 @@
+import {canEditSharedHome} from './shared-home-access.js';
 import {bindHomeCanvas} from './home-canvas.js';
 import {addSharedRoomPhotos} from './shared-home-photo.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
@@ -13,7 +14,7 @@ import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev305';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,prepareImage){
  const api=window.DrawerVillageGroups,selection=space?.selection||sharedSelection(s),world=space?.world||buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
- const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=space?space.canEdit:s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=uid+':'+s.activeGroupId+':'+home.id;
+ const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=space?space.canEdit:canEditSharedHome(s,home.id,uid),key=uid+':'+s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  function commit(){
   const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor,canvasColumns:home.canvasColumns,canvasRows:home.canvasRows});
@@ -34,7 +35,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=!canEdit);
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});
  // Unconnected personal-world actions must never write into the private world.
- if(!space)bindSharedHomeMembers(root,s,world,canEdit,render,toast);
+ if(!space)bindSharedHomeMembers(root,s,world,canEdit&&(home.ownerUid===uid||s.group?.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role))),render,toast);
  root.querySelectorAll('[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
  if(!space)bindSharedHomeDeletion(root,s,render,toast,async id=>{const queueKey=uid+':'+s.activeGroupId+':'+id;await (queues.get(queueKey)?.done||Promise.resolve());queues.delete(queueKey)});
  root.querySelectorAll('[data-home-floor-count]').forEach(b=>b.disabled=!canEdit);

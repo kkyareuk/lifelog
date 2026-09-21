@@ -82,7 +82,7 @@ export function groupErrorMessage(error){
     'photo-upload-required':photoError,
     'catalog-photo-upload-required':photoError,
     'activity-location-required':['집 안에 침대·욕조·샤워기·의자가 있어야 해요. 나이와 접촉 설정도 확인해 주세요.','A bed, bath, shower or chair inside a home is required. Check age and contact preferences too.','家の中にベッド・浴槽・シャワー・椅子が必要です。年齢と接触設定も確認してください。'],
-    'catalog-limit':['공유 사전 전체 물품이 80개를 넘어요. 항목 수를 줄인 뒤 다시 공유해 주세요.','The shared dictionary would exceed 80 items in total. Reduce the entries and retry.','共有辞典全体で80件を超えます。件数を減らして再試行してください。'],
+    'catalog-limit':['공유 사전 전체 물품이 100개를 넘어요. 항목 수를 줄인 뒤 다시 공유해 주세요.','The shared dictionary would exceed 100 items in total. Reduce the entries and retry.','共有辞典全体で100件を超えます。件数を減らして再試行してください。'],
     'groups/edit-conflict':['다른 멤버가 먼저 수정했어요. 화면을 다시 열고 변경 내용을 확인해 주세요.','Another member edited this first. Reopen the screen and review their changes.','他のメンバーが先に編集しました。画面を開き直して変更を確認してください。'],
     'groups/share-upload-failed':['사진과 설정을 계정에 저장하지 못했어요. 연결과 저장 공간을 확인한 뒤 다시 시도해 주세요.','Photos and settings could not be saved. Check your connection and storage, then retry.','写真と設定を保存できませんでした。接続と保存容量を確認して再試行してください。'],
     'groups/context-changed':['그룹이 바뀌어 공유를 멈췄어요. 선택한 그룹에서 다시 시도해 주세요.','The group changed. Retry sharing in the selected group.','グループが変わったため共有を中止しました。選択中のグループで再試行してください。'],
@@ -129,5 +129,5 @@ export function renderGroupRelations(snapshot){
 
 export function renderSharedCatalog(snapshot){
  const count=(snapshot.catalog||[]).reduce((sum,c)=>sum+(c.items||[]).length,0);
- return `<section class="multiplayer-paper" data-group-section="catalog"><h2>${groupText('그룹 공유 사전','Group dictionary','グループの辞典')}</h2><p>${groupText('자동으로 동기화하지 않아요. 필요한 때 공유하거나 내 사전으로 가져올 수 있어요.','Sync is manual. Share your dictionary or import the group dictionary when needed.','自動同期はしません。必要なときに共有・取り込みができます。')}</p><p>${count} · ${groupText('항목별 최대 80개','Up to 80 entries per category','各カテゴリ80件まで')}</p><ul>${(snapshot.catalog||[]).flatMap(c=>(c.items||[]).map(item=>`<li>${esc(item.name)}</li>`)).join('')}</ul><button type="button" data-group-catalog-publish>${groupText('내 사전을 그룹에 공유','Share my dictionary with this group','自分の辞典をグループに共有')}</button><button type="button" data-group-catalog-import>${groupText('공유 사전을 내 사전에 가져오기','Import into my dictionary','共有辞典を自分の辞典に取り込む')}</button></section>`;
+ return `<section class="multiplayer-paper" data-group-section="catalog"><h2>${groupText('그룹 공유 사전','Group dictionary','グループの辞典')}</h2><p>${groupText('자동으로 동기화하지 않아요. 필요한 때 공유하거나 내 사전으로 가져올 수 있어요.','Sync is manual. Share your dictionary or import the group dictionary when needed.','自動同期はしません。必要なときに共有・取り込みができます。')}</p><p>${count} · ${groupText('전체 최대 100개','Up to 100 entries in total','合計100件まで')}</p><ul>${(snapshot.catalog||[]).flatMap(c=>(c.items||[]).map(item=>`<li>${esc(item.name)}</li>`)).join('')}</ul><button type="button" data-group-catalog-publish>${groupText('내 사전을 그룹에 공유','Share my dictionary with this group','自分の辞典をグループに共有')}</button><button type="button" data-group-catalog-import>${groupText('공유 사전을 내 사전에 가져오기','Import into my dictionary','共有辞典を自分の辞典に取り込む')}</button></section>`;
 }

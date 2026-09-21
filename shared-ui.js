@@ -1,3 +1,4 @@
+import {canEditSharedHome} from './shared-home-access.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
 import {showSharedResidentCreator} from './shared-create-resident.js?v=20260909dev305';
 import {runBackgroundAction} from './background-actions.js?v=20260909dev305';
@@ -13,9 +14,9 @@ const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>withTownEditDraft(api()?.getSnapshot?.()),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
 export const activeShared=()=>{const s=snapshot();return s?.activeGroupId&&s.group?s:null};
 export const canEditShared=s=>s.group?.ownerUid===uid()||['owner','manager','operator'].includes(s.members?.find(m=>(m.uid||m.id)===uid())?.role||s.role);
-const ownsHome=(s,id)=>!!uid()&&s.homes?.some(h=>h.id===id&&h.ownerUid===uid());
+const ownsHome=(s,id)=>canEditSharedHome(s,id,uid());
 const canEditItem=(s,kind,id)=>canEditShared(s)||kind==='home'&&ownsHome(s,id);
-const canEnterTownEdit=s=>canEditShared(s)||s.homes?.some(h=>h.ownerUid===uid());
+const canEnterTownEdit=s=>canEditShared(s)||s.homes?.some(h=>ownsHome(s,h.id));
 const town=s=>s.group.towns?.find(t=>t.id===s.selectedTownId)||s.group.towns?.[0];
 let serial=Promise.resolve();
 function enqueue(run,toast){const next=serial.then(run);serial=next.catch(e=>toast(e.code==='groups/edit-conflict'?'다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.':e.message||e.code||'저장하지 못했어요'));return next.catch(()=>false)}
@@ -113,7 +114,7 @@ export function bindSharedUi({prepareImage,bindRoomGeometry,render,toast:notify,
   if(!canEditShared(s)){root.querySelectorAll('[data-place-field],[data-home-field],[data-home-name],[data-world-name],[data-world-description],[data-add-place],[data-delete-place],[data-mobile-town-decoration-mode]').forEach(el=>el.disabled=true);root.querySelectorAll('input,select,textarea,[data-world-transport]').forEach(el=>{if([...el.attributes].some(a=>/^data-(world-|home-|place-)/.test(a.name)))el.disabled=true})}
   root.querySelectorAll('[data-home-field="townId"],[data-place-field="townId"],[data-add-town],[data-delete-town]').forEach(el=>el.disabled=true);
   if(canEnterTownEdit(s))root.querySelectorAll('[data-mobile-town-decoration-mode]').forEach(el=>el.disabled=false);
-  root.querySelectorAll('[data-home-field],[data-home-name]').forEach(el=>{const id=el.dataset.homeId;if(ownsHome(s,id)&&el.dataset.homeField!=='townId')el.disabled=false});
+  root.querySelectorAll('[data-home-field],[data-home-name]').forEach(el=>{const id=el.dataset.homeId;if(ownsHome(s,id)&&!['townId','ownerKind','ownerName','ownerCharacterId','ownershipType'].includes(el.dataset.homeField))el.disabled=false;else if(s.homes?.some(h=>h.id===id&&h.ownerUid===uid())&&el.dataset.homeField!=='townId')el.disabled=false});
   root.querySelectorAll('.town-edit .place').forEach(el=>{el.onpointerdown=null;const [itemKind,editableItem]=itemFor(el);if(!editableItem||!canEditItem(s,itemKind,editableItem.id)||!['buildings','decorations'].includes(root.dataset.townMode))return;
    el.onpointerdown=e=>{if(e.button!==0||townEditDraft(s)?.saving)return;e.preventDefault();e.stopPropagation();const [kind,item]=itemFor(el);if(!item)return;
     const xKey=kind==='home'?'mapX':'x',yKey=kind==='home'?'mapY':'y',rect=el.parentElement.getBoundingClientRect(),start={x:e.clientX,y:e.clientY};let x=item[xKey]??50,y=item[yKey]??50,moved=false;el.setPointerCapture(e.pointerId);
