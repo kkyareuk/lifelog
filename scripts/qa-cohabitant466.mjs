@@ -27,6 +27,7 @@ try{
  const layout=await p.evaluate(()=>savedLayouts.at(-1));assert.equal(layout.id,'shared');assert(layout.layout.rooms[saved.roomKey].floorImage.endsWith('/assets/home-ui/home.png'));assert.equal(layout.layout.rooms[saved.roomKey].usePhoto,true);
  await p.locator('[data-shared-room-photo=image]').setInputFiles(file);await p.locator('.crop-dialog button[value=apply]').click();await p.waitForFunction(()=>savedLayouts.length===2);console.log('PASS shared full-room and room photos use cloud URLs and revisioned layout save');
  await p.evaluate(()=>{window.before=savedLayouts.length;fixtureUid='other'});await p.locator('[data-shared-room-photo=floorImage]').setInputFiles(file);await p.waitForFunction(()=>!document.querySelector('[data-shared-room-photo=floorImage]').disabled);assert.equal(await p.evaluate(()=>savedLayouts.length),2);assert.equal(await p.evaluate(()=>uploads),3);console.log('PASS account switch cancels upload/save');
+ const limit=await p.evaluate(()=>{g.state.catalog={food:[],drink:[]};for(let i=0;i<100;i++){if(!g.addCatalogItem(i%2?'food':'drink',{name:'item'+i}))return false;}return !g.addCatalogItem('food',{name:'overflow'});});assert(limit);console.log('PASS personal catalog total 100/101 across categories');
  assert.deepEqual(errors,[]);
 }finally{await browser.close();server.closeAllConnections();server.close()}
 

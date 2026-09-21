@@ -19,10 +19,14 @@ try{
  await p.locator('[data-home-add-furniture]').first().click();
  await p.locator('[data-furniture-placement]').first().click({force:true});
 
- const check=async()=>{const bounds=await p.locator('.home-editor-dock').evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:innerHeight}});assert(bounds.top>=0&&bounds.bottom<=bounds.height&&bounds.width<=360,JSON.stringify(bounds));assert.equal(await p.locator('.home-native-elevator').count(),0);assert(await p.getByRole('button',{name:'가구 추가',exact:true}).isVisible());};
+ const check=async()=>{await p.waitForFunction(()=>document.querySelector('.home-editor-dock').getBoundingClientRect().bottom<=innerHeight);const bounds=await p.locator('.home-editor-dock').evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:innerHeight}});assert(bounds.top>=0&&bounds.bottom<=bounds.height&&bounds.width<=360,JSON.stringify(bounds));assert.equal(await p.locator('.home-native-elevator').count(),0);assert(await p.getByRole('button',{name:'가구 추가',exact:true}).isVisible());};
  await check();await p.setViewportSize({width:360,height:420});await check();
  await p.getByRole('button',{name:'가구 추가',exact:true}).click();assert(await p.locator('[data-home-add-furniture]').first().isVisible());
  await p.setViewportSize({width:360,height:880});await check();
  assert.deepEqual(errors,[]);console.log('PASS 360px editor: add/select furniture, dock clamping, floor controls, viewport resize');
  await p.screenshot({path:'tmp/editor466.png'});
+ await p.goto(origin+'/scripts/qa-bed-conversation226.html');await p.locator('.couple-bed-base').evaluate(i=>i.decode());
+ await p.evaluate(async()=>{const room=document.querySelector('.qa-room'),host=document.createElement('div');host.className='home-page';host.id='app';room.before(host);host.append(room);room.style.margin='100px auto';const fit=await import('/bed-occupant-layout.js');fit.positionBedOccupants(document);const depth=await import('/scene-depth.js');depth.bindSceneDepth(document)});
+ await p.waitForTimeout(100);const faces=await p.locator('.is-using-couple-bed').evaluateAll(nodes=>nodes.map(p=>({size:parseFloat(p.style.getPropertyValue('--bed-face-size')),unit:p.style.getPropertyValue('--life-x'),x:parseFloat(p.style.getPropertyValue('--life-x')),y:parseFloat(p.style.getPropertyValue('--life-y'))})));assert(faces.length>0&&faces.every(f=>f.size>10&&f.unit.endsWith('px')&&Number.isFinite(f.x)&&Number.isFinite(f.y)));await p.screenshot({path:'tmp/bed466.png'});console.log('PASS sleeping occupant geometry',faces);
+
 }finally{await browser.close();server.closeAllConnections();server.close()}
