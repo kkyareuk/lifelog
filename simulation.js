@@ -1,3 +1,4 @@
+import {recentNarrativeEntries,pickHomeNarrative,homeNarrativeKey,mayFollowUp} from './narrative-selection.js';
 import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
 import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
 import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
@@ -3306,7 +3307,7 @@ function commitLiveEntry(c,date,item){
     entryMomentKey(entry)===entryMomentKey(item)||
     (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
     (item.dateGroup&&entry.dateGroup===item.dateGroup&&storyKey(entry.title)===storyKey(item.title)&&storyKey(entry.desc)===storyKey(item.desc))||
-    (!item.dateGroup&&sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
+    (!item.dateGroup&&(item.narrativeKey&&entry.narrativeKey?item.narrativeKey===entry.narrativeKey:sceneKey(entry.title)===sceneKey(item.title))&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
   )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
   if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);if(sceneBatch)sceneBatch.revision++;save(false,false)}
   return item;
@@ -3407,7 +3408,7 @@ function liveGapEvent(c,last,n,date){
   ];
   const followupMatch=followups.find(([pattern])=>pattern.test(previousContext)),followup=followupMatch?.[1];
   const foodFollowup=/요리하는|아침 준비|빵을 굽|빵을 만들|식사를 준비|간식을 챙기|끓이|굽는 중|볶는 중/.test(previousContext);
-  if(followup&&(!foodFollowup||!isDeepNight(n)||nightSnackAllowed(c,date,n)))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId});
+  if(mayFollowUp(last,followup)&&(!foodFollowup||!isDeepNight(n)||nightSnackAllowed(c,date,n)))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId,homeFollowup:true,narrativeKey:"followup:"+followups.indexOf(followupMatch)});
   const scripts=[...homeActivityPoolFor(c,date,n),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
@@ -3477,14 +3478,9 @@ function liveGapEvent(c,last,n,date){
   const moodAction=moodActions[currentMood.tone]?.[state.uiLanguage]||moodActions[currentMood.tone]?.ko;
   if(moodAction)scripts.unshift([...moodAction,null,{moodResponse:true,moodSourceTone:currentMood.tone}]);
   if(!isDeepNight(n)||nightSnackAllowed(c,date,n))scripts.push(["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"]);
-  const recentDayKeys=Object.keys(c.days||{}).sort().slice(-3);
-  const recentTitles=new Set(recentDayKeys.flatMap(key=>(c.days?.[key]?.entries||[]).map(item=>item.title)));
-  const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
-  const pool=freshScripts.length?freshScripts:scripts;
-  const script=moodAction&&freshScripts.includes(scripts[0])
-    ?scripts[0]
-    :pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
-  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],script[4]||{});
+  const recent=recentNarrativeEntries(c,dayKey(date),minute,5);
+  const script=pickHomeNarrative(scripts,recent,`${c.id}:${dayKey(date)}:${minute}:live`,moodAction?scripts[0]:null);
+  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],{...(script[4]||{}),narrativeKey:homeNarrativeKey(script)});
 }
 function forcedHomeEventFor(c,date=new Date()){
   const marker=c?.forcedHomeReturn,n=nowMin(date);
@@ -4274,7 +4270,7 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
   if(!relation&&!Object.keys(explicitCharacterViewFor(first.id,second.id)).length&&!Object.keys(explicitCharacterViewFor(second.id,first.id)).length)return strangerScene(first,second,hash(topicSeed),state.uiLanguage);
   if(hash(topicSeed+':topic')%3===0){
     const choice=automaticConversation(state,first,second,'talk',topicSeed),subject=state.characters[choice.subjectId],views={relationships:state.relationships,characterViews:{[first.id]:{[second.id]:a,...(subject?{[subject.id]:characterViewFor(first.id,subject.id)}:{})},[second.id]:{[first.id]:b,...(subject?{[subject.id]:characterViewFor(second.id,subject.id)}:{})}}};
-    const options={allowConflict:automaticConflictAllowed(first,second,a,b,date,state)},story=subject?personConversation(views,first,second,subject,state.uiLanguage,options):topicConversation(views,first,second,choice.topic,state.uiLanguage,options);
+    const options={allowConflict:automaticConflictAllowed(first,second,a,b,date,state),seed:topicSeed,day:dayKey(date),minute:Math.floor(nowMin(date)/45)*45},story=subject?personConversation(views,first,second,subject,state.uiLanguage,options):topicConversation(views,first,second,choice.topic,state.uiLanguage,options);
     if(story){const title=story.title||(state.uiLanguage==='en'?`Talking about ${choice.topic}`:state.uiLanguage==='ja'?`${choice.topic}について話すところ`:`${choice.topic}에 대해 대화하는 중`);return {title,firstTitle:title,secondTitle:title,first:story.speakerText,second:story.listenerText,relationshipContext:true,relationshipCues:{[first.id]:'topic:'+story.mode,[second.id]:'topic:'+story.mode},automaticConflict:story.mode==='argument'}}
   }
   const hasContext=relation||Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
