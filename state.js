@@ -1,3 +1,4 @@
+import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine} from './coffee-crafting.js';
 import {activityPrice,payActivity,moneySettings} from './character-money.js';
 import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
@@ -1203,7 +1204,7 @@ export function createCharacter(limit=5){
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),floorCount:1,activeFloor:1,canvasColumns:24,canvasRows:16,rooms:rooms(),pets:[],cleanliness:100};
+  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),floorCount:1,activeFloor:1,canvasColumns:12,canvasRows:16,canvasFitVersion:1,rooms:rooms(),pets:[],cleanliness:100};
   state.activeHomeId=id;
   state.routines[id]=[];
   state.monthlyRoutines[id]=[];
@@ -1427,7 +1428,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
 export function createHome({open=true}={}){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",iconPreset:"red-roof-home",createdAt:Date.now(),userCreated:true,...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,canvasColumns:24,canvasRows:16,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",iconPreset:"red-roof-home",createdAt:Date.now(),userCreated:true,...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,canvasColumns:12,canvasRows:16,canvasFitVersion:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   if(open){state.activeTab="home";state.homeEditMode=true}
   save(true);
@@ -1577,6 +1578,8 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   let task=String(options.lifeTask||'').startsWith('ambient:')?personalSceneChoicesFor(character,new Date(options.now??Date.now())).find(t=>t.id===options.lifeTask):options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
   if(options.lifeTask==='smoke'){if(!isAdultAge(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
+  finishCoffee(state,character,Number(options.now??Date.now()));
+  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!isCoffeeMachine(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item)))return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
   if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
@@ -1647,6 +1650,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const replacing=new Set([characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}
   for(const [id,old] of Object.entries(state.characterDirectives)){if(oldIds.has(old.id)){delete state.characterDirectives[id];if(state.characters[id]){state.characters[id].timelineResetAt=startedAt;delete state.dailyPlans?.[id]}}}
+  reserveCoffee(character,directive);
   state.characterDirectives[characterId]=directive;
   character.timelineResetAt=startedAt;
   delete state.dailyPlans?.[characterId];

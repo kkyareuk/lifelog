@@ -17,7 +17,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=space?space.canEdit:canEditSharedHome(s,home.id,uid),key=uid+':'+s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  function commit(){
-  const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor,canvasColumns:home.canvasColumns,canvasRows:home.canvasRows});
+  const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor,canvasColumns:home.canvasColumns,canvasRows:home.canvasRows,canvasFitVersion:home.canvasFitVersion});
   if(space)return Promise.resolve(space.commit(layout));
   selection.homeDrafts??={};selection.homeDrafts[home.id]=layout;
   let queue=queues.get(key);
@@ -27,6 +27,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
    const record=current.homes.find(h=>h.id===home.id);if(!record)throw Error(mt('집을 찾지 못했어요.','The home could not be found.','家が見つかりません。'));
    const result=await api.saveHomeLayout({id:home.id,revision:Number(record.layoutRevision)||0,layout});
    record.layoutRevision=result.revision;record.layoutJson=JSON.stringify({...JSON.parse(record.layoutJson||'{}'),...layout});
+   if(JSON.stringify(selection.homeDrafts?.[home.id])===JSON.stringify(layout))delete selection.homeDrafts[home.id];
   });queues.set(key,queue)}
   const next=queue.push(layout);next.catch(e=>toast(e.message));return next;
  }

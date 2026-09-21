@@ -1,7 +1,7 @@
 // One request per action. Dismissing a notice never cancels the save.
 const active=new Map();
 const text=(ko,en,ja)=>({ko,en,ja}[document.documentElement.lang]||ko);
-export function runBackgroundAction(key,operation){
+export function runBackgroundAction(key,operation,options={}){
  if(active.has(key))return active.get(key);
  const notice=document.createElement('aside');notice.className='background-action-notice';notice.setAttribute('role','status');notice.setAttribute('aria-live','polite');
  const icon=document.createElement('span');icon.className='background-action-icon';icon.setAttribute('aria-hidden','true');
@@ -13,7 +13,7 @@ export function runBackgroundAction(key,operation){
  notice.append(icon,content,retry,dismiss);
  let tray=document.querySelector('.background-action-tray');if(!tray){tray=document.createElement('div');tray.className='background-action-tray';document.body.append(tray)}tray.append(notice);
  const run=async()=>{
-  notice.dataset.state='sending';icon.textContent='↗';retry.hidden=true;title.textContent=text('소식을 전하고 있어요','Sending your update','変更を送信しています');message.textContent=text('계속 둘러보셔도 괜찮아요.','You can keep exploring.','そのまま操作できます。');
+  notice.dataset.state='sending';icon.textContent='↗';retry.hidden=true;title.textContent=options.title||text('소식을 전하고 있어요','Sending your update','変更を送信しています');message.textContent=text('계속 둘러보셔도 괜찮아요.','You can keep exploring.','そのまま操作できます。');
   try{
    await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));await operation();notice.dataset.state='success';icon.textContent='✓';title.textContent=text('잘 전달했어요','Update delivered','送信しました');message.textContent=text('변경 사항이 저장됐어요.','Your changes have been saved.','変更を保存しました。');active.delete(key);setTimeout(()=>notice.remove(),2400);
   }catch(error){

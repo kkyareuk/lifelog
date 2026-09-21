@@ -1,3 +1,4 @@
+import {sharedCapacity} from './shared-capacity.js';
 import {slotText} from './character-slots.js?v=20260909dev305';
 import {state,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev305';
 const pendingDrafts=new Map();
@@ -20,12 +21,13 @@ export function showSharedResidentCreator(render){
  help.textContent=t('이 멀티 마을에서 생활할 캐릭터를 만들어요. 본인의 캐릭터 슬롯 1개만 사용하며, 만든 뒤 성격과 외형을 설정할 수 있어요.','Create a character who lives in this multiplayer town. Uses one of your own character slots; edit personality and appearance after creation.','このマルチの村で暮らすキャラクターを作成します。自分のキャラクター枠を1つ使用し、作成後に性格や外見を設定できます。');
  const manager=s.group?.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role));if(!manager)help.textContent+=' '+t('일반 회원은 관리자나 방장의 승인이 필요해요.','Members need approval from a manager or the owner.','一般メンバーは管理者か村主の承認が必要です。');
  status.setAttribute('role','status');status.setAttribute('aria-live','polite');submit.type='submit';submit.textContent=manager?t('만들기','Create','作成'):t('생성 신청','Request creation','作成を申請');cancel.type='button';cancel.textContent=t('닫기','Close','閉じる');
+ if(!sharedCapacity(s,uid).remaining){submit.disabled=true;input.disabled=true;status.textContent=t('이 멀티의 캐릭터 정원을 모두 사용했어요.','Your character limit in this group has been reached.','このマルチのキャラクター上限に達しました。')}
  label.append(input);form.append(title,label,help,status,submit,cancel);dialog.append(form);document.body.append(dialog);
  const count=document.createElement('p');count.textContent=slotText(state,window.ParallelCityAuth?.getInfo?.()).text;help.after(count);api.refreshSlotUsage?.().then(v=>{if(dialog.isConnected)count.textContent=slotText(state,window.ParallelCityAuth?.getInfo?.(),v).text}).catch(()=>{});
  let pending=false,draft=pendingDrafts.get(uid+':'+groupId)||null;
  cancel.onclick=()=>dialog.close();dialog.onclose=()=>dialog.remove();
  form.onsubmit=async e=>{
-  e.preventDefault();if(pending||!input.value.trim())return;
+  e.preventDefault();if(pending||!input.value.trim()||!sharedCapacity(api.getSnapshot(),uid).remaining)return;
   if(api.getSnapshot().activeGroupId!==groupId||window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid){status.textContent=t('마을이나 계정이 바뀌었어요. 닫은 뒤 다시 열어 주세요.','Town or account changed. Close and reopen this window.','村またはアカウントが変わりました。閉じて開き直してください。');return}
   draft??=newSharedResidentInput(groupId,townId,input.value);pendingDrafts.set(uid+':'+groupId,draft);pending=true;input.disabled=true;submit.disabled=true;cancel.disabled=false;form.setAttribute('aria-busy','true');
   status.textContent=t('요청을 보내는 중이에요. 닫아도 처리는 계속돼요.','Sending your request. Processing continues if you close this window.','申請を送信中です。閉じても処理は続きます。');

@@ -6,8 +6,11 @@ async function create({db,clock=Date.now},tx,uid,input,approved=false){
  const [group,member,old,all,slots]=await Promise.all([tx.get(root),tx.get(root.collection('members').doc(uid)),tx.get(ref),tx.get(root.collection('residents')),usage(db,tx,uid)]);
  if(!group.exists||!member.exists)fail('group-membership-required',403);if(old.exists)return {id:ref.id,status:'accepted'};
  if(!group.data().towns?.some(t=>t.id===input.townId))fail('town-missing',404);check(slots,'characters');
- const role=member.data().role,rules=group.data().rules||{},limit=Math.max(1,Number(rules[role==='operator'?'operatorCharacterLimit':['owner','manager'].includes(role)?'managerCharacterLimit':'memberCharacterLimit'])||(['owner','manager','operator'].includes(role)?100:20));
- if(all.docs.length>=200||all.docs.filter(d=>d.data().ownerUid===uid).length>=limit)fail('resident-limit',409);
+ const role=group.data().ownerUid===uid?'owner':member.data().role,capacity=require('./resident-capacity');
+ const proposals=await tx.get(root.collection('proposals').where('senderUid','==',uid));
+ const same=proposals.docs.find(d=>d.id==='create-'+uid+'_'+input.id);
+ if(!approved&&same)return {id:ref.id,status:same.data().status,proposalId:same.id};
+ if(all.docs.length>=200||all.docs.filter(d=>d.data().ownerUid===uid).length+(approved?0:capacity.pending(proposals.docs))>=capacity.limit(group.data(),member.data(),uid))fail('resident-limit',409);
  const profile=input.profile,home=input.home;
  if(!profile||typeof profile!=='object'||Array.isArray(profile)||typeof profile.name!=='string'||!profile.name.trim()||profile.name.length>40||JSON.stringify(profile).length>120000||!home?.rooms||JSON.stringify(home).length>180000)fail('invalid-profile');
  if(!approved&&group.data().ownerUid!==uid&&!['owner','manager','operator'].includes(role))return require('./resident-approval').request({db,clock},tx,root,uid,input,member.data());

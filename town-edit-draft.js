@@ -15,5 +15,11 @@ export function stageTownEdit(s,action,input){
  }
  return draft;
 }
-export function withTownEditDraft(s){const d=s&&townEditDraft(s);return d?{...s,group:{...s.group,towns:s.group.towns.map(t=>t.id===d.town.id?d.town:t)},homes:d.homes}:s}
+export function withTownEditDraft(s){
+ const d=s&&townEditDraft(s);if(!d)return s;
+ // Overlay only pending placement edits. A copied home list must not resurrect
+ // deleted homes or mask a newer interior/photo snapshot.
+ const homes=(s.homes||[]).map(home=>{const edit=d.operations.get('saveHomePlacement:'+home.id);return edit?{...home,...edit.patch}:home});
+ return {...s,group:{...s.group,towns:s.group.towns.map(t=>t.id===d.town.id?d.town:t)},homes};
+}
 export async function commitTownEdit(s,api){const d=townEditDraft(s);if(!d)return null;if(d.saving)throw Error('edit-saving');if(!d.operations.size){drafts.delete(key(s));return null}d.saving=true;try{const result=await api.saveTownEdit({townId:d.town.id,revision:d.revision,operations:[...d.operations].map(([key,input])=>({action:key.split(':')[0],input}))});drafts.delete(key(s));return result}finally{d.saving=false}}

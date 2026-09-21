@@ -1,0 +1,16 @@
+import {advanceSharedLife} from '../server-life.mjs';
+import assert from 'node:assert/strict';
+const g=await import('../state.js?v=20260909dev305');
+const id=g.createCharacter(),profile=structuredClone(g.state.characters[id]),home=structuredClone(g.state.homes[id]);
+home.rooms.kitchen.furniturePlacements=[{id:'machine',item:'커피머신',x:50,y:50}];
+const snapshot={group:{id:'g',towns:[{id:'t',name:'Town',places:[]}]},homes:[{id:'h',ownerUid:'u',sourceHomeId:id,townId:'t',layoutJson:JSON.stringify(home)}],residents:[{id:'r',ownerUid:'u',name:'Resident',townId:'t',sourceCharacterId:id,sourceHomeId:id,sharedHomeId:'h',profileJson:JSON.stringify(profile),scheduleJson:'{}'}]};
+const before=JSON.stringify(g.state),now=Date.now(),target={type:'furniture',homeId:'h',room:'kitchen',id:'machine'};
+const first=advanceSharedLife(snapshot,now,{characterId:'r',kind:'meal',lifeTask:'coffee_whipped_milk',contextTarget:target});
+const pending=JSON.parse(first[0].lifeJson);assert.equal(pending.coffeeInventory.whipped_milk,undefined);
+snapshot.residents[0].lifeJson=first[0].lifeJson;
+const complete=advanceSharedLife(snapshot,pending.directive.endsAt+1);assert.equal(JSON.parse(complete[0].lifeJson).coffeeInventory.whipped_milk,1);
+snapshot.residents[0].lifeJson=complete[0].lifeJson;
+const repeat=advanceSharedLife(snapshot,pending.directive.endsAt+2);assert.equal(JSON.parse(repeat[0].lifeJson).coffeeInventory.whipped_milk,1);
+const latte=advanceSharedLife(snapshot,pending.directive.endsAt+3,{characterId:'r',kind:'meal',lifeTask:'coffee_latte',contextTarget:target});assert.equal(JSON.parse(latte[0].lifeJson).coffeeInventory.whipped_milk,0);
+assert.equal(JSON.stringify(g.state),before,'Shared crafting must not mutate the personal world');
+console.log('PASS server crafting persists through snapshots, finishes once, consumes ingredient, preserves personal state');
