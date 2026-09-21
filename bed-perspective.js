@@ -7,5 +7,5 @@ export function bedPerspective(placement={}){
 }
 export function bedPillowPoint(perspective,slot,underCover=true){
  if(perspective.side){const far=perspective.direction===1?slot===0:slot===1;return {x:(underCover?.235:.275)*perspective.direction,y:far?-.238:.048,depth:far?1:2}}
- return {x:(slot===0?-.18:.18)*perspective.artFlip,y:underCover?-.225:-.29,depth:1};
+ return {x:(slot===0?-.18:.18)*perspective.artFlip,y:underCover?-.27:-.29,depth:1};
 }
