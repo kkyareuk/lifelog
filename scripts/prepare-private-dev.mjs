@@ -19,7 +19,7 @@ await writeFile(resolve(out,'config.js'),config);
 const policy="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.gstatic.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'";
 for(const name of ['index.html','login.html','payment.html','payment-success.html','payment-fail.html','privacy.html','terms.html']){
  try{const p=resolve(out,name);let html=await readFile(p,'utf8');html=html.replace(/<head([^>]*)>/i,`<head$1><meta http-equiv="Content-Security-Policy" content="${policy}"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">`);
- if(name==='index.html')html=html.replace('</body>',`<script src="./private-dev-label.js"></script></body>`);
+ if(name==='index.html')html=html.replace('</head>','<script>window.DRAWER_VILLAGE_ECONOMY_ENABLED=true;</script></head>').replace('</body>',`<script src="./private-dev-label.js"></script></body>`);
  await writeFile(p,html);}catch(e){if(e.code!=='ENOENT')throw e;}
 }
 await writeFile(resolve(out,'private-dev-label.js'),`(()=>{document.title='[DEV] '+document.title;const p=document.createElement('div');p.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#382d55;color:white;text-align:center;font:12px/18px sans-serif;pointer-events:none';p.textContent=({en:'Private test · device-only saves · live services disabled',ja:'非公開テスト · 端末のみ保存 · 本番接続なし'}[localStorage.getItem('uiLanguage')]||'비공개 개발 테스트 · 기기 전용 저장 · 운영 서버 연결 차단');document.body.append(p)})();`);

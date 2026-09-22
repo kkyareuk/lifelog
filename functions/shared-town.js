@@ -14,7 +14,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const advance=await engine();
       return db.runTransaction(async tx=>{
         const {ref,group}=await context(tx,input.groupId,uid),now=clock();
-        if(!input.command&&group.lifeUpdatedAt&&(now-Number(group.lifeUpdatedAt)<60000||Number(group.lifeNextAt)>now))return {updated:false};
+        if(!input.command&&group.lifeUpdatedAt&&(now-Number(group.lifeUpdatedAt)<1000||Number(group.lifeNextAt)>now))return {updated:false};
         const [r,h,relationships,declarations,catalog,perceptions,schedules]=await Promise.all([tx.get(ref.collection('residents')),tx.get(ref.collection('homes')),tx.get(ref.collection('relationships')),tx.get(ref.collection('declarations')),tx.get(ref.collection('catalog')),tx.get(ref.collection('perceptions')),tx.get(ref.collection('schedules'))]);
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
@@ -30,7 +30,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
           for(const key of new Set([input.command.targetId,...extras])){const contact=residents.find(r=>r.id===key);if(contact)await require('./user-safety').allowContact(db,tx,uid,contact.ownerUid);}
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
-        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command?now:Math.floor(now/60000)*60000,input.command||null);
+        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{return !!JSON.parse(r.lifeJson||'{}').cooking?.active}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
         for(const life of lives){
@@ -39,7 +39,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
         }
         const future=[now+300000];
-        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
         const lifeNextAt=Math.max(now+1000,Math.min(...future));
         tx.update(ref,{lifeUpdatedAt:now,lifeNextAt});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
       });
@@ -136,9 +136,10 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
       const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
-      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','bg','travelAllowed','transportModes'];
+      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','bg','travelAllowed','transportModes'];
       for(const [key,value] of Object.entries(input.patch||{})){
         if(!fields.includes(key))fail('invalid-town-field');
+        if(key==='era'&&!['modern','medieval','joseon','rococo','victorian','cyberpunk'].includes(value)||key==='culture'&&!['mixed','europe','korea','japan','china','usa','italy'].includes(value))fail('invalid-town-setting');
         if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}

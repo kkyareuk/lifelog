@@ -1,3 +1,5 @@
+import {economyAvailable} from './economy-access.js';
+import {displayImageSource} from './local-media.js?v=20260909dev305';
 import {state,save} from './state.js?v=20260909dev305';
 import {ensureWallet,moneySettings,displayMoney,moneyFromDisplay,updateMoneySettings,setWalletSharing,moveCommonMoney} from './character-money.js';
 import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
@@ -8,8 +10,12 @@ function context(){const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),sh
 const errorText=(error,lang)=>error.message==='money-insufficient'?words(lang,'잔액이 부족해요.','Insufficient funds.','残高が不足しています。'):error.message;
 export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
  const info=context(),{world,snapshot}=info,c=characterId?world.characters[characterId]:info.c;if(!c)return;
+ if(!economyAvailable()){
+  const d=document.createElement('dialog'),title=document.createElement('h2'),message=document.createElement('p'),close=document.createElement('button');d.className='character-money-coming';title.id='money-coming-title';title.textContent=pane==='work'?words(world.uiLanguage,'직장','Work','仕事'):words(world.uiLanguage,'지갑','Wallet','財布');d.setAttribute('aria-labelledby',title.id);message.textContent=words(world.uiLanguage,'준비 중입니다.','Coming soon.','準備中です。');close.textContent=words(world.uiLanguage,'닫기','Close','閉じる');close.onclick=()=>d.close();d.onclose=()=>d.remove();d.append(title,message,close);document.body.append(d);d.showModal();return d;
+ }
+
  const tr=(ko,en,ja)=>words(world.uiLanguage,ko,en,ja),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',canEdit=!snapshot||c.ownerUid===uid,accountState=state;
- if(!c.wallet&&!snapshot){ensureWallet(c);save(true)}
+ if(economyAvailable()&&!c.wallet&&!snapshot){ensureWallet(c);save(true)}
  const d=document.createElement('dialog');d.className='character-money-dialog';const isWork=pane==='work';d.dataset.moneyScreen=isWork?'work':'wallet';let page=pane,busy=false;
  const valid=()=>state===accountState&&(window.ParallelCityAuth?.getInfo?.()?.user?.uid||'')===uid&&(!snapshot||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===snapshot.activeGroupId);
  const mutate=async(action,payload={})=>{
@@ -55,7 +61,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
 }
 export function bindCharacterMoney(){
  const {world,c,snapshot}=context();if(!c)return;
- if(snapshot&&!c.wallet&&c.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid){
+ if(economyAvailable()&&snapshot&&!c.wallet&&c.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid){
   const key=snapshot.activeGroupId+':'+c.id;
   if(!walletLoads.has(key)){
    const uid=c.ownerUid;
@@ -66,12 +72,12 @@ export function bindCharacterMoney(){
    }).catch(()=>{}));
   }
  }
- if(!c.wallet&&!snapshot){ensureWallet(c);save(true)}
+ if(economyAvailable()&&!c.wallet&&!snapshot){ensureWallet(c);save(true)}
  const hud=document.querySelector('.game-observe-hud,.standard-observe-view');
- if(hud&&!hud.querySelector('[data-character-balance]')){
-  const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(c.wallet.balance,c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();(hud.querySelector('.home-town-picker')||hud).append(balance);
-  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事']]){const b=document.createElement('button');b.type='button';const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src=key==='wallet'?'./assets/character-ui/wallet.webp':'./assets/home-ui/routine.webp';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
+ if(hud&&!hud.querySelector('.character-money-shortcuts')){
+  const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(c.wallet.balance,c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();if(economyAvailable())hud.append(balance);
+  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','지갑','Wallet','財布'],['work','직장','Work','仕事']]){const b=document.createElement('button');b.type='button';const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src=displayImageSource(c.icon||c.photo||'./assets/home-ui/profile-placeholder.png');img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
  }
  document.querySelectorAll('[data-character-money-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('settings',b.dataset.characterMoneySettings));
- const panel=document.querySelector('[data-home-feature="members"],[data-home-feature="residents"]');if(panel&&!panel.querySelector('[data-household-wallet]')){const b=document.createElement('button');b.dataset.householdWallet='';b.textContent=words(world.uiLanguage,'동거인 공동지갑 설정','Household wallet settings','同居人の共同財布設定');b.onclick=()=>openCharacterMoney('wallet',c.id,world.activeHomeId);panel.append(b)}
+ const panel=document.querySelector('[data-home-feature="members"],[data-home-feature="residents"]');if(economyAvailable()&&panel&&!panel.querySelector('[data-household-wallet]')){const b=document.createElement('button');b.dataset.householdWallet='';b.textContent=words(world.uiLanguage,'동거인 공동지갑 설정','Household wallet settings','同居人の共同財布設定');b.onclick=()=>openCharacterMoney('wallet',c.id,world.activeHomeId);panel.append(b)}
 }

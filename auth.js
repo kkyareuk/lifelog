@@ -1006,6 +1006,7 @@ function watchActiveGroup(groupId,{force=false}={}){
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     if(!clockOnly)emitGroupState();
     if(key==="group"&&value)void migrateLegacyGroup(value);
+    if(key==="members")repairOwnMemberPhoto(groupId,value);
     if(key==="residents"&&value.length){
       const migrationKey=`${user?.uid}:${groupId}`;
       if(value.some(r=>r.ownerUid===user?.uid&&!r.profileJson)&&!migratedSharedProfiles.has(migrationKey)){
@@ -1091,7 +1092,7 @@ async function createGroup({name}={}){
     rules:{memberCharacterLimit:20,operatorCharacterLimit:100,managerCharacterLimit:100,allowInterTownMovement:true,allowHomeVisits:true},
     hostTownId:"",hostTownName:town.name,towns:[town],schemaVersion:3
   });
-  batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),photoURL:accountPhoto(),role:"owner",joinedAt:createdAt});
+  batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),photoURL:await shareableMemberPhoto(accountPhoto()),role:"owner",joinedAt:createdAt});
   batch.set(groupIndexRef(account.uid,groupId),{groupId,role:"owner",joinedAt:createdAt});
   batch.set(doc(db,"groupInvites",inviteCode),{groupId,ownerUid:account.uid,active:true,createdAt});
   await batch.commit();
@@ -1153,6 +1154,26 @@ async function publishCharacterCode(characterId){
   assertSession(session);return sharedTownRequest('publishCharacterCode',{character:sharedProfile(prepared.gameState.character)});
 }
 
+// A device-local photo reference is never a usable member picture on another device.
+const memberPhotoRepairs=new Map();
+function repairOwnMemberPhoto(groupId,members){
+ const uid=user?.uid,member=members.find(m=>m.uid===uid),source=member?.photoURL;
+ if(!source||/^https:\/\//.test(source))return;
+ const key=uid+':'+groupId+':'+source;if(memberPhotoRepairs.has(key))return;
+ const session=captureSession();
+ const task=(async()=>{
+  const photoURL=await shareableMemberPhoto(source);assertSession(session);
+  const reference=doc(db,'groups',groupId,'members',uid);
+  await runTransaction(db,async tx=>{const current=await tx.get(reference);assertSession(session);if(current.exists()&&current.data().photoURL===source)tx.update(reference,{photoURL})});
+ })().catch(()=>{});
+ memberPhotoRepairs.set(key,task);if(memberPhotoRepairs.size>100)memberPhotoRepairs.delete(memberPhotoRepairs.keys().next().value);
+}
+async function shareableMemberPhoto(source){
+ source=String(source||'');if(!source||/^https:\/\//.test(source))return source;
+ const prepared=await prepareWorldPackage({photo:source});
+ if(!/^https:\/\//.test(prepared.photo||''))throw Error('photo-upload-required');
+ return prepared.photo;
+}
 async function prepareWorldPackage(pack){
  requireGroupUser();await activeSyncDone;const session=captureSession(),reference=cloudDoc(session.uid),previous=await getDoc(reference);
  pack=structuredClone(pack);const hydration=await initializeLocalMediaState(pack);assertSession(session);if(hydration.pending)throw Error('photo-upload-required');
@@ -1260,9 +1281,9 @@ window.DrawerVillageGroups={
     if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(Error('Invite not found'),{code:'groups/code-not-found'});
     try{const member=await getDoc(doc(db,'groups',invite.data().groupId,'members',account.uid));if(member.exists())return member.data()}
     catch(error){if(error.code!=='permission-denied')throw error}
-    return {displayName:accountName().slice(0,20),photoURL:account.photoURL||''};
+    return {displayName:accountName().slice(0,20),photoURL:accountPhoto()};
   },
-  saveMemberProfile:async({groupId,name,photoURL})=>{const account=requireGroupUser();name=String(name||'').trim();if(!name||name.length>20)throw Error('Name must contain 1–20 characters');if(photoURL&&!/^https:\/\//.test(photoURL))throw Error('Invalid photo URL');await updateDoc(doc(db,'groups',groupId,'members',account.uid),{displayName:name,photoURL:String(photoURL||'')});},
+  saveMemberProfile:async({groupId,name,photoURL})=>{const account=requireGroupUser();name=String(name||'').trim();if(!name||name.length>20)throw Error('Name must contain 1–20 characters');photoURL=await shareableMemberPhoto(photoURL);if(user?.uid!==account.uid)throw Error('account-changed');await updateDoc(doc(db,'groups',groupId,'members',account.uid),{displayName:name,photoURL:String(photoURL||'')});},
   deleteMail:input=>sharedTownRequest('deleteMail',input),readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,loadOlderMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
   saveCatalogItem:async input=>{
     const gid=input.groupId;if(gid!==groupState.activeGroupId)throw Error('groups/context-changed');

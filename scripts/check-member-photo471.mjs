@@ -1,0 +1,14 @@
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const source=await readFile(new URL('../auth.js',import.meta.url),'utf8');
+const fragment=source.slice(source.indexOf('const memberPhotoRepairs=new Map();'),source.indexOf('async function prepareWorldPackage(pack)'));
+let stored='local-photo',writes=0,uploads=0,delay=null;
+const scope={user:{uid:'owner'},db:{},captureSession:()=>scope.user.uid,assertSession:uid=>{if(uid!==scope.user.uid)throw Error('account-changed')},doc:(_, ...parts)=>parts.join('/'),prepareWorldPackage:async()=>{uploads++;if(delay)await delay;return {photo:'https://example.test/photo.png'}},runTransaction:async(_,run)=>run({get:async()=>({exists:()=>true,data:()=>({photoURL:stored})}),update:(_,value)=>{stored=value.photoURL;writes++}})};
+vm.createContext(scope);vm.runInContext(fragment+'\nthis.api={shareableMemberPhoto,repairOwnMemberPhoto,memberPhotoRepairs};',scope);
+assert.equal(await scope.api.shareableMemberPhoto(''),'');assert.equal(await scope.api.shareableMemberPhoto('https://example.test/existing'),'https://example.test/existing');assert.equal(uploads,0);
+scope.api.repairOwnMemberPhoto('g',[{uid:'other',photoURL:'other-local'},{uid:'owner',photoURL:stored}]);
+await Promise.all(scope.api.memberPhotoRepairs.values());assert.equal(stored,'https://example.test/photo.png');assert.equal(writes,1);
+stored='next-local';let finish;delay=new Promise(r=>finish=r);scope.api.repairOwnMemberPhoto('g',[{uid:'owner',photoURL:stored}]);stored='https://example.test/newer-selection';finish();await Promise.all(scope.api.memberPhotoRepairs.values());assert.equal(stored,'https://example.test/newer-selection');assert.equal(writes,1);
+stored='third-local';delay=new Promise(r=>finish=r);scope.api.repairOwnMemberPhoto('g',[{uid:'owner',photoURL:stored}]);scope.user.uid='other';finish();await Promise.all(scope.api.memberPhotoRepairs.values());assert.equal(writes,1,'Account change must prevent stale upload from changing membership');
+console.log('PASS local member photo upload, existing HTTPS/empty preservation, own-member-only repair, newer photo and session race protection');

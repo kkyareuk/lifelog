@@ -1,3 +1,5 @@
+import {syncCookingUI} from './cooking-ui.js';
+import {TOWN_ERAS,TOWN_CULTURES} from './town-setting.js';
 import {bindCourtWorld,isCourtWorld} from './court-world-ui.js';
 import {bindCharacterMoney,openCharacterMoney} from './character-money-ui.js';
 import {openBuildingInterior} from './building-interior.js';
@@ -9,7 +11,7 @@ import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindFurnitureEditor} from './furniture-editor.js';
 import './selection-popup.js';
-import {notificationCharacters} from './notification-characters.js';
+import {notificationCharacters,notificationKeys,selectedNotificationIds,setNotificationCharacter} from './notification-characters.js';
 import {refreshHomeGames} from './home-social-ui.js?v=20260909dev305';
 import {authoredSelf,ownerLogTemplate} from './character-language.js';
 import {characterLanguageFields,bindCharacterLanguageFields} from './character-language-ui.js';
@@ -3174,7 +3176,7 @@ function bind(){
       event.stopPropagation();
       openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor);
     };
-    el.onkeydown=event=>{if(["Enter"," "].includes(event.key)){event.preventDefault();openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor)}};
+    el.onkeydown=event=>{if(event.target===el&&["Enter"," "].includes(event.key)){event.preventDefault();openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor)}};
   });
   bindHomeCanvasGestures();
   $$("[data-room-drag]").forEach(handle=>bindRoomGeometryHandle(handle,"move"));
@@ -4005,13 +4007,16 @@ function bind(){
     }
     await enableCharacterNotificationsWithConsent(event.currentTarget);
   });
+  $('[data-notification-select-all]')?.addEventListener('click',()=>{
+    const settings=state.characterNotificationSettings,all=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid).flatMap(notificationKeys);
+    settings.characterIds=[...new Set([...(settings.characterIds||[]),...all])];
+    $$('[data-character-notification-character]').forEach(input=>{input.checked=true;input.closest('label')?.classList.add('on')});
+    save(true);queueCharacterNotificationSchedule();
+  });
   $$('[data-character-notification-character]').forEach(input=>input.onchange=async()=>{
     const restoreScroll=preserveSelectionScroll(input);
-    const settings=state.characterNotificationSettings,all=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid).map(c=>c.id);
-    let selected=settings.characterIds?.length?[...settings.characterIds]:[...all];
-    selected=input.checked?[...new Set([...selected,input.dataset.characterNotificationCharacter])]:selected.filter(id=>id!==input.dataset.characterNotificationCharacter);
-    if(!selected.length){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
-    settings.characterIds=selected;
+    const settings=state.characterNotificationSettings,characters=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid);
+    if(!setNotificationCharacter(settings,characters,input.dataset.characterNotificationCharacter,input.checked)){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
     input.closest("label")?.classList.toggle("on",input.checked);
     save(true);input.blur();queueCharacterNotificationSchedule();restoreScroll();
   });
@@ -4260,14 +4265,12 @@ function bind(){
   }));
   $("[data-world-travel-allowed]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.travelAllowed=e.target.checked;saveTownProfile();showToast(e.target.checked?"이 마을의 이동 경로를 열었어요":"이 마을을 오가는 이동을 막았어요")});
   $("[data-world-description]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.description=e.target.value;save()});
-  $("[data-world-era]")?.addEventListener("change",e=>{
-    if(currentTownMode()!=="town")return;
-    const requestedEra=["medieval","중세"].includes(e.target.value)?"medieval":"modern";
-    if(requestedEra==="medieval"&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){
-      e.target.value=state.world.era==="medieval"?"중세":"현대";showToast("중세의 하루 DLC를 구매한 계정에서 사용할 수 있어요");return;
-    }
-    state.world.era=requestedEra;save(true);render();showToast(requestedEra==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
-  });
+  for(const [field,choices] of [['era',TOWN_ERAS],['culture',TOWN_CULTURES]]){
+    $(`[data-world-${field}]`)?.addEventListener('change',e=>{
+      if(currentTownMode()!=='town'||!Object.hasOwn(choices,e.target.value))return;
+      state.world[field]=e.target.value;saveTownProfile();renderPreservingPageScroll(e.target);
+    });
+  }
   $("[data-town-illustration-open]")?.addEventListener("click",()=>$("[data-town-illustration-dialog]")?.showModal());
   $$('[data-town-illustration]').forEach(button=>button.addEventListener("click",()=>{if(setWorldBackground(button.dataset.townIllustration)){button.closest("dialog")?.close();render();showToast("마을 전체 배경 일러스트를 바꿨어요")}}));
   $$('[data-town-illustration-locked]').forEach(button=>button.addEventListener("click",()=>showToast("기후 확장 DLC에서 제공될 마을 일러스트예요")));
@@ -4582,6 +4585,7 @@ function bind(){
   bindMailbox(render,showToast);
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindCharacterMoney();
+  syncCookingUI();
   bindSharedUi({prepareImage:cropImage,bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 
@@ -5994,7 +5998,8 @@ function notificationContextFor(character,seed){
 }
 function notificationSelectedCharacters(){
   const chosen=state.characterNotificationSettings?.characterIds||[],characters=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid);
-  return characters.filter(c=>!chosen.length||chosen.includes(c.id));
+  const selected=selectedNotificationIds(state.characterNotificationSettings,characters);
+  return characters.filter(c=>selected.has(c.id));
 }
 function notificationTopicsFor(character){
   const wanted=state.characterNotificationSettings?.contentKinds||["questions","checkins","comfort","lifeLogs"],context=notificationContextFor(character,1);

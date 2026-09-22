@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {notificationCharacters,selectedNotificationIds,setNotificationCharacter,notificationKeys} from '../notification-characters.js';
+const personal={characters:{a:{id:'a'},b:{id:'b'}}},snapshot={activeGroupId:'g',residents:[{id:'m-a',sourceCharacterId:'a',ownerUid:'me',profileJson:'{}'},{id:'other',ownerUid:'them',profileJson:'{}'}]};
+const moved=notificationCharacters({characters:{b:{id:'b'}}},snapshot,'me');
+assert.deepEqual(moved.map(c=>c.id),['b','m-a']);
+const settings={characterIds:['a']};assert.deepEqual([...selectedNotificationIds(settings,moved)],['m-a']);
+setNotificationCharacter(settings,moved,'b',true);setNotificationCharacter(settings,moved,'m-a',false);assert.deepEqual(settings.characterIds,['b']);
+setNotificationCharacter(settings,moved,'m-a',true);assert(selectedNotificationIds(settings,Object.values(personal.characters)).has('a'));
+assert.equal(setNotificationCharacter({characterIds:['a']},moved,'m-a',false),false);
+const all={characterIds:moved.flatMap(notificationKeys)};assert.equal(selectedNotificationIds(JSON.parse(JSON.stringify(all)),moved).size,2);
+assert.equal(selectedNotificationIds({},moved).size,2);console.log('PASS default, all, individual, multiplayer move/return, serialized notification selection');

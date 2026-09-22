@@ -1,0 +1,9 @@
+<ko-KR>
+100가지 요리와 재료비·요리 레벨을 추가했어요. 동작에 따라 2~7초씩 과정을 보여주고 요리 소리가 나요. 시대와 국가·문화권을 따로 선택할 수 있어요. 가구 선택, 같은 방의 일정 참여자 표시, 알림 캐릭터 선택·전체 선택, 멀티 프로필 사진과 캐릭터 선택창 겹침을 개선했어요.
+</ko-KR>
+<en-US>
+Added 100 recipes with ingredient costs, cooking levels, sound effects and steps lasting 2–7 seconds. Choose a town's era and culture separately. Improved furniture selection, display of shared-room participants, notification character selection and Select All, multiplayer profile photos and character picker layering.
+</en-US>
+<ja-JP>
+材料費・料理レベル付きの100種類の料理を追加しました。工程に応じて2〜7秒で表示され、調理音が流れます。町の時代と国・文化圏を別々に選べます。家具の選択、同じ部屋の予定参加者表示、通知キャラクターの選択・全選択、マルチのプロフィール写真、キャラクター選択画面の重なりを改善しました。
+</ja-JP>

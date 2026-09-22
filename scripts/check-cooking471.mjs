@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {advanceSharedLife} from '../server-life.mjs';
+import {RECIPES} from '../recipes.js';
+import {recipeDurations} from '../cooking-timing.js';
+import {cookingProgress} from '../cooking.js';
+const g=await import('../state.js?v=20260909dev305');
+assert.equal(RECIPES.length,100);assert.equal(new Set(RECIPES.map(r=>r.id)).size,100);
+for(const cuisine of new Set(RECIPES.map(r=>r.cuisine)))assert.equal(RECIPES.filter(r=>r.cuisine===cuisine).length,20);
+const id=g.createCharacter(),profile=structuredClone(g.state.characters[id]),home=structuredClone(g.state.homes[id]);
+const snapshot={group:{id:'g',towns:[{id:'t',name:'Town',era:'modern',culture:'korea',places:[]}]},homes:[{id:'h',ownerUid:'u',sourceHomeId:id,townId:'t',layoutJson:JSON.stringify(home)}],residents:[{id:'r',ownerUid:'u',name:'Resident',townId:'t',sourceCharacterId:id,sourceHomeId:id,sharedHomeId:'h',profileJson:JSON.stringify(profile),scheduleJson:'{}'}]};
+const before=JSON.stringify(g.state),now=Date.now(),command={characterId:'r',kind:'meal',lifeTask:'simple_cook',recipeId:'kimchi_jjigae',cookingRequestId:'recipe-test-471'};
+const first=advanceSharedLife(snapshot,now,command),pending=JSON.parse(first[0].lifeJson);assert(pending.cooking?.active,'Recipe command reaches server cooking');
+const job=pending.cooking.active;assert.equal(job.endsAt-job.startedAt,recipeDurations(RECIPES.find(r=>r.id===job.recipeId)).reduce((a,b)=>a+b,0));assert(job.stepDurations.every(n=>n>=2000&&n<=7000));assert.equal(cookingProgress(job,job.startedAt).step,0);assert.equal(cookingProgress(job,job.startedAt+2999).step,0);assert.equal(cookingProgress(job,job.startedAt+3000).step,1);
+snapshot.residents[0].lifeJson=first[0].lifeJson;
+const replay=advanceSharedLife(snapshot,now+10,command);assert.equal(JSON.parse(replay[0].lifeJson).wallet.balance,pending.wallet.balance,'Duplicate request never charges twice');snapshot.residents[0].lifeJson=replay[0].lifeJson;
+const complete=advanceSharedLife(snapshot,job.endsAt+1),done=JSON.parse(complete[0].lifeJson);assert.equal(done.cooking.inventory.kimchi_jjigae,1);assert.equal(done.cooking.experience,1);snapshot.residents[0].lifeJson=complete[0].lifeJson;
+const repeat=advanceSharedLife(snapshot,job.endsAt+2);assert.equal(JSON.parse(repeat[0].lifeJson).cooking.inventory.kimchi_jjigae,1);assert.equal(JSON.stringify(g.state),before);
+console.log('PASS 100 unique recipes, 20 per cuisine, variable 2–7 second timings and boundaries, shared commands, persisted jobs, replay billing, once-only completion, personal isolation');

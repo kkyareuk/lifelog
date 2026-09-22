@@ -1,3 +1,5 @@
+import {canStartCooking,startCooking,finishCooking} from './cooking.js';
+import {characterTown,townActivityAllowed} from './town-setting.js';
 import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine} from './coffee-crafting.js';
 import {activityPrice,payActivity,moneySettings} from './character-money.js';
 import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
@@ -597,7 +599,7 @@ function normalizeHomes(x){
     [...places,...activePlaces].forEach(place=>{if(place&&typeof place==="object"&&!x.deletedPlaceIds.includes(String(place.id)))merged.set(String(place.id||uid()),place)});
     town.places=[...merged.values()];
   });
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),...normalizeTownProfile(t),photo:"",density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),size:String(t.size||"보통 마을"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),...normalizeTownProfile(t),photo:"",density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),size:String(t.size||"보통 마을"),description:String(t.description||"").slice(0,600),places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.townId=t.id;
@@ -1576,16 +1578,22 @@ export function contactAllowed(a,b,kind){return !contactFailure(a,b,kind)}
 export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
+  const cookingNow=Number(options.now??Date.now());finishCooking(state,character,cookingNow);
+  if(options.recipeId&&character.cooking?.requests?.includes(options.cookingRequestId))return true;
+  if(character.cooking?.active)return false;
+  if(options.recipeId&&(kind!=='meal'||options.lifeTask!=='simple_cook'||options.targetId||options.companionIds?.length||canStartCooking(state,character,options.recipeId,cookingNow)))return false;
   let task=String(options.lifeTask||'').startsWith('ambient:')?personalSceneChoicesFor(character,new Date(options.now??Date.now())).find(t=>t.id===options.lifeTask):options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
   if(options.lifeTask==='smoke'){if(!isAdultAge(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
   finishCoffee(state,character,Number(options.now??Date.now()));
+  if(!townActivityAllowed(characterTown(state,character),task||{kind,lifeTask:options.lifeTask}))return false;
   if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!isCoffeeMachine(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item)))return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
   if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
+  if([target?.id,...(Array.isArray(options.companionIds)?options.companionIds:[])].some(id=>state.characters[id]?.cooking?.active?.endsAt>cookingNow))return false;
   if(contactFailure(character,target,kind))return false;
   // Explicit mutual contact settings also permit a directed kiss. A custom
   // relationship name must not silently veto the user's settings.
@@ -1647,6 +1655,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
+  if(options.recipeId&&!startCooking(state,character,directive,options.recipeId,options.cookingRequestId,startedAt))return false;
   if(!payActivity(state,[characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean),expense,'directive:'+directiveId,startedAt,options.payment))return false;
   const replacing=new Set([characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}

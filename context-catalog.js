@@ -1,3 +1,4 @@
+import {characterTown,townActivityAllowed} from './town-setting.js';
 import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
 import {SOCIAL_ACTIVITIES,workTasks} from './social-activities.js?v=20260909dev305';
 import {personalChoices} from './automatic-activities.js?v=20260909dev305';
@@ -16,5 +17,5 @@ export function allContextGroups(world,actor){
   {label:label(['교류·상호작용','Social interactions','交流']),actions:[...social.filter(a=>!SOCIAL_ACTIVITIES[a[0]]).map(a=>simple(...a)),...Object.entries(SOCIAL_ACTIVITIES).map(([kind,a])=>({kind,label:label(a.labels),unbound:true}))].map(a=>({...a,companion:true,details:true}))},
   {label:label(['선물','Gifts','贈り物']),actions:[simple('mailbox','우편함에서 선물 보내기','Send a gift from the mailbox','郵便箱から贈り物を送る')]},
   {label:label(['나답게','Personal time','自分らしく']),actions:[...personalSceneChoicesFor(actor).map(task),...personalChoices(world,actor).map(t=>({...t,label:label(t.labels),companionId:t.targetId,unbound:true}))]}
- ].filter(g=>g.actions.length);
+ ].map(g=>({...g,actions:g.actions.filter(a=>townActivityAllowed(characterTown(world,actor),{...a,labels:Object.values(a.label||{})}))})).filter(g=>g.actions.length);
 }
