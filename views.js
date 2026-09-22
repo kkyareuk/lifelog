@@ -9,7 +9,7 @@ import {setDiscoveryEntitlement} from './discovery-access.js';
 import {bindBannerAds} from './banner-ads.js';
 import {counterArt} from './counter-art.js';
 import {notificationCharacters,selectedNotificationIds} from './notification-characters.js';
-import {socialHomeDock,socialHomeRight,joinedHomeCircles} from './home-social-ui.js?v=20260909dev305';
+import {socialHomeDock,socialHomeRight} from './home-social-ui.js?v=20260909dev305';
 import {characterLanguageFields} from './character-language-ui.js';
 import {logOrderControl,sortLogEntries} from './log-order.js';
 import {petMotionPath,retainPetPaths} from './pet-motion.js?v=20260909dev305';
@@ -870,13 +870,13 @@ function avatar(c,cls=""){
   const fallback=esc((c.name||"새").slice(0,1));
   if(c.icon)return `<img class="sprite ${cls}" src="${imageEsc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${imageEsc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
-  return `<span class="avatar ${cls}">${fallback}</span>`;
+  return `<img class="sprite ${cls}" src="./assets/home-ui/profile-placeholder.png" alt="${esc(c.name||'')}">`;
 }
 function profileAvatar(c,cls=""){
   const fallback=esc((c.name||"새").slice(0,1));
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${imageEsc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   if(c.icon)return `<img class="sprite ${cls}" src="${imageEsc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
-  return `<span class="avatar ${cls}">${fallback}</span>`;
+  return `<img class="sprite ${cls}" src="./assets/home-ui/profile-placeholder.png" alt="${esc(c.name||'')}">`;
 }
 function wardrobeSceneItem(c,entry,field){
   // Editing base artwork must not run the daily wardrobe simulation or replace
@@ -921,7 +921,7 @@ function sceneAvatar(c,cls="",tone="neutral",mode="sd",entry=null){
     return `<img class="sprite scene-ld-art ${cls}" src="${imageEsc(src)}" alt="${esc(c.name)} LD 일러스트">`;
   }
   const src=sdArtSource(c,entry);
-  if(!src)return `<span class="scene-default-silhouette ${cls}" role="img" aria-label="${esc(c.name)} 기본 실루엣"></span>`;
+  if(!src)return `<img class="sprite scene-default-statue ${cls}" src="./assets/home-ui/profile-placeholder.png" alt="${esc(c.name)}">`;
   return `<img class="sprite ${usesProfilePhoto(c,entry)?"profile-photo-fallback":""} ${cls}" src="${imageEsc(src)}" alt="${esc(c.name)}">`;
 }
 function header(){
@@ -981,7 +981,7 @@ export function setNativeShopSection(value="base"){
   const next=String(value||"base");
   nativeShopSection=["bundle","base","skin","expansion"].includes(next)?next:"base";
 }
-function gameHudSideMenu(side,character){return side==='right'?socialHomeRight(unreadMailCount()):joinedHomeCircles()}
+function gameHudSideMenu(side,character){return side==='right'?socialHomeRight(unreadMailCount()):""}
 function gameHudDock(character){return socialHomeDock()}
 function rosterSummary(entry){
   const title=String(entry?.title||"생활 중").split(" · ")[0].trim();
@@ -4659,7 +4659,7 @@ function townMobile(sharedPass=false){
   const multiplayerName=multiplayer?.name||state.personalTownLabel||t("내 마을","내 마을"),headerTownName=multiplayerTown?.name||state.world.name;
   const desktopTabs=`<div class="town-tabs">${state.towns.map(town=>`<button data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}">🏙️ ${esc(town.name)}</button>`).join("")}${mobileTownMode==="town"?`<button data-add-town>+ ${t("마을 추가","마을 추가")}</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">${t("현재 마을 삭제","현재 마을 삭제")}</button>`:""}`:""}</div>`;
   const canEditShared=!multiplayer||multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(multiplayerSnapshot.members?.find(m=>m.uid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||m.id===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role||multiplayerSnapshot.role||(multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?'owner':''));
-  const menuButtons=`${multiplayer?`<button type="button" class="home-native-pill" data-shared-residents><span>${t("구성원","구성원")}</span></button>`:""}<button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode ${canEditShared?'':'disabled'}><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>`;
+  const menuButtons=`<button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode ${canEditShared?'':'disabled'}><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>`;
   const townHeader=`<header class="town-native-header"><button type="button" class="home-native-back town-native-back" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}"><img src="${imageEsc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><div class="town-native-context"><button type="button" class="town-native-community" data-open-multiplayer-switcher aria-label="${esc(t("멀티 변경","멀티 변경"))}"><span>${esc(multiplayerName)} <i aria-hidden="true" style="font-style:normal">▾</i></span></button><button type="button" class="town-native-town-pill" data-open-town-switcher aria-label="${esc(t("마을 이동","마을 이동"))}"><span>${esc(headerTownName)} <i aria-hidden="true" style="font-style:normal">▾</i></span></button></div><span class="town-native-status">${t("현재 {current}명 · 거주 {resident}명","현재 {current}명 · 거주 {resident}명").replace("{current}",localIds.length).replace("{resident}",residentIds.length)}</span><div class="town-native-menu" role="navigation" aria-label="${esc(t("마을 메뉴","마을 메뉴"))}">${menuButtons}</div></header>`;
   const townSwitchOptions=multiplayer?(multiplayer.towns||[]).map(town=>`<button type="button" data-multiplayer-town-open="${esc(town.id||"")}" class="${town.id===multiplayerSnapshot.selectedTownId||town===multiplayerTown?"on":""}"><i aria-hidden="true" style="background-image:url(&quot;${imageEsc(town.bg||TOWN_BACKGROUND)}&quot;)"></i><span><b>${esc(town.name||multiplayer.hostTownName||t("멀티 마을 없음","No multiplayer town"))}</b><small>${({ko:"현재 멀티 마을",en:"Current multiplayer town",ja:"現在のマルチタウン"}[state.uiLanguage]||"현재 멀티 마을")}</small></span></button>`).join(""):state.towns.map(town=>`<button type="button" data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}"><i aria-hidden="true" style="background-image:url(&quot;${imageEsc(town.bg||TOWN_BACKGROUND)}&quot;)"></i><span><b>${esc(town.name)}</b><small>${town.id===state.activeTownId?t("현재 마을","현재 마을"):t("이 마을로 이동","이 마을로 이동")}</small></span></button>`).join("")+`<button type="button" class="town-switch-add" data-add-town data-add-town-switcher><i aria-hidden="true">＋</i><span><b>${t("새 마을 만들기","새 마을 만들기")}</b><small>${t("새로운 마을 슬롯을 추가해요","새로운 마을 슬롯을 추가해요")}</small></span></button>`;
   const townSwitcher=`<dialog class="town-switch-dialog" data-town-switch-dialog><form method="dialog"><header><span><small>TOWN SELECT</small><b>${t("마을 이동","마을 이동")}</b></span><button value="cancel" aria-label="${esc(t("닫기","닫기"))}">×</button></header><div>${townSwitchOptions}</div></form></dialog>`;

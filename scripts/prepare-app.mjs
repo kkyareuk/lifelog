@@ -1,4 +1,3 @@
-import './build-local-mafia.mjs';
 import {mkdir, readFile, readdir, rename, rm, writeFile} from "node:fs/promises";
 import {execFile} from "node:child_process";
 import {relative,join,dirname} from "node:path";
@@ -34,14 +33,14 @@ for(const asset of gameWebp.assets){
  if(!useGameWebp||excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
 }
 const includedFiles=new Set(["apple-login.js","apple-login.css","title-screen.css",
-  "cooking.css","court.css","court-world.css","character-money.css","building-interior.css","home-canvas.css","banner-ads.css","diamond-shop.css","diamond-shop.js",
+  "cooking.css","court-world.css","character-money.css","building-interior.css","home-canvas.css","banner-ads.css","diamond-shop.css","diamond-shop.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css","home-editor-position.css",
   "index.html","intro-tour.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js","furniture-drag.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
-  "town-fit.css","home-social-ui.css","mafia-playback.css"
+  "town-fit.css","home-social-ui.css"
 ]);
 const relativeModuleImports=source=>{
   const found=[];
@@ -178,7 +177,6 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
 window.DRAWER_VILLAGE_NATIVE_BUILD="20260918${releaseChannel}${appVersionCode}";
-    window.DRAWER_VILLAGE_PLAZA_ENABLED=${releaseChannel==="internal"};
     window.DRAWER_VILLAGE_ECONOMY_ENABLED=${releaseChannel==="internal"};
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";

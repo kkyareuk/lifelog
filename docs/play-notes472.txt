@@ -1,0 +1,9 @@
+<ko-KR>
+하단 광장을 멀티로 변경하고 구성원을 멀티 설정으로 옮겼어요. 광장 놀이를 제거했어요. 요리하기를 하나로 합치고 아이콘 3열·가격순·레벨순 정렬을 추가했어요. 간편식 40종, 고급 요리 20종, 판타지 요리 20종을 더해 총 180종을 제공해요. 요리 과정을 간소화하고 단계 시간을 최대 3분으로 늘렸어요. 끓이는 소리를 키우고 섞는 소리를 추가했어요. 왼쪽 메뉴 위치와 기본 석고상 아이콘을 개선했어요.
+</ko-KR>
+<en-US>
+Multiplayer replaces Plaza in the bottom menu, with Residents inside multiplayer settings. Plaza games have been removed. Cooking now uses one screen with three-column icon cards and price or level sorting. Explore 180 dishes, including 40 convenience, 20 gourmet and 20 fantasy recipes. Steps are simpler and last up to three minutes. Boiling is louder, mixing sounds have been added, and left-menu placement and default bust icons have been improved.
+</en-US>
+<ja-JP>
+下部の広場をマルチに変更し、住民メニューをマルチ設定内へ移しました。広場のゲームを削除しました。料理画面を統合し、アイコン3列表示と価格順・レベル順を追加しました。簡単料理40種、高級料理20種、ファンタジー料理20種を加え、全180種になりました。工程を簡略化し、1工程を最大3分に延長しました。煮る音を大きくし、混ぜる音を追加しました。左メニューの位置と標準の石膏像アイコンを改善しました。
+</ja-JP>

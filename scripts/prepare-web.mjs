@@ -1,4 +1,3 @@
-import './build-local-mafia.mjs';
 import {access,mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
 import {execFile} from "node:child_process";
 import {relative} from "node:path";
@@ -31,7 +30,7 @@ const includedDirectories=new Set([
   "world-assets"
 ]);
 
-const includedFiles=new Set(["court.css","court-world.css","court-ui.js","court-world-ui.js","court-world-data.js","home-canvas.css","character-money.css","building-interior.css","apple-login.js","apple-login.css","title-screen.css",
+const includedFiles=new Set(["court-world.css","court-world-ui.js","court-world-data.js","home-canvas.css","character-money.css","building-interior.css","apple-login.js","apple-login.css","title-screen.css",
   "banner-ads.css","diamond-shop.css","diamond-shop.js",
   "relationship-context.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
@@ -48,7 +47,7 @@ const includedFiles=new Set(["court.css","court-world.css","court-ui.js","court-
   "payment-fail.html",
   "manifest.webmanifest",
   "social-preview.png",
-  "app.css","home-social-ui.css","mafia-playback.css","intro-tour.css",
+  "app.css","home-social-ui.css","intro-tour.css",
   "character-book.css",
   "shop.css",
   "font-preferences.css",

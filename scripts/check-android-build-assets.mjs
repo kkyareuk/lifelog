@@ -59,7 +59,7 @@ if(preparedFiles.length<100){
 const releaseMetadata=JSON.parse(readFileSync(resolve(root,'ios-release.json'),'utf8'));
 const expectedChannel=process.env.DRAWER_RELEASE_CHANNEL||releaseMetadata.channel||'public';
 const expectedCode=gradle.match(/versionCode\s+(\d+)/)?.[1];
-if(!preparedIndex.includes(`DRAWER_VILLAGE_PLAZA_ENABLED=${expectedChannel==='internal'}`))failures.push('Prepared game flag does not match release channel');
+if(preparedIndex.includes('DRAWER_VILLAGE_PLAZA_ENABLED'))failures.push('Retired plaza flag remains in app');
 if(!preparedIndex.includes(`${expectedChannel}${expectedCode}"`))failures.push('Prepared build identity does not match Android channel and versionCode');
 
 if(failures.length){

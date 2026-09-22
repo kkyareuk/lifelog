@@ -1,15 +1,17 @@
 import {recipeName} from './recipe-localizations.js';
 import {recipeDurations,cookingStepAt} from './cooking-timing.js';
 import {RECIPES} from './recipes.js';
+import {RECIPES as LEGACY_RECIPES} from './cooking-legacy471.js';
 import {BASE_MEAL,ensureWallet,payActivity} from './character-money.js';
 import {characterTown,historicalTown} from './town-setting.js';
 export const recipeById=id=>RECIPES.find(r=>r.id===id);
+export const savedRecipeById=id=>recipeById(id)||LEGACY_RECIPES.find(r=>r.id===id);
 export function cookingLevel(c){return Math.max(1,Math.min(5,1+Math.floor((Number(c?.cooking?.experience)||0)/10)))}
 const preindustrialRecipes=new Set(['miyeokguk','bulgogi','galbijjim','yakgwa','miso_shiru','onigiri','tamagoyaki','chawanmushi','tempura','kitsune_udon','mitarashi_dango','focaccia']);
-export function recipeAllowed(town,recipe){return !!recipe&&(!historicalTown(town)||recipe.cuisine==='medieval'||town?.era!=='medieval'&&preindustrialRecipes.has(recipe.id))}
+export function recipeAllowed(town,recipe){return !!recipe&&(recipe.cuisine==='fantasy'||!historicalTown(town)||!recipe.appliance&&recipe.cuisine==='medieval'||!recipe.appliance&&town?.era!=='medieval'&&preindustrialRecipes.has(recipe.id))}
 export function cookingState(c){return c.cooking??={experience:0,inventory:{},history:[],requests:[],active:null}}
 export function cookingProgress(job,now=Date.now()){
- const recipe=recipeById(job?.recipeId);if(!recipe)return null;
+ const recipe=job?.recipeVersion===472?recipeById(job.recipeId):LEGACY_RECIPES.find(r=>r.id===job?.recipeId);if(!recipe)return null;
  const elapsed=Math.max(0,now-job.startedAt),{step,total}=cookingStepAt(job,recipe,now);
  return {recipe,step,waiting:now<job.startedAt,complete:now>=job.endsAt,fraction:Math.min(1,elapsed/total)};
 }
@@ -29,7 +31,7 @@ export function startCooking(world,c,directive,recipeId,requestId,now){
  ensureWallet(c,now);const amount=Math.round(r.cost.home*BASE_MEAL);
  if(!payActivity(world,[c.id],amount,'recipe:'+requestId,now,'split'))return false;
  const data=cookingState(c),startedAt=Math.max(now,Number(directive.journey?.arrivesAt)||now),stepDurations=recipeDurations(r),endsAt=startedAt+stepDurations.reduce((a,b)=>a+b,0);
- data.active={id:requestId,recipeId:r.id,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
+ data.active={id:requestId,recipeId:r.id,recipeVersion:472,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
  data.requests=[...(data.requests||[]),requestId].slice(-200);
  directive.cookingId=requestId;directive.endsAt=endsAt;
  for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만들기',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
@@ -37,7 +39,7 @@ export function startCooking(world,c,directive,recipeId,requestId,now){
 }
 export function finishCooking(world,c,now){
  const data=c.cooking,job=data?.active;if(!job||now<job.endsAt)return false;
- const recipe=recipeById(job.recipeId);if(!recipe)return false;
+ const recipe=recipeById(job.recipeId)||LEGACY_RECIPES.find(r=>r.id===job.recipeId);if(!recipe)return false;
  data.inventory??={};data.inventory[recipe.id]=Math.min(99,(Number(data.inventory[recipe.id])||0)+1);
  data.experience=Math.min(100000,(Number(data.experience)||0)+1);
  data.history=[{...job,completedAt:job.endsAt},...(data.history||[])].slice(0,30);
