@@ -701,6 +701,7 @@ function normalizeHomes(x){
       room.name=String(room.name||"이름 없는 방");if(["다이닝룸","다이닝 룸"].includes(room.name))room.name="식당";room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
       room.image=String(room.image||"");
       room.floorImage=String(room.floorImage||"");
+      room.hideFurniture=room.hideFurniture===true;
       room.floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
       room.wallMaterial=normalizeWallSurface(room.wallMaterial,room.floorMaterial,room.type);
       // v22부터 사진이 있는 방의 기본 표시를 공간 채우기로 통일한다. 이전

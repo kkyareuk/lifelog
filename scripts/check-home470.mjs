@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {sharedBathScene} from '../shared-bath.js';
+import {advanceHomeLifeSimulation} from '../home-simulation.js';
+const now=1800000000000;
+const tub={id:'tub',item:'욕조',x:50,y:60};
+const world={uiLanguage:'ko',homes:{h:{id:'h',rooms:{bath:{type:'bath',furniturePlacements:[tub]}}}},characters:{a:{id:'a',name:'A',homeId:'h'},b:{id:'b',name:'B',homeId:'h'},c:{id:'c',name:'C',homeId:'h'}},relationships:{r:{a:'a',b:'b',type:'연인'}}};
+const scenes=Object.fromEntries(['a','b','c'].map(id=>[id,{home:true,visitHomeId:'h',room:'bath',title:'목욕하기',lifeTaskId:'bath',minute:600,manualDirective:true,furniture:tub}]));
+const scene=id=>sharedBathScene(world,world.characters[id],scenes[id],p=>scenes[p.id],now);
+const a=scene('a'),b=scene('b');assert(a.pairedBath&&b.pairedBath);assert.equal(a.interactionId,b.interactionId);assert.deepEqual(a.withIds,['b']);assert(!scene('c').pairedBath);
+const contexts=Object.fromEntries(['a','b','c'].map(id=>[id,{scene:scene(id),interactionId:scene(id).interactionId,animateMovement:false}]));
+let simulation=advanceHomeLifeSimulation(world.homes.h,['a','b','c'],contexts,now).simulation;
+assert.equal(simulation.agents.a.furnitureId,'tub');assert.equal(simulation.agents.b.furnitureId,'tub');assert.equal(simulation.agents.c.furnitureId,'');assert.equal(simulation.reservations.tub.characterIds.length,2);
+world.homes.h.lifeSimulation=simulation;
+simulation=advanceHomeLifeSimulation(world.homes.h,['b','a','c'],contexts,now+5000).simulation;
+assert.equal(simulation.reservations.tub.characterIds.length,2,'Reload/order keeps exactly two occupants');
+for(const locale of ['en','ja']){world.uiLanguage=locale;assert.notEqual(scene('a').title,a.title)}
+world.relationships.r.temporalStatus='past';assert(!scene('a').pairedBath);delete world.relationships.r.temporalStatus;
+world.relationships.r.type='친구';assert(!scene('a').pairedBath);world.relationships.r.type='부부';assert(scene('a').pairedBath);
+scenes.b.room='living';assert(!scene('a').pairedBath);scenes.b.room='bath';
+scenes.b.lifeTaskId='shower';assert(!scene('a').pairedBath);scenes.b.lifeTaskId='bath';
+scenes.b.furniture={id:'other',item:'욕조'};assert(!scene('a').pairedBath);scenes.b.furniture=tub;
+world.homes.h.rooms.bath.furniturePlacements=[];assert(!scene('a').pairedBath);
+console.log('PASS couple/spouse bathtub sharing, exact two seats, unrelated/ex-partner/shower/other room/other tub exclusion, reload and translations');

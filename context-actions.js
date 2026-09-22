@@ -4,7 +4,7 @@ import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
 import {relationMetrics} from './relationship-metrics.js';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {characterMood} from './character-mood.js?v=20260909dev305';
-import {SOCIAL_ACTIVITIES} from './social-activities.js?v=20260909dev305';
+import {SOCIAL_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
 import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
 import {relationshipBetween,viewSignals} from './relationship-context.js?v=20260909dev305';
 const label=(ko,en,ja)=>({ko,en,ja});
@@ -51,8 +51,10 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
    furniture=placements.filter(p=>p.item==='의자'&&!busy.has(p.id)&&(p.tableId===table.id||!p.tableId&&Math.hypot(p.x-table.x,p.y-table.y)<28)).sort((a,b)=>Math.hypot(a.x-table.x,a.y-table.y)-Math.hypot(b.x-table.x,b.y-table.y))[0];
    if(!furniture)return null;
   }
-  const capacity=/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
-  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
+  const users=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id);
+  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&hasRomanticRelationship(world.relationships,c.id,users[0][0]);
+  const capacity=coupleBath||/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
+  const used=users.length;
   if(used>=(kind==='affection'?1:capacity))return null;
  }
  return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};

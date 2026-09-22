@@ -1152,7 +1152,7 @@ function openRoomEditor(homeId,roomKey){
   dialog.querySelector("[data-edit-room-photo]").setAttribute("aria-label","관찰·집 정보용 방 사진");
   const sync=()=>{
     if(!state.homes[homeId]?.rooms?.[roomKey])return;
-    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
+    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,hideFurniture:dialog.querySelector('[name="hideFurniture"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
     const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType);
   };
   dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
@@ -1168,7 +1168,7 @@ function openRoomEditor(homeId,roomKey){
   fields.querySelectorAll("small").forEach(node=>node.remove());
   const extra=document.createElement("div");
   extra.className="room-design-extra";
-  extra.innerHTML=`<label class="room-use-photo check">벽지·바닥 대신 사진 사용<input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}></label><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
+  extra.innerHTML=`<section class="room-appearance-options"><label class="room-use-photo check"><input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}>벽지·바닥 대신 사진 사용</label><label class="room-hide-furniture check"><input type="checkbox" name="hideFurniture" ${room.hideFurniture?"checked":""}>가구 숨기기</label><small>가구 그림만 숨겨요. 사용과 배치는 유지되며 편집할 때 다시 보여요.</small></section><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
   fields.append(extra);
   bindRoomPermissionEditor(dialog);
   floorButton.hidden=true;

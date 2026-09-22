@@ -1,0 +1,143 @@
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -1,3 +1,4 @@
++import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
+ import {settleMoneyScene} from './character-money.js';
+ import {finishCoffee} from './coffee-crafting.js';
+ import {recentNarrativeEntries,pickHomeNarrative,homeNarrativeKey,mayFollowUp} from './narrative-selection.js';
+@@ -3186,7 +3187,7 @@
+       return !scheduled||item.manualDirective||item.routineId===scheduled.id||item.giftExchange;
+     })
+     .map(item=>{
+-      if(item.remote||item.remoteContact||item.transit)return item;
++      if(item.pairedBath||item.remote||item.remoteContact||item.transit)return item;
+       const ids=[...new Set([item.withId,...(item.withIds||[])].filter(Boolean))];
+       if(!ids.length&&!needsCompany(item))return item;
+       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,Number(item.minute));
+@@ -3254,6 +3255,9 @@
+     return item;
+   }
+   if(item.manualDirective){
++    // Reading a solo directive to evaluate its partner must not overwrite the
++    // already observed joint bath in history. Return the live solo base only.
++    if(!item.pairedBath&&entries.some(e=>e.pairedBath&&e.manualDirectiveId===item.manualDirectiveId))return item;
+     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&entry.manualDirectiveId!==item.manualDirectiveId&&!(entry.mood==="수면"&&Number(entry.minute)<=Number(item.minute))),[item]));
+     return item;
+   }
+@@ -4788,6 +4792,7 @@
+  const others=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean);
+  const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
+  if(privateOther){
++  if(isTubBath(base)&&sharedBathScene(state,c,base,person=>baseEventFor(person,date),now).pairedBath)return;
+   const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
+   if(ids.includes(c.id)||poly||spousePrivacyExempt(state.relationships,c.id,privateOther.id,e))return;
+   const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
+@@ -4824,7 +4829,8 @@
+     privateLifeEvent(c,date);
+     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
+-    return current;
++    const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
++    return bathing!==current?commitLiveEntry(c,date,bathing):current;
+   })}catch(error){return sceneFailure(c,date,error)}
+ }
+ export function resolveHomeEncounter(c,current,otherScene,date){
+--- a/runtime/context-actions.js
++++ b/runtime/context-actions.js
+@@ -4,7 +4,7 @@
+ import {relationMetrics} from './relationship-metrics.js';
+ import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
+ import {characterMood} from './character-mood.js?v=20260909dev305';
+-import {SOCIAL_ACTIVITIES} from './social-activities.js?v=20260909dev305';
++import {SOCIAL_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
+ import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
+ import {relationshipBetween,viewSignals} from './relationship-context.js?v=20260909dev305';
+ const label=(ko,en,ja)=>({ko,en,ja});
+@@ -51,8 +51,10 @@
+    furniture=placements.filter(p=>p.item==='의자'&&!busy.has(p.id)&&(p.tableId===table.id||!p.tableId&&Math.hypot(p.x-table.x,p.y-table.y)<28)).sort((a,b)=>Math.hypot(a.x-table.x,a.y-table.y)-Math.hypot(b.x-table.x,b.y-table.y))[0];
+    if(!furniture)return null;
+   }
+-  const capacity=/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
+-  const used=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id).length;
++  const users=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id);
++  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&hasRomanticRelationship(world.relationships,c.id,users[0][0]);
++  const capacity=coupleBath||/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
++  const used=users.length;
+   if(used>=(kind==='affection'?1:capacity))return null;
+  }
+  return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
+--- a/runtime/home-simulation.js
++++ b/runtime/home-simulation.js
+@@ -97,6 +97,7 @@
+   {scene:/쉬는|휴식|멍하니/,item:/소파|의자|안마의자/}
+ ];
+ export function furniturePatternForScene(scene){
++  if(scene?.pairedBath)return /욕조/;
+   const needPattern={toilet:/변기/,hygiene:/샤워|욕조|세면대/,eating:/식탁|티 테이블|의자/,sleep:/침대/}[roomActivityKey(scene)];
+   if(needPattern)return needPattern;
+   const text=`${scene?.title||""} ${scene?.desc||""}`;
+@@ -186,7 +187,7 @@
+       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
+       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
+     }
+-    candidates=candidates.filter(item=>!(context.blockedFurnitureIds||[]).includes(item.id)&&(occupied.get(item.id)||0)<item.capacity);
++    candidates=candidates.filter(item=>!(context.blockedFurnitureIds||[]).includes(item.id)&&(occupied.get(item.id)||0)<(scene.pairedBath&&/욕조/.test(item.item)&&[...(current.reservations[item.id]?.characterIds||[])].every(id=>(scene.withIds||[]).includes(id))?2:item.capacity));
+     const previous=current.agents[characterId];
+     // Midnight, translated descriptions and reloads do not start a new walk or
+     // pick another bed while the same sleep continues. Deleted/reassigned beds
+--- a/runtime/state.js
++++ b/runtime/state.js
+@@ -701,6 +701,7 @@
+       room.name=String(room.name||"이름 없는 방");if(["다이닝룸","다이닝 룸"].includes(room.name))room.name="식당";room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
+       room.image=String(room.image||"");
+       room.floorImage=String(room.floorImage||"");
++      room.hideFurniture=room.hideFurniture===true;
+       room.floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
+       room.wallMaterial=normalizeWallSurface(room.wallMaterial,room.floorMaterial,room.type);
+       // v22부터 사진이 있는 방의 기본 표시를 공간 채우기로 통일한다. 이전
+--- /dev/null
++++ b/runtime/shared-bath.js
+@@ -0,0 +1,43 @@
++import {hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
++
++// Only actual bath scenes may share a tub. Washing at a sink or in a shower
++// never becomes a bath just because a bathtub is present in the same room.
++export function isTubBath(scene){
++  if(!scene?.home||scene.transit||scene.meetingJourney)return false;
++  if(scene.lifeTaskId)return scene.lifeTaskId==='bath';
++  return /목욕|반신욕|욕조|taking a bath|bathing|入浴|湯船/i.test(scene.baseTitle||scene.title||'');
++}
++
++export function sharedBathScene(world,character,current,readScene,now=Date.now()){
++  if(!isTubBath(current)||current.routineId)return current;
++  const homeId=current.visitHomeId||character.homeId,home=world.homes?.[homeId],room=home?.rooms?.[current.room];
++  const tubs=(room?.furniturePlacements||[]).filter(p=>/욕조/.test(p.item)).sort((a,b)=>String(a.id).localeCompare(String(b.id)));
++  if(!tubs.length)return current;
++  const scenes=new Map([[character.id,current]]);
++  const bathers=Object.values(world.characters||{}).filter(person=>{
++    const scene=person.id===character.id?current:readScene(person);scenes.set(person.id,scene);
++    return isTubBath(scene)&&!scene.routineId&&(scene.visitHomeId||person.homeId)===homeId&&scene.room===current.room;
++  }).sort((a,b)=>a.id.localeCompare(b.id));
++  const used=new Set(),claimed=new Set();
++  for(const person of bathers){
++    if(used.has(person.id))continue;
++    const own=scenes.get(person.id),pinned=own.furniture?.id||own.meetingFurniture?.id;
++    const tub=tubs.find(p=>!claimed.has(p.id)&&(!pinned||p.id===pinned));
++    if(!tub)continue;
++    claimed.add(tub.id);used.add(person.id);
++    const partner=bathers.find(other=>!used.has(other.id)&&hasRomanticRelationship(world.relationships,person.id,other.id)&&
++      (!scenes.get(other.id).furniture?.id||scenes.get(other.id).furniture.id===tub.id));
++    if(!partner)continue;
++    used.add(partner.id);
++    if(![person.id,partner.id].includes(character.id))continue;
++    const other=person.id===character.id?partner:person,ids=[person.id,partner.id];
++    const copy={ko:['함께 목욕하는 중',`${other.name}와 욕조에 나란히 앉아 따뜻한 물에 몸을 담그고 쉬고 있어요.`],en:['Taking a bath together',`They are relaxing in the warm bath beside ${other.name}.`],ja:['一緒に入浴中',`${other.name}と湯船に並んで座り、温かいお湯でくつろいでいます。`]};
++    const [title,desc]=copy[world.uiLanguage]||copy.ko;
++    const minute=Math.max(Number(own.minute)||0,Number(scenes.get(partner.id).minute)||0);
++    return {...current,title,desc,localizedCopy:Object.fromEntries(Object.entries(copy).map(([lang,[title,desc]])=>[lang,{title,desc}])),baseTitle:current.baseTitle||current.title,baseDesc:current.baseDesc||current.desc,
++      pairedBath:true,lifeTaskId:'bath',activityFamily:'hygiene',actionKind:'wash',furniture:tub,
++      withId:other.id,withIds:[other.id],participantOrder:ids,groupInteraction:true,
++      sharedFurnitureKey:`bath:${tub.id}`,interactionId:`bath:${homeId}:${tub.id}:${ids.join('~')}:${new Date(now).toDateString()}:${minute}`,minute};
++  }
++  return current;
++}

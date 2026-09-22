@@ -1,3 +1,4 @@
+import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
 import {finishCoffee} from './coffee-crafting.js';
 import {recentNarrativeEntries,pickHomeNarrative,homeNarrativeKey,mayFollowUp} from './narrative-selection.js';
 import {settleMoneyScene} from './character-money.js';
@@ -3186,7 +3187,7 @@ export function visibleTimeline(c,date=new Date()){
       return !scheduled||item.manualDirective||item.routineId===scheduled.id||item.giftExchange;
     })
     .map(item=>{
-      if(item.remote||item.remoteContact||item.transit)return item;
+      if(item.pairedBath||item.remote||item.remoteContact||item.transit)return item;
       const ids=[...new Set([item.withId,...(item.withIds||[])].filter(Boolean))];
       if(!ids.length&&!needsCompany(item))return item;
       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),0,Number(item.minute));
@@ -3254,6 +3255,9 @@ function commitLiveEntry(c,date,item){
     return item;
   }
   if(item.manualDirective){
+    // Reading a solo directive to evaluate its partner must not overwrite the
+    // already observed joint bath in history. Return the live solo base only.
+    if(!item.pairedBath&&entries.some(e=>e.pairedBath&&e.manualDirectiveId===item.manualDirectiveId))return item;
     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&entry.manualDirectiveId!==item.manualDirectiveId&&!(entry.mood==="수면"&&Number(entry.minute)<=Number(item.minute))),[item]));
     return item;
   }
@@ -4788,6 +4792,7 @@ function privateLifeEvent(c,date){
  const others=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean);
  const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
  if(privateOther){
+  if(isTubBath(base)&&sharedBathScene(state,c,base,person=>baseEventFor(person,date),now).pairedBath)return;
   const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
   if(ids.includes(c.id)||poly||spousePrivacyExempt(state.relationships,c.id,privateOther.id,e))return;
   const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
@@ -4824,7 +4829,8 @@ export function eventFor(c,date=new Date()){
     privateLifeEvent(c,date);
     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
-    return current;
+    const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
+    return bathing!==current?commitLiveEntry(c,date,bathing):current;
   })}catch(error){return sceneFailure(c,date,error)}
 }
 export function resolveHomeEncounter(c,current,otherScene,date){

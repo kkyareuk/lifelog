@@ -97,6 +97,7 @@ const SCENE_FURNITURE=[
   {scene:/쉬는|휴식|멍하니/,item:/소파|의자|안마의자/}
 ];
 export function furniturePatternForScene(scene){
+  if(scene?.pairedBath)return /욕조/;
   const needPattern={toilet:/변기/,hygiene:/샤워|욕조|세면대/,eating:/식탁|티 테이블|의자/,sleep:/침대/}[roomActivityKey(scene)];
   if(needPattern)return needPattern;
   const text=`${scene?.title||""} ${scene?.desc||""}`;
@@ -189,7 +190,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
     }
-    candidates=candidates.filter(item=>!(context.blockedFurnitureIds||[]).includes(item.id)&&(occupied.get(item.id)||0)<item.capacity);
+    candidates=candidates.filter(item=>!(context.blockedFurnitureIds||[]).includes(item.id)&&(occupied.get(item.id)||0)<(scene.pairedBath&&/욕조/.test(item.item)&&[...(current.reservations[item.id]?.characterIds||[])].every(id=>(scene.withIds||[]).includes(id))?2:item.capacity));
     const previous=current.agents[characterId];
     // Midnight, translated descriptions and reloads do not start a new walk or
     // pick another bed while the same sleep continues. Deleted/reassigned beds

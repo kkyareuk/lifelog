@@ -79,11 +79,13 @@ html body :is(#app,dialog) .editor-save-actions button{min-height:44px;min-width
 html body :is(#app,dialog) .editor-save-actions button.primary{background:#684b33!important;color:#fff8e8!important;-webkit-text-fill-color:#fff8e8!important}
 
 html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="type"]){grid-row:2;grid-column:1}
-html body :is(#app,dialog.home-design-page) .room-use-photo{grid-row:2;grid-column:2;align-self:center}
-html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="wallMaterial"]){grid-row:3;grid-column:1/-1}
-html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="floorMaterial"]){grid-row:4;grid-column:1/-1}
-html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="interiorStyle"]){grid-row:5;grid-column:1}
-html body :is(#app,dialog.home-design-page) .room-cleanliness{grid-row:5;grid-column:2}
+html body :is(#app,dialog.home-design-page,dialog.shared-home-dialog) .room-appearance-options{grid-row:3;grid-column:1/-1;display:grid;gap:12px;padding:14px;border:1px solid #cdbb9b;border-radius:14px;background:#fffdf7}
+html body :is(#app,dialog.home-design-page,dialog.shared-home-dialog) .room-appearance-options small{font-size:12px;line-height:1.5;color:#6e5a48}
+html body :is(#app,dialog.home-design-page,dialog.shared-home-dialog) .room-appearance-options .check{display:flex;align-items:center;gap:8px;min-height:32px}.room-appearance-options input[type="checkbox"]{flex:none;width:18px;height:18px;margin:0}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="wallMaterial"]){grid-row:4;grid-column:1/-1}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="floorMaterial"]){grid-row:5;grid-column:1/-1}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="interiorStyle"]){grid-row:6;grid-column:1}
+html body :is(#app,dialog.home-design-page) .room-cleanliness{grid-row:6;grid-column:2}
 html body :is(#app,dialog.home-design-page) .home-room-browser header{height:min(26.7cqw,124px)!important;position:relative!important;background:none!important;margin:0!important}
 html body #app .home-room-browser header input{position:absolute;left:27cqw;top:min(13cqw,46px);width:66cqw;height:min(10.4cqw,48px);padding:8px 18px;border:0;border-radius:6cqw;background:#fff7ddd9;font-size:min(4cqw,20px)}
 .home-room-filters{display:flex;gap:8px;padding:6px 20px 16px;overflow-x:auto}

@@ -1,0 +1,27 @@
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const require=createRequire(process.cwd()+'/package.json'),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=process.cwd();
+const server=createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname,f=resolve(root,'.'+(p==='/'?'/index.html':p));let b=await readFile(p==='/auth.js'?resolve('scripts/ios-preview-auth.mjs'):f);if(p==='/app.js')b=Buffer.from(b.toString()+'\nwindow.photoQA={openBuildingShapeDialog,openRoomEditor,cropImage};');res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'})[extname(f)]||'application/octet-stream');res.end(b)}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=await (process.argv.includes('--webkit')?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
+try{
+ const p=await browser.newPage({viewport:{width:360,height:800},serviceWorkers:'block'}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.route('**/*',r=>(r.request().url().startsWith(origin)||/^(blob:|data:)/.test(r.request().url()))?r.continue():r.abort());
+ await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.photoQA);
+ await p.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');window.v=await import('/views.js?v=20260909dev305');window.sim=await import('/simulation.js?v=20260909dev305');const id=g.createCharacter();window.qaId=id;window.qaHome=g.state.characters[id].homeId;g.state.activeId=id;g.state.activeHomeId=qaHome;g.state.activeTab='home';g.state.homeEditMode=false;g.addFurniturePlacement(qaHome,'living','소파');document.querySelector('.drawer-title')?.remove();document.documentElement.classList.remove('title-visible');document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.photoQA.openRoomEditor(qaHome,'living')});
+ const d=p.locator('dialog.home-room-editor[open]');await d.locator('[name="hideFurniture"]').check();
+ const layout=await d.locator('.room-appearance-options').evaluate(el=>{const r=el.getBoundingClientRect(),a=el.querySelector('[name="usePhoto"]').getBoundingClientRect(),b=el.querySelector('[name="hideFurniture"]').getBoundingClientRect();return {left:r.left,right:r.right,photoY:a.top,hideY:b.top}});assert(layout.left>=0&&layout.right<=360&&layout.hideY>layout.photoY,JSON.stringify(layout));
+ await p.screenshot({path:'tmp/room470-ko.png'});await d.getByRole('button',{name:'저장',exact:true}).click();await p.waitForFunction(()=>!document.querySelector('dialog.home-room-editor')); 
+ await p.waitForFunction(()=>g.state.homes[qaHome].rooms.living.hideFurniture===true);
+ const art=await p.evaluate(()=>{const room=g.state.homes[qaHome].rooms.living;return {hidden:room.hideFurniture,normal:v.roomFurnitureMarkup(qaHome,'living',room,false),edit:v.roomFurnitureMarkup(qaHome,'living',room,true)}});assert(art.hidden);assert(!art.normal.includes('room-furniture-art'));assert(art.normal.includes('data-furniture-placement'));assert(art.edit.includes('room-furniture-art'));
+ await p.evaluate(()=>window.photoQA.openRoomEditor(qaHome,'living'));assert(await d.locator('[name="hideFurniture"]').isChecked());await d.getByRole('button',{name:'저장',exact:true}).click();await p.waitForFunction(()=>!document.querySelector('dialog.home-room-editor')); 
+ for(const lang of ['en','ja']){await p.evaluate(lang=>{g.state.uiLanguage=lang;window.photoQA.openRoomEditor(qaHome,'living')},lang);assert.equal(await d.locator('.room-hide-furniture').innerText(),lang==='en'?'Hide furniture':'家具を隠す');await p.screenshot({path:`tmp/room470-${lang}.png`});await d.locator('button[value="save"]').last().click();await p.waitForFunction(()=>!document.querySelector('dialog.home-room-editor'))}
+ const bath=await p.evaluate(()=>{
+  g.state.uiLanguage='ko';const a=g.state.characters[qaId],bid=g.createCharacter(),b=g.state.characters[bid],h=g.state.homes[qaHome];b.homeId=qaHome;b.residences=[{homeId:qaHome}];a.ageGroup=b.ageGroup='성인';g.state.relationships.qa={a:a.id,b:b.id,type:'연인'};
+  g.addFurniturePlacement(qaHome,'bath','욕조');const tub=h.rooms.bath.furniturePlacements.find(p=>p.item==='욕조'),now=Date.now(),target={type:'furniture',homeId:qaHome,room:'bath',id:tub.id,item:tub.item};
+  const ok=[a,b].map(c=>g.directCharacterActivity(c.id,'wash',{lifeTask:'bath',contextTarget:target,now}));const time=new Date(now+60000);const scenes=[sim.eventFor(a,time),sim.eventFor(b,time)];return {ok,scenes:scenes.map(s=>({title:s.title,pairedBath:s.pairedBath,lifeTaskId:s.lifeTaskId,home:s.home,room:s.room,transit:s.transit,meetingJourney:s.meetingJourney,withIds:s.withIds,furniture:s.furniture}))};
+ });console.log(JSON.stringify(bath));assert(bath.ok.every(Boolean));assert(bath.scenes.every(s=>s.pairedBath),'Actual directive did not produce paired bath');assert.deepEqual(errors,[]);console.log('PASS room settings 360px KO/EN/JA, hide art/retain targets, edit visibility, save/reopen, actual directed pair bath');
+}finally{await browser.close();server.closeAllConnections();server.close()}
