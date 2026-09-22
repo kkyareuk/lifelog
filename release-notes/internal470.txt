@@ -1,0 +1,9 @@
+<ko-KR>
+방 설정의 사진 사용 옵션 아래에 ‘가구 숨기기’를 추가했어요. 가구 그림만 숨기고 사용·배치는 유지하며, 편집할 때 다시 보여요. 기존 욕조에서 연인·부부 두 명이 함께 목욕할 수 있어요.
+</ko-KR>
+<en-US>
+Added Hide furniture below the room photo option. Furniture artwork is hidden while placement and interactions remain available; furniture reappears during editing. Couples and spouses can now share an existing bathtub.
+</en-US>
+<ja-JP>
+部屋設定の写真使用オプションの下に「家具を隠す」を追加しました。絵だけを隠し、配置と使用は維持され、編集時には再表示されます。恋人・夫婦の2人が既存の浴槽で一緒に入浴できます。
+</ja-JP>
