@@ -20,7 +20,7 @@ try{
  await p.locator('[data-furniture-placement]').first().click({force:true});
  assert.equal(await p.locator('dialog[open]').count(),0,'Furniture pointer capture must not open room information');
  const bubbled=await p.locator('[data-furniture-placement]').first().evaluate(el=>{el.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));return document.querySelectorAll('dialog[open]').length});assert.equal(bubbled,0,'Furniture Enter must not trigger the room keyboard handler');
- 
+
 
  const check=async()=>{await p.waitForFunction(()=>document.querySelector('.home-editor-dock').getBoundingClientRect().bottom<=innerHeight);const bounds=await p.locator('.home-editor-dock').evaluate(el=>{const r=el.getBoundingClientRect();return {top:r.top,bottom:r.bottom,width:r.width,height:innerHeight}});assert(bounds.top>=0&&bounds.bottom<=bounds.height&&bounds.width<=360,JSON.stringify(bounds));assert.equal(await p.locator('.home-native-elevator').count(),0);assert(await p.getByRole('button',{name:'가구 추가',exact:true}).isVisible());};
  await check();await p.setViewportSize({width:360,height:420});await check();

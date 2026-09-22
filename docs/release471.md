@@ -43,8 +43,11 @@ Restaurant prices are reference values. Prepared food is stored/displayed; eatin
 Audio provenance in cooking-audio471.md. Play KO/EN/JA notes in play-notes471.txt.
 
 ## Release status
-Internal release350 upload/review pending. No production promotion or Apple submission for this version.
+Internal release350: internally provided, confirmed in Play Console 2026-09-22 19:03 KST. No production promotion or Apple submission for this version.
 
 Signed AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.419-471-internal.aab
 SHA256: 0F31D633C50CD06D43C4BA9461A2C47B7FBE035010A4C1BA635C30F8A0193DC5
 Jarsigner verified; all526 prepared web assets match signed bundle bytes.
+
+Implementation commit: e3c340b3 (pushed to dev).
+Play final review warnings: 1,176 fewer supported device models due to API24 minimum; no R8 mapping file (minify disabled). No blocking errors.
