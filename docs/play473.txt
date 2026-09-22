@@ -1,0 +1,9 @@
+<ko-KR>
+직업·급여 시스템을 추가했어요. 종교인을 포함한 기본 직업, 직급별 월급과 지급일을 설정할 수 있어요. 캐릭터마다 일급·주급·월급을 선택해도 월 환산 총액은 같고 남은 차액은 월 정산일에 지급돼요. 부서·병과와 자유 직업명을 지정할 수 있어요. 서랍에서 세계관 직업·화폐를 관리하고 직급과 업무를 직접 만들 수 있어요. 멀티 직업 생성은 그룹 규칙을 따라요.
+</ko-KR>
+<en-US>
+Added careers and payroll, including religious workers, ranks and paydays. Choose daily, weekly or monthly pay per character with the same monthly equivalent; remaining amounts settle on the monthly payday. Set departments, specialties and custom job titles. Manage world careers and currency from the Drawer, including custom ranks and work duties. Multiplayer career creation follows group rules.
+</en-US>
+<ja-JP>
+職業・給与システムを追加しました。宗教職を含む基本職業、職階別給与と支給日を設定できます。キャラクターごとに日払い・週払い・月払いを選べ、月額換算は同じです。残額は月の精算日に支給します。部署・兵科・表示用職業名を設定できます。引き出しで世界の職業と通貨を管理し、職階や業務も作れます。マルチでの職業作成はグループ規則に従います。
+</ja-JP>

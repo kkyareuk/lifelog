@@ -1,3 +1,5 @@
+import {settleSalary,employmentOffer} from './salary.js';
+import {applyWorldCurrency} from './career-world.js';
 export const BASE_MEAL=10000;
 export const INITIAL_MONEY=Object.freeze({'형편이 어려움':50000,'평범한 형편':500000,'설정하지 않음':500000,'여유 있는 편':3000000,'부유함':30000000,'대부호':300000000});
 const integer=n=>Number.isSafeInteger(n)&&n>=0;
@@ -59,16 +61,25 @@ export function payActivity(world,characterIds,amount,key,now,payment='split'){
  }
  for(const p of plans){if(p.together)moneyEntry(p.common,-p.together,p.receipt,'expense',now);moneyEntry(p.personal,-p.own,p.receipt,'expense',now)}return true;
 }
+export function settleEmployment(world,c,now=Date.now(),force=false){
+ const wallet=c.wallet,employment=wallet?.employment;if(!employment)return false;
+ applyWorldCurrency(world,c);
+ if(!force&&now-employment.lastAt<60000)return false;
+ const before=employment.lastAt;settleSalary(wallet,employment,now,moneyEntry);
+ try{const offer=employmentOffer(world,employment.jobId,employment.rankId);Object.assign(employment,offer)}catch{}
+ if(employment.lastAt!==before){wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;return true}return false;
+}
 // Called only for live scenes. Historical log rendering must never move money.
 export function settleMoneyScene(world,c,scene,now){
  if(world.sharedContext&&!c.wallet)return scene;
+ settleEmployment(world,c,now);
  const wallet=ensureWallet(c,now),day=Math.floor(now/86400000),work=!scene.transit&&!scene.meetingJourney&&!scene.meetingWaiting&&!scene.routineReturned&&(scene.economyWork||scene.kind==='work'||scene.actionKind==='work'||scene.meetingKind==='work'||['업무','출근','근무'].includes(scene.routineType));
  const workKey='work:'+(scene.economyActivityId||day+':'+(scene.routineId||scene.placeId||'job'));
- if(wallet.work&&(!work||wallet.work.key!==workKey)){
+ if(!wallet.employment&&wallet.work&&(!work||wallet.work.key!==workKey)){
   if(now>=wallet.work.startedAt&&(!wallet.work.endsAt||now>=wallet.work.endsAt)&&c.job&&!['무직','학생'].includes(c.job))moneyEntry(wallet,moneySettings(c).wage,wallet.work.key,'wage',now,c.jobTitle||c.job);
   delete wallet.work;wallet.revision=(wallet.revision||0)+1;
  }
- if(work&&!wallet.receipts.includes(workKey)&&!wallet.work){
+ if(!wallet.employment&&work&&!wallet.receipts.includes(workKey)&&!wallet.work){
   const end=new Date(now);end.setHours(0,Number(scene.routineEndMinute)||0,0,0);
   wallet.work={key:workKey,startedAt:now,endsAt:scene.economyEndsAt||(scene.routineId?end.getTime():0)};wallet.revision=(wallet.revision||0)+1;
  }

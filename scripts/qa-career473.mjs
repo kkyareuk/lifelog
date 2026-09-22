@@ -1,0 +1,45 @@
+import {createServer} from 'node:http';
+import {readFile} from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const require=createRequire(process.cwd()+'/package.json'),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=process.cwd();
+const server=createServer(async(req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname,f=resolve(root,'.'+(p==='/'?'/index.html':p));let b=await readFile(p==='/auth.js'?resolve('scripts/ios-preview-auth.mjs'):f);if(p==='/app.js')b=Buffer.from(b.toString()+'\nwindow.photoQA={openBuildingShapeDialog,openRoomEditor,cropImage,render};');res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml'})[extname(f)]||'application/octet-stream');res.end(b)}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=await (process.argv.includes('--webkit')?webkit.launch({headless:true}):chromium.launch({channel:'chrome',headless:true}));
+try{
+ const p=await browser.newPage({viewport:{width:360,height:792},serviceWorkers:'block'}),errors=[];p.on('pageerror',e=>errors.push(e.message));
+ await p.addInitScript(()=>window.DRAWER_VILLAGE_ECONOMY_ENABLED=true);
+ await p.route('**/*',r=>(r.request().url().startsWith(origin)||/^(blob:|data:)/.test(r.request().url()))?r.continue():r.abort());
+ await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.photoQA);
+ await p.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');window.career=await import('/career-ui.js');document.querySelector('.drawer-title')?.remove();document.documentElement.classList.remove('title-visible');g.state.activeId=g.createCharacter();window.DrawerVillageNavigation.go('observe');document.querySelectorAll('dialog[open]').forEach(d=>d.close());career.openCareerWorld()});
+ await p.addLocatorHandler(p.locator('dialog.page-guide[open]'),async()=>p.locator('dialog.page-guide[open]').evaluate(d=>d.close()));
+ assert.equal(await p.locator('[data-career-id]').count(),23);
+ await p.getByRole('button',{name:'＋ 직업 만들기',exact:true}).click();
+ await p.getByLabel('직업 분류 이름',{exact:true}).fill('왕실 마법사');
+ await p.getByLabel('매월 월급 지급일',{exact:true}).fill('31');
+ await p.getByLabel('부서·소속 목록 (한 줄에 하나)',{exact:true}).fill('화염부\n치유부');
+ await p.getByLabel('직급 이름',{exact:true}).fill('수석 마법사');
+ await p.getByLabel('월급 · 외식 횟수 기준',{exact:true}).fill('450');
+ await p.getByRole('button',{name:'＋ 업무 추가',exact:true}).click();
+ await p.getByLabel('업무 이름',{exact:true}).fill('주문 연구');
+ await p.getByLabel('업무 설명 · 근무 로그',{exact:true}).fill('고대 문서에서 새로운 주문을 연구하고 있어요.');
+ await p.screenshot({path:'tmp/career-editor473.png'});
+ await p.getByRole('button',{name:'서류 제출',exact:true}).click();
+ await p.waitForFunction(()=>g.state.economy?.careers?.length===1);
+ const id=await p.evaluate(()=>g.state.economy.careers[0].id);
+ await p.evaluate(()=>{document.querySelector('.career-dialog').close();career.openEmployment(g.state,g.state.characters[g.state.activeId])});
+ await p.getByLabel('직업 종류',{exact:true}).selectOption(id,{timeout:4000});
+ await p.getByLabel('부서·소속',{exact:true}).fill('화염부');
+ await p.getByLabel('세부 분야 · 병과 (선택)',{exact:true}).fill('방어 마법');
+ await p.getByLabel('급여 지급 방식',{exact:true}).selectOption('weekly');
+ await p.getByLabel('표시할 직업명 (선택)',{exact:true}).fill('황실 마법 고문');
+ await p.getByRole('button',{name:'직업·직급 서류 제출',exact:true}).click();
+ await p.waitForFunction(()=>g.state.characters[g.state.activeId].wallet?.employment?.frequency==='weekly');
+ await p.waitForFunction(()=>!document.querySelector('.career-dialog')?.hasAttribute('aria-busy'));await p.screenshot({path:'tmp/career-personal473.png'});
+ const initial=await p.evaluate(()=>{const c=g.state.characters[g.state.activeId];return {id:c.id,e:c.wallet.employment,title:c.jobTitle}});
+ await p.reload();await p.waitForFunction(()=>window.photoQA);
+ const restored=await p.evaluate(async(id)=>{const g=await import('/state.js?v=20260909dev305');const c=g.state.characters[id];return {id:c.id,e:c.wallet.employment,title:c.jobTitle}},initial.id);assert.deepEqual(restored,initial);
+ for(const lang of ['en','ja']){await p.evaluate(async(lang)=>{window.g=await import('/state.js?v=20260909dev305');g.state.uiLanguage=lang;document.querySelector('.drawer-title')?.remove();document.querySelectorAll('dialog[open]').forEach(d=>d.close());const m=await import('/career-ui.js');m.openEmployment(g.state,g.state.characters[g.state.activeId]);},lang);const box=await p.locator('.career-dialog[open]').boundingBox();assert(box.x>=0&&box.x+box.width<=360);assert.equal(await p.locator('.career-dialog[open] select').count(),3)}
+ assert.deepEqual(errors,[]);console.log('PASS473 360px custom career/rank/department/duty editor, weekly assignment, display title and reload persistence');
+}finally{await browser.close();server.closeAllConnections();server.close()}
