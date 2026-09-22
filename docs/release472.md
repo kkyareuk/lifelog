@@ -20,7 +20,7 @@
 - dev feature work; main receives documentation only because its older web deployment must not receive dev features.
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.420-472-internal.aab
 - SHA256: 6BD483A1932894E0A08CCE12FD8698EB0F1EC32D478CEF430A7068CB7E73DAC6
-- Play internal release351: upload in progress. Production and Apple not submitted for472.
+- Play internal release351: provided to internal testers, confirmed2026-09-22 20:16 KST. Source commit a88e06e5 on dev. Production and Apple not submitted for472.
 - sharedTownApi: selective actual-production baseline111 patch, new revision sharedtownapi-00112-jef, updated2026-09-22T11:10:45.092014321Z. Re-downloaded all161 files byte-identical to prepared package; retired game modules absent. Other deployed functions preserved.
 
 ## Translation
