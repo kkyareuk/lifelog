@@ -23,12 +23,13 @@
 ## Artifact
 C:/Users/Public/drawer-releases/drawervillage-1.0.418-470-internal.aab
 SHA256 1B6F4BA30928EC190539265A657D8D3C8A06F0F3C0AF88665F189CC64ADA848F
-Play internal release349: upload in progress at record creation.
+Play internal release349: available to internal testers, 2026-09-22 11:26 KST. KO/EN/JA notes accepted. Only warning is missing obfuscation mapping (minification remains off). No production promotion.
+Source commit b1ef0ab2 pushed to origin/dev.
 
 ## Multiplayer deployment
 Baseline sharedTownApi00109-puw source downloaded from the deployed Cloud Function.
 Only this task's exact changes were applied to four runtime files and shared-bath.js added; all other deployed services/features preserved. Reproducible delta: backend470.patch.
-Merged artifact passed shared bath and existing coffee tests. Deployment result will be recorded separately.
+Merged artifact passed shared bath and existing coffee tests. Deployed sharedTownApi00110-ten at 2026-09-22 11:25:59 KST. Re-downloaded deployed source and verified all 156 files byte-for-byte against the tested artifact.
 
 ## Google OAuth branding — completed
 lifelog-98fff had an empty privacy link. Saved https://drawervillage.com/privacy and https://drawervillage.com/terms; set support email to the existing public app support address. Kept app name Drawer Village and homepage https://drawervillage.com.
