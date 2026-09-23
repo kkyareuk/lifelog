@@ -1,3 +1,4 @@
+import {syncLifeSound} from './life-audio.js';
 import {syncActivityProgress} from './activity-progress.js';
 import './prepared-food-ui.js';
 import {bindTownBackgroundPicker,hasMedievalDlc,TOWN_BACKGROUNDS} from './town-background.js';
@@ -4602,6 +4603,7 @@ function bind(){
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindCharacterMoney();
   syncCookingUI();
+  syncLifeSound(state);
   bindSharedUi({prepareImage:cropImage,bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});
 }
 

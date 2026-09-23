@@ -3251,7 +3251,13 @@ function commitLiveEntry(c,date,item){
   // interaction was written for this character, reopening the app must not
   // replace its wording or participant list with a newly evaluated variant.
   const immutableInteraction=item.interactionId&&entries.find(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute));
-  if(immutableInteraction&&!item.manualDirective)return immutableInteraction;
+  if(immutableInteraction&&!item.manualDirective){
+    if(item.dateGroup&&item.datePurpose&&!immutableInteraction.dateGroup&&dateEntryBelongsTo(c,item)){
+      const repaired={...immutableInteraction,dateGroup:item.dateGroup,datePurpose:item.datePurpose,mood:'데이트',groupInteraction:true};
+      applyEntries(entries.map(entry=>entry===immutableInteraction?repaired:entry));return repaired;
+    }
+    return immutableInteraction;
+  }
   // 수면은 현재 화면과 로그가 반드시 같은 한 사건을 가리켜야 한다. 같은 시각에
   // 예전 엔진이 만든 일반 장면이 남아 있어도 중복으로 거부하지 않고 수면으로 교체한다.
   if(item.mood==="수면"){
@@ -4856,7 +4862,7 @@ export function eventFor(c,date=new Date()){
   })}catch(error){return sceneFailure(c,date,error)}
 }
 export function resolveHomeEncounter(c,current,otherScene,date){
-  if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||isHomeSleepScene(current))return current;
+  if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||current.dateGroup&&current.datePurpose||isHomeSleepScene(current))return current;
   const home=state.homes[current.visitHomeId||c.homeId],other=state.characters[current.withId];
   const targetHome=otherScene?.visitHomeId||other?.homeId;
   const lang=state.uiLanguage||'ko',line=(ko,en,ja)=>({ko,en,ja}[lang]||ko);
@@ -4872,8 +4878,14 @@ export function resolveHomeEncounter(c,current,otherScene,date){
 }
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
+  // Older counterparts omitted date metadata. Repair only the same live event,
+  // without rewriting its historical wording or recruiting unrelated characters.
+  if(!activeRoutine&&!rawCurrent.manualDirective&&rawCurrent.interactionId&&!rawCurrent.dateGroup){
+    const source=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean).map(other=>baseEventFor(other,date)).find(e=>e.interactionId===rawCurrent.interactionId&&e.dateGroup&&e.datePurpose&&dateGroupParticipantIds(e).includes(c.id));
+    if(source)rawCurrent={...rawCurrent,dateGroup:source.dateGroup,datePurpose:source.datePurpose,mood:'데이트',groupInteraction:true};
+  }
   // Needs never interrupt a manual command, travel or a scheduled activity.
-  const need=!activeRoutine&&!isHomeSleepScene(rawCurrent)&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:true}):'';
+  const need=!activeRoutine&&!(rawCurrent.dateGroup&&rawCurrent.datePurpose)&&!isHomeSleepScene(rawCurrent)&&!rawCurrent.manualDirective&&!rawCurrent.transit&&!rawCurrent.giftExchange&&rawCurrent.home?urgentNeed(c,date.getTime(),{allowSleep:true}):'';
   if(need&&need!=='social'){
     const coffee=need==='sleep'&&!sleepingNow(c,date);
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
@@ -4998,7 +5010,7 @@ function calculateEventFor(c,date){
       // 상대 관점의 문장만 다시 만든다. 화면을 여는 순서에 따라 만남이 갈라지지 않는다.
       timeline(other,date);
       const otherBase=baseEventFor(other,date);
-      const synchronizedCounterpart={...otherBase,...sharedLocation,sharedFurnitureKey:current.sharedFurnitureKey,title:current.sharedPerspectives?.[other.id]?.title||current.sharedCanonicalTitle||current.title,desc:current.sharedPerspectives?.[other.id]?.desc||current.sharedCanonicalDesc||current.desc,sharedPerspectives:current.sharedPerspectives,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
+      const synchronizedCounterpart={...otherBase,...sharedLocation,sharedFurnitureKey:current.sharedFurnitureKey,dateGroup:current.dateGroup,datePurpose:current.datePurpose,mood:current.mood,title:current.sharedPerspectives?.[other.id]?.title||current.sharedCanonicalTitle||current.title,desc:current.sharedPerspectives?.[other.id]?.desc||current.sharedCanonicalDesc||current.desc,sharedPerspectives:current.sharedPerspectives,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
       synchronizedCounterpart.minute=sharedMinute;
       synchronizedCounterpart.time=clock(sharedMinute);
       synchronizedCounterpart.interactionStartedMinute=sharedMinute;
