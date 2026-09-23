@@ -1,0 +1,9 @@
+<ko-KR>
+샤워·설거지·마시기·먹기 효과음을 추가했어요. 관찰 중인 캐릭터의 행동에 맞춰 재생됩니다. 데이트 중 상대 캐릭터가 혼자 쉬는 활동으로 바뀌는 문제를 고쳤어요. 두 캐릭터가 같은 데이트와 활동을 유지합니다.
+</ko-KR>
+<en-US>
+Added showering, dishwashing, drinking and eating sounds for the character you are observing. Fixed a date partner switching to a solo break. Both characters now keep the same date and activity.
+</en-US>
+<ja-JP>
+観察中のキャラクターに合わせて、シャワー・食器洗い・飲食の効果音を追加しました。デート相手がひとりで休む行動に変わる問題を修正し、二人で同じデートと行動を続けるようにしました。
+</ja-JP>
