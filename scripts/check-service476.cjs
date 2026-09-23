@@ -5,7 +5,8 @@ const assert=require('node:assert/strict'),fixture=require('./court-fixture.cjs'
  data.set('groups/g',{ownerUid:'host',towns:[{id:'t',name:'Town',places:[]}],rules:{}});data.delete('groups/g/residents/b');data.delete('groups/g/residents/c');data.set('groups/g/residents/a',{ownerUid:'member',name:'Cook',townId:'t',sharedHomeId:'h',sourceHomeId:id,profileJson:JSON.stringify(profile),scheduleJson:'{}'});data.set('groups/g/homes/h',{ownerUid:'member',townId:'t',sourceHomeId:id,layoutJson:JSON.stringify(home)});
  let now=Date.now();const api=require('../functions/shared-town').createSharedTownService({db,engine:async()=>advanceSharedLife,clock:()=>now});
  await assert.rejects(api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundSetting:'arkenwald'}}),/medieval-dlc-required/);
- data.set('users/host',{entitlements:{dlcPacks:['medieval']}});await api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundSetting:'arkenwald',era:'medieval',culture:'europe'}});
+ await assert.rejects(api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundMusic:'arkenwald'}}),/medieval-dlc-required/);
+ data.set('users/host',{entitlements:{dlcPacks:['medieval']}});await api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundSetting:'arkenwald',backgroundMusic:'arkenwald',era:'medieval',culture:'europe'}});
  const command={characterId:'a',kind:'meal',lifeTask:'simple_cook',recipeId:'miyeokguk',cookingRequestId:'meal-test-476'};
  await assert.rejects(api.advance('host',{groupId:'g',command}),/character-owner-required/);
  await api.advance('member',{groupId:'g',command});let life=JSON.parse(data.get('groups/g/residents/a').lifeJson),balance=life.wallet.balance;assert(life.cooking.active);const job=life.cooking.active;
