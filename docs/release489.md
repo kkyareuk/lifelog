@@ -16,5 +16,5 @@
 ## 배포
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.437-489-internal.aab
 - SHA256: C8A39E0AEEE11292AB40875EF998F82B20C287B91569A6C98E50C445847D63A1
-- Play 내부 release366 업로드 진행. 488은 초안에서 제외했으며 출시하지 않음.
-- dev만 구현 반영. main은 운영 웹 보호를 위해 문서만 반영. 프로덕션/비공개 테스트 승격 없음.
+- Play 내부 release366: 2026-09-23 21:44 KST 내부 테스터에게 제공됨. 488은 초안에서 제외했으며 출시하지 않음.
+- dev 구현 커밋 ad18a2f9. dev만 구현 반영. main은 운영 웹 보호를 위해 문서만 반영. 프로덕션/비공개 테스트 승격 없음.
