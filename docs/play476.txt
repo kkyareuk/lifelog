@@ -1,0 +1,24 @@
+<ko-KR>
+• 마을 배경과 배경음을 따로 선택할 수 있어요. 아르켄발트에 화면별 음악과 랜덤 재생을 추가했어요.
+• 요리한 음식을 집에 놓고 옮기거나 먹고, 냉장 보관하거나 버릴 수 있어요. 음식은 시간이 지나면 상해요.
+• 요리 경험치와 자동 식사를 개선하고 판타지 요리는 추후 DLC 전까지 숨겼어요.
+• 욕구 빈도·활동 시간을 조절하고, 캐릭터 위에서 활동 진행률을 볼 수 있어요.
+• 개인 직업 화면에서 급여·출근 일정·동료·승진 안내를 확인해요. 전체설정 3페이지의 직업 표시도 고쳤어요.
+• 로그 펼치기·접기와 요리 효과음을 개선했어요.
+</ko-KR>
+<en-US>
+• Choose village settings and music separately. Arkenwald now has screen-specific music and shuffled tracks.
+• Place, move, eat, refrigerate or discard cooked food. Food can spoil over time.
+• Improved cooking XP and meals. Fantasy recipes are hidden until a future DLC.
+• Adjust need frequency and activity duration, with progress bars above characters.
+• View pay, shifts, coworkers and promotion guidance on the career screen. Fixed page 3 career settings.
+• Updated log and cooking sounds.
+</en-US>
+<ja-JP>
+• 村の背景とBGMを別々に選べます。アーケンヴァルトに画面別の音楽とランダム再生を追加しました。
+• 作った料理を家に置き、移動・食事・冷蔵・廃棄できます。時間が経つと傷みます。
+• 料理経験値と自動食事を改善。ファンタジー料理は今後のDLCまで非表示になります。
+• 欲求の頻度と活動時間を調整でき、キャラクターの上に進行度を表示します。
+• 個人の職業画面で給与・勤務予定・同僚・昇進案内を確認できます。全体設定3ページの職業表示も修正しました。
+• ログ開閉と料理の効果音を更新しました。
+</ja-JP>
