@@ -7,8 +7,10 @@ export function bindEditorPosition(root,homeId,language='ko'){
  const header=document.createElement('nav');header.className='home-tools-header';const make=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;header.append(b);return b};
  const handle=make('⠿',()=>{});handle.className='home-tools-grip';handle.setAttribute('aria-label',t('도구창 끌어서 이동','Drag tools','ツールをドラッグ'));
  const add=make(t('가구 추가','Add','家具追加'),()=>show(mode==='catalog'?'': 'catalog'));
+ add.dataset.homeToolsAdd='';
  const view=make(t('보기','View','表示'),()=>show(mode==='view'?'':'view'));
  const done=make(t('편집 완료','Finish','編集完了'),()=>host.querySelector('[data-home-edit]')?.click());
+ done.dataset.homeToolsDone='';
  const fold=make('−',()=>show(''));fold.setAttribute('aria-label',t('도구 접기','Collapse tools','ツールを閉じる'));
  const side=host.querySelector('.home-native-side');
  if(side){for(const original of side.querySelectorAll('[data-open-home-feature]')){const b=document.createElement('button');b.textContent=original.textContent;b.onclick=()=>original.click();visibility.append(b)}side.hidden=true;side.style.display='none';}

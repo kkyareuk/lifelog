@@ -1,4 +1,4 @@
-const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:5,labels,details,ingredient,product:id});
+const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:.25,labels,details,ingredient,product:id});
 export const COFFEE_TASKS=[
  recipe('drip',['커피 내리기','Brew coffee','コーヒーを淹れる'],['커피포트로 물을 조금씩 부어 향긋한 커피를 내리고 있어요.','They pour water slowly from the coffee pot to brew fragrant coffee.','コーヒーポットから少しずつお湯を注いでコーヒーを淹れています。']),
  recipe('capsule',['캡슐 커피 만들기','Brew capsule coffee','カプセルコーヒーを淹れる'],['캡슐을 끼우고 잔을 받친 뒤, 추출되는 커피의 향을 맡고 있어요.','They insert a capsule and set a cup under the fragrant stream of coffee.','カプセルをセットしてカップを置き、抽出されるコーヒーの香りを楽しんでいます。']),

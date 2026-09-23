@@ -177,7 +177,7 @@ export const LIFE_TASKS=[
     "id": "coffee",
     "kind": "meal",
     "room": "kitchen",
-    "minutes": 15,
+    "minutes": 0.3333333333333333,
     "labels": [
       "커피/차 마시기",
       "Have coffee or tea",

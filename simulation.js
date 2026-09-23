@@ -19,7 +19,7 @@ import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,h
 import {roomActivityKey,roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
 import {furnitureMeetingKey,advanceNeeds,urgentNeed,needRecoveryStart,needsAt} from './life-needs.js';
 import {spousePrivacyExempt} from './private-scene-policy.js';
-import {coffeeCopy} from './coffee-needs.js';
+import {coffeeCopy,COFFEE_DRINK_MS} from './coffee-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
@@ -3536,7 +3536,7 @@ function manualDirectiveEventFor(c,date=new Date()){
   return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
-    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,localizedCopy:directive.copy,relationshipCue:copy.relationshipCue,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,lifeTaskId:directive.lifeTask,recoveryEndsAt:directive.endsAt,localizedCopy:directive.copy,relationshipCue:copy.relationshipCue,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date),directive,c.id,now,state.uiLanguage);
 }
 // Repeated participant searches share base scenes only during a synchronous
@@ -4907,7 +4907,7 @@ function calculateEventFor(c,date){
       const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:needRecoveryStart(c,need,date.getTime()),recoveryEndsAt:(needRecoveryStart(c,need,date.getTime()))+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
 
       if(need==='hunger'){const eating=mealObservation(c,moment.recoveryStartedAt,state.uiLanguage);Object.assign(moment,eating,{baseTitle:eating.title,baseDesc:eating.desc})}
-      if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
+      if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,recoveryEndsAt:moment.recoveryStartedAt+COFFEE_DRINK_MS,activityFamily:'eating',sleeping:false,actionKind:'eating'});
       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
     }
   }

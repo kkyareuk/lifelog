@@ -1,3 +1,4 @@
+import {startHomeTour} from './home-tour.js';
 // Contextual guides never navigate or execute edits on the user's behalf.
 let stop=null,current='';
 export function stopContextualGuide(){stop?.();stop=null;current=''}
@@ -13,6 +14,7 @@ const routes={
 export function contextualGuide(tab,state){
  const route=tab==='character'&&document.querySelector('[data-discovery-lock]')?'full':tab;
  if(stop&&current!==route){stop();stop=null;current=''}
+ if(route==='home'){if(!stop){current='home';stop=startHomeTour(state,()=>{stop=null;current=''})}return true}
  if(!routes[route]||route==='relationship'&&state.order.length<2)return false;
  const key='drawer-village-feature-tour-v2-'+route;if(localStorage.getItem(key)==='done')return true;if(stop)return true;
  if(document.querySelector('dialog[open]')&&!['full','home','routine'].includes(route))return true;

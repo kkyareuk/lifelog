@@ -1,0 +1,129 @@
+--- a/runtime/coffee-needs.js
++++ b/runtime/coffee-needs.js
+@@ -1,4 +1,9 @@
+ export function isDrinkingCoffee(scene){
+- return scene?.coffeeRecovery===true||/커피.{0,15}마시|마시.{0,15}커피|drinking.{0,15}coffee|coffee.{0,15}drinking|コーヒーを飲/i.test([scene?.title,scene?.baseTitle].join(' '));
++ return scene?.coffeeRecovery===true||scene?.lifeTaskId==='coffee'||scene?.actionKind==='coffee-drinking'||/커피.{0,15}마시|마시.{0,15}커피|drinking.{0,15}coffee|coffee.{0,15}drinking|コーヒーを飲/i.test([scene?.title,scene?.baseTitle].join(' '));
+ }
+ export const coffeeCopy=['커피를 마시며 잠을 깨는 중','따뜻한 커피를 마시며 졸음을 덜고 있어요.','Waking up with coffee','Drinking warm coffee to feel more alert.','コーヒーで目を覚ましているところ','温かいコーヒーを飲んで眠気を和らげています。'];
++
++export const COFFEE_DRINK_MS=20000;
++export const COFFEE_BREW_MS=15000;
++export const COFFEE_SLEEP_GAIN=30;
++export const coffeeEpisode=scene=>String(scene?.manualDirectiveId||scene?.recoveryStartedAt||[scene?.dateKey||'',scene?.minute,scene?.baseTitle||scene?.title].join(':'));
+--- a/runtime/coffee-crafting.js
++++ b/runtime/coffee-crafting.js
+@@ -1,4 +1,4 @@
+-const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:5,labels,details,ingredient,product:id});
++const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:.25,labels,details,ingredient,product:id});
+ export const COFFEE_TASKS=[
+  recipe('drip',['커피 내리기','Brew coffee','コーヒーを淹れる'],['커피포트로 물을 조금씩 부어 향긋한 커피를 내리고 있어요.','They pour water slowly from the coffee pot to brew fragrant coffee.','コーヒーポットから少しずつお湯を注いでコーヒーを淹れています。']),
+  recipe('capsule',['캡슐 커피 만들기','Brew capsule coffee','カプセルコーヒーを淹れる'],['캡슐을 끼우고 잔을 받친 뒤, 추출되는 커피의 향을 맡고 있어요.','They insert a capsule and set a cup under the fragrant stream of coffee.','カプセルをセットしてカップを置き、抽出されるコーヒーの香りを楽しんでいます。']),
+--- a/runtime/life-tasks.js
++++ b/runtime/life-tasks.js
+@@ -177,7 +177,7 @@
+     "id": "coffee",
+     "kind": "meal",
+     "room": "kitchen",
+-    "minutes": 15,
++    "minutes": 0.3333333333333333,
+     "labels": [
+       "커피/차 마시기",
+       "Have coffee or tea",
+--- a/runtime/life-needs.js
++++ b/runtime/life-needs.js
+@@ -1,18 +1,19 @@
+ import {needDuration,needFrequency,needVariation} from './need-pacing.js';
+ import {roomActivityKey} from './room-activities.js?v=20260909dev305';
+ import {sleepNeedAfter} from './sleep-clock.js';
+-import {isDrinkingCoffee} from './coffee-needs.js';
++import {isDrinkingCoffee,coffeeEpisode,COFFEE_DRINK_MS,COFFEE_SLEEP_GAIN} from './coffee-needs.js';
+ export const NEEDS={sleep:['수면','Sleep','睡眠'],hunger:['허기','Hunger','空腹'],toilet:['용변','Toilet','排泄'],hygiene:['청결','Hygiene','清潔'],social:['사교','Social','交流']};
+ export const needLabel=(key,lang='ko')=>NEEDS[key][{ko:0,en:1,ja:2}[lang]||0];
+ const clamp=n=>Math.max(0,Math.min(100,Number.isFinite(Number(n))?Number(n):80));
+ export function blockedNeed(c,key){return (c.autonomousActivityBlocks||[]).includes(({hunger:'eating',sleep:'sleep',toilet:'toilet',hygiene:'hygiene',social:'social'})[key]);}
++const coffeeGain=(saved,now)=>saved.coffeeActive?Math.min(Number(saved.coffeeRemaining)||0,Math.max(0,Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))*COFFEE_SLEEP_GAIN/COFFEE_DRINK_MS):0;
+ export function needsAt(c,now=Date.now()){
+  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
+  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
+  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
+  const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:100*60000/needDuration(c,key)+rates[key]*needFrequency(c,key)*needVariation(c,key)/60]));
+  const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
+- return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
++ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&saved.coffeeActive&&!c.needsFixed?clamp(sleepValue+coffeeGain(saved,now)):key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
+ }
+ export function advanceNeeds(c,scene,now=Date.now()){
+  const old=c.lifeNeeds,values=needsAt(c,now);
+@@ -22,13 +23,16 @@
+  const recovering=[],moving=scene?.transit||scene?.meetingJourney||scene?.meetingWaiting||scene?.roomActivityBlocked||scene?.homeEncounter&&!scene.homeEncounter.arrived;
+  if(!moving){
+   const activity=roomActivityKey(scene),need={sleep:'sleep',eating:'hunger',toilet:'toilet',hygiene:'hygiene'}[activity];
+-  if(need)recovering.push(need);
++  if(need&&!isDrinkingCoffee(scene))recovering.push(need);
+   if(isDrinkingCoffee(scene)&&!recovering.includes('sleep'))recovering.push('sleep');
+   if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
+  }
++ const coffeeActive=!moving&&isDrinkingCoffee(scene),coffeeKey=coffeeActive?coffeeEpisode(scene):old?.coffeeKey||'',sameCoffee=coffeeKey&&coffeeKey===old?.coffeeKey;
++ const coffeeRemaining=sameCoffee?Math.max(0,(Number(old.coffeeRemaining)||0)-coffeeGain(old,now)):coffeeActive?COFFEE_SLEEP_GAIN:Number(old?.coffeeRemaining)||0;
++ const coffeeEnd=coffeeActive?(sameCoffee?(old.coffeeEndsAt||old.recoveryEndsAt):Math.min(Number(scene?.recoveryEndsAt)||now+COFFEE_DRINK_MS,now+COFFEE_DRINK_MS)):scene?.recoveryEndsAt||0;
+  const activeNeed=scene?.needKey||'',startedAt=activeNeed?(Number(scene.recoveryStartedAt)||needRecoveryStart(c,activeNeed,now)):0;
+- if(old&&now-old.updatedAt<60000&&old.activeNeed===activeNeed&&old.needStartedAt===startedAt&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
+- c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed,needStartedAt:startedAt};return true;
++ if(old&&old.coffeeKey===coffeeKey&&old.coffeeActive===coffeeActive&&now-old.updatedAt<60000&&old.activeNeed===activeNeed&&old.needStartedAt===startedAt&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===coffeeEnd&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
++ c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:coffeeEnd,activeNeed,needStartedAt:startedAt,coffeeActive,coffeeKey,coffeeRemaining,coffeeEndsAt:coffeeActive?coffeeEnd:old?.coffeeEndsAt||0,coffeeLastAt:coffeeActive?(sameCoffee?old.coffeeLastAt:now):old?.coffeeLastAt||0};return true;
+ }
+ // A completed recovery is not the next meal's start time (including after reload).
+ export function needRecoveryStart(c,key,now){const old=c.lifeNeeds;return old?.activeNeed===key&&Number(old.recoveryEndsAt)>now&&Number(old.needStartedAt)>0?Number(old.needStartedAt):now;}
+@@ -36,7 +40,7 @@
+  if(c.needsFixed)return '';
+  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
+  if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<(current==='hunger'?100:75)&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
+- return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
++ return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!(key==='sleep'&&now-(c.lifeNeeds?.coffeeLastAt||0)<30*60000&&(!c.lifeNeeds?.coffeeActive||now>=Number(c.lifeNeeds?.recoveryEndsAt)))&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
+ }
+ export function relationshipPolicy(characters,world={}){
+  if(["fixed","score","dynamic"].includes(world.relationshipChangeMode))return world.relationshipChangeMode;
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -19,7 +19,7 @@
+ import {roomActivityKey,roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
+ import {furnitureMeetingKey,advanceNeeds,urgentNeed,needRecoveryStart,needsAt} from './life-needs.js';
+ import {spousePrivacyExempt} from './private-scene-policy.js';
+-import {coffeeCopy} from './coffee-needs.js';
++import {coffeeCopy,COFFEE_DRINK_MS} from './coffee-needs.js';
+ import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
+ import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
+ import {reflectStory} from './story-events.js?v=20260909dev305';
+@@ -3536,7 +3536,7 @@
+   return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
+     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
+     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
+-    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,localizedCopy:directive.copy,relationshipCue:copy.relationshipCue,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
++    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,lifeTaskId:directive.lifeTask,recoveryEndsAt:directive.endsAt,localizedCopy:directive.copy,relationshipCue:copy.relationshipCue,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+   }),date),directive,c.id,now,state.uiLanguage);
+ }
+ // Repeated participant searches share base scenes only during a synchronous
+@@ -4907,7 +4907,7 @@
+       const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:needRecoveryStart(c,need,date.getTime()),recoveryEndsAt:(needRecoveryStart(c,need,date.getTime()))+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+ 
+       if(need==='hunger'){const eating=mealObservation(c,moment.recoveryStartedAt,state.uiLanguage);Object.assign(moment,eating,{baseTitle:eating.title,baseDesc:eating.desc})}
+-      if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
++      if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,recoveryEndsAt:moment.recoveryStartedAt+COFFEE_DRINK_MS,activityFamily:'eating',sleeping:false,actionKind:'eating'});
+       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
+     }
+   }
+--- a/runtime/state.js
++++ b/runtime/state.js
+@@ -2,3 +2,4 @@
++import {COFFEE_DRINK_MS,COFFEE_BREW_MS} from './coffee-needs.js';
+ import {directedNeed,needDuration} from './need-pacing.js';
+ import {canStartCooking,startCooking,finishCooking} from './cooking.js';
+ import {characterTown,townActivityAllowed} from './town-setting.js';
+@@ -1658,6 +1659,7 @@
+   const sharedHomeId=journey?.to.homeId||"";
+   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
+   const recoveryNeed=directedNeed(task?.id,kind);if(recoveryNeed&&!target&&!options.recipeId)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+needDuration(character,recoveryNeed);
++  if(task?.id==='coffee'||coffeeRecipe(task?.id))directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+(task.id==='coffee'?COFFEE_DRINK_MS:COFFEE_BREW_MS);
+   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
+   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
+   if(options.recipeId&&!startCooking(state,character,directive,options.recipeId,options.cookingRequestId,startedAt))return false;

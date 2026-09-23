@@ -1,3 +1,4 @@
+import {COFFEE_DRINK_MS,COFFEE_BREW_MS} from './coffee-needs.js';
 import {directedNeed,needDuration} from './need-pacing.js';
 import {canStartCooking,startCooking,finishCooking} from './cooking.js';
 import {characterTown,townActivityAllowed} from './town-setting.js';
@@ -1658,6 +1659,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const sharedHomeId=journey?.to.homeId||"";
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
   const recoveryNeed=directedNeed(task?.id,kind);if(recoveryNeed&&!target&&!options.recipeId)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+needDuration(character,recoveryNeed);
+  if(task?.id==='coffee'||coffeeRecipe(task?.id))directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+(task.id==='coffee'?COFFEE_DRINK_MS:COFFEE_BREW_MS);
   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
   if(options.recipeId&&!startCooking(state,character,directive,options.recipeId,options.cookingRequestId,startedAt))return false;
