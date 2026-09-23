@@ -1,7 +1,7 @@
 import {directedNeed,needDuration} from './need-pacing.js';
 import {canStartCooking,startCooking,finishCooking} from './cooking.js';
 import {characterTown,townActivityAllowed} from './town-setting.js';
-import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine} from './coffee-crafting.js';
+import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine,canUseCoffeeTool} from './coffee-crafting.js';
 import {activityPrice,payActivity,moneySettings} from './character-money.js';
 import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
@@ -1591,7 +1591,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(options.lifeTask&&!task)return false;
   finishCoffee(state,character,Number(options.now??Date.now()));
   if(!townActivityAllowed(characterTown(state,character),task||{kind,lifeTask:options.lifeTask}))return false;
-  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!isCoffeeMachine(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item)))return false;
+  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
   if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}

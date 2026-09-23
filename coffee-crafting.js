@@ -1,5 +1,6 @@
 const recipe=(id,labels,details,ingredient='')=>({id:'coffee_'+id,kind:'meal',group:'cooking',room:'kitchen',minutes:5,labels,details,ingredient,product:id});
 export const COFFEE_TASKS=[
+ recipe('drip',['커피 내리기','Brew coffee','コーヒーを淹れる'],['커피포트로 물을 조금씩 부어 향긋한 커피를 내리고 있어요.','They pour water slowly from the coffee pot to brew fragrant coffee.','コーヒーポットから少しずつお湯を注いでコーヒーを淹れています。']),
  recipe('capsule',['캡슐 커피 만들기','Brew capsule coffee','カプセルコーヒーを淹れる'],['캡슐을 끼우고 잔을 받친 뒤, 추출되는 커피의 향을 맡고 있어요.','They insert a capsule and set a cup under the fragrant stream of coffee.','カプセルをセットしてカップを置き、抽出されるコーヒーの香りを楽しんでいます。']),
  recipe('espresso',['에스프레소 내리기','Pull an espresso','エスプレッソを淹れる'],['작은 잔에 진한 에스프레소를 내리며 크레마가 올라오는 모습을 지켜봐요.','They watch crema form as a rich espresso fills a small cup.','小さなカップに濃いエスプレッソを抽出し、クレマが浮かぶ様子を見ています。']),
  recipe('americano',['아메리카노 만들기','Make an Americano','アメリカーノを作る'],['에스프레소에 뜨거운 물을 조금씩 부으며 원하는 농도를 맞춰요.','They add hot water to espresso a little at a time to adjust its strength.','エスプレッソにお湯を少しずつ加えて好みの濃さにしています。']),
@@ -13,5 +14,7 @@ export const isCoffeeMachine=item=>/커피\s*머신|에스프레소\s*머신|cof
 export function canCraftCoffee(character,id){const r=coffeeRecipe(id);return !r||!r.ingredient||Number(character?.coffeeInventory?.[r.ingredient]||0)>=1}
 export function reserveCoffee(character,directive){const r=coffeeRecipe(directive.lifeTask);if(!r)return;character.coffeeInventory??={};if(r.ingredient)character.coffeeInventory[r.ingredient]=Math.max(0,(Number(character.coffeeInventory[r.ingredient])||0)-1);directive.coffeeProduct=r.product;}
 export function finishCoffee(world,character,now){const d=world.characterDirectives?.[character.id],r=coffeeRecipe(d?.lifeTask);if(!r||d.coffeeProduct!==r.product||d.coffeeSettled||now<d.endsAt)return false;character.coffeeInventory??={};character.coffeeInventory[r.product]=Math.min(99,(Number(character.coffeeInventory[r.product])||0)+1);d.coffeeSettled=true;return true;}
-const names={capsule:['캡슐 커피','Capsule coffee','カプセルコーヒー'],espresso:['에스프레소','Espresso','エスプレッソ'],americano:['아메리카노','Americano','アメリカーノ'],iced:['아이스 커피','Iced coffee','アイスコーヒー'],whipped_milk:['휘핑 우유','Milk foam','ミルクフォーム'],latte:['라떼','Latte','ラテ'],cappuccino:['카푸치노','Cappuccino','カプチーノ']};
+const names={drip:['드립 커피','Drip coffee','ドリップコーヒー'],capsule:['캡슐 커피','Capsule coffee','カプセルコーヒー'],espresso:['에스프레소','Espresso','エスプレッソ'],americano:['아메리카노','Americano','アメリカーノ'],iced:['아이스 커피','Iced coffee','アイスコーヒー'],whipped_milk:['휘핑 우유','Milk foam','ミルクフォーム'],latte:['라떼','Latte','ラテ'],cappuccino:['카푸치노','Cappuccino','カプチーノ']};
 export function coffeeInventoryMarkup(c,lang='ko'){const index={ko:0,en:1,ja:2}[lang]||0,items=Object.entries(names).filter(([id])=>Number(c.coffeeInventory?.[id])>0);return items.length?`<section class="crafted-coffee-inventory"><h3>${['직접 만든 음료·재료','Crafted drinks and ingredients','作った飲み物・材料'][index]}</h3>${items.map(([id,label])=>`<p>${label[index]} × ${Math.min(99,Number(c.coffeeInventory[id])||0)}</p>`).join('')}</section>`:'';}
+
+export const canUseCoffeeTool=(item,taskId)=>isCoffeeMachine(item)||(/커피포트|coffee pot|kettle|コーヒーポット/i.test(item||'')&&['coffee_drip','coffee_iced'].includes(taskId));

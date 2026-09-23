@@ -572,12 +572,12 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode][data-visual-theme] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -669,12 +669,12 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationsh
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode] :is(dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
+html[data-color-mode] :is(dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -5413,29 +5413,29 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
 @keyframes room-sleep-z{0%,100%{opacity:.25;translate:0 3px}50%{opacity:1;translate:4px -5px}}
 
 /* 다크 모드 팝업은 제목과 같은 어두운 면, 화이트 모드는 밝은 면을 사용한다. */
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{
   border-color:#ffffff20!important;
   background:#101a28!important;
   color:#f4f7fb!important;
 }
 html[data-color-mode="dark"] dialog::backdrop{background:#050a12c9!important;backdrop-filter:blur(5px)}
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
-html[data-color-mode="dark"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
+html[data-color-mode="dark"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] dialog button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--p),var(--s))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 .view-copy-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.view-copy-actions button{min-width:0;min-height:44px;white-space:normal}
 html[data-color-mode="dark"] dialog :is(.relation,.empty-mini,.room-editor-photo,.room-image-choice button,.relationship-color-legend span){border-color:#ffffff1b!important;background:#172536!important;color:#f4f7fb!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas{border:1px solid #ffffff1d!important;background:radial-gradient(circle at center,#25374a 0 32%,#101a28 100%)!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas svg text{paint-order:stroke;fill:#f8fafc!important;stroke:#101a28!important}
 html[data-color-mode="dark"] .official-relation-dialog .relation{background:linear-gradient(145deg,#172536,#203449)!important}
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
-html[data-color-mode="light"] dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
+html[data-color-mode="light"] dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
 /* 넓은 화면에서도 선택한 화면 모드가 헤더·패널·입력창까지 끊기지 않게 한다. */
 @media(min-width:721px){
@@ -6847,8 +6847,8 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog{
     width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;height:calc(var(--game-viewport-height,100dvh) - 12px)!important;max-height:calc(var(--game-viewport-height,100dvh) - 12px)!important;margin:auto!important;overflow:hidden!important;
   }
-  dialog.relation-editor-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form,
-  dialog.character-view-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+  dialog.relation-editor-dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form,
+  dialog.character-view-dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
   dialog.relation-editor-dialog form *,
   dialog.character-view-dialog form *{min-width:0;max-width:100%;box-sizing:border-box}
   dialog.relation-editor-dialog :is(select,input,textarea,button),
@@ -6860,7 +6860,7 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog .character-view-dialog-direction{display:grid!important;grid-template-columns:52px 20px 52px minmax(0,1fr);align-items:center;gap:5px!important;width:100%}
   dialog.character-view-dialog .character-view-dialog-direction :is(.avatar,.sprite){width:48px!important;height:48px!important}
   dialog.character-view-dialog .character-view-dialog-direction>span{min-width:0!important;overflow-wrap:anywhere}
-  dialog.character-view-dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
+  dialog.character-view-dialog:not(.building-interior-dialog):not(.character-money-dialog):not(.plaza-games-dialog):not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
 }
 
 /* 관계 편집기의 체크박스를 모바일 공통 입력 너비 규칙에서 제외한다. */

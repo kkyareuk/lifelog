@@ -98,6 +98,7 @@ const SCENE_FURNITURE=[
 ];
 export function furniturePatternForScene(scene){
   if(scene?.pairedBath)return /욕조/;
+  if(/커피.{0,16}(내리|추출|준비)|brew.{0,16}coffee|コーヒーを淹/i.test(`${scene?.title||''} ${scene?.baseTitle||''}`))return /커피포트|커피머신|에스프레소|coffee|kettle/i;
   const needPattern={toilet:/변기/,hygiene:/샤워|욕조|세면대/,eating:/식탁|티 테이블|의자/,sleep:/침대/}[roomActivityKey(scene)];
   if(needPattern)return needPattern;
   const text=`${scene?.title||""} ${scene?.desc||""}`;
@@ -195,6 +196,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     // Midnight, translated descriptions and reloads do not start a new walk or
     // pick another bed while the same sleep continues. Deleted/reassigned beds
     // still use the normal destination selection.
+    if(!pinned&&/커피.{0,16}(내리|추출|준비)|brew.{0,16}coffee|コーヒーを淹/i.test(`${scene.title||''} ${scene.baseTitle||''}`)){const pots=candidates.filter(item=>/커피포트|coffee pot|kettle|コーヒーポット/i.test(item.item));if(pots.length)candidates=pots}
     const previousBed=sleeping&&previous?.actionKind==="sleep"?candidates.find(item=>item.id===previous.furnitureId):null;
     const previousSeat=candidates.find(item=>item.id===previous?.furnitureId&&['소파','의자'].includes(item.item)&&previous.sceneKey===sceneKey);
     const seatScore=item=>{const others=Object.values(current.agents).filter(a=>a.characterId!==characterId&&a.furnitureId===item.id&&eligible.includes(a.characterId));return others.some(a=>(context.seatCloseIds||[]).includes(a.characterId))?3:!(occupied.get(item.id)||others.length)?2:0};

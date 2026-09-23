@@ -13,7 +13,7 @@ export function openBuildingInterior(placeId,{snapshot=null,bindRoomGeometry,toa
  const groupId=snapshot?.activeGroupId||'',account=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',personal=state;
  const world=groupId?buildSharedWorld(snapshot,state.uiLanguage):{...state,homes:{...state.homes}},town=world.towns.find(t=>t.id===world.activeTownId)||world.world,place=town.places.find(p=>p.id===placeId);if(!place)return;
  const canEdit=!groupId||snapshot.group?.ownerUid===account||['owner','manager','operator'].includes(snapshot.members?.find(m=>(m.uid||m.id)===account)?.role||snapshot.role);
- const home=buildingInterior(place,town.id),selection={homeEditMode:false,floors:{}};world.homes={...world.homes,[home.id]:home};world.activeHomeId=home.id;
+ const home=buildingInterior(place,town.id,world.uiLanguage),selection={homeEditMode:false,floors:{}};world.homes={...world.homes,[home.id]:home};world.activeHomeId=home.id;
  const tr=(ko,en,ja)=>({ko,en,ja}[world.uiLanguage]||ko),d=document.createElement('dialog');d.className='building-interior-dialog';
  let status,saveError=null,closed=false;
  const valid=()=>personal===state&&(window.ParallelCityAuth?.getInfo?.()?.user?.uid||'')===account&&(!groupId||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===groupId);

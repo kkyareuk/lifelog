@@ -2,11 +2,12 @@ const views=new Map();
 export function bindSceneZoom(root=document){
  for(const viewport of root.querySelectorAll('.home-canvas-viewport,.town-map-scroll')){
   if(viewport.dataset.zoomBound)return;const scene=viewport.querySelector(':scope > .rooms,:scope > .world');if(!scene)continue;
-  viewport.dataset.zoomBound='1';viewport.style.touchAction='none';
+  viewport.dataset.zoomBound='1';viewport.style.touchAction='none';viewport.style.setProperty('overflow','hidden','important');viewport.style.overflowAnchor='none';viewport.scrollLeft=0;viewport.scrollTop=0;
   const key=viewport.dataset.homePan||'town',pose=views.get(key)||{scale:1,x:0,y:0};views.set(key,pose);if(views.size>80)views.delete(views.keys().next().value);
   const eventRoot=viewport.closest('.home-page')||viewport;
   const points=new Map();let gesture=null,consumed=false,frame=0,rect=viewport.getBoundingClientRect();
-  const draw=()=>{frame=0;const w=rect.width,h=rect.height;pose.x=Math.max(w*(1-pose.scale),Math.min(0,pose.x));pose.y=Math.max(h*(1-pose.scale),Math.min(0,pose.y));scene.style.transformOrigin='0 0';scene.style.transform=`translate(${pose.x}px,${pose.y}px) scale(${pose.scale})`;};
+  const draw=()=>{frame=0;const w=viewport.clientWidth,h=viewport.clientHeight;pose.x=Math.max(Math.min(0,w-scene.offsetWidth*pose.scale),Math.min(0,pose.x));pose.y=Math.max(Math.min(0,h-scene.offsetHeight*pose.scale),Math.min(0,pose.y));viewport.scrollLeft=0;viewport.scrollTop=0;scene.style.transformOrigin='0 0';scene.style.transform=`translate(${pose.x}px,${pose.y}px) scale(${pose.scale})`;};
+  viewport.addEventListener('scroll',()=>{if(viewport.scrollLeft||viewport.scrollTop){viewport.scrollLeft=0;viewport.scrollTop=0}},{passive:true});
   const measure=()=>{const a=[...points.values()];return {x:(a[0].x+(a[1]?.x??a[0].x))/2-rect.left,y:(a[0].y+(a[1]?.y??a[0].y))/2-rect.top,d:a[1]?Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y):0}};
   const begin=()=>{gesture={...measure(),...{pose:{...pose}}}};
   eventRoot.addEventListener('pointerdown',e=>{

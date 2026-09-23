@@ -10,7 +10,7 @@ export function ensureWallet(character,now=Date.now()){
 }
 export function moneySettings(character){return {unit:'원',mealPrice:10000,wage:100000,datePayment:'split',datePayFrequency:50,...character.wallet?.settings}}
 export function displayMoney(amount,character,language='ko'){
- const s=moneySettings(character),value=amount/BASE_MEAL*s.mealPrice;return new Intl.NumberFormat(({ko:'ko-KR',en:'en-US',ja:'ja-JP'})[language]||'ko-KR',{maximumFractionDigits:8}).format(value)+' '+s.unit;
+ const s=moneySettings(character),value=amount/BASE_MEAL*s.mealPrice;if(language==='ko'&&Math.abs(value)>=10000){const sign=value<0?'-':'',n=Math.round(Math.abs(value));let rest=n;const parts=[];for(const [base,label] of [[1e12,'조'],[1e8,'억'],[1e4,'만']]){const count=Math.floor(rest/base);if(count)parts.push(count+label);rest%=base}if(rest)parts.push(String(rest));return sign+parts.join(' ')+' '+s.unit}return new Intl.NumberFormat(({ko:'ko-KR',en:'en-US',ja:'ja-JP'})[language]||'ko-KR',{maximumFractionDigits:8}).format(value)+' '+s.unit;
 }
 export function moneyFromDisplay(value,character){const n=Math.round(Number(value)*BASE_MEAL/moneySettings(character).mealPrice);if(!integer(n)||n>1e12)throw Error('money-invalid-amount');return n}
 export function updateMoneySettings(character,patch,now=Date.now()){

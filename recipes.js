@@ -6830,5 +6830,19 @@ export const RECIPES = [
     "appliance": ""
   }
 ];
-export function recipeCost(recipe,prices={}){const home=recipe.ing.reduce((sum,id)=>{const value=prices[id]??INGREDIENT_BY_ID[id]?.price??0;return sum+(Number.isFinite(Number(value))&&Number(value)>=0?Number(value):0)},0);return {home:Math.round(home*100)/100,out:Math.round((home*2+recipe.level*recipe.level*.05)*100)/100}}
+// Game balance in multiples of the village's standard meal, per serving.
+// Premium dishes have their own ingredient/labor budgets rather than a level-only price.
+const GOURMET_PRICES={
+ gourmet_01:[5.5,11],gourmet_02:[2.4,6],gourmet_03:[3.2,7.5],gourmet_04:[4.5,9.5],
+ gourmet_05:[5,10.5],gourmet_06:[3.6,9],gourmet_07:[3.2,8],gourmet_08:[2.8,7],
+ gourmet_09:[2.2,5.5],gourmet_10:[4.8,11],gourmet_11:[1.8,5],gourmet_12:[3.8,9],
+ gourmet_13:[4.5,9.5],gourmet_14:[3.2,8],gourmet_15:[1.4,3.8],gourmet_16:[2,5],
+ gourmet_17:[2.8,7],gourmet_18:[2.2,5.5],gourmet_19:[1.2,3],gourmet_20:[1.6,4]
+};
+export function recipeCost(recipe,prices={}){
+ const ingredients=recipe.ing.reduce((sum,id)=>{const value=prices[id]??INGREDIENT_BY_ID[id]?.price??0;return sum+(Number.isFinite(Number(value))&&Number(value)>=0?Number(value):0)},0);
+ const premium=GOURMET_PRICES[recipe.id],home=Math.max(ingredients,premium?.[0]??(recipe.cuisine==='convenience'?0:.35+recipe.level*.1));
+ const out=premium?premium[1]+Math.max(0,home-premium[0])*2:home*2+recipe.level*recipe.level*.05;
+ return {home:Math.min(11,Math.round(home*100)/100),out:Math.min(11,Math.round(out*100)/100)};
+}
 for(const recipe of RECIPES)recipe.cost=recipeCost(recipe);
