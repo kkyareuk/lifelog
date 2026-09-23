@@ -1,0 +1,9 @@
+<ko-KR>
+건물·가구·뒤로가기 버튼 뒤에 생기던 네모 배경과 완성된 음식의 흰 배경을 수정했어요. 카운터 작업 중 캐릭터가 가려지는 문제를 개선했어요. 방 안의 캐릭터와 반려동물이 가구와 서로의 자리를 피해 서도록 개선하고 이름표 가독성을 높였어요.
+</ko-KR>
+<en-US>
+Fixed unwanted backgrounds behind buildings, furniture, back buttons, and finished dishes. Improved character visibility while using counters. Characters and pets now seek free standing space around furniture and one another. Improved name label readability.
+</en-US>
+<ja-JP>
+建物・家具・戻るボタンの四角い背景と、完成した料理の白い背景を修正しました。カウンター使用中にキャラクターが隠れる問題を改善しました。室内のキャラクターとペットが家具や互いの位置を避けて立つよう改善し、名前表示を読みやすくしました。
+</ja-JP>
