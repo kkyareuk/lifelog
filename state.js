@@ -353,7 +353,7 @@ function normalizeHomes(x){
   if(x.characterPane==="traits")x.characterPane="personality";
   if(x.characterPane==="worldTaste")x.characterPane="taste";
   x.characterPane=["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
-  x.characterOverviewPane=["basic","court","life"].includes(x.characterOverviewPane)?x.characterOverviewPane:"basic";
+  x.characterOverviewPane=["basic","career","court","life"].includes(x.characterOverviewPane)?x.characterOverviewPane:"basic";
   x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
   x.characterPersonalityPane=["core","emotion","details","abilities"].includes(x.characterPersonalityPane)?x.characterPersonalityPane:"core";
   x.characterTastePane=x.characterTastePane==="catalog"?"catalog":"categories";

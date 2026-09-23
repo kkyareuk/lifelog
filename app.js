@@ -1449,6 +1449,13 @@ function resumeAfterCommandDismissal(){
 window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-discovery-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-money-updated',()=>render());
+window.addEventListener('drawer-open-career-page',event=>{
+ const {id,groupId}=event.detail||{},s=activeShared();if((s?.activeGroupId||'')!==groupId)return;
+ flushMobileCharacterDraft();mobileCharacterEditorPane='';mobileCharacterDraftDirty=false;
+ document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+ navigateToTab('character');
+ if(!state.characters[id])return;state.activeId=id;state.characterProfileBook=false;state.characterSettingsView='full';state.characterPane='profile';state.characterOverviewPane='career';render();
+});
 window.addEventListener('drawer-scene-gesture-ended',resumeAfterCommandDismissal);
 window.addEventListener('drawer-selection-dismissed',()=>{resumeAfterCommandDismissal();scheduleLiveSceneRefresh()});
 function renderAfterCommand(){
@@ -2403,8 +2410,8 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
-const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,2),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(2)];
-const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
+const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,3),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(3)];
+const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-career","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
 function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
 }
@@ -2413,7 +2420,7 @@ function openCharacterBookPage(next){
   if(!characterBookPages().includes(next))return false;
   if(next.startsWith("overview-")){
     state.characterPane="profile";
-    state.characterOverviewPane=next.endsWith("court")?"court":next.endsWith("life")?"life":"basic";
+    state.characterOverviewPane=next.endsWith("career")?"career":next.endsWith("court")?"court":next.endsWith("life")?"life":"basic";
   }else if(next.startsWith("body-")){
     state.characterPane="body";
     state.characterBodyPane=next.endsWith("accessibility")?"accessibility":next.endsWith("appearance")?"appearance":"figure";
@@ -3970,7 +3977,7 @@ function bind(){
     el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });
   $$("[data-character-overview-pane]").forEach(el=>el.onclick=()=>{
-    state.characterOverviewPane=el.dataset.characterOverviewPane==="court"&&isCourtWorld()?"court":el.dataset.characterOverviewPane==="life"?"life":"basic";
+    state.characterOverviewPane=el.dataset.characterOverviewPane==="career"?"career":el.dataset.characterOverviewPane==="court"&&isCourtWorld()?"court":el.dataset.characterOverviewPane==="life"?"life":"basic";
     save();
     el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });

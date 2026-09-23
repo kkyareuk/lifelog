@@ -1,0 +1,14 @@
+const assert=require('node:assert/strict'),fixture=require('./court-fixture.cjs');
+(async()=>{const {db,data}=fixture(),api=require('../functions/career-world')({db,model:()=>import('../career-world.js')}),now=()=>new Date(2026,0,25).getTime(),money=require('../functions/character-money')({db,clock:now});const career={id:'custom-clerk',name:'서기',payDay:25,departments:['행정부'],ranks:[{id:'junior',name:'수습',salaryMeals:230,duties:[{name:'문서 정리',description:'문서를 정리하고 있어요.'}]}]};
+ await assert.rejects(api('outsider',{groupId:'g',action:'read'}),e=>e.status===403);
+ await assert.rejects(api('member',{groupId:'g',action:'save',revision:0,career}),e=>e.status===403);
+ data.get('groups/g').rules.allowMemberCareerAdd=true;
+ const saved=await api('member',{groupId:'g',action:'save',revision:0,career});assert.equal(saved.economy.careers.length,1);
+ await assert.rejects(api('other',{groupId:'g',action:'save',revision:1,career}),e=>e.status===403);
+ await assert.rejects(api('member',{groupId:'g',action:'save',revision:0,career}),e=>e.status===409);
+ await assert.rejects(money('other',{groupId:'g',id:'a',action:'employment',jobId:career.id,rankId:'junior',jobTitle:''}),e=>e.status===403);
+ const employed=await money('member',{groupId:'g',id:'a',action:'employment',jobId:career.id,rankId:'junior',jobTitle:'황실 서기',department:'행정부',specialty:'기록',frequency:'weekly',salary:999999999});assert.equal(employed.wallet.employment.salary,2300000);assert.equal(employed.wallet.employment.frequency,'weekly');assert.equal(employed.wallet.employment.department,'행정부');assert.equal(JSON.parse(data.get('groups/g/residents/a').profileJson).jobTitle,'황실 서기');
+ const builtin=(await import('../career-catalog.js')).BUILTIN_CAREERS[0];
+ for(const uid of ['host','member'])await assert.rejects(api(uid,{groupId:'g',action:'save',revision:1,career:builtin}),/career-builtin-readonly/);
+ console.log('PASS475 server membership, host rule, creator ownership, revision conflicts, personal ownership, salary canonical lookup, department and frequency persistence');
+})().catch(e=>{console.error(e);process.exitCode=1});

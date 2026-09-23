@@ -1,4 +1,4 @@
-import {currentDuties,employmentsFor} from './salary.js';
+import {currentDuties,employmentsFor,todayCareerDuty} from './salary.js';
 import {finishCooking} from './cooking.js';
 import {adaptTownActivity} from './town-setting.js';
 import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
@@ -1174,7 +1174,8 @@ function workEvent(c,time,date){
   const matches=Object.entries(variants).find(([key])=>c.job===key||String(c.jobTitle||"").includes(key));
   const duties=currentDuties(state,c);
   const pool=duties.length?duties.map(d=>{const copy=d.copy?.[state.uiLanguage]||d;return [copy.name,copy.description]}):matches?.[1]||[["직업 업무를 처리하는 중",`${c.jobTitle||c.job}에게 필요한 실무를 일정과 우선순위에 맞춰 진행하고 있어요.`]];
-  const text=pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
+  const duty=todayCareerDuty(state,c,date);
+  const text=duty?[duty.name,duty.description]:pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
   if(!c.workplaceId||c.workplaceId==="home")return {...homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study"),economyWork:true};
   const workTypes=c.job==="가수"||c.job==="아이돌"?["공연장","극장","스튜디오","방송국","사무실"]:["사무실","회사","학교"];
   const p=(townFor(c,date)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(workTypes,`${c.id}:work`,c);

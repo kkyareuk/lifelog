@@ -1,6 +1,6 @@
 import {bindWalletAccounts,walletBalance} from './wallet-sharing.js';
 import {renderWalletSharing} from './wallet-sharing-ui.js';
-import {openEmployment,openCareerWorld} from './career-ui.js';
+import {openEmployment,openCareerWorld,mountEmployment} from './career-ui.js';
 import {applyWorldCurrency} from './career-world.js';
 import {economyAvailable} from './economy-access.js';
 import {displayImageSource} from './local-media.js?v=20260909dev305';
@@ -10,7 +10,7 @@ import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
 
 const walletLoads=new Map();
 const words=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
-function context(){const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),shared=snapshot?.activeGroupId&&snapshot.group,world=shared?buildSharedWorld(snapshot,state.uiLanguage):state;const id=document.querySelector('[data-observed-character]')?.dataset.observedCharacter||world.activeId;return {world,c:world.characters[id],snapshot:shared?snapshot:null}}
+function context(){const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),shared=snapshot?.activeGroupId&&snapshot.group,world=shared&&state.activeTab!=='character'?buildSharedWorld(snapshot,state.uiLanguage):state;const id=document.querySelector('[data-observed-character]')?.dataset.observedCharacter||world.activeId;return {world,c:world.characters[id],snapshot:shared?snapshot:null}}
 const errorText=(error,lang)=>error.message==='money-insufficient'?words(lang,'잔액이 부족해요.','Insufficient funds.','残高が不足しています。'):error.message;
 export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
  const info=context(),{world,snapshot}=info,c=characterId?world.characters[characterId]:info.c;if(!c)return;
@@ -80,6 +80,8 @@ export function bindCharacterMoney(){
   const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','재산','Wealth','資産'],['work','직업','Career','職業']]){const b=document.createElement('button');b.type='button';const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src='./assets/home-ui/profile-placeholder.png';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
  }
  const currentBalance=hud?.querySelector('[data-character-balance]');if(currentBalance){currentBalance.textContent=displayMoney(walletBalance(c.wallet),c,world.uiLanguage);currentBalance.title=currentBalance.textContent;}
+ document.querySelectorAll('[data-employment-editor]').forEach(el=>{if(!el.dataset.mounted){el.dataset.mounted='true';const character=world.characters[el.dataset.employmentEditor];if(character)mountEmployment(el,world,character,snapshot);}});
+ document.querySelectorAll('[data-open-career-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('work',b.dataset.openCareerSettings));
  document.querySelectorAll('[data-character-money-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('settings',b.dataset.characterMoneySettings));
 
 }

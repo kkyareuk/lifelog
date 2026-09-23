@@ -44,3 +44,11 @@ export function careerCaption(world,c){
  if(c.jobTitle)return c.jobTitle;const entries=employmentsFor(c);if(!entries.length)return c.job||'';const language=world.uiLanguage||'ko';
  return entries.map(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId),name=careerLabel(rank,language)||e.rankName;return e.department?(language==='en'?name+' · '+e.department:e.department+(language==='ja'?'の':'의 ')+name):name}).join(' / ');
 }
+
+// Use the same local-day seed as work scenes so the home label and work log agree.
+export function todayCareerDuty(world,c,date=new Date()){
+ const duties=currentDuties(world,c);if(!duties.length)return null;
+ const key=`${c.id}:${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}:job-scene`;
+ let hash=2166136261;for(const char of key)hash=(hash*31+char.charCodeAt(0))>>>0;
+ const duty=duties[hash%duties.length];return duty.copy?.[world.uiLanguage]||duty;
+}

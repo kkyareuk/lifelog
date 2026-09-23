@@ -1,0 +1,78 @@
+--- a/runtime\career-world.js
++++ b/runtime\career-world.js
+@@ -1,5 +1,5 @@
+ import {BUILTIN_CAREERS} from './career-catalog.js';
+-export const careersFor=world=>[...BUILTIN_CAREERS.map(j=>world.economy?.overrides?.[j.id]||j),...(world.economy?.careers||[])];
++export const careersFor=world=>[...BUILTIN_CAREERS,...(world.economy?.careers||[])];
+ export const economyFor=world=>({version:1,revision:0,unit:'원',mealPrice:10000,careers:[],overrides:{},...world.economy});
+ export function validateCareer(raw){
+  const fail=()=>{throw Error('career-invalid')},text=(s,n)=>typeof s==='string'&&s.trim()&&s.length<=n;
+@@ -11,11 +11,12 @@
+ }
+ export function saveCareer(world,raw,uid='',manager=true,allowCreate=false){
+  const e=economyFor(world),all=careersFor(world),old=all.find(j=>j.id===raw?.id),job=validateCareer(raw);
+- if(old?(old.builtin?!manager:!manager&&old.ownerUid!==uid):!manager&&!allowCreate)throw Error('career-permission');
++ if(old?.builtin)throw Error('career-builtin-readonly');
++ if(old?!manager&&old.ownerUid!==uid:!manager&&!allowCreate)throw Error('career-permission');
+  if(!old&&job.id.startsWith('builtin-'))throw Error('career-invalid');
+  if(!old&&e.careers.length>=100)throw Error('career-limit');
+  const next={...job,builtin:!!old?.builtin,ownerUid:old?.ownerUid||uid};
+- if(old?.builtin)e.overrides={...e.overrides,[job.id]:next};else e.careers=[...e.careers.filter(j=>j.id!==job.id),next];
++ e.careers=[...e.careers.filter(j=>j.id!==job.id),next];
+  world.economy={...e,revision:e.revision+1};return next;
+ }
+ export function archiveCareer(world,id,uid='',manager=true){const e=economyFor(world),old=e.careers.find(j=>j.id===id);if(!old||!manager&&old.ownerUid!==uid)throw Error('career-permission');e.careers=e.careers.map(j=>j.id===id?{...j,archived:true}:j);world.economy={...e,revision:e.revision+1}}
+--- a/runtime\court-world-ui.js
++++ b/runtime\court-world-ui.js
+@@ -13,7 +13,7 @@
+ const requestForm=()=>`<section class="court-rank-request" data-rank-request><h3>${t('신분·위계 추가 신청','Request a status / rank','身分・階級の追加申請')}</h3><label>${t('신분 이름','Status name','身分名')}<input name="rankName" maxlength="40" required></label><label>${t('위계 · 0–100','Rank · 0–100','階級・0–100')}<input name="rankLevel" type="number" min="0" max="100" step="1" value="0" required></label><button type="button" data-request-rank>${t('추가 신청','Send request','追加を申請')}</button><p role="status"></p></section>`;
+ export function courtCharacterPage(c){
+  const p=(snapshot().courtProfiles||[]).find(p=>p.id===c.id&&p.ownerUid===c.ownerUid)||{},ranks=courtRanks();
+- return `<section class="court-character-page"><div class="court-character-content"><h2>${t('궁정 설정','Court settings','宮廷設定')}</h2><p>${t('이 멀티 그룹의 왕정 세계관에서 사용하는 캐릭터 설정이에요. 변경 후 캐릭터 저장을 눌러 주세요.','Character settings for this group’s monarchy. Save the character to apply changes.','このグループの王政世界で使う設定です。変更後にキャラクターを保存してください。')}</p><div class="court-world-fields"><label>${t('신분 이름 · 공용 목록','Status · shared list','身分名・共通リスト')}${select('courtRankId',c.courtRankId||p.rankId||'', [['',t('미설정','Unassigned','未設定')],...ranks.map(r=>[r.id,rankName(r)+' · '+r.level])])}</label><label>${t('정치적 성향','Political allegiance','政治的立場')}${select('courtFaction',c.courtFaction||p.faction||'neutral',[['neutral',t('중립','Neutral','中立')],['crown',t('왕당파','Crown loyalist','王党派')],['reform',t('개혁파','Reformist','改革派')]])}</label><label>${t('신분 의식','Attention to status','身分への意識')}${select('courtAwareness',c.courtAwareness??p.awareness??50,[0,25,50,75,100].map((v,i)=>[v,label([['전혀 개의치 않음','Not concerned','気にしない'],['별로 의식하지 않음','Rarely concerned','あまり気にしない'],['상황에 따라 의식함','Depends on the situation','状況による'],['많이 의식함','Often concerned','かなり気にする'],['아주 민감함','Very sensitive','とても敏感']][i])]))}</label><label>${t('대화에서 중요하게 여기는 것','What matters in conversation','会話で大切にすること')}${select('courtTrait',c.courtTrait||p.trait||'courtesy',[['courtesy',t('예의','Courtesy','礼儀')],['honesty',t('솔직함','Honesty','率直さ')],['warmth',t('다정함','Warmth','優しさ')],['privacy',t('사생활','Privacy','私生活')]])}</label><label class="court-world-wide">${t('배경 · 그룹 멤버에게 공개','Background · visible to group members','背景・グループ内に公開')}<textarea data-field="courtBackground" maxlength="500" rows="4">${esc(c.courtBackground??p.bio??'')}</textarea></label></div><p>${t('사회적 거리는 신분의 위계와 정치적 성향으로 정해져요. 낮을수록 대외적으로도 가까이 지낼 수 있어요. 신분 의식은 캐릭터가 그 차이를 얼마나 신경 쓰는지예요.','Social distance is determined by rank and allegiance. A lower distance allows public closeness. Attention to status describes how much the character cares about that difference.','社会的距離は階級と政治的立場で決まります。低いほど公の場でも親しくできます。身分への意識は、その差をどれほど気にするかです。')}</p>${requestForm()}</div><nav class="court-page-controls"><button type="button" data-character-overview-pane="basic">◀</button><b>${t('궁정 설정','Court settings','宮廷設定')}</b><button type="button" data-character-overview-pane="life">▶</button></nav></section>`;
++ return `<section class="court-character-page"><div class="court-character-content"><h2>${t('궁정 설정','Court settings','宮廷設定')}</h2><p>${t('이 멀티 그룹의 왕정 세계관에서 사용하는 캐릭터 설정이에요. 변경 후 캐릭터 저장을 눌러 주세요.','Character settings for this group’s monarchy. Save the character to apply changes.','このグループの王政世界で使う設定です。変更後にキャラクターを保存してください。')}</p><div class="court-world-fields"><label>${t('신분 이름 · 공용 목록','Status · shared list','身分名・共通リスト')}${select('courtRankId',c.courtRankId||p.rankId||'', [['',t('미설정','Unassigned','未設定')],...ranks.map(r=>[r.id,rankName(r)+' · '+r.level])])}</label><label>${t('정치적 성향','Political allegiance','政治的立場')}${select('courtFaction',c.courtFaction||p.faction||'neutral',[['neutral',t('중립','Neutral','中立')],['crown',t('왕당파','Crown loyalist','王党派')],['reform',t('개혁파','Reformist','改革派')]])}</label><label>${t('신분 의식','Attention to status','身分への意識')}${select('courtAwareness',c.courtAwareness??p.awareness??50,[0,25,50,75,100].map((v,i)=>[v,label([['전혀 개의치 않음','Not concerned','気にしない'],['별로 의식하지 않음','Rarely concerned','あまり気にしない'],['상황에 따라 의식함','Depends on the situation','状況による'],['많이 의식함','Often concerned','かなり気にする'],['아주 민감함','Very sensitive','とても敏感']][i])]))}</label><label>${t('대화에서 중요하게 여기는 것','What matters in conversation','会話で大切にすること')}${select('courtTrait',c.courtTrait||p.trait||'courtesy',[['courtesy',t('예의','Courtesy','礼儀')],['honesty',t('솔직함','Honesty','率直さ')],['warmth',t('다정함','Warmth','優しさ')],['privacy',t('사생활','Privacy','私生活')]])}</label><label class="court-world-wide">${t('배경 · 그룹 멤버에게 공개','Background · visible to group members','背景・グループ内に公開')}<textarea data-field="courtBackground" maxlength="500" rows="4">${esc(c.courtBackground??p.bio??'')}</textarea></label></div><p>${t('사회적 거리는 신분의 위계와 정치적 성향으로 정해져요. 낮을수록 대외적으로도 가까이 지낼 수 있어요. 신분 의식은 캐릭터가 그 차이를 얼마나 신경 쓰는지예요.','Social distance is determined by rank and allegiance. A lower distance allows public closeness. Attention to status describes how much the character cares about that difference.','社会的距離は階級と政治的立場で決まります。低いほど公の場でも親しくできます。身分への意識は、その差をどれほど気にするかです。')}</p>${requestForm()}</div><nav class="court-page-controls"><button type="button" data-character-overview-pane="career">◀</button><b>${t('궁정 설정','Court settings','宮廷設定')}</b><button type="button" data-character-overview-pane="life">▶</button></nav></section>`;
+ }
+ export function groupStoryMarkup(s,manager){
+  const ranks=courtRanks(s),requests=s.courtRankRequests||[],uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
+--- a/runtime\salary.js
++++ b/runtime\salary.js
+@@ -44,3 +44,11 @@
+  if(c.jobTitle)return c.jobTitle;const entries=employmentsFor(c);if(!entries.length)return c.job||'';const language=world.uiLanguage||'ko';
+  return entries.map(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId),name=careerLabel(rank,language)||e.rankName;return e.department?(language==='en'?name+' · '+e.department:e.department+(language==='ja'?'の':'의 ')+name):name}).join(' / ');
+ }
++
++// Use the same local-day seed as work scenes so the home label and work log agree.
++export function todayCareerDuty(world,c,date=new Date()){
++ const duties=currentDuties(world,c);if(!duties.length)return null;
++ const key=`${c.id}:${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}:job-scene`;
++ let hash=2166136261;for(const char of key)hash=(hash*31+char.charCodeAt(0))>>>0;
++ const duty=duties[hash%duties.length];return duty.copy?.[world.uiLanguage]||duty;
++}
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,4 +1,4 @@
+-import {currentDuties,employmentsFor} from './salary.js';
++import {currentDuties,employmentsFor,todayCareerDuty} from './salary.js';
+ import {finishCooking} from './cooking.js';
+ import {adaptTownActivity} from './town-setting.js';
+ import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
+@@ -1174,7 +1174,8 @@
+   const matches=Object.entries(variants).find(([key])=>c.job===key||String(c.jobTitle||"").includes(key));
+   const duties=currentDuties(state,c);
+   const pool=duties.length?duties.map(d=>{const copy=d.copy?.[state.uiLanguage]||d;return [copy.name,copy.description]}):matches?.[1]||[["직업 업무를 처리하는 중",`${c.jobTitle||c.job}에게 필요한 실무를 일정과 우선순위에 맞춰 진행하고 있어요.`]];
+-  const text=pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
++  const duty=todayCareerDuty(state,c,date);
++  const text=duty?[duty.name,duty.description]:pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
+   if(!c.workplaceId||c.workplaceId==="home")return {...homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study"),economyWork:true};
+   const workTypes=c.job==="가수"||c.job==="아이돌"?["공연장","극장","스튜디오","방송국","사무실"]:["사무실","회사","학교"];
+   const p=(townFor(c,date)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(workTypes,`${c.id}:work`,c);
+--- a/runtime\state.js
++++ b/runtime\state.js
+@@ -353,7 +353,7 @@
+   if(x.characterPane==="traits")x.characterPane="personality";
+   if(x.characterPane==="worldTaste")x.characterPane="taste";
+   x.characterPane=["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
+-  x.characterOverviewPane=["basic","court","life"].includes(x.characterOverviewPane)?x.characterOverviewPane:"basic";
++  x.characterOverviewPane=["basic","career","court","life"].includes(x.characterOverviewPane)?x.characterOverviewPane:"basic";
+   x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
+   x.characterPersonalityPane=["core","emotion","details","abilities"].includes(x.characterPersonalityPane)?x.characterPersonalityPane:"core";
+   x.characterTastePane=x.characterTastePane==="catalog"?"catalog":"categories";

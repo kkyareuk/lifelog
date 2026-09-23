@@ -1,5 +1,5 @@
 import {BUILTIN_CAREERS} from './career-catalog.js';
-export const careersFor=world=>[...BUILTIN_CAREERS.map(j=>world.economy?.overrides?.[j.id]||j),...(world.economy?.careers||[])];
+export const careersFor=world=>[...BUILTIN_CAREERS,...(world.economy?.careers||[])];
 export const economyFor=world=>({version:1,revision:0,unit:'원',mealPrice:10000,careers:[],overrides:{},...world.economy});
 export function validateCareer(raw){
  const fail=()=>{throw Error('career-invalid')},text=(s,n)=>typeof s==='string'&&s.trim()&&s.length<=n;
@@ -11,11 +11,12 @@ export function validateCareer(raw){
 }
 export function saveCareer(world,raw,uid='',manager=true,allowCreate=false){
  const e=economyFor(world),all=careersFor(world),old=all.find(j=>j.id===raw?.id),job=validateCareer(raw);
- if(old?(old.builtin?!manager:!manager&&old.ownerUid!==uid):!manager&&!allowCreate)throw Error('career-permission');
+ if(old?.builtin)throw Error('career-builtin-readonly');
+ if(old?!manager&&old.ownerUid!==uid:!manager&&!allowCreate)throw Error('career-permission');
  if(!old&&job.id.startsWith('builtin-'))throw Error('career-invalid');
  if(!old&&e.careers.length>=100)throw Error('career-limit');
  const next={...job,builtin:!!old?.builtin,ownerUid:old?.ownerUid||uid};
- if(old?.builtin)e.overrides={...e.overrides,[job.id]:next};else e.careers=[...e.careers.filter(j=>j.id!==job.id),next];
+ e.careers=[...e.careers.filter(j=>j.id!==job.id),next];
  world.economy={...e,revision:e.revision+1};return next;
 }
 export function archiveCareer(world,id,uid='',manager=true){const e=economyFor(world),old=e.careers.find(j=>j.id===id);if(!old||!manager&&old.ownerUid!==uid)throw Error('career-permission');e.careers=e.careers.map(j=>j.id===id?{...j,archived:true}:j);world.economy={...e,revision:e.revision+1}}

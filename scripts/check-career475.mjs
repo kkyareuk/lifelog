@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {BUILTIN_CAREERS} from '../career-catalog.js';
+import {saveCareer,careersFor} from '../career-world.js';
+import {assignEmployment,todayCareerDuty} from '../salary.js';
+import {ensureWallet,moneyEntry} from '../character-money.js';
+const w={},job=structuredClone(BUILTIN_CAREERS[0]);
+for(const manager of [true,false])assert.throws(()=>saveCareer(w,job,'u',manager,true),/career-builtin-readonly/);
+assert.equal(w.economy,undefined);
+const modified={...job,name:'modified',builtin:false};w.economy={overrides:{[job.id]:modified}};
+assert.equal(careersFor(w)[0].name,job.name);assert.throws(()=>saveCareer(w,modified),/career-builtin-readonly/);
+const c={id:'a',job:'회사원'};ensureWallet(c);assignEmployment(w,c,'builtin-office','rank-1',Date.now(),moneyEntry);
+const d=new Date(2026,8,23,1);assert.deepEqual(todayCareerDuty(w,c,d),todayCareerDuty(w,c,new Date(2026,8,23,23)));
+assert(todayCareerDuty(w,c,d).name);w.uiLanguage='en';assert(todayCareerDuty(w,c,d).name);
+console.log('PASS475 builtin immutable including stored overrides; stable daily duty across rerenders');
