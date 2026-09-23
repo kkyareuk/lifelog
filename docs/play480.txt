@@ -1,0 +1,18 @@
+<ko-KR>
+• 회사원 업무를 직급에 맞게 다양화했어요. 출근 준비부터 회의·실무·퇴근 정리까지 근무 일정에 따라 진행해요.
+• 근무 건물 내부에서 직원들이 일하는 모습을 볼 수 있어요.
+• 건물 내부에 집과 같은 상단바와 건물 편집·방 정보·직원·편집모드 메뉴를 넣었어요. 벽지·바닥 대신 사진이 덮이지 않아요.
+• 마을이 확대되지 않은 상태에서도 한 손가락으로 드래그할 수 있도록 고쳤어요.
+</ko-KR>
+<en-US>
+• Office work now follows rank-specific duties, from arrival through meetings and tasks to wrapping up, with varied workday logs.
+• Watch employees working inside their workplace.
+• Building interiors now have a home-style header and Building, Rooms, Staff and Edit mode menus. Room photos no longer cover walls and floors.
+• Fixed one-finger village panning at normal zoom.
+</en-US>
+<ja-JP>
+• 会社員の仕事を役職別に多様化しました。出勤準備から会議・実務・退勤準備まで勤務予定に沿って進みます。
+• 勤務先の建物内で従業員が働く姿を見られます。
+• 建物内に家と同じ上部バーと建物編集・部屋情報・従業員・編集モードを追加しました。写真が壁紙と床を覆わなくなります。
+• 拡大していない村も指1本で動かせるように修正しました。
+</ja-JP>
