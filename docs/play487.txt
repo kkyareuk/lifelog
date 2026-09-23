@@ -1,0 +1,9 @@
+<ko-KR>
+식사 중 허기가 실시간으로 회복되어 약 30초면 가득 차도록 수정했습니다. 식사 도중 자동 요리가 끼어드는 문제와 오래된 회복 시간이 재사용되는 문제를 해결했습니다. 자유 행동이 다른 주민과 겹치는 경우 다른 활동을 우선 고르고, 외식과 낮 시간 외출 기회를 늘렸습니다.
+</ko-KR>
+<en-US>
+Meals now restore hunger continuously, reaching full in about 30 seconds. Fixed cooking interrupting meals and expired recovery timers being reused. Independent activities now favor choices different from nearby residents, with more opportunities to eat out and visit town during the day.
+</en-US>
+<ja-JP>
+食事中に空腹が徐々に回復し、約30秒で満腹になるよう修正しました。食事中に自動調理が割り込む問題と古い回復時間が再利用される問題を解消しました。自由行動は他の住民と異なる活動を優先し、外食や昼間の外出の機会を増やしました。
+</ja-JP>
