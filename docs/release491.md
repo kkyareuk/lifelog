@@ -20,3 +20,5 @@
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.439-491-internal.aab
 - SHA256: C85D47D7FE3A20DFBFD0F25E63F15C6E93288D79DC8EA32DA41BD7DDB511E362
 - 공유 서버 운영127 소스에서 변경4파일만 적용. docs/backend491.patch 참고. sharedTownApi revision sharedtownapi-00128-jaf, 배포 소스185개 전체 staging과 일치 확인.
+- Play 내부 release368: 2026-09-23 23:49 KST 내부 테스터에게 제공됨 확인.
+- 구현 커밋76961142. 코드 dev 반영, 공개 main은 릴리스 문서만 반영. 프로덕션·비공개 테스트·Apple 심사 제출 없음.
