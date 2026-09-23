@@ -20,4 +20,4 @@
 - SHA256: 6FF7AB0DE1A82B1EDF64ED912FBC1BC0E7FC5792CB21556162CC4BC178D3F259
 - Play 내부 release367: 2026-09-23 22:53 KST 내부 테스터에게 제공됨 확인.
 - 공유 서버는 운영126 소스를 다시 읽어 이번 커피 관련 runtime6파일만 적용. docs/backend490.patch 참조. sharedTownApi revision sharedtownapi-00127-zis 배포 완료 및 185개 소스파일 일치 확인.
-- 앱 코드는 dev 반영. 공개 main은 배포 연결 보호를 위해 릴리스 문서만 반영. 프로덕션/비공개 테스트 승격 없음.
+- 구현 커밋2122d879: 앱 코드는 dev 반영. 공개 main은 배포 연결 보호를 위해 릴리스 문서만 반영. 프로덕션/비공개 테스트 승격 없음.
