@@ -5,7 +5,7 @@ import {assignEmployment,settleSalary,nextSalaryPayout} from '../salary.js';
 import {ensureWallet,moneyEntry,settleEmployment} from '../character-money.js';
 process.env.TZ='Asia/Seoul';
 const at=(y,m,d)=>new Date(y,m-1,d).getTime();
-assert.equal(BUILTIN_CAREERS.length,23);
+assert.equal(BUILTIN_CAREERS.length,22);
 for(const [year,month]of [[2026,1],[2026,2],[2024,2],[2026,4]]){
  const end=month===12?at(year+1,1,25):at(year,month+1,25),start=at(year,month,25),balances=[];
  for(const frequency of ['daily','weekly','monthly']){const c={job:'회사원'},world={};ensureWallet(c,start);c.wallet.balance=0;assignEmployment(world,c,'builtin-office','rank-1',start,moneyEntry,{frequency,department:'개발부',specialty:'플랫폼'});for(let t=start+86400000;t<=end;t+=86400000)settleSalary(c.wallet,c.wallet.employment,t,moneyEntry);assert.equal(c.wallet.balance,2500000);assert(c.wallet.entries.every(e=>e.amount%1000===0));const before=c.wallet.balance;settleSalary(c.wallet,c.wallet.employment,end,moneyEntry);assert.equal(c.wallet.balance,before);balances.push(before)}assert.equal(new Set(balances).size,1);

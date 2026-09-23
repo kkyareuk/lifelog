@@ -383,6 +383,8 @@ function normalizeHomes(x){
   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
   const notificationDefaults=defaultCharacterNotificationSettings(),notificationSource=x.characterNotificationSettings&&typeof x.characterNotificationSettings==="object"&&!Array.isArray(x.characterNotificationSettings)?x.characterNotificationSettings:{};
   x.characterNotificationSettings={
+    explicitSelection:notificationSource.explicitSelection===true,
+    senderMemo:notificationSource.senderMemo&&typeof notificationSource.senderMemo==='object'?notificationSource.senderMemo:{},
     characterIds:Array.isArray(notificationSource.characterIds)?[...new Set(notificationSource.characterIds.map(String).filter(id=>id&&id.length<=180))]:[],
     frequencyMode:["perDay","interval"].includes(notificationSource.frequencyMode)?notificationSource.frequencyMode:"perDay",
     timesPerDay:Math.max(1,Math.min(6,Number(notificationSource.timesPerDay)||({light:1,daily:1,lively:2}[notificationSource.frequency]||notificationDefaults.timesPerDay))),
@@ -1223,6 +1225,7 @@ export function moveCharacter(id,direction){
 }
 export function deleteCharacter(id){
   if(!state.characters[id])return;
+  if(state.characters[id].wallet?.poolId){alert({ko:"재산 공유를 해제한 뒤 삭제해 주세요.",en:"End money sharing before deleting this character.",ja:"資産共有を解除してから削除してください。"}[state.uiLanguage]||"End money sharing first.");return;}
   state.deletedCharacterIds=Array.isArray(state.deletedCharacterIds)?state.deletedCharacterIds:[];
   if(!state.deletedCharacterIds.includes(id))state.deletedCharacterIds.push(id);
   const removedCharacter=state.characters[id],homeIds=new Set([removedCharacter.homeId,...(removedCharacter.residences||[]).filter(r=>r.isPrimary||r.role==='주거지').map(r=>r.homeId)].filter(Boolean));

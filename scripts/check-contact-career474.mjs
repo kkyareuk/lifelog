@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {notificationCharacters,selectedNotificationIds,setNotificationCharacter} from '../notification-characters.js';
+import {assignEmployment,employmentsFor,removeEmployment,careerCaption} from '../salary.js';
+import {ensureWallet,moneyEntry,settleEmployment} from '../character-money.js';
+const world={characters:{},characterNotificationSettings:{characterIds:['old']}},snapshot={activeGroupId:'g',group:{name:'밤의 마을'},residents:[{id:'r',ownerUid:'me',sourceCharacterId:'old',name:'에테르날리스',icon:'portrait.png'},{id:'other',ownerUid:'them',name:'다른 캐릭터',icon:'other.png'}]};
+const chars=notificationCharacters(world,snapshot,'me');assert.equal(chars.length,2);assert.equal(chars[0].notificationAffiliation,'밤의 마을');assert(selectedNotificationIds(world.characterNotificationSettings,chars).has('group:g:r'));
+setNotificationCharacter(world.characterNotificationSettings,chars,'group:g:r',false);assert.equal(selectedNotificationIds(world.characterNotificationSettings,chars).size,0);
+setNotificationCharacter(world.characterNotificationSettings,chars,'group:g:other',true);assert.deepEqual([...selectedNotificationIds(world.characterNotificationSettings,chars)],['group:g:other']);
+const orphan=notificationCharacters(world,{},'me');assert(orphan.some(c=>c.notificationUnavailable));setNotificationCharacter(world.characterNotificationSettings,orphan,'group:g:other',false);assert(!world.characterNotificationSettings.characterIds.includes('group:g:other'));
+process.env.TZ='Asia/Seoul';const start=new Date(2026,0,25).getTime(),end=new Date(2026,1,25).getTime(),c={id:'a'},w={characters:{a:c},uiLanguage:'ko'};ensureWallet(c,start);c.wallet.balance=0;
+assignEmployment(w,c,'builtin-office','rank-1',start,moneyEntry,{department:'개발부'});assignEmployment(w,c,'builtin-doctor','rank-1',start,moneyEntry,{add:true,department:'정형외과'});assert.equal(employmentsFor(c).length,2);assert(careerCaption(w,c).includes('개발부의 '));
+const salary=employmentsFor(c).reduce((n,e)=>n+e.salary,0);settleEmployment(w,c,end,true);assert.equal(c.wallet.balance,salary);settleEmployment(w,c,end,true);assert.equal(c.wallet.balance,salary);
+removeEmployment(c,employmentsFor(c)[1].id,end,moneyEntry);assert.equal(employmentsFor(c).length,1);
+assignEmployment(w,c,'builtin-ceo','rank-1',end,moneyEntry,{add:true});assert.equal(employmentsFor(c)[1].jobId,'builtin-office');
+console.log('PASS474 moved sender deselection, other-owner selection, ghost removal, affiliation, N-job combined salary, duplicate prevention, CEO compatibility');

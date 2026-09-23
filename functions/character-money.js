@@ -9,7 +9,7 @@ module.exports=({db,clock=Date.now,model=()=>import('./runtime/character-money.j
   const record=doc.data(),profile=JSON.parse(record.profileJson||'{}'),life=JSON.parse(record.lifeJson||'{}'),character={...profile,id:input.id,homeId:record.sharedHomeId,residences:record.residences||[],wallet:life.wallet||profile.wallet},now=clock();
   const existingWallet=character.wallet;
   money.ensureWallet(character,now);
-  const world={economy:groupDoc.data()?.economy};money.settleEmployment(world,character,now,true);
+  const world={characters:{[input.id]:character},walletSharing:groupDoc.data()?.walletSharing,economy:groupDoc.data()?.economy};money.settleEmployment(world,character,now,true);
   const careers=await import('./runtime/career-world.js');careers.applyWorldCurrency(world,character);
   let homeRef,home,receiptRef,receipt;
   if(['share','deposit','withdraw'].includes(input.action)){
@@ -21,14 +21,16 @@ module.exports=({db,clock=Date.now,model=()=>import('./runtime/character-money.j
    if(receipt.exists){const old=receipt.data();if(old.characterId!==input.id||old.homeId!==input.homeId||old.amount!==input.amount||old.action!==input.action)fail('money-request-conflict',409);return {wallet:character.wallet,commonWallet:home.commonWallet};}
   }
   try{
-   if(input.action==='employment'){const jobs=await import('./runtime/salary.js');jobs.assignEmployment(world,character,input.jobId,input.rankId,now,money.moneyEntry,{department:input.department,specialty:input.specialty,frequency:input.frequency});if(typeof input.jobTitle!=='string'||input.jobTitle.length>80)fail('career-invalid');character.jobTitle=input.jobTitle;}
+   if(input.action==='employment'){const jobs=await import('./runtime/salary.js');jobs.assignEmployment(world,character,input.jobId,input.rankId,now,money.moneyEntry,{department:input.department,specialty:input.specialty,frequency:input.frequency,employmentId:input.employmentId,add:input.add===true});if(typeof input.jobTitle!=='string'||input.jobTitle.length>80)fail('career-invalid');character.jobTitle=input.jobTitle;}
+   else if(input.action==='employment-remove'){const jobs=await import('./runtime/salary.js');jobs.removeEmployment(character,input.employmentId,now,money.moneyEntry);}
    else if(input.action==='settings')money.updateMoneySettings(character,input.patch||{},now);
    else if(input.action==='share'){if(typeof input.enabled!=='boolean')fail('invalid-value');money.setWalletSharing({characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.enabled)}
-   else if(['deposit','withdraw'].includes(input.action)){if(typeof input.requestId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(input.requestId))fail('invalid-request');money.moveCommonMoney({characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.amount,input.action,uid+':'+input.requestId,now)}
+   else if(['deposit','withdraw'].includes(input.action)){if(typeof input.requestId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(input.requestId))fail('invalid-request');money.moveCommonMoney({walletSharing:world.walletSharing,characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.amount,input.action,uid+':'+input.requestId,now)}
    else if(input.action!=='read')fail('invalid-action');
   }catch(e){if(!e.status)e.status=400;throw e}
-  if(input.action!=='read'||!existingWallet||character.wallet.employment)tx.update(ref,{lifeJson:JSON.stringify({...life,wallet:character.wallet}),...(input.action==='employment'?{profileJson:JSON.stringify({...profile,job:character.job,jobTitle:character.jobTitle})}:{}),...(input.action==='settings'?{profileJson:JSON.stringify({...profile,wealth:character.wealth,income:character.income})}:{})});if(homeRef)tx.update(homeRef,{commonWallet:home.commonWallet});
+  if(input.action!=='read'||!existingWallet||character.wallet.employment)tx.update(ref,{lifeJson:JSON.stringify({...life,wallet:character.wallet}),...(['employment','employment-remove'].includes(input.action)?{profileJson:JSON.stringify({...profile,job:character.job,jobTitle:character.jobTitle})}:{}),...(input.action==='settings'?{profileJson:JSON.stringify({...profile,wealth:character.wealth,income:character.income})}:{})});if(homeRef)tx.update(homeRef,{commonWallet:home.commonWallet});
+  if(world.walletSharing)tx.update(group,{walletSharing:world.walletSharing});
   if(receiptRef)tx.set(receiptRef,{characterId:input.id,homeId:input.homeId,amount:input.amount,action:input.action,createdAt:now});
-  return {wallet:character.wallet,job:character.job,jobTitle:character.jobTitle,...(home?{commonWallet:home.commonWallet}:{})};
+  return {walletSharing:world.walletSharing||null,wallet:character.wallet,job:character.job,jobTitle:character.jobTitle,wealth:character.wealth,income:character.income,...(home?{commonWallet:home.commonWallet}:{})};
  });
 };

@@ -14,7 +14,7 @@ try{
  await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.photoQA);
  await p.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');window.career=await import('/career-ui.js');document.querySelector('.drawer-title')?.remove();document.documentElement.classList.remove('title-visible');g.state.activeId=g.createCharacter();window.DrawerVillageNavigation.go('observe');document.querySelectorAll('dialog[open]').forEach(d=>d.close());career.openCareerWorld()});
  await p.addLocatorHandler(p.locator('dialog.page-guide[open]'),async()=>p.locator('dialog.page-guide[open]').evaluate(d=>d.close()));
- assert.equal(await p.locator('[data-career-id]').count(),23);
+ assert.equal(await p.locator('[data-career-id]').count(),22);
  await p.getByRole('button',{name:'＋ 직업 만들기',exact:true}).click();
  await p.getByLabel('직업 분류 이름',{exact:true}).fill('왕실 마법사');
  await p.getByLabel('매월 월급 지급일',{exact:true}).fill('31');

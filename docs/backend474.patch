@@ -1,0 +1,303 @@
+--- a/runtime\career-catalog.js
++++ b/runtime\career-catalog.js
+@@ -3617,3 +3617,8 @@
+   }
+ ];
+ export const careerLabel=(entry,language="ko")=>entry?.names?.[language]||entry?.name||"";
++
++// CEO is part of the corporate career; retained rank IDs preserve existing contracts.
++const corporate=BUILTIN_CAREERS.find(j=>j.id==='builtin-office'),ceo=BUILTIN_CAREERS.find(j=>j.id==='builtin-ceo');
++corporate.ranks.push(...[['director','이사','Director','取締役',850],['executive','상무','Executive director','常務',1000],['senior-executive','전무','Senior executive director','専務',1200],['vice-president','부사장','Vice president','副社長',1500]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:structuredClone(corporate.ranks.at(-1).duties)})),...ceo.ranks.map(r=>({...r,id:'ceo-'+r.id})));
++BUILTIN_CAREERS.splice(BUILTIN_CAREERS.indexOf(ceo),1);
+--- a/runtime\character-money.js
++++ b/runtime\character-money.js
+@@ -1,5 +1,6 @@
+-import {settleSalary,employmentOffer} from './salary.js';
++import {settleSalary,employmentOffer,employmentsFor} from './salary.js';
+ import {applyWorldCurrency} from './career-world.js';
++import {bindWalletAccounts,moneyAccount,walletBalance} from './wallet-sharing.js';
+ export const BASE_MEAL=10000;
+ export const INITIAL_MONEY=Object.freeze({'형편이 어려움':50000,'평범한 형편':500000,'설정하지 않음':500000,'여유 있는 편':3000000,'부유함':30000000,'대부호':300000000});
+ const integer=n=>Number.isSafeInteger(n)&&n>=0;
+@@ -13,19 +14,22 @@
+ }
+ export function moneyFromDisplay(value,character){const n=Math.round(Number(value)*BASE_MEAL/moneySettings(character).mealPrice);if(!integer(n)||n>1e12)throw Error('money-invalid-amount');return n}
+ export function updateMoneySettings(character,patch,now=Date.now()){
++ if(character.wallet?.poolId&&patch.wealth!==undefined&&patch.wealth!==character.wealth)throw Error('money-unshare-first');
++ if(patch.wealth!==undefined&&patch.wealth!==character.wealth&&patch.confirmWealthReset!==true)throw Error('money-confirm-reset');
+  const wallet=ensureWallet(character,now),next={...moneySettings(character),...patch};
+  if(typeof next.unit!=='string'||!next.unit.trim()||next.unit.length>20||!Number.isFinite(next.mealPrice)||next.mealPrice<0.0001||next.mealPrice>1e9||!integer(next.wage)||next.wage>1e10||!['split','treat','request'].includes(next.datePayment)||!Number.isFinite(next.datePayFrequency)||next.datePayFrequency<0||next.datePayFrequency>100)throw Error('money-invalid-settings');
+  if(patch.wealth!==undefined&&!Object.hasOwn(INITIAL_MONEY,patch.wealth))throw Error('money-invalid-settings');
+  if(patch.income!==undefined&&!["절약 우선","필요한 만큼 소비","취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"].includes(patch.income))throw Error('money-invalid-settings');
+  wallet.settings={unit:next.unit.trim(),mealPrice:next.mealPrice,wage:next.wage,datePayment:next.datePayment,datePayFrequency:next.datePayFrequency};
+- if(patch.wealth!==undefined)character.wealth=patch.wealth;
++ if(patch.wealth!==undefined&&patch.wealth!==character.wealth){if(patch.confirmWealthReset!==true)throw Error('money-confirm-reset');moneyEntry(wallet,INITIAL_MONEY[patch.wealth]-wallet.balance,'wealth:'+now+':'+wallet.revision,'wealth-reset',now,patch.wealth);character.wealth=patch.wealth;}
+  if(patch.income!==undefined)character.income=patch.income;
+- wallet.updatedAt=now;
++ wallet.updatedAt=now;wallet.revision=(wallet.revision||0)+1;
+ }
+ export function moneyEntry(wallet,amount,key,kind,now,label=''){
+  if(wallet.receipts.includes(key))return false;
+- if(!Number.isSafeInteger(amount)||!integer(wallet.balance+amount))throw Error('money-insufficient');
+- wallet.balance+=amount;wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;wallet.receipts=[...wallet.receipts,key].slice(-500);wallet.entries=[{key,kind,amount,at:now,label},...wallet.entries].slice(0,100);return true;
++ const account=moneyAccount(wallet);
++ if(!Number.isSafeInteger(amount)||!integer(account.balance+amount))throw Error('money-insufficient');
++ account.balance+=amount;if(account!==wallet)account.revision=(account.revision||0)+1;wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;wallet.receipts=[...wallet.receipts,key].slice(-500);wallet.entries=[{key,kind,amount,at:now,label},...wallet.entries].slice(0,100);return true;
+ }
+ export function activityPrice(place,activity={}){
+  if(!place||activity.transit||activity.home)return 0;
+@@ -40,15 +44,17 @@
+  const wallet=sharedWallet(h);wallet.members=wallet.members.filter(id=>id!==characterId);if(enabled)wallet.members.push(characterId);return wallet;
+ }
+ export function moveCommonMoney(world,characterId,homeId,amount,kind,key,now=Date.now()){
++ bindWalletAccounts(world);
+  if(!['deposit','withdraw'].includes(kind))throw Error('money-invalid-action');
+  if(!integer(amount)||amount<=0)throw Error('money-invalid-amount');
+  const c=world.characters[characterId],home=world.homes[homeId];if(!c||!home)throw Error('money-household-required');
+  const common=sharedWallet(home),personal=ensureWallet(c,now);if(!common.members.includes(characterId)||!(c.homeId===homeId||c.residences?.some(r=>r.homeId===homeId)))throw Error('money-household-required');
+  if(common.receipts.includes(key))return false;
+- const source=kind==='deposit'?personal:common,target=kind==='deposit'?common:personal;if(source.balance<amount)throw Error('money-insufficient');
++ const source=kind==='deposit'?personal:common,target=kind==='deposit'?common:personal;if(walletBalance(source)<amount)throw Error('money-insufficient');
+  moneyEntry(source,-amount,key,kind,now,c.name);moneyEntry(target,amount,key,kind,now,c.name);return true;
+ }
+ export function payActivity(world,characterIds,amount,key,now,payment='split'){
++ bindWalletAccounts(world);
+  if(!amount)return true;const ids=[...new Set(characterIds)].filter(id=>world.characters[id]);
+  // Existing multiplayer residents opt in through the new wallet endpoint.
+  if(world.sharedContext&&ids.some(id=>!world.characters[id].wallet))return true;
+@@ -57,17 +63,15 @@
+  for(const p of payers){const c=world.characters[p.id],personal=ensureWallet(c,now),receipt=key+':'+p.id;if(personal.receipts.includes(receipt))continue;
+   const home=Object.values(world.homes||{}).find(h=>h.commonWallet?.members?.includes(c.id)&&(c.homeId===h.id||c.residences?.some(r=>r.homeId===h.id))),common=home?.commonWallet;
+   const left=common?(available.get(common)??common.balance):0,together=Math.min(left,p.amount),own=p.amount-together;
+-  if(personal.balance<own)return false;if(common)available.set(common,left-together);plans.push({personal,common,together,own,receipt});
++  const account=moneyAccount(personal),personalLeft=available.get(account)??account.balance;if(personalLeft<own)return false;available.set(account,personalLeft-own);if(common)available.set(common,left-together);plans.push({personal,common,together,own,receipt});
+  }
+  for(const p of plans){if(p.together)moneyEntry(p.common,-p.together,p.receipt,'expense',now);moneyEntry(p.personal,-p.own,p.receipt,'expense',now)}return true;
+ }
+ export function settleEmployment(world,c,now=Date.now(),force=false){
+- const wallet=c.wallet,employment=wallet?.employment;if(!employment)return false;
+- applyWorldCurrency(world,c);
+- if(!force&&now-employment.lastAt<60000)return false;
+- const before=employment.lastAt;settleSalary(wallet,employment,now,moneyEntry);
+- try{const offer=employmentOffer(world,employment.jobId,employment.rankId);Object.assign(employment,offer)}catch{}
+- if(employment.lastAt!==before){wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;return true}return false;
++ bindWalletAccounts(world);
++ const wallet=c.wallet,entries=employmentsFor(c);if(!entries.length)return false;applyWorldCurrency(world,c);let changed=false;
++ for(const employment of entries){if(!force&&now-employment.lastAt<60000)continue;const before=employment.lastAt;settleSalary(wallet,employment,now,moneyEntry);try{Object.assign(employment,employmentOffer(world,employment.jobId,employment.rankId))}catch{}changed ||= employment.lastAt!==before;}
++ if(changed){wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now}return changed;
+ }
+ // Called only for live scenes. Historical log rendering must never move money.
+ export function settleMoneyScene(world,c,scene,now){
+@@ -75,11 +79,11 @@
+  settleEmployment(world,c,now);
+  const wallet=ensureWallet(c,now),day=Math.floor(now/86400000),work=!scene.transit&&!scene.meetingJourney&&!scene.meetingWaiting&&!scene.routineReturned&&(scene.economyWork||scene.kind==='work'||scene.actionKind==='work'||scene.meetingKind==='work'||['업무','출근','근무'].includes(scene.routineType));
+  const workKey='work:'+(scene.economyActivityId||day+':'+(scene.routineId||scene.placeId||'job'));
+- if(!wallet.employment&&wallet.work&&(!work||wallet.work.key!==workKey)){
++ if(!wallet.employment&&wallet.payrollVersion!==2&&wallet.work&&(!work||wallet.work.key!==workKey)){
+   if(now>=wallet.work.startedAt&&(!wallet.work.endsAt||now>=wallet.work.endsAt)&&c.job&&!['무직','학생'].includes(c.job))moneyEntry(wallet,moneySettings(c).wage,wallet.work.key,'wage',now,c.jobTitle||c.job);
+   delete wallet.work;wallet.revision=(wallet.revision||0)+1;
+  }
+- if(!wallet.employment&&work&&!wallet.receipts.includes(workKey)&&!wallet.work){
++ if(!wallet.employment&&wallet.payrollVersion!==2&&work&&!wallet.receipts.includes(workKey)&&!wallet.work){
+   const end=new Date(now);end.setHours(0,Number(scene.routineEndMinute)||0,0,0);
+   wallet.work={key:workKey,startedAt:now,endsAt:scene.economyEndsAt||(scene.routineId?end.getTime():0)};wallet.revision=(wallet.revision||0)+1;
+  }
+--- a/character-money.js
++++ b/character-money.js
+@@ -9,7 +9,7 @@
+   const record=doc.data(),profile=JSON.parse(record.profileJson||'{}'),life=JSON.parse(record.lifeJson||'{}'),character={...profile,id:input.id,homeId:record.sharedHomeId,residences:record.residences||[],wallet:life.wallet||profile.wallet},now=clock();
+   const existingWallet=character.wallet;
+   money.ensureWallet(character,now);
+-  const world={economy:groupDoc.data()?.economy};money.settleEmployment(world,character,now,true);
++  const world={characters:{[input.id]:character},walletSharing:groupDoc.data()?.walletSharing,economy:groupDoc.data()?.economy};money.settleEmployment(world,character,now,true);
+   const careers=await import('./runtime/career-world.js');careers.applyWorldCurrency(world,character);
+   let homeRef,home,receiptRef,receipt;
+   if(['share','deposit','withdraw'].includes(input.action)){
+@@ -21,14 +21,16 @@
+    if(receipt.exists){const old=receipt.data();if(old.characterId!==input.id||old.homeId!==input.homeId||old.amount!==input.amount||old.action!==input.action)fail('money-request-conflict',409);return {wallet:character.wallet,commonWallet:home.commonWallet};}
+   }
+   try{
+-   if(input.action==='employment'){const jobs=await import('./runtime/salary.js');jobs.assignEmployment(world,character,input.jobId,input.rankId,now,money.moneyEntry,{department:input.department,specialty:input.specialty,frequency:input.frequency});if(typeof input.jobTitle!=='string'||input.jobTitle.length>80)fail('career-invalid');character.jobTitle=input.jobTitle;}
++   if(input.action==='employment'){const jobs=await import('./runtime/salary.js');jobs.assignEmployment(world,character,input.jobId,input.rankId,now,money.moneyEntry,{department:input.department,specialty:input.specialty,frequency:input.frequency,employmentId:input.employmentId,add:input.add===true});if(typeof input.jobTitle!=='string'||input.jobTitle.length>80)fail('career-invalid');character.jobTitle=input.jobTitle;}
++   else if(input.action==='employment-remove'){const jobs=await import('./runtime/salary.js');jobs.removeEmployment(character,input.employmentId,now,money.moneyEntry);}
+    else if(input.action==='settings')money.updateMoneySettings(character,input.patch||{},now);
+    else if(input.action==='share'){if(typeof input.enabled!=='boolean')fail('invalid-value');money.setWalletSharing({characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.enabled)}
+-   else if(['deposit','withdraw'].includes(input.action)){if(typeof input.requestId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(input.requestId))fail('invalid-request');money.moveCommonMoney({characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.amount,input.action,uid+':'+input.requestId,now)}
++   else if(['deposit','withdraw'].includes(input.action)){if(typeof input.requestId!=='string'||!/^[a-zA-Z0-9_-]{1,100}$/.test(input.requestId))fail('invalid-request');money.moveCommonMoney({walletSharing:world.walletSharing,characters:{[input.id]:character},homes:{[input.homeId]:home}},input.id,input.homeId,input.amount,input.action,uid+':'+input.requestId,now)}
+    else if(input.action!=='read')fail('invalid-action');
+   }catch(e){if(!e.status)e.status=400;throw e}
+-  if(input.action!=='read'||!existingWallet||character.wallet.employment)tx.update(ref,{lifeJson:JSON.stringify({...life,wallet:character.wallet}),...(input.action==='employment'?{profileJson:JSON.stringify({...profile,job:character.job,jobTitle:character.jobTitle})}:{}),...(input.action==='settings'?{profileJson:JSON.stringify({...profile,wealth:character.wealth,income:character.income})}:{})});if(homeRef)tx.update(homeRef,{commonWallet:home.commonWallet});
++  if(input.action!=='read'||!existingWallet||character.wallet.employment)tx.update(ref,{lifeJson:JSON.stringify({...life,wallet:character.wallet}),...(['employment','employment-remove'].includes(input.action)?{profileJson:JSON.stringify({...profile,job:character.job,jobTitle:character.jobTitle})}:{}),...(input.action==='settings'?{profileJson:JSON.stringify({...profile,wealth:character.wealth,income:character.income})}:{})});if(homeRef)tx.update(homeRef,{commonWallet:home.commonWallet});
++  if(world.walletSharing)tx.update(group,{walletSharing:world.walletSharing});
+   if(receiptRef)tx.set(receiptRef,{characterId:input.id,homeId:input.homeId,amount:input.amount,action:input.action,createdAt:now});
+-  return {wallet:character.wallet,job:character.job,jobTitle:character.jobTitle,...(home?{commonWallet:home.commonWallet}:{})};
++  return {walletSharing:world.walletSharing||null,wallet:character.wallet,job:character.job,jobTitle:character.jobTitle,wealth:character.wealth,income:character.income,...(home?{commonWallet:home.commonWallet}:{})};
+  });
+ };
+--- a/character-transfer.js
++++ b/character-transfer.js
+@@ -8,14 +8,14 @@
+   const root=db.collection('groups').doc(p.sourceGroupId),source=root.collection('residents').doc(p.sourceResidentId),[member,resident]=await Promise.all([tx.get(root.collection('members').doc(p.senderUid)),tx.get(source)]);
+   if(!member.exists||!resident.exists||resident.data().ownerUid!==p.senderUid)fail('source-character-missing');
+   if(old.exists&&old.data().location==='group'&&old.data().groupId!==p.sourceGroupId)fail('character-already-moved');
+-  const latest=resident.data();p.resident={...p.resident,profileJson:latest.profileJson,scheduleJson:latest.scheduleJson||'{}',name:latest.name,photo:latest.photo||'',icon:latest.icon||'',job:latest.job||''};
++  const latest=resident.data();if((parse(latest.lifeJson).wallet||parse(latest.profileJson).wallet)?.poolId)fail("money-unshare-first");p.resident={...p.resident,profileJson:latest.profileJson,scheduleJson:latest.scheduleJson||'{}',name:latest.name,photo:latest.photo||'',icon:latest.icon||'',job:latest.job||''};
+   return ()=>{tx.delete(source);tx.update(root,{lifeUpdatedAt:0});tx.set(ref,{...old.data(),personalId:id,location:'group',groupId:gid,residentId:p.sourceId,homeId:old.data()?.homeId||latest.sourceHomeId||id,homeTownId:old.data()?.homeTownId||'',revision:(old.data()?.revision||0)+1,updatedAt:now})};
+  }
+  if(old.exists&&old.data().location==='group')fail('character-already-moved');
+  const core=await tx.get(db.collection('users').doc(p.senderUid).collection('sync').doc('core'));
+  const order=decodeCloudRecord(core.data()?.state).order,ids=Array.isArray(order)?order:Object.values(order||{}).find(Array.isArray)||[];
+  if(!ids.includes(id))fail('personal-character-missing');
+- const profile=parse(p.resident.profileJson);
++ const profile=parse(p.resident.profileJson);if(profile.wallet?.poolId)fail("money-unshare-first");
+  return ()=>tx.set(ref,{personalId:id,location:'group',groupId:gid,residentId:p.sourceId,homeId:profile.homeId||p.resident.sourceHomeId||id,homeTownId:profile.townId||'',revision:(old.data()?.revision||0)+1,updatedAt:now});
+ }
+ async function prepareReturn(db,tx,gid,residents,homes,now){
+--- a/index.js
++++ b/index.js
+@@ -323,10 +323,10 @@
+ let sharedEngine;
+ const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
+ const relationService=require('./shared-relations').createService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
+-Object.assign(sharedService,{careerWorld:require("./career-world")({db}),characterMoney:require("./character-money")({db})},relationService,require('./mail-targets')({db}),require('./character-codes')({db}),require('./world-packages')({db}),{joinGroup:require('./join-group')({db}),removeMember:require('./remove-member')({db}),deleteGroup:require('./delete-group')({db}),createResident:require('./create-resident')({db}),saveResident:require('./save-resident')({db}),readSlotUsage:require('./account-slots').read(db),readMailbox:require('./account-mailbox')({db}),deleteMail:require('./delete-mail')({db})});
++Object.assign(sharedService,{walletSharing:require("./wallet-sharing")({db}),careerWorld:require("./career-world")({db}),characterMoney:require("./character-money")({db})},relationService,require('./mail-targets')({db}),require('./character-codes')({db}),require('./world-packages')({db}),{joinGroup:require('./join-group')({db}),removeMember:require('./remove-member')({db}),deleteGroup:require('./delete-group')({db}),createResident:require('./create-resident')({db}),saveResident:require('./save-resident')({db}),readSlotUsage:require('./account-slots').read(db),readMailbox:require('./account-mailbox')({db}),deleteMail:require('./delete-mail')({db})});
+ Object.assign(sharedService,require('./user-safety').createSafety({db}),require('./player-friends')({db}));
+ Object.assign(sharedService,require('./court-service')({db}),require('./court-ranks')({db}));
+-for(const action of ['saveCourtRank','requestCourtRank','respondCourtRank','readCourt','saveCourtTheme','saveCourtProfile','saveCourtDistance','characterMoney','careerWorld','readFriends','findFriend','requestFriend','respondFriend','deleteMail','joinGroup','readSafety','setUserBlock','reportContent','publishWorldCode','readWorldCode','revokeWorldCode','migrateTown','removeMember','deleteGroup','createResident','saveResident','readSlotUsage','readMailTargets','readMoveCandidates','saveMemberGroups','readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTownEdit','saveTown','saveHomePlacement','saveHomeLayout','saveHomeMember','saveDecoration','publishCatalog','saveCatalogItem','respondMailGift','sendMail','requestResidence','deleteRelationship','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
++for(const action of ['saveCourtRank','requestCourtRank','respondCourtRank','readCourt','saveCourtTheme','saveCourtProfile','saveCourtDistance','walletSharing','characterMoney','careerWorld','readFriends','findFriend','requestFriend','respondFriend','deleteMail','joinGroup','readSafety','setUserBlock','reportContent','publishWorldCode','readWorldCode','revokeWorldCode','migrateTown','removeMember','deleteGroup','createResident','saveResident','readSlotUsage','readMailTargets','readMoveCandidates','saveMemberGroups','readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTownEdit','saveTown','saveHomePlacement','saveHomeLayout','saveHomeMember','saveDecoration','publishCatalog','saveCatalogItem','respondMailGift','sendMail','requestResidence','deleteRelationship','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+   try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
+   catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
+ });
+--- a/remove-member.js
++++ b/remove-member.js
+@@ -12,6 +12,7 @@
+  if(!input.residentId&&g.data().ownerUid===target)fail('owner-cannot-leave');
+  const selected=residents.docs.map(d=>({id:d.id,...d.data()})).filter(r=>input.residentId?r.id===input.residentId:r.ownerUid===target);
+  if(selected.some(r=>r.ownerUid!==uid&&!manager))fail('manager-required');
++ if(selected.some(r=>{const life=JSON.parse(r.lifeJson||'{}'),profile=JSON.parse(r.profileJson||'{}');return (life.wallet||profile.wallet)?.poolId}))fail('money-unshare-first',409);
+  if(input.deletePermanently){for(const h of homes.docs){if(h.data().ownerUid===uid&&selected.some(r=>r.sharedHomeId===h.id)&&!residents.docs.some(d=>!selected.some(r=>r.id===d.id)&&(d.data().sharedHomeId===h.id||(d.data().residences||[]).some(r=>r.homeId===h.id))))tx.delete(root.collection('homes').doc(h.id));}if(input.confirm!==true||!input.residentId||selected.some(r=>r.ownerUid!==uid))fail('character-owner-required');for(const r of selected){tx.set(db.collection('users').doc(uid).collection('characterTransfers').doc(r.sourceCharacterId||r.id),{personalId:r.sourceCharacterId||r.id,location:'deleted',updatedAt:clock()});tx.delete(root.collection('residents').doc(r.id))}tx.update(root,{lifeUpdatedAt:0});return {deleted:true};}
+  const now=clock(),restore=await require('./character-transfer').prepareReturn(db,tx,gid,selected,homes.docs.map(d=>({id:d.id,...d.data()})),now);
+  restore();selected.forEach(r=>tx.delete(root.collection('residents').doc(r.id)));
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -41,7 +41,7 @@
+         const future=[now+300000];
+         for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+         const lifeNextAt=Math.max(now+1000,Math.min(...future));
+-        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
++        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
+       });
+     },
+     saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);const patch={};if(input.photoURL!==undefined){if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');patch.photoURL=input.photoURL}if(input.name!==undefined){patch.name=String(input.name).trim().slice(0,80);if(!patch.name)fail('name-required')}if(input.description!==undefined)patch.description=String(input.description).slice(0,500);tx.update(ref,patch);return {saved:true}}),
+--- a/runtime\salary.js
++++ b/runtime\salary.js
+@@ -3,7 +3,7 @@
+ const due=(y,m,day)=>new Date(y,m,Math.min(day,new Date(y,m+1,0).getDate()),0,0,0,0).getTime();
+ export function nextPayDate(at,day){const d=new Date(at),n=due(d.getFullYear(),d.getMonth(),day);return n>at?n:due(d.getFullYear(),d.getMonth()+1,day)}
+ function previousPayDate(at,day){const d=new Date(at);return due(d.getFullYear(),d.getMonth()-1,day)}
+-export function employmentOffer(world,jobId,rankId){const job=careersFor(world).find(j=>j.id===jobId&&!j.archived),rank=job?.ranks.find(r=>r.id===rankId);if(!job||!rank)throw Error('career-missing');return {jobId:job.id,rankId:rank.id,jobName:job.name,rankName:rank.name,salary:Math.round(rank.salaryMeals*10000),payDay:job.payDay,duties:structuredClone(rank.duties)}}
++export function employmentOffer(world,jobId,rankId){if(jobId==='builtin-ceo'){jobId='builtin-office';rankId='ceo-'+rankId;}const job=careersFor(world).find(j=>j.id===jobId&&!j.archived),rank=job?.ranks.find(r=>r.id===rankId);if(!job||!rank)throw Error('career-missing');return {jobId:job.id,rankId:rank.id,jobName:job.name,rankName:rank.name,salary:Math.round(rank.salaryMeals*10000),payDay:job.payDay,duties:structuredClone(rank.duties)}}
+ // A persisted cursor and due-date receipt prevent repeated views/reloads from paying twice.
+ const gcd=(a,b)=>b?gcd(b,a%b):a;
+ export function nextSalaryPayout(employment,at=Date.now()){
+@@ -22,24 +22,25 @@
+  }
+  employment.lastAt=cursor;employment.accrued=Math.max(0,accrued);return paid;
+ }
++export function employmentsFor(c){return Array.isArray(c.wallet?.employments)?c.wallet.employments:c.wallet?.employment?[c.wallet.employment]:[]}
++function storeEmployments(c,list){c.wallet.employments=list;c.wallet.employment=list[0]||null;c.wallet.payrollVersion=2;c.job=list[0]?.jobName||'무직';c.wallet.work=null;c.wallet.revision=(c.wallet.revision||0)+1}
+ export function assignEmployment(world,c,jobId,rankId,now,addEntry,details={}){
+  if(details.frequency!==undefined&&!['daily','weekly','monthly'].includes(details.frequency))throw Error('career-invalid');
+  for(const key of ['department','specialty'])if(details[key]!==undefined&&(typeof details[key]!=='string'||details[key].length>60))throw Error('career-invalid');
+- const next=employmentOffer(world,jobId,rankId),previous=c.wallet.employment;
++ const next=employmentOffer(world,jobId,rankId),list=[...employmentsFor(c)],previous=details.add?null:details.employmentId?list.find(e=>e.id===details.employmentId):list[0];
++ if(details.employmentId&&!previous||!previous&&list.length>=10)throw Error('career-invalid');
+  if(previous)settleSalary(c.wallet,previous,now,addEntry);
+- const retained=previous?.accrued||0;
+- c.wallet.employment={...next,frequency:details.frequency||'monthly',department:(details.department||'').trim(),specialty:(details.specialty||'').trim(),id:previous?.id||'employment-'+now,lastAt:now,startedAt:previous?.startedAt||now,accrued:retained};
+- c.job=next.jobName;c.wallet.work=null;c.wallet.revision=(c.wallet.revision||0)+1;
+- return c.wallet.employment;
++ const entry={...next,frequency:details.frequency||'monthly',department:(details.department||'').trim(),specialty:(details.specialty||'').trim(),id:previous?.id||'employment-'+crypto.randomUUID(),lastAt:now,startedAt:previous?.startedAt||now,accrued:previous?.accrued||0};
++ if(previous)list[list.indexOf(previous)]=entry;else list.push(entry);storeEmployments(c,list);return entry;
+ }
+-export function currentDuties(world,c){const e=c.wallet?.employment;if(!e)return [];const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId);return rank?.duties||e.duties||[]}
++export function removeEmployment(c,id,now,addEntry){const list=[...employmentsFor(c)],entry=list.find(e=>e.id===id);if(!entry)throw Error('career-missing');settleSalary(c.wallet,entry,now,addEntry);const amount=Math.round(entry.accrued||0);if(amount)addEntry(c.wallet,amount,'salary-close:'+id,'salary',now,entry.jobName);storeEmployments(c,list.filter(e=>e!==entry))}
++export function currentDuties(world,c){return employmentsFor(c).flatMap(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId);return rank?.duties||e.duties||[]})}
+ 
+ export function salaryPreview(employment,now=Date.now()){
+  if(!employment)return null;const copy=structuredClone(employment),at=nextSalaryPayout(copy,now),wallet={balance:0};settleSalary(wallet,copy,at,(w,n)=>{w.balance+=n});return {at,amount:wallet.balance};
+ }
+ 
+ export function careerCaption(world,c){
+- if(c.jobTitle)return c.jobTitle;const e=c.wallet?.employment;if(!e)return c.job||'';
+- const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId),language=world.uiLanguage||'ko';
+- return [e.department,e.specialty,careerLabel(job,language)||e.jobName,careerLabel(rank,language)||e.rankName].filter(Boolean).join(' · ');
++ if(c.jobTitle)return c.jobTitle;const entries=employmentsFor(c);if(!entries.length)return c.job||'';const language=world.uiLanguage||'ko';
++ return entries.map(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId),name=careerLabel(rank,language)||e.rankName;return e.department?(language==='en'?name+' · '+e.department:e.department+(language==='ja'?'の':'의 ')+name):name}).join(' / ');
+ }
+--- a/runtime\server-life.mjs
++++ b/runtime\server-life.mjs
+@@ -30,7 +30,7 @@
+       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
+       return {id,lifeJson:json};
+     });
+-    lives.homeWallets=Object.values(world.homes).filter(h=>h.commonWallet).map(h=>({id:h.id,commonWallet:h.commonWallet}));return lives;
++    lives.walletSharing=world.walletSharing;lives.homeWallets=Object.values(world.homes).filter(h=>h.commonWallet).map(h=>({id:h.id,commonWallet:h.commonWallet}));return lives;
+   }));
+ }
+ 
+--- a/runtime\shared-world.js
++++ b/runtime\shared-world.js
+@@ -1,3 +1,4 @@
++import {bindWalletAccounts} from './wallet-sharing.js';
+ import {courtJobName} from './court-world-ui.js';
+ import {ensureHomeCanvas} from './room-layout.js?v=20260909dev305';
+ import {sharedCharacterOrder} from './shared-character-order.js';
+@@ -50,9 +51,9 @@
+   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
+   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
+   const activeId=state.activeTab==='routine'&&sharedSelection(snapshot).routineCharacter&&characters[sharedSelection(snapshot).routineCharacter]?sharedSelection(snapshot).routineCharacter:snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
+-  return {...base,economy:group.economy,courtRanks:group.courtRanks,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
++  return bindWalletAccounts({...base,walletSharing:group.walletSharing,economy:group.economy,courtRanks:group.courtRanks,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
+     characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
+-    sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0};
++    sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0});
+ }
+ export function withSharedWorld(snapshot,run){
+   const world=buildSharedWorld(snapshot,state.uiLanguage);
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,4 +1,4 @@
+-import {currentDuties} from './salary.js';
++import {currentDuties,employmentsFor} from './salary.js';
+ import {finishCooking} from './cooking.js';
+ import {adaptTownActivity} from './town-setting.js';
+ import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
+@@ -2982,7 +2982,7 @@
+   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}:${state.preventInterTownMovement}:${state.towns.map(t=>[t.id,t.era,t.culture].join(':')).join('|')}`;
+   const cached=signatureCache.get(c);
+   if(cached?.character===c&&cached.revision===revision)return cached.value;
+-  const value=JSON.stringify({preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:c.wallet?.employment?[c.wallet.employment.jobId,c.wallet.employment.rankId,c.wallet.employment.department,c.wallet.employment.specialty]:null,economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
++  const value=JSON.stringify({preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:employmentsFor(c).map(e=>[e.jobId,e.rankId,e.department,e.specialty]),economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+   signatureCache.set(c,{character:c,revision,value});
+   return value;
+ }
+--- a/runtime\state.js
++++ b/runtime\state.js
+@@ -383,6 +383,8 @@
+   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
+   const notificationDefaults=defaultCharacterNotificationSettings(),notificationSource=x.characterNotificationSettings&&typeof x.characterNotificationSettings==="object"&&!Array.isArray(x.characterNotificationSettings)?x.characterNotificationSettings:{};
+   x.characterNotificationSettings={
++    explicitSelection:notificationSource.explicitSelection===true,
++    senderMemo:notificationSource.senderMemo&&typeof notificationSource.senderMemo==='object'?notificationSource.senderMemo:{},
+     characterIds:Array.isArray(notificationSource.characterIds)?[...new Set(notificationSource.characterIds.map(String).filter(id=>id&&id.length<=180))]:[],
+     frequencyMode:["perDay","interval"].includes(notificationSource.frequencyMode)?notificationSource.frequencyMode:"perDay",
+     timesPerDay:Math.max(1,Math.min(6,Number(notificationSource.timesPerDay)||({light:1,daily:1,lively:2}[notificationSource.frequency]||notificationDefaults.timesPerDay))),
+@@ -1223,6 +1225,7 @@
+ }
+ export function deleteCharacter(id){
+   if(!state.characters[id])return;
++  if(state.characters[id].wallet?.poolId){alert({ko:"재산 공유를 해제한 뒤 삭제해 주세요.",en:"End money sharing before deleting this character.",ja:"資産共有を解除してから削除してください。"}[state.uiLanguage]||"End money sharing first.");return;}
+   state.deletedCharacterIds=Array.isArray(state.deletedCharacterIds)?state.deletedCharacterIds:[];
+   if(!state.deletedCharacterIds.includes(id))state.deletedCharacterIds.push(id);
+   const removedCharacter=state.characters[id],homeIds=new Set([removedCharacter.homeId,...(removedCharacter.residences||[]).filter(r=>r.isPrimary||r.role==='주거지').map(r=>r.homeId)].filter(Boolean));

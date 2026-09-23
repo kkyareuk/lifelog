@@ -1,0 +1,10 @@
+const assert=require('node:assert/strict');
+(async()=>{const {db,data}=require('./court-fixture.cjs')(),api=require('../functions/wallet-sharing')({db});
+ await assert.rejects(api('outsider',{groupId:'g',id:'a',action:'share',targetId:'b'}));
+ await api('member',{groupId:'g',id:'a',action:'share',targetId:'b'});let r=data.get('groups/g').walletSharing.requests.at(-1);
+ await assert.rejects(api('manager',{groupId:'g',id:'b',action:'accept',requestId:r.id}));
+ await api('other',{groupId:'g',id:'b',action:'accept',requestId:r.id});let pool=Object.values(data.get('groups/g').walletSharing.pools).find(p=>!p.closed);assert.equal(pool.balance,1000000);
+ await api('member',{groupId:'g',id:'a',action:'split',amounts:{a:200000,b:800000}});r=data.get('groups/g').walletSharing.requests.at(-1);
+ await api('other',{groupId:'g',id:'b',action:'accept',requestId:r.id});assert.equal(JSON.parse(data.get('groups/g/residents/a').lifeJson).wallet.balance,200000);assert.equal(JSON.parse(data.get('groups/g/residents/b').lifeJson).wallet.balance,800000);
+ console.log('PASS474 Firestore owner consent, unauthorized manager rejection, negotiated payouts');
+})().catch(e=>{console.error(e);process.exitCode=1});

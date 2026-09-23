@@ -3998,7 +3998,7 @@ function bind(){
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
   $("[data-character-notification-toggle]")?.addEventListener("click",async event=>{
     if(state.characterNotificationsEnabled){
-      state.characterNotificationsEnabled=false;
+      state.characterNotificationsEnabled=false;characterNotificationScheduleRevision++;
       await cancelCharacterNotifications();
       save(true);showToast("캐릭터 연락 알림을 껐어요");updateCharacterNotificationControls();return;
     }
@@ -4006,7 +4006,7 @@ function bind(){
   });
   $('[data-notification-select-all]')?.addEventListener('click',()=>{
     const settings=state.characterNotificationSettings,all=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid).flatMap(notificationKeys);
-    settings.characterIds=[...new Set([...(settings.characterIds||[]),...all])];
+    settings.characterIds=[...new Set(all)];settings.explicitSelection=true;
     $$('[data-character-notification-character]').forEach(input=>{input.checked=true;input.closest('label')?.classList.add('on')});
     save(true);queueCharacterNotificationSchedule();
   });
@@ -4731,6 +4731,7 @@ function openSettingsPane(pane="home"){
   setNavigationTabIntent("settings");
   state.activeTab="settings";
   setSettingsPane(pane);
+  if(pane==="notifications"){const owner=localStorage.scope;void window.DrawerVillageGroups?.readNotificationRoster?.().then(()=>{if(owner===localStorage.scope&&state.activeTab==="settings"&&document.querySelector(".notification-character-grid"))render({force:true});}).catch(()=>{});}
   if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   resetScrollAfterRender=true;
   render({force:true});
@@ -5996,7 +5997,7 @@ function notificationContextFor(character,seed){
 function notificationSelectedCharacters(){
   const chosen=state.characterNotificationSettings?.characterIds||[],characters=notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid);
   const selected=selectedNotificationIds(state.characterNotificationSettings,characters);
-  return characters.filter(c=>selected.has(c.id));
+  return characters.filter(c=>!c.notificationUnavailable&&selected.has(c.id));
 }
 function notificationTopicsFor(character){
   const wanted=state.characterNotificationSettings?.contentKinds||["questions","checkins","comfort","lifeLogs"],context=notificationContextFor(character,1);
@@ -6061,7 +6062,7 @@ function buildCharacterContactSchedule(now=new Date()){
   // 정확한 시각이 필요한 알람이 아니므로 별도의 exact-alarm 권한은 요구하지 않는다.
   for(let dayOffset=0;dayOffset<15;dayOffset+=1){
     const date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+dayOffset),dayKey=localDateKey(date),daySeed=notificationHash(`${dayKey}:${characters.map(item=>item.id).join(":")}`);
-    const recurringKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`,specialAt=new Date(date.getFullYear(),date.getMonth(),date.getDate(),11,0,0,0),specials=[...state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===recurringKey).map(character=>({kind:"birthday",character,item:null})),...(state.anniversaries||[]).filter(item=>item.date===recurringKey).map(item=>({kind:"anniversary",character:state.characters[item.characterId]||characters[0],item}))].filter(entry=>entry.character);
+    const recurringKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`,specialAt=new Date(date.getFullYear(),date.getMonth(),date.getDate(),11,0,0,0),specials=[...characters.filter(character=>character?.birthday===recurringKey).map(character=>({kind:"birthday",character,item:null})),...(state.anniversaries||[]).filter(item=>item.date===recurringKey).map(item=>({kind:"anniversary",character:state.characters[item.characterId]||characters[0],item}))].filter(entry=>entry.character&&characters.some(c=>c.id===entry.character.id));
     if(specialAt.getTime()>=now.getTime()+5*60*1000)specials.forEach((special,index)=>{const item=buildSpecialDateNotification(special.character,special.kind,special.item,specialAt);generated.push({id:830000000+(Number(dayKey.replaceAll("-",""))%100000)*100+index,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at:specialAt,extra:item.extra})});
     if(settings.scheduleEnds){
       const endingCopy={ko:{title:"일정이 끝났어요",body:title=>`‘${title}’ 일정을 마칠 시간이 되었어요.`},en:{title:"Schedule finished",body:title=>`It's time to finish “${title}”.`},ja:{title:"予定が終わりました",body:title=>`「${title}」を終える時間です。`}}[language]||{title:"일정이 끝났어요",body:title=>`‘${title}’ 일정을 마칠 시간이 되었어요.`};
@@ -6097,29 +6098,34 @@ function buildCharacterContactSchedule(now=new Date()){
   settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();settings.voiceVersion=CONTACT_VOICE_VERSION;
   return generated;
 }
-let characterNotificationScheduleTimer=0;
+let characterNotificationScheduleTimer=0,characterNotificationScheduleRevision=0;
 function queueCharacterNotificationSchedule(){
+  characterNotificationScheduleRevision++;
   clearTimeout(characterNotificationScheduleTimer);
   if(!state.characterNotificationsEnabled)return;
   characterNotificationScheduleTimer=setTimeout(()=>syncCharacterNotificationSchedule().catch(error=>console.warn("알림 일정 갱신을 다음 변경 때 다시 시도합니다",error)),650);
 }
-async function syncCharacterNotificationSchedule(){
+let characterNotificationSyncTask=Promise.resolve();
+function syncCharacterNotificationSchedule(){characterNotificationSyncTask=characterNotificationSyncTask.catch(()=>{}).then(performCharacterNotificationSchedule);return characterNotificationSyncTask;}
+async function performCharacterNotificationSchedule(){
   if(characterEditorActive())return false;
   if(!state.characterNotificationsEnabled||!characterNotificationsAvailable())return false;
   const permission=await characterNotificationPermission();
   if(permission!=="granted"){state.characterNotificationsEnabled=false;state.characterNotificationConsent="denied";save(true);return false}
-  const owner=localStorage.scope;
+  const owner=localStorage.scope,revision=++characterNotificationScheduleRevision;
+  await window.DrawerVillageGroups?.readNotificationRoster?.();
   const items=buildCharacterContactSchedule().map(item=>mailEnvelope(item,owner)),icons=new Map();
   await Promise.all(items.map(async item=>{
     const character=notificationSelectedCharacters().find(c=>c.id===item.extra?.characterId),source=character?.icon||character?.photo||"";
     if(!icons.has(source))icons.set(source,characterNotificationLargeIcon(source));
-    item.largeIcon=await icons.get(source);
+    item.largeIcon=await icons.get(source);item.extra.senderImage=source;item.extra.senderName=character?.name||'';
   }));
-  if(owner!==localStorage.scope)return false;
+  if(owner!==localStorage.scope||revision!==characterNotificationScheduleRevision||!state.characterNotificationsEnabled)return false;
   await replaceCharacterNotifications(items);
-  if(owner!==localStorage.scope)return false;
+  if(!state.characterNotificationsEnabled){await cancelCharacterNotifications();return false;}
+  if(owner!==localStorage.scope||revision!==characterNotificationScheduleRevision)return false;
   contactMailbox.record(items,{replaceFuture:true});
-  state.characterNotificationSettings.mailVersion=1;
+  state.characterNotificationSettings.mailVersion=2;
   save(true);return true;
 }
 function notificationConsentCopy(){
@@ -6174,7 +6180,8 @@ function openContactMail(id){
     openDailyCharacterQuestion({...question,mailId:id,mailBody:letter.body});return;
   }
   const dialog=document.createElement("dialog");dialog.className="character-question-dialog mail-letter";
-  const image=sender?.icon||sender?.photo||e.senderImage||"";
+  const portrait=sender||notificationCharacters(state,window.DrawerVillageGroups?.getSnapshot?.(),window.ParallelCityAuth?.getInfo?.()?.user?.uid).find(c=>notificationKeys(c).includes(e.characterId));
+  const image=portrait?.icon||portrait?.photo||e.senderImage||"";
   dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
   dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();markContactMail(id,{read:true});
 }
@@ -6226,7 +6233,7 @@ function scheduleLiveSceneRefresh(){
 setTimeout(scheduleLiveSceneRefresh,0);
 ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
-  if(state.characterNotificationSettings?.mailVersion!==1||state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
+  if(state.characterNotificationSettings?.mailVersion!==2||state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
 });
 let foregroundRefreshTimer=0;
 const restoreForegroundState=()=>{

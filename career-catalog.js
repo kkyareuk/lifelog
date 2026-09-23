@@ -3617,3 +3617,8 @@ export const BUILTIN_CAREERS = [
   }
 ];
 export const careerLabel=(entry,language="ko")=>entry?.names?.[language]||entry?.name||"";
+
+// CEO is part of the corporate career; retained rank IDs preserve existing contracts.
+const corporate=BUILTIN_CAREERS.find(j=>j.id==='builtin-office'),ceo=BUILTIN_CAREERS.find(j=>j.id==='builtin-ceo');
+corporate.ranks.push(...[['director','이사','Director','取締役',850],['executive','상무','Executive director','常務',1000],['senior-executive','전무','Senior executive director','専務',1200],['vice-president','부사장','Vice president','副社長',1500]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:structuredClone(corporate.ranks.at(-1).duties)})),...ceo.ranks.map(r=>({...r,id:'ceo-'+r.id})));
+BUILTIN_CAREERS.splice(BUILTIN_CAREERS.indexOf(ceo),1);

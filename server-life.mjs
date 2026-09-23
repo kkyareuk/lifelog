@@ -30,7 +30,7 @@ export function advanceSharedLife(snapshot,now,command=null){
       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
       return {id,lifeJson:json};
     });
-    lives.homeWallets=Object.values(world.homes).filter(h=>h.commonWallet).map(h=>({id:h.id,commonWallet:h.commonWallet}));return lives;
+    lives.walletSharing=world.walletSharing;lives.homeWallets=Object.values(world.homes).filter(h=>h.commonWallet).map(h=>({id:h.id,commonWallet:h.commonWallet}));return lives;
   }));
 }
 

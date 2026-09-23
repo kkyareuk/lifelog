@@ -1,5 +1,6 @@
-import {settleSalary,employmentOffer} from './salary.js';
+import {settleSalary,employmentOffer,employmentsFor} from './salary.js';
 import {applyWorldCurrency} from './career-world.js';
+import {bindWalletAccounts,moneyAccount,walletBalance} from './wallet-sharing.js';
 export const BASE_MEAL=10000;
 export const INITIAL_MONEY=Object.freeze({'형편이 어려움':50000,'평범한 형편':500000,'설정하지 않음':500000,'여유 있는 편':3000000,'부유함':30000000,'대부호':300000000});
 const integer=n=>Number.isSafeInteger(n)&&n>=0;
@@ -13,19 +14,22 @@ export function displayMoney(amount,character,language='ko'){
 }
 export function moneyFromDisplay(value,character){const n=Math.round(Number(value)*BASE_MEAL/moneySettings(character).mealPrice);if(!integer(n)||n>1e12)throw Error('money-invalid-amount');return n}
 export function updateMoneySettings(character,patch,now=Date.now()){
+ if(character.wallet?.poolId&&patch.wealth!==undefined&&patch.wealth!==character.wealth)throw Error('money-unshare-first');
+ if(patch.wealth!==undefined&&patch.wealth!==character.wealth&&patch.confirmWealthReset!==true)throw Error('money-confirm-reset');
  const wallet=ensureWallet(character,now),next={...moneySettings(character),...patch};
  if(typeof next.unit!=='string'||!next.unit.trim()||next.unit.length>20||!Number.isFinite(next.mealPrice)||next.mealPrice<0.0001||next.mealPrice>1e9||!integer(next.wage)||next.wage>1e10||!['split','treat','request'].includes(next.datePayment)||!Number.isFinite(next.datePayFrequency)||next.datePayFrequency<0||next.datePayFrequency>100)throw Error('money-invalid-settings');
  if(patch.wealth!==undefined&&!Object.hasOwn(INITIAL_MONEY,patch.wealth))throw Error('money-invalid-settings');
  if(patch.income!==undefined&&!["절약 우선","필요한 만큼 소비","취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"].includes(patch.income))throw Error('money-invalid-settings');
  wallet.settings={unit:next.unit.trim(),mealPrice:next.mealPrice,wage:next.wage,datePayment:next.datePayment,datePayFrequency:next.datePayFrequency};
- if(patch.wealth!==undefined)character.wealth=patch.wealth;
+ if(patch.wealth!==undefined&&patch.wealth!==character.wealth){if(patch.confirmWealthReset!==true)throw Error('money-confirm-reset');moneyEntry(wallet,INITIAL_MONEY[patch.wealth]-wallet.balance,'wealth:'+now+':'+wallet.revision,'wealth-reset',now,patch.wealth);character.wealth=patch.wealth;}
  if(patch.income!==undefined)character.income=patch.income;
- wallet.updatedAt=now;
+ wallet.updatedAt=now;wallet.revision=(wallet.revision||0)+1;
 }
 export function moneyEntry(wallet,amount,key,kind,now,label=''){
  if(wallet.receipts.includes(key))return false;
- if(!Number.isSafeInteger(amount)||!integer(wallet.balance+amount))throw Error('money-insufficient');
- wallet.balance+=amount;wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;wallet.receipts=[...wallet.receipts,key].slice(-500);wallet.entries=[{key,kind,amount,at:now,label},...wallet.entries].slice(0,100);return true;
+ const account=moneyAccount(wallet);
+ if(!Number.isSafeInteger(amount)||!integer(account.balance+amount))throw Error('money-insufficient');
+ account.balance+=amount;if(account!==wallet)account.revision=(account.revision||0)+1;wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;wallet.receipts=[...wallet.receipts,key].slice(-500);wallet.entries=[{key,kind,amount,at:now,label},...wallet.entries].slice(0,100);return true;
 }
 export function activityPrice(place,activity={}){
  if(!place||activity.transit||activity.home)return 0;
@@ -40,15 +44,17 @@ export function setWalletSharing(world,characterId,homeId,enabled){
  const wallet=sharedWallet(h);wallet.members=wallet.members.filter(id=>id!==characterId);if(enabled)wallet.members.push(characterId);return wallet;
 }
 export function moveCommonMoney(world,characterId,homeId,amount,kind,key,now=Date.now()){
+ bindWalletAccounts(world);
  if(!['deposit','withdraw'].includes(kind))throw Error('money-invalid-action');
  if(!integer(amount)||amount<=0)throw Error('money-invalid-amount');
  const c=world.characters[characterId],home=world.homes[homeId];if(!c||!home)throw Error('money-household-required');
  const common=sharedWallet(home),personal=ensureWallet(c,now);if(!common.members.includes(characterId)||!(c.homeId===homeId||c.residences?.some(r=>r.homeId===homeId)))throw Error('money-household-required');
  if(common.receipts.includes(key))return false;
- const source=kind==='deposit'?personal:common,target=kind==='deposit'?common:personal;if(source.balance<amount)throw Error('money-insufficient');
+ const source=kind==='deposit'?personal:common,target=kind==='deposit'?common:personal;if(walletBalance(source)<amount)throw Error('money-insufficient');
  moneyEntry(source,-amount,key,kind,now,c.name);moneyEntry(target,amount,key,kind,now,c.name);return true;
 }
 export function payActivity(world,characterIds,amount,key,now,payment='split'){
+ bindWalletAccounts(world);
  if(!amount)return true;const ids=[...new Set(characterIds)].filter(id=>world.characters[id]);
  // Existing multiplayer residents opt in through the new wallet endpoint.
  if(world.sharedContext&&ids.some(id=>!world.characters[id].wallet))return true;
@@ -57,17 +63,15 @@ export function payActivity(world,characterIds,amount,key,now,payment='split'){
  for(const p of payers){const c=world.characters[p.id],personal=ensureWallet(c,now),receipt=key+':'+p.id;if(personal.receipts.includes(receipt))continue;
   const home=Object.values(world.homes||{}).find(h=>h.commonWallet?.members?.includes(c.id)&&(c.homeId===h.id||c.residences?.some(r=>r.homeId===h.id))),common=home?.commonWallet;
   const left=common?(available.get(common)??common.balance):0,together=Math.min(left,p.amount),own=p.amount-together;
-  if(personal.balance<own)return false;if(common)available.set(common,left-together);plans.push({personal,common,together,own,receipt});
+  const account=moneyAccount(personal),personalLeft=available.get(account)??account.balance;if(personalLeft<own)return false;available.set(account,personalLeft-own);if(common)available.set(common,left-together);plans.push({personal,common,together,own,receipt});
  }
  for(const p of plans){if(p.together)moneyEntry(p.common,-p.together,p.receipt,'expense',now);moneyEntry(p.personal,-p.own,p.receipt,'expense',now)}return true;
 }
 export function settleEmployment(world,c,now=Date.now(),force=false){
- const wallet=c.wallet,employment=wallet?.employment;if(!employment)return false;
- applyWorldCurrency(world,c);
- if(!force&&now-employment.lastAt<60000)return false;
- const before=employment.lastAt;settleSalary(wallet,employment,now,moneyEntry);
- try{const offer=employmentOffer(world,employment.jobId,employment.rankId);Object.assign(employment,offer)}catch{}
- if(employment.lastAt!==before){wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now;return true}return false;
+ bindWalletAccounts(world);
+ const wallet=c.wallet,entries=employmentsFor(c);if(!entries.length)return false;applyWorldCurrency(world,c);let changed=false;
+ for(const employment of entries){if(!force&&now-employment.lastAt<60000)continue;const before=employment.lastAt;settleSalary(wallet,employment,now,moneyEntry);try{Object.assign(employment,employmentOffer(world,employment.jobId,employment.rankId))}catch{}changed ||= employment.lastAt!==before;}
+ if(changed){wallet.revision=(wallet.revision||0)+1;wallet.updatedAt=now}return changed;
 }
 // Called only for live scenes. Historical log rendering must never move money.
 export function settleMoneyScene(world,c,scene,now){
@@ -75,11 +79,11 @@ export function settleMoneyScene(world,c,scene,now){
  settleEmployment(world,c,now);
  const wallet=ensureWallet(c,now),day=Math.floor(now/86400000),work=!scene.transit&&!scene.meetingJourney&&!scene.meetingWaiting&&!scene.routineReturned&&(scene.economyWork||scene.kind==='work'||scene.actionKind==='work'||scene.meetingKind==='work'||['업무','출근','근무'].includes(scene.routineType));
  const workKey='work:'+(scene.economyActivityId||day+':'+(scene.routineId||scene.placeId||'job'));
- if(!wallet.employment&&wallet.work&&(!work||wallet.work.key!==workKey)){
+ if(!wallet.employment&&wallet.payrollVersion!==2&&wallet.work&&(!work||wallet.work.key!==workKey)){
   if(now>=wallet.work.startedAt&&(!wallet.work.endsAt||now>=wallet.work.endsAt)&&c.job&&!['무직','학생'].includes(c.job))moneyEntry(wallet,moneySettings(c).wage,wallet.work.key,'wage',now,c.jobTitle||c.job);
   delete wallet.work;wallet.revision=(wallet.revision||0)+1;
  }
- if(!wallet.employment&&work&&!wallet.receipts.includes(workKey)&&!wallet.work){
+ if(!wallet.employment&&wallet.payrollVersion!==2&&work&&!wallet.receipts.includes(workKey)&&!wallet.work){
   const end=new Date(now);end.setHours(0,Number(scene.routineEndMinute)||0,0,0);
   wallet.work={key:workKey,startedAt:now,endsAt:scene.economyEndsAt||(scene.routineId?end.getTime():0)};wallet.revision=(wallet.revision||0)+1;
  }
