@@ -1,0 +1,9 @@
+<ko-KR>
+마을 한 손 이동과 건물 내부 가구 이동을 수정했습니다. 카페 식탁과 의자를 연결하고 방·가구 배치를 격자에 맞췄습니다. 공원은 잔디 중심으로, 건물별 화장실·휴게실은 작게 구성했습니다. 건물 내부의 방 정보·직원·층 이동·편집 도구와 UI 숨김을 개선하고 가구 행동을 연결했습니다. 마을 주민을 건물 위에 표시하며, 바리스타 직업과 구체적인 정치인 업무를 추가했습니다.
+</ko-KR>
+<en-US>
+Fixed one-finger village panning and interior furniture dragging. Cafe chairs now connect to tables; rooms and furniture snap to a grid. Parks have grass grounds and buildings have smaller service rooms. Improved room, staff, floor and editing controls, added Hide UI and enabled furniture activities. Village characters appear above buildings. Added the barista career and more specific politician duties.
+</en-US>
+<ja-JP>
+村の片手移動と建物内の家具移動を修正しました。カフェの椅子をテーブルに接続し、部屋と家具をグリッドに合わせました。公園は芝生中心に、トイレや休憩室は小さく配置しました。部屋情報・従業員・階移動・編集ツールとUI非表示を改善し、家具の行動を使えるようにしました。住民は建物より手前に表示されます。バリスタの職業と具体的な政治家の業務を追加しました。
+</ja-JP>
