@@ -1,3 +1,4 @@
+import {initialLanguage} from './initial-language.js';
 import {COFFEE_DRINK_MS,COFFEE_BREW_MS} from './coffee-needs.js';
 import {directedNeed,needDuration} from './need-pacing.js';
 import {canStartCooking,startCooking,finishCooking} from './cooking.js';
@@ -996,7 +997,10 @@ function load(){
   }
   // Never silently create/save an empty village over an unreadable saved world.
   if(!primary&&readError)throw readError;
-  return primary||normalizeHomes(fresh());
+  if(primary)return primary;
+  const world=normalizeHomes(fresh());
+  world.uiLanguage=initialLanguage(globalThis.window?.navigator);
+  return world;
 }
 
 export let state=load();
@@ -2136,7 +2140,7 @@ export function relationshipViewDefaults(type,temporalStatus="current",orderLeng
     return `${resolved}순위${resolved===1?" · 가장 중요한 사람":""}`;
   };
   if(temporalStatus==="past")return {overall:"그저 그런 사람",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"가끔 성가심",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["연인","부부"].includes(type))return {overall:"연애 감정으로 좋아함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"자주 살핌",jealousy:"가끔 신경 쓰임",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(["연인","약혼","부부"].includes(type))return {overall:"연애 감정으로 좋아함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"자주 살핌",jealousy:"가끔 신경 쓰임",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
   if(["부모·자녀","형제·자매"].includes(type))return {overall:"소중하게 여김",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"가끔 성가심",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"평생 이어질 관계라고 믿음",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
   if(["친구","소꿉친구","학창 시절 친구들","친구 모임"].includes(type))return {overall:"친구로 좋아함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"편한 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"인사·부축 같은 의례적 접촉만",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
   if(type==="혐관")return {overall:"매우 싫어함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"전혀 믿지 않음",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"자주 충돌함",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"거친 말을 하고 싶은 충동",aggressionAction:"대부분 참지만 가끔 거친 말이 나옴"};
@@ -2147,7 +2151,7 @@ function withoutOrphanedGeneratedView(explicit,relations){
   const edited=new Set(Array.isArray(explicit._editedFields)?explicit._editedFields:[]);
   const keys=Object.keys(explicit).filter(key=>!key.startsWith("_")&&!edited.has(key));
   if(keys.length<8)return explicit;
-  const types=["연인","부부","친구","소꿉친구","학창 시절 친구들","친구 모임","부모·자녀","형제·자매","혐관","동거인","기타"];
+  const types=["연인","약혼","부부","친구","소꿉친구","학창 시절 친구들","친구 모임","부모·자녀","형제·자매","혐관","동거인","기타"];
   const candidates=types.flatMap(type=>["current","past"].map(status=>relationshipViewDefaults(type,status)));
   let best=null;
   candidates.forEach(preset=>{
@@ -2206,7 +2210,7 @@ export function characterViewFor(sourceId,targetId,indexedRelations=null){
   const currentRelations=relations.filter(item=>item.temporalStatus!=="past");
   let defaults={overall:"낯선 사람으로 여김",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
   if(currentRelations.length){
-    if(currentRelations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀",touchIntensity:"포옹·기대기까지"};
+    if(currentRelations.some(relation=>["연인","약혼","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀",touchIntensity:"포옹·기대기까지"};
     else if(currentRelations.some(relation=>["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||"")))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함"};
     else if(currentRelations.some(relation=>["친구","부모·자녀","형제·자매"].includes(relation.type)))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀"};
     else if(currentRelations.some(relation=>relation.type==="동거인"))defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"함께 있는 건 편하지만 대화 호흡은 평범함",attention:"필요할 때만 봄"};
@@ -2215,6 +2219,9 @@ export function characterViewFor(sourceId,targetId,indexedRelations=null){
     defaults={...defaults,overall:"그저 그런 사람",trust:"조심스럽게 지켜봄",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",attention:"관심 없음"};
   }
   if(currentRelations.some(r=>(r.type==="부부"&&["1","2"].includes(r.details?.origin)||r.type==="약혼"&&r.details?.origin==="2"))){defaults={...defaults,overall:"그저 그런 사람",mutualAwareness:"상대의 마음을 전혀 모름",trust:"보통",closeness:"보통",comfort:"어색하지만 필요한 대화는 무난함",attention:"필요할 때만 봄",touchIntensity:"신체 접촉 없음"};}
+  // Resolve an age-aware default rather than persisting an opt-in over a
+  // user's directional contact limit. Past relationships never grant it.
+  if(currentRelations.some(r=>["연인","약혼","부부"].includes(r.type))&&[sourceId,targetId].every(id=>isAdultAge(state.characters[id]?.ageGroup)))defaults.touchIntensity="성인 간 친밀한 접촉까지";
   // 예전에는 공간 편안함과 대화 호흡을 따로 저장했다. 이 둘을 합치는
   // 변환은 구형 필드가 실제로 남아 있을 때 한 번만 한다. 최신 comfort를
   // 매 렌더링마다 구형 문장으로 해석하면 사용자가 고른 값이 기본 문구로

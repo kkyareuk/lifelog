@@ -269,6 +269,7 @@ const closeHomeOccupantSheet=()=>{
   document.querySelector("[data-home-occupant-sheet]")?._occupantObserver?.disconnect();
   document.querySelector("[data-home-occupant-sheet]")?.remove();
   document.querySelector("[data-home-occupant-dismiss]")?.remove();
+  resumeAfterCommandDismissal();
 };
 const setNavigationTabIntent=tab=>{if(tab!=="character")leaveSharedCharacterEditor();navigationTabIntent=tab;state.activeTab=tab;return tab};
 const guidePending=new Set();
@@ -1488,7 +1489,7 @@ window.addEventListener("pagehide",cleanupRenderedScreen);
 
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.documentElement.dataset.roomGesture==='1'||document.querySelector('.character-money-dialog[open],.building-interior-dialog[open],.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open]'))){deferredCommandRender=true;return}
+  if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.documentElement.dataset.roomGesture==='1'||document.querySelector('.character-money-dialog[open],.building-interior-dialog[open],.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open],.home-occupant-sheet'))){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -1953,8 +1954,9 @@ function openHomeOccupantSheet(button){
   dismiss.type="button";dismiss.className="home-occupant-dismiss-layer";dismiss.dataset.homeOccupantDismiss="";
   dismiss.setAttribute("aria-label",state.uiLanguage==="en"?"Close character details":state.uiLanguage==="ja"?"キャラクター情報を閉じる":"캐릭터 정보 닫기");
   dismiss.onclick=close;
-  document.body.append(dismiss);
-  document.body.append(dialog);
+  dialog.style.width=Math.min(320,(window.visualViewport?.width||innerWidth)-24)+'px';
+  dialog.style.maxHeight=Math.max(80,(window.visualViewport?.height||innerHeight)-24)+'px';
+  dialog.style.right='auto';dialog.style.bottom='auto';
   // Anchor the information card next to its resident, falling below/above on
   // narrow screens, while keeping the whole card inside the visible viewport.
   const fit=()=>{
@@ -1970,8 +1972,7 @@ function openHomeOccupantSheet(button){
   const observer=new ResizeObserver(fit);observer.observe(dialog);dialog._occupantObserver=observer;
   window.visualViewport?.addEventListener('resize',fit);window.visualViewport?.addEventListener('scroll',fit);window.addEventListener('resize',fit);
   dialog._occupantCleanup=()=>{window.visualViewport?.removeEventListener('resize',fit);window.visualViewport?.removeEventListener('scroll',fit);window.removeEventListener('resize',fit)};
-  fit();
-  requestAnimationFrame(()=>dialog.classList.add("show"));
+  requestAnimationFrame(()=>{if(dialog.isConnected)dialog.classList.add("show")});
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
   if(character){
     const groupId=state.sharedContext?.groupId||'',uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,actor=state.characters[state.activeId];
@@ -1980,9 +1981,10 @@ function openHomeOccupantSheet(button){
       onSelect:id=>{if(groupId){window.DrawerVillageGroups.selectResident(id)}else{const homeId=state.activeHomeId;setActive(id);state.activeHomeId=homeId;save()}close();render();requestAnimationFrame(()=>{const next=document.querySelector('[data-home-occupant][data-character-id="'+CSS.escape(id)+'"]');if(next)openHomeOccupantSheet(next)})},
       execute:(id,action,target)=>executeContextActivity(id,action,target,{groupId,uid})
     }));
-    // Content is inserted before fitting again; menus expand within the same scrollable card.
-    fit();
+
   }
+  document.body.append(dismiss,dialog);
+  fit();
   clearTimeout(openHomeOccupantSheet.timer);
 }
 

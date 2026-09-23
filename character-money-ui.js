@@ -1,3 +1,4 @@
+import {bindQuickEconomy} from './quick-profile-economy.js';
 import {openCareerDashboard} from './career-dashboard.js';
 import {bindWalletAccounts,walletBalance} from './wallet-sharing.js';
 import {renderWalletSharing} from './wallet-sharing-ui.js';
@@ -62,7 +63,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
  d.onclose=()=>{d.remove();window.dispatchEvent(new Event('drawer-money-updated'))};document.body.append(d);draw();d.showModal();if(snapshot&&canEdit)void mutate('read');return d;
 }
 export function bindCharacterMoney(){
- const {world,c,snapshot}=context();if(!c)return;applyWorldCurrency(world,c);bindWalletAccounts(world);
+ const {world,c,snapshot}=context();if(!c)return;bindQuickEconomy(document,world,snapshot);applyWorldCurrency(world,c);bindWalletAccounts(world);
  if(economyAvailable()&&snapshot&&!c.wallet&&c.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid){
   const key=snapshot.activeGroupId+':'+c.id;
   if(!walletLoads.has(key)){

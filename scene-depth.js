@@ -30,7 +30,7 @@ function furnitureRect(scene,furniture){
  return art.getBoundingClientRect();
 }
 export function scheduleSceneDepth(){
-  if(frame||!root)return;
+  if(frame||!root||document.visibilityState==='hidden')return;
   frame=requestAnimationFrame(()=>{
     frame=0;if(!root?.isConnected)return;
     const updates=[],seats=[],pulls=[],meals=[],labels=[];
@@ -201,7 +201,7 @@ export function bindSceneDepth(nextRoot){
   root=nextRoot;
   if(!root?.querySelector('.room,.world.town-environment'))return;
   observer=new ResizeObserver(scheduleSceneDepth);
-  root.querySelectorAll('.room,.world.town-environment,.room-furniture-art,.home-person-visual').forEach(el=>observer.observe(el));
+  root.querySelectorAll('.room,.world.town-environment').forEach(el=>observer.observe(el));
   root.addEventListener('load',scheduleSceneDepth,true);
   window.removeEventListener('scroll',scheduleSceneDepth,true);window.addEventListener('scroll',scheduleSceneDepth,true);
   scheduleSceneDepth();
@@ -216,11 +216,15 @@ export function placeSceneLabel(anchor,card,area,occupied){
  const xs=[preferred.left,anchor.left-w-gap,anchor.right+gap,area.left,area.right-w];
  const ys=[preferred.top,anchor.top-h-gap,area.top,area.bottom-h];
  for(const o of occupied){xs.push(o.left-w-gap,o.right+gap);ys.push(o.top-h-gap,o.bottom+gap)}
+ // Deduplicate clamped room-edge positions before scoring. Distance is a
+ // lower bound on the score, so candidates farther than the best can be skipped.
+ const unique=(values,lo,hi,p)=>[...new Set(values.map(v=>clamp(v,lo,hi)))].sort((a,b)=>Math.abs(a-p)-Math.abs(b-p));
  let best,score=Infinity;
- for(const x of xs)for(const y of ys){
-   const left=clamp(x,area.left,area.right-w),top=clamp(y,area.top,area.bottom-h),r={left,top,right:left+w,bottom:top+h};
+ for(const left of unique(xs,area.left,area.right-w,preferred.left))for(const top of unique(ys,area.top,area.bottom-h,preferred.top)){
+   const distance=Math.hypot(left-preferred.left,top-preferred.top);if(distance>=score)continue;
+   const r={left,top,right:left+w,bottom:top+h};
    const overlap=occupied.reduce((sum,o)=>sum+Math.max(0,Math.min(r.right,o.right)-Math.max(left,o.left))*Math.max(0,Math.min(r.bottom,o.bottom)-Math.max(top,o.top)),0);
-   const value=overlap*100000+Math.hypot(left-preferred.left,top-preferred.top);
+   const value=overlap*100000+distance;
    if(value<score){score=value;best=r}
  }
  return best;
