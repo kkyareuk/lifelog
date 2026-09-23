@@ -1,0 +1,9 @@
+<ko-KR>
+냉장고에 별점이 표시되는 3열 음식 목록, 먹기·치우기·도시락 싸기를 추가했어요. 주민들이 남은 음식을 냉장 보관하고 상한 음식을 정리해요. 책장에서 책을 읽고 구매하거나 도서관에서 대출·반납할 수 있어요. 책 고르기는 5초 뒤 독서로 이어져요. 집의 캐릭터 크기·진행바와 재산·직업 메뉴 겹침을 개선했어요. 새 마을에는 기본 건물 7종이 생겨요.
+</ko-KR>
+<en-US>
+Added a 3-column refrigerator with food ratings, eating, clearing, and lunchbox packing. Residents can store leftovers and clear spoiled food. Read or buy books from the bookcase, and borrow or return library books. Choosing a book leads to reading after 5 seconds. Improved character size, activity progress, and wallet/job menu layering. New towns start with seven essential buildings.
+</en-US>
+<ja-JP>
+冷蔵庫に星評価付きの3列料理一覧と、食べる・片付ける・お弁当に詰める機能を追加しました。住民は残った料理を冷蔵保存し、傷んだ料理を片付けます。本棚で読書・購入、図書館で貸出・返却ができます。本選びは5秒後に読書へ続きます。キャラクターの大きさ・進行表示・財産と職業メニューの重なりを改善しました。新しい村には基本の建物7種類が配置されます。
+</ja-JP>
