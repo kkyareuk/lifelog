@@ -1,0 +1,21 @@
+<ko-KR>
+• 금액을 1억 5000만 원처럼 읽기 쉽게 표시해요.
+• 요리별 가격을 조정하고 기본 설정에서 최고 가격을 11만 원으로 맞췄어요.
+• 커피포트로 커피 내리기를 연결하고 병원·카페의 불필요한 요리 버튼을 제거했어요. 카페에서 커피·차를 주문할 수 있어요.
+• 병원·카페 등 건물 유형별 기본 방과 가구를 배치했어요. 기존에 꾸민 내부는 유지해요.
+• 건물 모양 선택의 불필요한 설명을 정리하고 확대 시 화면이 한쪽으로 밀리는 문제를 개선했어요.
+</ko-KR>
+<en-US>
+• Korean money labels now use readable large-number units.
+• Rebalanced recipe prices, capped at 110,000 won with default currency settings.
+• Brew coffee with a coffee pot. Removed unrelated cooking buttons from hospitals and cafes; cafes offer coffee and tea orders.
+• Added furnished default interiors for hospitals, cafes and other building types. Saved interiors are preserved.
+• Removed unnecessary building artwork notes and improved pinch-zoom anchoring.
+</en-US>
+<ja-JP>
+• 韓国語の金額表示を億・万単位で読みやすくしました。
+• 料理の価格を調整し、標準通貨設定で最高11万ウォンにしました。
+• コーヒーポットでコーヒーを淹れられます。病院・カフェの不要な料理ボタンを削除し、カフェにコーヒー・お茶の注文を追加しました。
+• 病院・カフェなど建物別に家具付きの標準内装を用意しました。保存済みの内装は維持します。
+• 建物の外観選択の不要な説明を削除し、拡大時の表示位置を改善しました。
+</ja-JP>
