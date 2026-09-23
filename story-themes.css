@@ -68,7 +68,7 @@ html:is(
   [data-visual-theme="healing-glasshouse"],
   [data-visual-theme="reverie-ward"],
   [data-visual-theme="noir-rain"]
-) #app :is(button.primary,button.on,[aria-pressed="true"],a.primary){
+) #app :is(button.primary,button.on,[aria-pressed="true"]:not(.home-native-ui-toggle),a.primary){
   border-color:color-mix(in srgb,var(--p) 74%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;
   color:var(--on-grad)!important;
@@ -80,7 +80,7 @@ html:is(
   [data-visual-theme="healing-glasshouse"],
   [data-visual-theme="reverie-ward"],
   [data-visual-theme="noir-rain"]
-) #app :is(button.primary,button.on,[aria-pressed="true"],a.primary) *{
+) #app :is(button.primary,button.on,[aria-pressed="true"]:not(.home-native-ui-toggle),a.primary) *{
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
 }

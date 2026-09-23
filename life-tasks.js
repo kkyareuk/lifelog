@@ -1,3 +1,4 @@
+import {PERFORMANCE_TASKS} from './performance-tasks.js';
 import {COFFEE_TASKS} from './coffee-crafting.js';
 import {PLACE_TASKS} from './place-activities.js';
 import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
@@ -688,7 +689,7 @@ export const LIFE_TASKS=[
     ]
   }
 ];
-LIFE_TASKS.push(...CONCRETE_LIFE_TASKS,...PLACE_TASKS,...COFFEE_TASKS);
+LIFE_TASKS.push(...PERFORMANCE_TASKS,...CONCRETE_LIFE_TASKS,...PLACE_TASKS,...COFFEE_TASKS);
 export const lifeTask=id=>LIFE_TASKS.find(t=>t.id===id);
 
 export function lifeCopy(task,character={}){

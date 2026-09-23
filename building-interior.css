@@ -9,19 +9,13 @@
 .building-interior-dialog .home-canvas-viewport{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 .building-interior-dialog .rooms>.room{position:absolute;left:calc(var(--mobile-room-x) + 4px);top:calc(var(--mobile-room-y) + 4px);width:calc(var(--mobile-room-w) - 8px);height:calc(var(--mobile-room-h) - 8px);box-sizing:border-box;min-width:0;min-height:0;margin:0;padding:7px;background-position:center,var(--room-floor-position,center top);background-size:100% 100%,var(--room-floor-size,250px);background-repeat:no-repeat,var(--room-floor-repeat,repeat)}
 .building-interior-status{margin:0;padding:0 8px;min-height:0;font-size:13px;color:#fff}
-.building-interior-panel{position:absolute;z-index:100;inset:90px 10px 16px;padding:18px;overflow:auto;background:#fff7e9;border:3px solid #674a34;border-radius:20px;color:#30251e}
+.building-interior-panel{position:absolute;z-index:100;inset:0;padding:0;overflow:auto;background:#5b4031;border:0;border-radius:0;color:#30251e}
 .building-interior-panel[hidden]{display:none}
 .building-interior-panel h2{margin:0 36px 20px 0;font-size:23px}
 .building-interior-panel>button:not(.building-panel-close),.building-interior-panel label{display:block;margin:12px 0;min-height:44px}
 .building-interior-panel .building-panel-close{position:absolute;right:12px;top:10px;width:36px;height:36px;padding:0}
-.building-staff-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.building-staff-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:8px 4px;background:#f7efdf;color:#30251e;border:1px solid #cab99a;border-radius:12px}
-.building-staff-grid img{width:64px;height:64px;object-fit:contain}
-.building-staff-grid :is(b,small){max-width:100%;overflow-wrap:anywhere;font-size:12px}
 
 .building-interior-heading small{white-space:nowrap;font-size:12px;color:#fff5dd}
 .building-interior-page .home-native-side,.building-interior-page>.home-native-pill{z-index:55}
-.building-interior-page.home-ui-hidden :is(.building-interior-heading,.building-interior-side,.home-native-elevator){visibility:hidden;pointer-events:none}
+.building-interior-page.home-ui-hidden :is(.building-interior-side,.home-native-elevator){visibility:hidden;pointer-events:none}
 .building-interior-dialog .rooms>.room.building-lawn{background:#73934e!important;background-image:radial-gradient(ellipse at 30% 20%,#96ad69 0%,transparent 60%),repeating-linear-gradient(115deg,#ffffff06 0 2px,transparent 2px 6px)!important;border-color:#536d3b;border-radius:8px}
-.building-interior-panel .home-feature-panel{position:relative!important;inset:auto!important;width:100%!important;height:auto!important;min-height:100%;max-height:none!important;padding:0;box-shadow:none}
-.building-interior-panel .home-member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}

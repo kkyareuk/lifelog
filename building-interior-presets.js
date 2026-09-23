@@ -30,7 +30,7 @@ const rectangles={
  '병원':[[0,0,8,6],[8,0,4,10],[0,6,8,10],[8,10,4,6]],
  '숙박':[[0,0,8,5],[0,5,6,11],[6,5,6,11],[8,0,4,5]]
 };
-export function defaultBuildingRooms(place,language='ko'){
+export function defaultBuildingRooms(place,language='ko',upgrade=true){
  const rooms=legacyBuildingRooms(place,language);
  if(place.type==='공원'){
   const lawn=rooms.area0;lawn.name=({ko:'잔디 공원',en:'Grass park',ja:'芝生の公園'})[language]||'잔디 공원';
@@ -39,7 +39,8 @@ export function defaultBuildingRooms(place,language='ko'){
   lawn.furniturePlacements=lawn.furniture.map((item,i)=>({id:'area0-f'+i,item,x:[25,50,75,25][i],y:[35,35,65,75][i],rotation:0,scale:1}));
   delete rooms.area1;delete rooms.area2;
  }
- const layout=place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
+ if(upgrade&&place.type==='공연장'){const hall=rooms.area0;hall.name=({ko:'홀',en:'Hall',ja:'ホール'})[language]||'홀';hall.furniture.push('의자','의자','의자');hall.furniturePlacements.push(...rooms.area1.furniturePlacements.slice(0,3).map((p,i)=>({...p,id:'area0-audience'+i,x:25+i*25,y:75})));delete rooms.area1;}
+ const layout=upgrade&&place.type==='공연장'?{area0:[0,0,9,16],area2:[9,0,3,12],area3:[9,12,3,4]}:place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
  for(const [key,room] of Object.entries(rooms)){
   const [x,y,w,h]=layout[key];room.layout={x:x/12*100,y:y/16*100,w:w/12*100,h:h/16*100};
   for(const p of room.furniturePlacements){Object.assign(p,snapFurniturePosition(p.x,p.y,{columns:w,rows:h},furnitureFootprint(p.item)));if(p.tableId){p.seatSide=p.x<(room.furniturePlacements.find(t=>t.id===p.tableId)?.x||50)?'west':'east';p.rotation=p.seatSide==='west'?90:270}}

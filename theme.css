@@ -20,7 +20,7 @@ html[data-color-mode="light"][data-visual-theme="drawer-default"] main:not(.web-
 }
 html[data-color-mode="light"][data-visual-theme="drawer-default"] :is(
   .editor,.character-editor,.desktop-character-editor,.character-editor>.form,
-  .profile-license,.home-page,.home,.town-page,.town-editor-panel
+  .profile-license,.home-page:not(.building-interior-page),.home:not(.building-interior-home),.town-page,.town-editor-panel
 ){
   background:transparent!important;
   background-image:none!important;

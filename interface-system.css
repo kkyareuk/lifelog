@@ -40,7 +40,7 @@ html[data-color-mode][data-visual-theme] body>header nav button:not(.home-native
 html[data-color-mode][data-visual-theme] body>header nav button:not(.home-native-pill):is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
 html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry):not(.character-full-tab):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill),
-html[data-color-mode][data-visual-theme] [aria-pressed="true"]:not(.plaza-games-dialog *):not(.mail-center *){
+html[data-color-mode][data-visual-theme] [aria-pressed="true"]:not(.home-native-ui-toggle):not(.plaza-games-dialog *):not(.mail-center *){
   border-color:#b48930!important;
   background:linear-gradient(145deg,#fff0a6,#efd15e)!important;
   color:#3c2b16!important;
@@ -64,7 +64,7 @@ html[data-color-mode][data-visual-theme] :is(
 }
 html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),
-  .character-statistics-page,.character-editor,.home-page
+  .character-statistics-page,.character-editor,.home-page:not(.building-interior-page)
 ){
   border-color:var(--theme-border)!important;
   background:
@@ -76,7 +76,7 @@ html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog:not(.character-money-dialog):not(.plaza-games-dialog):not(.direct-command-dialog),.visual-theme-dialog
-) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.relationship-redesign *):not(.relationship-fullscreen-dialog *):not(.room-heading *):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *):not(.home-native-hud *):not(.home-native-edit-tools *):not(.building-interior-heading *):not(.building-interior-side *){
+) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.relationship-redesign *):not(.relationship-fullscreen-dialog *):not(.room-heading *):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *):not(.home-native-hud *):not(.home-native-edit-tools *):not(.building-interior-heading *):not(.building-interior-side *):not(.home-native-pill *){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }

@@ -1,3 +1,4 @@
+import {PERFORMANCE_TASKS} from './performance-tasks.js';
 import {buildingInterior} from './building-interior-model.js';
 import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
 import {placeActions} from './place-activities.js';
@@ -14,6 +15,7 @@ export function contextActions(target){
  {kind:'talk',label:label('대화하기','Talk','話す')},{kind:'hug',label:label('포옹하기','Hug','抱きしめる')},{kind:'debate',label:label('토론하기','Discuss','議論する')},{kind:'hangout',label:label('함께 시간 보내기','Spend time together','一緒に過ごす')}];
  if(target.type==='place')return placeActions(target.place);
  const item=target.item||'';
+ if(/피아노|악기|기타|바이올린|드럼|piano|instrument/i.test(item))return PERFORMANCE_TASKS.filter(t=>t.id===(/피아노|piano/i.test(item)?'play_piano':'play_instrument')).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)}));
  if(/커피포트|coffee pot|kettle|コーヒーポット/i.test(item))return COFFEE_TASKS.filter(t=>['coffee_drip','coffee_iced'].includes(t.id)).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)}));
  if(isCoffeeMachine(item))return [...COFFEE_TASKS.map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),{kind:'chores',lifeTask:'clean',label:label('커피머신 청소하기','Clean the coffee machine','コーヒーメーカーを掃除する')}];
  if(/오디오|턴테이블|플레이어|audio|stereo/i.test(item))return [{kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')}];

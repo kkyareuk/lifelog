@@ -33,6 +33,7 @@ export function nextRoutinePhaseAt(scene,now=Date.now()){
  if(!scene?.routineId||scene.routineReturned||scene.returningHome)return Infinity;
  const date=new Date(now),day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),start=Number(scene.routineStartMinute),end=Number(scene.routineEndMinute);
  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return Infinity;
+ if(['builtin-singer','builtin-idol'].includes(scene.officeRole))return [day+(start+10)*60000,day+(start+(Math.floor(((now-day)/60000-start)/35)+1)*35)*60000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
  if(scene.officeTaskId)return [day+(start+10)*60000,(Math.floor(now/2700000)+1)*2700000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
  return [.15,.48,.85,1].map(p=>day+Math.ceil(start+(end-start)*p)*60000).find(at=>at>now)||Infinity;
 }

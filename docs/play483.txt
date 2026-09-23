@@ -1,0 +1,24 @@
+<ko-KR>
+건물 편집을 닫으면 원래 건물 내부로 돌아와요.
+UI를 숨겨도 상단바와 뒤로가기는 유지되며, 버튼 글씨와 배경을 개선했어요.
+직원 화면을 집 구성원 화면과 맞추고 직원 고용을 추가했어요.
+공연장 기본 배치를 홀·대기실·화장실로 정리했어요.
+건물 내부에서 활동하는 캐릭터가 해당 방에 표시돼요.
+피아노·악기 연주와 가수·아이돌의 공연장 근무 행동을 추가했어요.
+</ko-KR>
+<en-US>
+Closing building edits returns to the same interior.
+Hide UI now keeps the header and back button, with clearer text and backgrounds.
+Staff now uses the home members layout and supports hiring.
+Default theaters have a hall, backstage and restroom.
+Characters appear in the room where they are active.
+Added piano/instrument actions and scheduled theater work for singers and idols.
+</en-US>
+<ja-JP>
+建物編集を閉じると元の建物内に戻ります。
+UIを非表示にしても上部バーと戻るボタンは残り、文字と背景を見やすくしました。
+従業員画面を家のメンバー画面と統一し、雇用を追加しました。
+公演場の初期配置をホール・楽屋・お手洗いに整理しました。
+建物内で活動する人物を該当する部屋に表示します。
+ピアノ・楽器演奏と、歌手・アイドルの勤務時間中の公演場での行動を追加しました。
+</ja-JP>

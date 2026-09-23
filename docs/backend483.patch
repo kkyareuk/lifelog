@@ -1,0 +1,146 @@
+--- a/runtime\building-interior-model.js
++++ b/runtime\building-interior-model.js
+@@ -4,7 +4,7 @@
+   const home={...saved,id:'place-interior:'+townId+':'+place.id,placeId:place.id,townId,name:place.name,kind:place.type,canvasColumns:saved.canvasColumns||12,canvasRows:saved.canvasRows||16,canvasFitVersion:1,floorCount:saved.floorCount||1,activeFloor:saved.activeFloor||1,
+     rooms:saved.rooms||defaultBuildingRooms(place,language)};
+   // Upgrade untouched equal-quarter defaults only; never replace custom layouts.
+-  if(saved.rooms){const old=legacyBuildingRooms(place,language),keys=Object.keys(old);if(Object.keys(saved.rooms).length===keys.length&&keys.every(k=>{const a=saved.rooms[k],b=old[k];return a&&a.name===b.name&&a.type===b.type&&a.floor===b.floor&&!a.image&&!a.floorImage&&!a.hideFurniture&&!a.ownerCharacterIds?.length&&a.floorMaterial===b.floorMaterial&&a.wallMaterial===b.wallMaterial&&JSON.stringify(a.layout)===JSON.stringify(b.layout)&&JSON.stringify(a.furniture)===JSON.stringify(b.furniture)&&a.furniturePlacements?.every((p,i)=>p.id===b.furniturePlacements[i]?.id&&p.x===b.furniturePlacements[i]?.x&&p.y===b.furniturePlacements[i]?.y)}))home.rooms=defaultBuildingRooms(place,language);}
++  if(saved.rooms){const options=[legacyBuildingRooms(place,language),defaultBuildingRooms(place,language,false)];for(const old of options){const keys=Object.keys(old);if(Object.keys(saved.rooms).length===keys.length&&keys.every(k=>{const a=saved.rooms[k],b=old[k];return a&&a.name===b.name&&a.type===b.type&&a.floor===b.floor&&!a.image&&!a.floorImage&&!a.hideFurniture&&!a.ownerCharacterIds?.length&&a.floorMaterial===b.floorMaterial&&a.wallMaterial===b.wallMaterial&&JSON.stringify(a.layout)===JSON.stringify(b.layout)&&JSON.stringify(a.furniture)===JSON.stringify(b.furniture)&&a.furniturePlacements?.every((p,i)=>p.id===b.furniturePlacements[i]?.id&&p.x===b.furniturePlacements[i]?.x&&p.y===b.furniturePlacements[i]?.y)}))home.rooms=defaultBuildingRooms(place,language);}}
+   // Building rooms use editable surfaces. Keep saved images, but never paint a
+   // building-wide photo over the room's walls/floor and furniture.
+   for(const room of Object.values(home.rooms)){if(room.usePhoto)room.usePhoto=false;if(room.floorMaterial==='custom')room.floorMaterial='natural'}
+--- a/runtime\building-interior-presets.js
++++ b/runtime\building-interior-presets.js
+@@ -30,7 +30,7 @@
+  '병원':[[0,0,8,6],[8,0,4,10],[0,6,8,10],[8,10,4,6]],
+  '숙박':[[0,0,8,5],[0,5,6,11],[6,5,6,11],[8,0,4,5]]
+ };
+-export function defaultBuildingRooms(place,language='ko'){
++export function defaultBuildingRooms(place,language='ko',upgrade=true){
+  const rooms=legacyBuildingRooms(place,language);
+  if(place.type==='공원'){
+   const lawn=rooms.area0;lawn.name=({ko:'잔디 공원',en:'Grass park',ja:'芝生の公園'})[language]||'잔디 공원';
+@@ -39,7 +39,8 @@
+   lawn.furniturePlacements=lawn.furniture.map((item,i)=>({id:'area0-f'+i,item,x:[25,50,75,25][i],y:[35,35,65,75][i],rotation:0,scale:1}));
+   delete rooms.area1;delete rooms.area2;
+  }
+- const layout=place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
++ if(upgrade&&place.type==='공연장'){const hall=rooms.area0;hall.name=({ko:'홀',en:'Hall',ja:'ホール'})[language]||'홀';hall.furniture.push('의자','의자','의자');hall.furniturePlacements.push(...rooms.area1.furniturePlacements.slice(0,3).map((p,i)=>({...p,id:'area0-audience'+i,x:25+i*25,y:75})));delete rooms.area1;}
++ const layout=upgrade&&place.type==='공연장'?{area0:[0,0,9,16],area2:[9,0,3,12],area3:[9,12,3,4]}:place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
+  for(const [key,room] of Object.entries(rooms)){
+   const [x,y,w,h]=layout[key];room.layout={x:x/12*100,y:y/16*100,w:w/12*100,h:h/16*100};
+   for(const p of room.furniturePlacements){Object.assign(p,snapFurniturePosition(p.x,p.y,{columns:w,rows:h},furnitureFootprint(p.item)));if(p.tableId){p.seatSide=p.x<(room.furniturePlacements.find(t=>t.id===p.tableId)?.x||50)?'west':'east';p.rotation=p.seatSide==='west'?90:270}}
+--- a/runtime\career-duties.js
++++ b/runtime\career-duties.js
+@@ -1,10 +1,12 @@
++import {performanceDuty} from './performance-tasks.js';
+ import {officeDuty as corporateDuty,officeEmployment as corporateEmployment} from './office-work.js';
+ import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
+ export function officeEmployment(c,id){return corporateEmployment(c,id)||employment(c,id)}
+-function employment(c,id){const all=c.wallet?.employments||[],entry=id?all.find(e=>e.id===id):all[0];if(entry)return ['builtin-politician','builtin-barista'].includes(entry.jobId)?entry:null;return !all.length&&['정치인','바리스타'].includes(c.job)?{jobId:c.job==='정치인'?'builtin-politician':'builtin-barista'}:null}
++function employment(c,id){const all=c.wallet?.employments||[],entry=id?all.find(e=>e.id===id):all[0];if(entry)return ['builtin-politician','builtin-barista','builtin-singer','builtin-idol'].includes(entry.jobId)?entry:null;return !all.length&&['정치인','바리스타','가수','아이돌'].includes(c.job)?{jobId:({'정치인':'builtin-politician','바리스타':'builtin-barista','가수':'builtin-singer','아이돌':'builtin-idol'})[c.job]}:null}
+ export function officeDuty(c,date,start,end,language='ko',id){
+  const corporate=corporateDuty(c,date,start,end,language,id);if(corporate)return corporate;
+  const job=employment(c,id),minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60;if(!job||minute<start||minute>=end)return null;
++ if(['builtin-singer','builtin-idol'].includes(job.jobId))return performanceDuty(c,job,date,start,end,language);
+  const list=job.jobId==='builtin-politician'?POLITICIAN_DUTIES:BARISTA_DUTIES;
+  const hash=[...String(c.id)+String(id||'')].reduce((h,v)=>(Math.imul(h,31)+v.charCodeAt(0))>>>0,0);
+  const slot=Math.floor(date.getTime()/2700000),index=minute>=end-10?list.length-1:minute<start+10?0:1+(slot+hash)%(list.length-2),row=list[index],offset=language==='en'?2:language==='ja'?4:0;
+--- a/runtime\career-work.js
++++ b/runtime\career-work.js
+@@ -34,5 +34,5 @@
+ export function careerWeeklyRoutines(world,c){
+  const entries=careerAssignments(world,c),existing=(world.routines?.[c.id]||[]).filter(r=>['업무','work'].includes(r.type));
+  if(existing.length&&!entries.some(e=>c.careerSchedules?.[e.id]==='default'||validWorkSchedule(c.careerSchedules?.[e.id])))return existing;
+- return entries.flatMap(entry=>{const schedule=workScheduleFor(c,entry);return schedule.days.flatMap(day=>{const base={id:`career-work:${entry.id}:${day}`,type:'업무',day,start:schedule.start,end:schedule.end,title:entry.jobName||c.job||'',withIds:[],placeId:c.workplaceId==='home'?'':c.workplaceId||'',home:!c.workplaceId||c.workplaceId==='home',visitHomeId:!c.workplaceId||c.workplaceId==='home'?c.homeId:'',room:'study',careerEmploymentId:entry.id};return schedule.end<schedule.start&&schedule.end!=='00:00'?[base,{...base,id:base.id+':after-midnight',day:(day+1)%7,start:'00:00'}]:[base]})});
++ return entries.flatMap(entry=>{const schedule=workScheduleFor(c,entry),venue=!c.workplaceId&&['builtin-singer','builtin-idol'].includes(entry.jobId)?(world.towns?.find(t=>t.id===c.townId)||world.world)?.places?.find(p=>p.type==='공연장')?.id:'',workplace=c.workplaceId||venue;return schedule.days.flatMap(day=>{const base={id:`career-work:${entry.id}:${day}`,type:'업무',day,start:schedule.start,end:schedule.end,title:entry.jobName||c.job||'',withIds:[],placeId:workplace==='home'?'':workplace||'',home:!workplace||workplace==='home',visitHomeId:!workplace||workplace==='home'?c.homeId:'',room:'study',careerEmploymentId:entry.id};return schedule.end<schedule.start&&schedule.end!=='00:00'?[base,{...base,id:base.id+':after-midnight',day:(day+1)%7,start:'00:00'}]:[base]})});
+ }
+--- a/runtime\context-actions.js
++++ b/runtime\context-actions.js
+@@ -1,3 +1,4 @@
++import {PERFORMANCE_TASKS} from './performance-tasks.js';
+ import {buildingInterior} from './building-interior-model.js';
+ import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
+ import {placeActions} from './place-activities.js';
+@@ -14,6 +15,7 @@
+  {kind:'talk',label:label('대화하기','Talk','話す')},{kind:'hug',label:label('포옹하기','Hug','抱きしめる')},{kind:'debate',label:label('토론하기','Discuss','議論する')},{kind:'hangout',label:label('함께 시간 보내기','Spend time together','一緒に過ごす')}];
+  if(target.type==='place')return placeActions(target.place);
+  const item=target.item||'';
++ if(/피아노|악기|기타|바이올린|드럼|piano|instrument/i.test(item))return PERFORMANCE_TASKS.filter(t=>t.id===(/피아노|piano/i.test(item)?'play_piano':'play_instrument')).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)}));
+  if(/커피포트|coffee pot|kettle|コーヒーポット/i.test(item))return COFFEE_TASKS.filter(t=>['coffee_drip','coffee_iced'].includes(t.id)).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)}));
+  if(isCoffeeMachine(item))return [...COFFEE_TASKS.map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),{kind:'chores',lifeTask:'clean',label:label('커피머신 청소하기','Clean the coffee machine','コーヒーメーカーを掃除する')}];
+  if(/오디오|턴테이블|플레이어|audio|stereo/i.test(item))return [{kind:'music',lifeTask:'music',label:label('음악 듣기','Listen to music','音楽を聴く')}];
+--- a/runtime\life-tasks.js
++++ b/runtime\life-tasks.js
+@@ -1,3 +1,4 @@
++import {PERFORMANCE_TASKS} from './performance-tasks.js';
+ import {COFFEE_TASKS} from './coffee-crafting.js';
+ import {PLACE_TASKS} from './place-activities.js';
+ import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
+@@ -688,7 +689,7 @@
+     ]
+   }
+ ];
+-LIFE_TASKS.push(...CONCRETE_LIFE_TASKS,...PLACE_TASKS,...COFFEE_TASKS);
++LIFE_TASKS.push(...PERFORMANCE_TASKS,...CONCRETE_LIFE_TASKS,...PLACE_TASKS,...COFFEE_TASKS);
+ export const lifeTask=id=>LIFE_TASKS.find(t=>t.id===id);
+ 
+ export function lifeCopy(task,character={}){
+--- a/runtime\meeting-journey.js
++++ b/runtime\meeting-journey.js
+@@ -1,8 +1,10 @@
++import {buildingInterior} from './building-interior-model.js';
+ // A meeting stores a route once. Drawing its progress never mutates game state.
+ const point=(x,y)=>({x:Math.max(0,Math.min(100,Number.isFinite(Number(x))?Number(x):50)),y:Math.max(0,Math.min(100,Number.isFinite(Number(y))?Number(y):55))});
+ function location(world,c,scene={},position){
+- const homeId=scene.home?(scene.visitHomeId||c.homeId):'',home=world.homes?.[homeId],room=scene.room&&home?.rooms?.[scene.room]?scene.room:Object.keys(home?.rooms||{})[0]||'living';
+- const place=world.world?.places?.find(p=>p.id===scene.placeId),agent=home?.lifeSimulation?.agents?.[c.id];
++ const place=world.world?.places?.find(p=>p.id===scene.placeId),interior=place?buildingInterior(place,scene.townId||c.townId,world.uiLanguage):null;
++ const homeId=scene.home?(scene.visitHomeId||c.homeId):'',home=world.homes?.[homeId],rooms=home?.rooms||interior?.rooms,room=scene.room&&rooms?.[scene.room]?scene.room:interior?(scene.room||''):Object.keys(rooms||{})[0]||'living';
++ const agent=home?.lifeSimulation?.agents?.[c.id];
+  const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:scene.meetingLocation?.point||scene.goal?.point|| (agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60)),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};
+  if(position?.homeId===homeId&&position.room===room&&Number.isFinite(position.point?.x)&&Number.isFinite(position.point?.y))value.point=point(position.point.x,position.point.y);
+  if(!home&&!place&&position?.townId===value.townId&&Number.isFinite(position.map?.x)&&Number.isFinite(position.map?.y))value.map=point(position.map.x,position.map.y);
+--- a/runtime\routine-scenes.js
++++ b/runtime\routine-scenes.js
+@@ -33,6 +33,7 @@
+  if(!scene?.routineId||scene.routineReturned||scene.returningHome)return Infinity;
+  const date=new Date(now),day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),start=Number(scene.routineStartMinute),end=Number(scene.routineEndMinute);
+  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return Infinity;
++ if(['builtin-singer','builtin-idol'].includes(scene.officeRole))return [day+(start+10)*60000,day+(start+(Math.floor(((now-day)/60000-start)/35)+1)*35)*60000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
+  if(scene.officeTaskId)return [day+(start+10)*60000,(Math.floor(now/2700000)+1)*2700000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
+  return [.15,.48,.85,1].map(p=>day+Math.ceil(start+(end-start)*p)*60000).find(at=>at>now)||Infinity;
+ }
+--- /dev/null
++++ b/runtime/building-room-location.js
+@@ -0,0 +1,7 @@
++export function buildingRoomKey(home,scene={}){
++ if(home.rooms?.[scene.room])return scene.room;
++ const keys=Object.keys(home.rooms||{}),type=({bath:'bathroom',toilet:'bathroom',music:'hobby'})[scene.room]||scene.room;
++ if(['toilet','bath','shower','clean'].includes(scene.lifeTaskId||scene.lifeTask)||/화장실|변기|restroom|toilet|トイレ/.test(scene.title||''))return keys.find(k=>home.rooms[k].type==='bathroom')||keys[0];
++ if(scene.officeRole==='builtin-singer'||scene.officeRole==='builtin-idol')return keys.find(k=>home.rooms[k].type===(scene.officeRoom==='backstage'?'bedroom':'hobby'))||keys[0];
++ return keys.find(k=>home.rooms[k].type===type)||keys[0];
++}
+--- /dev/null
++++ b/runtime/performance-tasks.js
+@@ -0,0 +1,20 @@
++export const PERFORMANCE_TASKS=[
++ {id:'play_piano',kind:'music',group:'hobby',room:'hobby',minutes:30,labels:['피아노 연주하기','Play the piano','ピアノを弾く'],details:['건반을 누르는 힘과 박자를 맞추며 피아노를 연주하고 있어요.','They play the piano, controlling touch and rhythm.','タッチと拍子を整えながらピアノを弾いています。']},
++ {id:'play_instrument',kind:'music',group:'hobby',room:'hobby',minutes:30,labels:['악기 연주하기','Play an instrument','楽器を演奏する'],details:['악기의 음을 맞추고 선율을 이어 연주하고 있어요.','They tune the instrument and play through the melody.','楽器の音を合わせ、旋律をつないで演奏しています。']}
++];
++const rows=[
++ ['공연 준비','악보와 공연 순서를 확인하고 무대에 가져갈 물건을 챙기고 있어요.','Preparing for the performance','Checking the set list and gathering stage essentials.','公演の準備中','曲順を確認し、ステージに持っていく物を用意しています。'],
++ ['발성 연습','호흡을 고르게 내쉬며 낮은 음부터 천천히 목을 풀고 있어요.','Vocal warm-up','Warming up from low notes with steady breathing.','発声練習中','息を整え、低い音からゆっくり声を出しています。'],
++ ['마이크 점검','짧은 구절을 부르며 마이크 음량과 반주 균형을 맞추고 있어요.','Sound check','Singing a short phrase to balance the microphone and accompaniment.','音響確認中','短いフレーズを歌い、マイクと伴奏のバランスを整えています。'],
++ ['후렴 연습','후렴의 긴 음을 유지하고 끝 음정이 흔들리지 않는지 확인하고 있어요.','Practising the chorus','Holding the chorus notes and checking the final pitch.','サビの練習中','サビの長い音を伸ばし、最後の音程を確認しています。'],
++ ['동선 리허설','무대 표시를 따라 움직이며 노래와 이동 타이밍을 맞추고 있어요.','Stage rehearsal','Following stage marks and matching movement to the song.','立ち位置のリハーサル中','舞台の印をたどり、歌と移動のタイミングを合わせています。'],
++ ['노래 부르는 중','반주에 맞춰 노래를 부르며 관객석 쪽으로 시선을 보내고 있어요.','Singing on stage','Singing with the accompaniment while facing the audience.','歌唱中','伴奏に合わせて歌いながら客席に視線を向けています。'],
++ ['안무 연습','박자를 세며 발동작과 손끝의 방향을 반복해서 맞추고 있어요.','Dance practice','Counting beats and refining steps and hand movements.','ダンスの練習中','拍子を数え、足運びと指先の向きを繰り返し合わせています。'],
++ ['공연 마무리','마이크를 반납하고 무대에 남은 소품을 대기실로 옮기고 있어요.','Wrapping up the show','Returning the microphone and carrying props backstage.','公演の片付け中','マイクを返し、舞台に残った小道具を楽屋に運んでいます。']
++];
++export function performanceDuty(c,job,date,start,end,language){
++ const minute=date.getHours()*60+date.getMinutes(),hash=[...String(c.id)].reduce((n,x)=>n+x.charCodeAt(0),0),slot=Math.floor((minute-start)/35);
++ const sequence=job.jobId==='builtin-idol'?[1,2,6,4,5,3]:[1,2,3,4,5];
++ const index=minute<start+10?0:minute>=end-10?7:sequence[(slot+hash)%sequence.length],row=rows[index],offset=language==='en'?2:language==='ja'?4:0;
++ return {title:row[offset],desc:row[offset+1],officeTaskId:job.jobId+':'+index,officeRole:job.jobId,officeRoom:index===0||index===7?'backstage':'stage',economyWork:true};
++}

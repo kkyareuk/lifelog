@@ -1,3 +1,4 @@
+import {buildingRoomKey} from './building-room-location.js';
 import {activityProgressMarkup} from './activity-progress.js';
 import {roomFoodMarkup} from './prepared-food-ui.js';
 import {careerCaption,todayCareerDuty} from './salary.js';
@@ -2386,12 +2387,12 @@ export function homeCard(id,chars){
   const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))&&(!furniturePatternForScene(scene)||furniturePatternForScene(scene).test(scene.meetingFurniture.item))};
   for(const c of inside){if(usesAnchoredFurniture(c)){const scene=sceneFor(c),bed=scene.meetingFurniture;lifeAgents[c.id]={...lifeAgents[c.id],phase:'using',roomKey:scene.room,furnitureId:bed.id,item:bed.item,x:bed.x,y:bed.y};}}
 
-  if(h.placeId&&!edit)for(const c of inside){const scene=sceneFor(c),item=scene.furniture||scene.meetingFurniture;if(item&&h.rooms?.[scene.room])lifeAgents[c.id]={phase:'using',roomKey:scene.room,furnitureId:item.id,item:item.item,x:item.x,y:item.y};}
+  if(h.placeId&&!edit)for(const c of inside){const scene=sceneFor(c),item=scene.furniture||scene.meetingFurniture;const key=buildingRoomKey(h,scene);lifeAgents[c.id]={phase:'using',roomKey:key,furnitureId:item?.id||'',item:item?.item||'',x:item?.x??50,y:item?.y??65};}
   // Do not render an old bed reservation as the pose for a new needs action.
   for(const c of inside){const a=lifeAgents[c.id],scene=sceneFor(c),pattern=furniturePatternForScene(scene);if(a&&isLayeredBed(a)&&pattern&&!pattern.test(a.item))lifeAgents[c.id]={...a,furnitureId:'',item:'',actionKind:scene.actionKind,phase:'using',roomKey:scene.room,x:50,y:75};}
   if(h.placeId&&!edit){
     const groups=new Map();
-    for(const c of inside){const scene=sceneFor(c);if(!scene?.officeTaskId)continue;
+    for(const c of inside){const scene=sceneFor(c);if(!scene?.officeTaskId||['builtin-singer','builtin-idol'].includes(scene.officeRole))continue;
       const key=Object.keys(h.rooms).find(k=>h.rooms[k].type===(scene.officeRole==='builtin-barista'?'kitchen':scene.officeRoom==='meeting'?'dining':'study'))||Object.keys(h.rooms)[0];
       if(!groups.has(key))groups.set(key,[]);groups.get(key).push(c);
     }
@@ -2399,7 +2400,7 @@ export function homeCard(id,chars){
       people.sort((a,b)=>a.id.localeCompare(b.id)).forEach((c,i)=>{const chair=chairs[i];lifeAgents[c.id]={phase:'using',roomKey:key,furnitureId:chair?.id||'',item:chair?.item||'',x:chair?.x??(20+i%3*28),y:chair?.y??(52+Math.floor(i/3)*14)};});
     }
   }
-  const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:h.placeId?(h.rooms?.[sceneFor(character)?.room]?sceneFor(character).room:Object.keys(h.rooms)[0]):sceneFor(character)?.room;
+  const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:h.placeId?buildingRoomKey(h,sceneFor(character)):sceneFor(character)?.room;
   const roomKeys=Object.keys(h.rooms||{}).sort((a,b)=>(Number(h.rooms[a]?.order)||0)-(Number(h.rooms[b]?.order)||0));
   const floorCount=Math.max(1,Math.min(5,Number(h.floorCount)||1)),activeFloor=Math.max(1,Math.min(floorCount,Number(h.activeFloor)||1));
   const visibleRoomKeys=roomKeys.filter(key=>(Number(h.rooms[key]?.floor)||1)===activeFloor);
@@ -2558,7 +2559,7 @@ export function homeCard(id,chars){
     const customFloor=Boolean((room.usePhoto??(normalizedFloor==="custom"))&&(room.floorImage||room.image));
     const customTile=normalizedFloor==="customTile";
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
-    const shownPeople=roomPeople.filter(character=>(!sceneFor(character)?.meetingLocation||usesAnchoredFurniture(character))&&!isCrossRoomWalker(character)),shownPets=roomPets;
+    const shownPeople=roomPeople.filter(character=>(h.placeId||!sceneFor(character)?.meetingLocation||usesAnchoredFurniture(character))&&!isCrossRoomWalker(character)),shownPets=roomPets;
     const editAttributes=`data-home-id="${id}" data-room-key="${key}" data-home-room-hold="${key}"${edit?` data-open-room-editor="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:""}`;
     const roomLayout=packedRooms.items[key]||{},peopleDirection=Number(roomLayout.w)>Number(roomLayout.h)?"is-horizontal":"is-vertical";
     const renderedPeople=new Set(),peopleMarkup=[],foregroundMarkup=[],coupleBedSlots=new Map(),coupleBedUsers=new Map(),activeCoupleBedGroups=new Map(),coupleBedPlacements=new Map(),bedStates=new Map();

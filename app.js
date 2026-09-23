@@ -1996,6 +1996,8 @@ function openTownCharacterSheet(button){
 }
 
 const homeEditVisibility={ui:false,furniture:false,names:false};
+let buildingEditorReturn=null;
+function returnToBuildingInterior(){const target=buildingEditorReturn;buildingEditorReturn=null;if(!target)return false;setMobileTownMode("");setMobileTownPanel("");setMobileTownPlacement();render({force:true});target();return true;}
 function setHomeUiHidden(page,hidden){
   if(!page)return false;
   page=page.closest(".home-page")||page;
@@ -2779,8 +2781,8 @@ function bind(){
     render();
   });
   $("[data-mobile-town-settings]")?.addEventListener("click",()=>{setMobileTownPanel("world");render()});
-  $("[data-mobile-town-close]")?.addEventListener("click",()=>{setMobileTownMode("");render()});
-  $("[data-building-browser-back]")?.addEventListener("click",()=>{setMobileTownPanel("buildings");setMobileTownPlacement();render()});
+  $("[data-mobile-town-close]")?.addEventListener("click",()=>{if(returnToBuildingInterior())return;setMobileTownMode("");render()});
+  $("[data-building-browser-back]")?.addEventListener("click",()=>{if(returnToBuildingInterior())return;setMobileTownPanel("buildings");setMobileTownPlacement();render()});
   $$("[data-editor-save]").forEach(button=>button.onclick=async()=>{document.activeElement?.blur();await explicitSave("설정 저장")});
   $$('[data-building-browser-open]').forEach(button=>button.addEventListener("click",()=>{
     const townId=button.dataset.buildingBrowserTown;
@@ -6218,8 +6220,9 @@ window.addEventListener("drawer-village-character-notification-received",event=>
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
 async function executeContextActivity(id,action,target,context){if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options={companionIds:action.companionIds,workTask:action.workTask,topic:action.topic,subjectId:action.subjectId,payment:action.payment,...(action.unbound?{}:target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target}),...(action.companionId?{targetId:action.companionId}:{})};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[options.targetId||target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,options.targetId||target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result}
+function openPlaceInterior(id){return openBuildingInterior(id,{snapshot:activeShared(),bindRoomGeometry:bindRoomGeometryHandle,toast:showToast,editBuilding:(id,back)=>{buildingEditorReturn=back;state.activeTab='town';setMobileTownMode('buildings');setMobileTownPanel(id);setMobileTownPlacement('place',id);render({force:true})}})}
 installContextMenu({
- openPlace:(id)=>openBuildingInterior(id,{snapshot:activeShared(),bindRoomGeometry:bindRoomGeometryHandle,toast:showToast,editBuilding:id=>{state.activeTab='town';setMobileTownMode('buildings');setMobileTownPanel(id);setMobileTownPlacement('place',id);render({force:true})}}),
+ openPlace:openPlaceInterior,
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},

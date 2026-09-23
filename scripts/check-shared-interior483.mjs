@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {advanceSharedLife} from '../server-life.mjs';
+const g=await import('../state.js?v=20260909dev305');
+const id=g.createCharacter(),profile=structuredClone(g.state.characters[id]),home=structuredClone(g.state.homes[id]);
+const snapshot={group:{id:'g',towns:[{id:'t',name:'Town',places:[{id:'hall',name:'Hall',type:'공연장'}]}]},homes:[{id:'h',ownerUid:'u',sourceHomeId:id,townId:'t',layoutJson:JSON.stringify(home)}],residents:[{id:'r',ownerUid:'u',name:'Resident',townId:'t',sourceCharacterId:id,sourceHomeId:id,sharedHomeId:'h',profileJson:JSON.stringify(profile),scheduleJson:'{}'}]};
+const before=JSON.stringify(g.state),now=Date.now(),target={type:'furniture',placeId:'hall',homeId:'place-interior:t:hall',room:'area0',id:'area0-f0'};
+const out=advanceSharedLife(snapshot,now,{characterId:'r',kind:'music',lifeTask:'play_piano',contextTarget:target});
+const life=JSON.parse(out[0].lifeJson);assert.equal(life.directive.lifeTask,'play_piano');assert.equal(life.directive.room,'area0');assert.equal(life.directive.placeId,'hall');assert.equal(life.directive.journey.to.room,'area0');assert.equal(JSON.stringify(g.state),before);
+assert.throws(()=>advanceSharedLife(snapshot,now,{characterId:'r',kind:'music',lifeTask:'play_piano',contextTarget:{...target,room:'area3',id:'area3-f0'}}));
+console.log('PASS483 shared runtime: piano command, room retained, invalid tool rejected, personal state isolated');
