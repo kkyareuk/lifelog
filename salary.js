@@ -1,3 +1,5 @@
+import {officeDuty} from './office-work.js';
+import {careerWeeklyRoutines} from './career-work.js';
 import {careersFor} from './career-world.js';
 import {careerLabel} from './career-catalog.js';
 const due=(y,m,day)=>new Date(y,m,Math.min(day,new Date(y,m+1,0).getDate()),0,0,0,0).getTime();
@@ -47,6 +49,10 @@ export function careerCaption(world,c){
 
 // Use the same local-day seed as work scenes so the home label and work log agree.
 export function todayCareerDuty(world,c,date=new Date()){
+ const minute=date.getHours()*60+date.getMinutes(),toMinute=s=>String(s).split(':').reduce((h,v)=>h*60+Number(v),0);
+ const routine=careerWeeklyRoutines(world,c).filter(r=>Number(r.day)===date.getDay()).find(r=>{const a=toMinute(r.start),b=toMinute(r.end);return minute>=a&&minute<(b<a?b+1440:b)});
+ if(routine){const a=toMinute(routine.start),b=toMinute(routine.end),duty=officeDuty(c,date,a,b<a?b+1440:b,world.uiLanguage,routine.careerEmploymentId);if(duty)return {name:duty.title,description:duty.desc};}
+
  const duties=currentDuties(world,c);if(!duties.length)return null;
  const key=`${c.id}:${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}:job-scene`;
  let hash=2166136261;for(const char of key)hash=(hash*31+char.charCodeAt(0))>>>0;

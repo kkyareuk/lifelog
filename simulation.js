@@ -1,3 +1,4 @@
+import {officeEmployment,officeDuty} from './office-work.js';
 import {careerWeeklyRoutines} from './career-work.js';
 import {mealObservation} from './meal-observation.js';
 import {automaticMeal} from './automatic-cooking.js';
@@ -1148,6 +1149,7 @@ function roommateHomeEntry(c,other,time,date){
 }
 
 function workEvent(c,time,date){
+  if(officeEmployment(c))return null;
   if(c.job==="무직")return null;
   const weekday=date.getDay()>=1&&date.getDay()<=5;
   const weekendJobs=["해적","군인","범죄자","환경미화원","여관주인","의사","간호사","요리사","가수","아이돌","자영업"];
@@ -2933,7 +2935,7 @@ function buildScene(c,date){
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
     const participantOrder=[...new Set([...(item.participantOrder||[item.routineOwnerId||c.id]),c.id,...companions.map(person=>person.id)])];
     const scheduledInteractionId=companions.length?["schedule",dayKey(date),item.id,participantOrder.join("~")].join(":"):"";
-    const routineMeta={routineType:item.type,routineTitle:item.title,routineId:item.id,routineOwnerId:item.routineOwnerId||c.id,routineKind:item.routineKind||"weekly",routineStartMinute:minute,routineEndMinute:endMinute,...(companions.length?{participantOrder,interactionId:scheduledInteractionId,groupInteraction:true}: {})};
+    const routineMeta={careerEmploymentId:item.careerEmploymentId,routineType:item.type,routineTitle:item.title,routineId:item.id,routineOwnerId:item.routineOwnerId||c.id,routineKind:item.routineKind||"weekly",routineStartMinute:minute,routineEndMinute:endMinute,...(companions.length?{participantOrder,interactionId:scheduledInteractionId,groupInteraction:true}: {})};
     const companionIds=companions.map(person=>person.id);
     const dateMeta=isDate?{...routineMeta,withId:companions[0].id,withIds:companionIds,mood:"데이트",dateGroup,datePurpose:purpose,dateStartMinute:minute,dateEndMinute:endMinute}:{...routineMeta,withId:companions[0]?.id,withIds:companionIds,mood:"일정"};
     const desc=item.notes||(isDate?`${purpose} 약속에서 정한 일을 ${companions[0].name}와 순서대로 진행하고 있어요.`:`${companionText}${item.type} 일정을 진행하고 있어요. 종료 예정 시각은 ${item.end}예요.`);
@@ -2941,6 +2943,13 @@ function buildScene(c,date){
     if(place)list.push(entry(minute,title,desc,{townId:place.townId,placeId:place.id,...dateMeta}));
     else if(visitHome)list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"living",{...dateMeta,visitHomeId:visitHome.id,townId:visitHome.townId}));
     else list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"study",dateMeta));
+    if(['업무','work'].includes(item.type)&&officeEmployment(c,item.careerEmploymentId)){
+      const base=list.at(-1),dayStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
+      const slots=new Set([minute,minute+10,endMinute-10]);
+      for(let at=Math.ceil((dayStart+minute*60000)/2700000)*2700000;at<dayStart+endMinute*60000;at+=2700000)slots.add((at-dayStart)/60000);
+      for(const at of [...slots].sort((a,b)=>a-b)){if(at<minute||at>=Math.min(endMinute,1440))continue;const duty=officeDuty(c,new Date(dayStart+at*60000),minute,endMinute,state.uiLanguage,item.careerEmploymentId);if(duty)list.push({...base,...duty,time:clock(at),minute:at});}
+      if(place&&minute>=20)list.push(entry(minute-20,({ko:'직장으로 출근하는 중',en:'Commuting to work',ja:'職場へ出勤中'})[state.uiLanguage]||'직장으로 출근하는 중',({ko:'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',en:'Travelling to the workplace in time for the shift.',ja:'勤務開始に合わせて職場へ移動しています。'})[state.uiLanguage]||'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',{townId:place.townId,transit:true,destinationId:place.id}));
+    }
     const awayFromOwnHome=Boolean(place||(visitHome&&visitHome.id!==currentHomeId));
     if(awayFromOwnHome){
       const next=scheduled[index+1],nextMinute=next?mins(next.start):Infinity;
@@ -3555,10 +3564,18 @@ function calculateBaseEvent(c,date=new Date()){
   const directed=manualDirectiveEventFor(c,date);if(directed)return commitLiveEntry(c,date,directed);
   const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
   const activeRoutine=activeScheduledRoutine(c,date);
-  const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
+  let activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
+  // A job assigned during a shift has no past start entry. Project its current
+  // work without rewriting history or waiting until the next working day.
+  if(!activeRoutineEntry&&activeRoutine&&['업무','work'].includes(activeRoutine.type)){
+    const target=state.towns.find(t=>t.places?.some(p=>p.id===activeRoutine.placeId));
+    const reachable=target&&canTravelBetween(townFor(c,date),target,state.preventInterTownMovement);
+    activeRoutineEntry={time:clock(n),minute:n,routineId:activeRoutine.id,routineStartMinute:mins(activeRoutine.start),routineEndMinute:routineEndMinute(activeRoutine),
+      ...(reachable?{placeId:activeRoutine.placeId,townId:target.id}:{home:true,visitHomeId:activeRoutine.visitHomeId||c.homeId,room:'study'})};
+  }
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
-  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title},date),c,state,date.getTime(),state.uiLanguage);
+  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title,careerEmploymentId:activeRoutine.careerEmploymentId},date),c,state,date.getTime(),state.uiLanguage);
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
     const existing=[...list].reverse().find(item=>Number(item.minute)===sleepMinute&&/자는 중|잠든|수면/.test(`${item.title||""} ${item.mood||""}`));

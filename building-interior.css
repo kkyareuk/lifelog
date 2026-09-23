@@ -1,9 +1,25 @@
-.building-interior-dialog{box-sizing:border-box;position:fixed;inset:0;width:100%;max-width:none;height:var(--game-viewport-height,100dvh);max-height:none;margin:0;padding:0;border:0;background:#eee5cf;overflow:hidden}
+.building-interior-dialog{box-sizing:border-box;position:fixed;inset:0;width:100%;max-width:none;height:var(--game-viewport-height,100dvh);max-height:none;margin:0;padding:0;border:0;background:#5b4031;overflow:hidden}
 .building-interior-dialog .building-interior-page{position:relative!important;inset:auto!important;display:flex!important;flex-direction:column;height:100%!important;width:100%!important;overflow:hidden}
-.building-interior-dialog .building-interior-heading{display:flex;flex-wrap:wrap;align-items:center;gap:6px;flex:none;padding:8px;background:#553d2d;color:#fff;z-index:50}
-.building-interior-heading strong{flex:1;min-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.building-interior-heading button,.building-interior-heading select{min-height:38px;padding:6px 10px;font-size:14px}
-.building-interior-dialog .building-interior-home{position:relative!important;inset:auto!important;flex:1;min-height:0;width:100%!important;height:auto!important;overflow:hidden}
+.building-interior-dialog .building-interior-heading{display:flex;align-items:center;gap:8px;flex:none;box-sizing:border-box;height:78px;padding:10px 12px 6px 76px;background:url('./assets/home-ui/wood-top.png') center/cover;color:#fff5dd;z-index:50}
+.building-interior-heading::before{content:'';position:absolute;top:-10px;left:0;right:0;height:32px;background:url('./assets/home-ui/wood-strip.png') center bottom/cover;pointer-events:none}
+.building-interior-heading strong{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:24px/1.2 var(--home-ui-font),sans-serif;text-shadow:0 2px 2px #211710}
+.building-interior-heading .building-interior-back{position:absolute;left:8px;top:14px;width:62px;height:62px;padding:0;border:0;background:url('./assets/home-ui/back.png') center/contain no-repeat;box-shadow:none}
+.building-interior-heading select{max-width:76px;min-height:32px;padding:3px;font-size:12px;background:#543b2d;color:#fff5dd;border:1px solid #b09670}
+.building-interior-side{position:absolute;right:8px;top:87px;z-index:50;display:grid;gap:7px;width:94px}
+.building-interior-side button{display:grid;grid-template-columns:16px 1fr 16px;height:34px;padding:0;border:0;border-radius:0;box-shadow:none;background:none;color:#fff5dd;font:12px/1 var(--home-ui-font),sans-serif}
+.building-interior-side button::before,.building-interior-side button::after{content:'';background:url('./assets/home-ui/pill-left.png') right center/auto 100% no-repeat}
+.building-interior-side button::after{background-image:url('./assets/home-ui/pill-right.png');background-position:left center}
+.building-interior-side span{display:grid;place-items:center;margin:0 -1px;background:url('./assets/home-ui/pill-middle.png') center/100% 100%;text-shadow:0 1px 1px #211710}
+.building-interior-dialog .building-interior-home{position:relative!important;inset:auto!important;flex:1;min-height:0;width:100%!important;height:auto!important;margin:0;padding:0;border:0;border-radius:0;overflow:hidden}
 .building-interior-dialog .home-canvas-viewport{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
 .building-interior-dialog .rooms>.room{position:absolute;left:calc(var(--mobile-room-x) + 4px);top:calc(var(--mobile-room-y) + 4px);width:calc(var(--mobile-room-w) - 8px);height:calc(var(--mobile-room-h) - 8px);box-sizing:border-box;min-width:0;min-height:0;margin:0;padding:7px;background-position:center,var(--room-floor-position,center top);background-size:100% 100%,var(--room-floor-size,250px);background-repeat:no-repeat,var(--room-floor-repeat,repeat)}
-.building-interior-status{margin:0;padding:4px 8px;min-height:0;font-size:13px;color:#842c16}
+.building-interior-status{margin:0;padding:0 8px;min-height:0;font-size:13px;color:#fff}
+.building-interior-panel{position:absolute;z-index:100;inset:90px 10px 16px;padding:18px;overflow:auto;background:#fff7e9;border:3px solid #674a34;border-radius:20px;color:#30251e}
+.building-interior-panel[hidden]{display:none}
+.building-interior-panel h2{margin:0 36px 20px 0;font-size:23px}
+.building-interior-panel>button:not(.building-panel-close),.building-interior-panel label{display:block;margin:12px 0;min-height:44px}
+.building-interior-panel .building-panel-close{position:absolute;right:12px;top:10px;width:36px;height:36px;padding:0}
+.building-staff-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.building-staff-grid button{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;padding:8px 4px;background:#f7efdf;color:#30251e;border:1px solid #cab99a;border-radius:12px}
+.building-staff-grid img{width:64px;height:64px;object-fit:contain}
+.building-staff-grid :is(b,small){max-width:100%;overflow-wrap:anywhere;font-size:12px}

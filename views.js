@@ -891,7 +891,7 @@ function avatar(c,cls=""){
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${imageEsc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   return `<img class="sprite ${cls}" src="./assets/home-ui/profile-placeholder.png" alt="${esc(c.name||'')}">`;
 }
-function profileAvatar(c,cls=""){
+export function profileAvatar(c,cls=""){
   const fallback=esc((c.name||"새").slice(0,1));
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${imageEsc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   if(c.icon)return `<img class="sprite ${cls}" src="${imageEsc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
@@ -2380,7 +2380,7 @@ export function homeCard(id,chars){
   // home's prepare callback. Hydrate furniture positions in that world too.
   if(state.sharedContext&&!edit){
     const contexts=Object.fromEntries(inside.map(c=>[c.id,{scene:sceneFor(c),roomKey:sceneFor(c)?.room,animateMovement:false}]));
-    advanceHomeLifeSimulation(id,inside.map(c=>c.id),contexts,renderSceneDate.getTime(),false);
+    advanceHomeLifeSimulation(id,inside.map(c=>c.id),contexts,(renderSceneDate||new Date()).getTime(),false);
   }
   const lifeAgents=edit?{}:{...(h.lifeSimulation?.agents||{})};
   const usesAnchoredFurniture=c=>{const scene=sceneFor(c);return !edit&&!scene?.meetingJourney&&(['소파','의자'].includes(scene?.meetingFurniture?.item)||isLayeredBed(scene?.meetingFurniture))&&(!furniturePatternForScene(scene)||furniturePatternForScene(scene).test(scene.meetingFurniture.item))};
@@ -2388,6 +2388,16 @@ export function homeCard(id,chars){
 
   // Do not render an old bed reservation as the pose for a new needs action.
   for(const c of inside){const a=lifeAgents[c.id],scene=sceneFor(c),pattern=furniturePatternForScene(scene);if(a&&isLayeredBed(a)&&pattern&&!pattern.test(a.item))lifeAgents[c.id]={...a,furnitureId:'',item:'',actionKind:scene.actionKind,phase:'using',roomKey:scene.room,x:50,y:75};}
+  if(h.placeId&&!edit){
+    const groups=new Map();
+    for(const c of inside){const scene=sceneFor(c);if(!scene?.officeTaskId)continue;
+      const key=Object.keys(h.rooms).find(k=>h.rooms[k].type===(scene.officeRoom==='meeting'?'dining':'study'))||Object.keys(h.rooms)[0];
+      if(!groups.has(key))groups.set(key,[]);groups.get(key).push(c);
+    }
+    for(const [key,people] of groups){const chairs=(h.rooms[key].furniturePlacements||[]).filter(p=>p.item==='의자');
+      people.sort((a,b)=>a.id.localeCompare(b.id)).forEach((c,i)=>{const chair=chairs[i];lifeAgents[c.id]={phase:'using',roomKey:key,furnitureId:chair?.id||'',item:chair?.item||'',x:chair?.x??(20+i%3*28),y:chair?.y??(52+Math.floor(i/3)*14)};});
+    }
+  }
   const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:h.placeId?(h.rooms?.[sceneFor(character)?.room]?sceneFor(character).room:Object.keys(h.rooms)[0]):sceneFor(character)?.room;
   const roomKeys=Object.keys(h.rooms||{}).sort((a,b)=>(Number(h.rooms[a]?.order)||0)-(Number(h.rooms[b]?.order)||0));
   const floorCount=Math.max(1,Math.min(5,Number(h.floorCount)||1)),activeFloor=Math.max(1,Math.min(floorCount,Number(h.activeFloor)||1));

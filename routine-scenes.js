@@ -1,3 +1,4 @@
+import {officeDuty} from './office-work.js';
 // Pure projection: schedule progress needs no extra database writes or random calls.
 const hash=s=>[...s].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
 const text=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -10,6 +11,10 @@ export function routineScene(scene,character,world,now=Date.now(),language='ko')
  const seed=hash(`${scene.routineId}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`),kind=scene.routineType||routine?.type||'',name=scene.routineTitle||routine?.title||scene.title||'';
  const people=(scene.participantOrder||[character.id]).map(id=>world.characters?.[id]).filter(Boolean),company=people.length>1;
  let title,desc;
+ if(/^(업무|work)$/.test(kind)){
+  const duty=officeDuty(character,date,start,end,language,scene.careerEmploymentId);
+  if(duty)return {...scene,...duty,routinePhase:Math.floor(minute/45),routineTitle:name};
+ }
  if(/병원|진료|검사|치료|hospital|medical/i.test(kind)){
   const variants=[['접수하고 진료 순서를 기다리는 중','예약과 접수 내용을 확인하고 안내받은 자리에서 차례를 기다려요.','Checking in for the appointment','They check the appointment details and wait to be called.','受付をして順番を待っているところ','予約と受付内容を確認し、案内された場所で順番を待っています。'],['의사와 상담하는 중','불편했던 점과 최근 상태를 차근차근 이야기하고 설명을 듣고 있어요.','Talking with the doctor','They explain recent symptoms and listen to the doctor.','医師と相談しているところ','最近の状態や気になることを順に伝え、説明を聞いています。'],seed%2?['안내받은 검사를 진행하는 중','검사 순서에 맞춰 준비하고 직원의 안내를 따라요.','Undergoing the scheduled tests','They prepare for each test and follow the staff’s guidance.','案内された検査を受けているところ','検査の順番に合わせて準備し、職員の案内に従っています。']:['진료 후 설명을 듣는 중','생활에서 주의할 점을 확인하고 궁금했던 것을 물어봐요.','Reviewing the care instructions','They check the advice for daily life and ask questions.','診察後の説明を聞いているところ','日常で気をつける点を確認し、疑問を質問しています。'],['수납하고 다음 안내를 확인하는 중','수납을 마치고 다음 예약과 안내 사항을 챙겨요.','Checking out after the appointment','They finish payment and check the next appointment and instructions.','会計と次の案内を確認しているところ','会計を済ませ、次の予約と案内を確認しています。']];
   const v=variants[phase];title=text(language,v[0],v[2],v[4]);desc=text(language,v[1],v[3],v[5]);
@@ -28,5 +33,6 @@ export function nextRoutinePhaseAt(scene,now=Date.now()){
  if(!scene?.routineId||scene.routineReturned||scene.returningHome)return Infinity;
  const date=new Date(now),day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),start=Number(scene.routineStartMinute),end=Number(scene.routineEndMinute);
  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return Infinity;
+ if(scene.officeTaskId)return [day+(start+10)*60000,(Math.floor(now/2700000)+1)*2700000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
  return [.15,.48,.85,1].map(p=>day+Math.ceil(start+(end-start)*p)*60000).find(at=>at>now)||Infinity;
 }

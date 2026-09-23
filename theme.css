@@ -163,7 +163,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(
 }
 
 html[data-color-mode][data-visual-theme] body>header,
-html[data-color-mode][data-visual-theme] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
+html[data-color-mode][data-visual-theme] header:not(.building-interior-heading):not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header),
 html[data-color-mode][data-visual-theme].native-app .native-sub-header{
   border-color:var(--theme-border)!important;
   background:linear-gradient(135deg,var(--theme-surface-strong),var(--panel))!important;
@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-money-dialog *):not(.home-town-picker *):not(.dictionary-shell *):not(.character-book-v8 *):not(.town-building-screen *):not(.mail-center *):not(.mail-letter *),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.meeting-walker):not(.meeting-pair *):not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.town-native-community):not(.town-native-town-pill):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item):not(.home-exterior-choice){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.building-interior-dialog *):not(.meeting-walker):not(.meeting-pair *):not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.town-native-community):not(.town-native-town-pill):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item):not(.home-exterior-choice){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -270,14 +270,14 @@ html[data-color-mode][data-visual-theme="baroque"] body{
 }
 
 html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="light"][data-visual-theme="baroque"][data-active-tab] header:not(.building-interior-heading):not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;
   background:linear-gradient(135deg,#fff9e8,#fee39f 58%,#efbb55)!important;
   color:#441004!important;
   box-shadow:0 10px 32px #79380b24,inset 0 -1px #ad6d1566!important;
 }
 html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] body>header,
-html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
+html[data-color-mode="dark"][data-visual-theme="baroque"][data-active-tab] header:not(.building-interior-heading):not(.character-money-dialog>header):not(.plaza-games-dialog header):not(.direct-command-dialog>header){
   border-color:#ad6d15!important;
   background:linear-gradient(135deg,#180b03,#2a1306 58%,#79380b)!important;
   color:#fff2cf!important;
