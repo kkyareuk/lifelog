@@ -1,0 +1,9 @@
+<ko-KR>
+가구에 내 사진을 넣고 다른 방과 마을에서 다시 사용할 수 있어요. 멀티에서도 사진을 함께 볼 수 있으며, 사진을 넣은 침대는 한 장으로 표시됩니다. 첫 주민 만들기부터 행동·질문까지 이어지는 튜토리얼과 기능별 도움말을 개선했습니다.
+</ko-KR>
+<en-US>
+Add your own furniture photos and reuse them in other rooms and villages. Photos are shared in multiplayer, and photo beds use a single flat image. Improved the first-resident tutorial through actions and questions, plus contextual help.
+</en-US>
+<ja-JP>
+家具に自分の写真を設定し、別の部屋や村でも再利用できます。マルチでも写真を共有し、写真付きベッドは1枚の画像で表示します。最初の住人作成から行動・質問までのチュートリアルと機能別ヘルプを改善しました。
+</ja-JP>
