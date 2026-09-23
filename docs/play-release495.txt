@@ -1,0 +1,9 @@
+<ko-KR>
+캐릭터 창과 집 화면의 반복 계산을 줄여 반응 속도를 개선했어요. 간편설정에서 직업·재산·소비 유형을 바로 선택하고, 직업을 바꿔도 무직으로 보이던 문제를 수정했어요. 성인 연인·약혼·부부는 친밀한 접촉을 기본 허용하며 직접 정한 제한은 유지해요. 처음 시작할 때 기기 언어에 맞춰 한국어·영어·일본어로 시작해요. 기존 언어 설정은 유지돼요.
+</ko-KR>
+<en-US>
+Reduced repeated calculations to improve character panels and home responsiveness. Quick settings now offer direct career, wealth and spending dropdowns, with correct job labels. Adult romantic partners, fiancés and spouses allow intimate contact by default; custom limits stay unchanged. New players start in their device’s supported language (Korean, English or Japanese). Existing language settings are preserved.
+</en-US>
+<ja-JP>
+キャラクター画面と家の繰り返し計算を減らし、反応を改善しました。簡単設定で職業・資産・消費タイプを直接選べるようにし、転職後も無職と表示される問題を修正しました。成人の恋人・婚約者・夫婦は親密な接触を初期設定で許可し、手動の制限は維持します。初回は端末の対応言語（韓国語・英語・日本語）で開始します。既存の言語設定は変わりません。
+</ja-JP>
