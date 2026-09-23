@@ -1,6 +1,6 @@
 import {syncActivityProgress} from './activity-progress.js';
 import './prepared-food-ui.js';
-import {hasMedievalDlc,TOWN_BACKGROUNDS} from './town-background.js';
+import {bindTownBackgroundPicker,hasMedievalDlc,TOWN_BACKGROUNDS} from './town-background.js';
 import {syncCookingUI} from './cooking-ui.js';
 import {TOWN_ERAS,TOWN_CULTURES} from './town-setting.js';
 import {bindCourtWorld,isCourtWorld} from './court-world-ui.js';
@@ -125,7 +125,7 @@ function scheduleMeetingRefresh(){
  const day=new Date(now),key=`${day.getFullYear()}-${day.getMonth()+1}-${day.getDate()}`;
  for(const c of Object.values(world.characters||{})){const entries=c.sharedScene?[c.sharedScene]:(c.days?.[key]?.entries||[]);for(const e of entries){if(e.recoveryEndsAt>now)ends.push(e.recoveryEndsAt);const at=nextRoutinePhaseAt(e,now);if(Number.isFinite(at))ends.push(at)}}
  if(!ends.length)return;
- const refresh=async()=>{if(document.querySelector('dialog[open],.routine-sheet-backdrop')||state.homeEditMode||isDeferredMobileTextControl(document.activeElement)){meetingRefreshTimer=setTimeout(refresh,2000);return}if(s)await window.DrawerVillageGroups.advanceLife(true).catch(()=>{});render()};
+ const refresh=async()=>{if(document.querySelector('dialog[open],.routine-sheet-backdrop,[data-world-background-setting]')||state.homeEditMode||isDeferredMobileTextControl(document.activeElement)){meetingRefreshTimer=setTimeout(refresh,2000);return}if(s)await window.DrawerVillageGroups.advanceLife(true).catch(()=>{});render()};
  meetingRefreshTimer=setTimeout(refresh,Math.max(50,Math.min(...ends)-now+30));
 }
 document.addEventListener("contextmenu",event=>{
@@ -559,7 +559,7 @@ function openBuildingShapeDialog(targetId,targetKind="place",sharedSave){
     }catch(error){console.error('Building image save failed',error);showToast(({ko:'사진을 저장하지 못했어요. 다시 시도해 주세요.',en:'Could not save the image. Please try again.',ja:'画像を保存できませんでした。もう一度お試しください。'}[state.uiLanguage]));}finally{event.target.disabled=false;event.target.value='';}
   };
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
-    if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
+    if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast(({ko:'중세 건물 모양은 아르켄발트 DLC에 포함돼요',en:'Medieval buildings are included in the Arkenwald DLC.',ja:'中世の建物はアーケンヴァルトDLCに含まれます。'})[state.uiLanguage]||'중세 건물 모양은 아르켄발트 DLC에 포함돼요');return}
     const iconPreset=button.dataset.buildingShape;
     if(sharedSave){sharedSave({iconPreset,[isHome?"exteriorImage":"image"]:""});dialog.close();return}
     if(isHome)updateHome(targetId,{iconPreset,exteriorImage:""},true);
@@ -1451,7 +1451,7 @@ function resumeAfterCommandDismissal(){
 }
 window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-discovery-dismissed',resumeAfterCommandDismissal);
-window.addEventListener('drawer-money-updated',()=>render());
+window.addEventListener('drawer-money-updated',()=>{if(!document.querySelector('[data-world-background-setting]'))render()});
 window.addEventListener('drawer-open-career-page',event=>{
  const {id,groupId}=event.detail||{},s=activeShared();if((s?.activeGroupId||'')!==groupId)return;
  flushMobileCharacterDraft();mobileCharacterEditorPane='';mobileCharacterDraftDirty=false;
@@ -1522,6 +1522,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
   // 복원하지 않아야 상단 메뉴와 책 전체가 함께 위로 튕기지 않는다.
   const fullCharacterBookActive=state.activeTab==="character"&&state.characterSettingsView==="full";
   const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender&&!fullCharacterBookActive&&!(state.activeTab==="observe"&&document.documentElement.classList.contains("native-app"));
+  const townInfo=document.querySelector("[data-town-information-id]"),townInfoPosition=!resetScrollAfterRender&&townInfo?{id:townInfo.dataset.townInformationId,top:townInfo.scrollTop}:null;
   const previousSettings=document.querySelector("[data-settings-scroll]");
   const settingsPosition=!resetScrollAfterRender&&previousSettings?{pane:previousSettings.dataset.settingsScroll,top:previousSettings.scrollTop,left:previousSettings.scrollLeft}:null;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
@@ -1589,6 +1590,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
     }
     bind();
     bindSpeechStylePickers(document.querySelector("#app"),active(),state.uiLanguage);
+    bindTownBackgroundPicker(document.querySelector("#app"),state.uiLanguage);
     document.querySelectorAll('textarea,input:not([type]),input[type=text]').forEach(el=>{if(el.maxLength<0||el.maxLength>500)el.maxLength=500});
     applyTheme();
     afterScreenRender(syncActivityProgress);
@@ -1618,6 +1620,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
     }
     const nextGroup=document.querySelector('[data-management-pane]');
     if(groupContext&&nextGroup?.dataset.groupId===groupContext.id&&nextGroup?.dataset.managementPane===groupContext.pane){const scroller=nextGroup.querySelector('.multiplayer-detail-scroll');if(scroller)scroller.scrollTop=groupContext.top;for(const f of groupContext.fields)if(f.name){const el=[...nextGroup.querySelectorAll('[name]')].find(e=>e.name===f.name&&e.closest('[data-rank-edit]')?.dataset.rankEdit===f.rankForm);if(el){el.value=f.value;el.checked=f.checked;el.dataset.groupDirty='1'}}}
+    if(townInfoPosition){const panel=document.querySelector("[data-town-information-id]");if(panel?.dataset.townInformationId===townInfoPosition.id)panel.scrollTop=townInfoPosition.top}
     if(settingsPosition){
       const scroller=document.querySelector("[data-settings-scroll]");
       if(scroller?.dataset.settingsScroll===settingsPosition.pane){scroller.scrollTop=settingsPosition.top;scroller.scrollLeft=settingsPosition.left}
@@ -5751,7 +5754,7 @@ window.addEventListener("drawer-village-cloud-loaded",()=>{
 });
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
-const scheduleGroupRender=frameTask(()=>{if(document.querySelector(".home.is-editing,.selection-popup[open]"))return;if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(["groups","town","observe","home","relationship","mailbox","routine","character","catalog"].includes(state.activeTab))render()});
+const scheduleGroupRender=frameTask(()=>{if(document.querySelector(".home.is-editing,.selection-popup[open]"))return;if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(document.querySelector("[data-world-background-setting]"))return;if(["groups","town","observe","home","relationship","mailbox","routine","character","catalog"].includes(state.activeTab))render()});
 window.addEventListener("drawer-village-groups",scheduleGroupRender);
 window.addEventListener("pagehide",()=>scheduleGroupRender.cancel());
 window.addEventListener("parallel-city-cloud-loaded",render);

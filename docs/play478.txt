@@ -1,0 +1,24 @@
+<ko-KR>
+• 집 설정에서 저장한 이름이 마을 편집 취소로 되돌아가던 문제를 고쳤어요.
+• 직업별 기본 업무·근무 일정을 보여 주고, 직업 화면에서 요일과 출퇴근 시간을 직접 정할 수 있어요.
+• 마을 설정의 스크롤 유지와 배경 선택창 설명을 개선했어요.
+• 식사 중 자리 변경과 할 일을 마친 뒤 순간이동하는 문제를 개선했어요.
+• 식사 로그에 식습관과 맛 취향을 반영하고 활동 진행 막대를 정리했어요.
+• 서류가방 건물 그림과 야간 조명을 적용했어요.
+</ko-KR>
+<en-US>
+• Home names saved in house settings now survive canceling town edits.
+• View career duties and default shifts, and customize workdays and hours from the career screen.
+• Improved town settings scroll stability and setting descriptions.
+• Fixed changing seats during meals and improved movement after assigned tasks.
+• Meal logs reflect eating habits and tastes. Activity progress bars are clearer.
+• Updated the suitcase building artwork and night lighting.
+</en-US>
+<ja-JP>
+• 家の設定で保存した名前が村の編集取消で戻る問題を修正しました。
+• 職業ごとの業務と標準勤務予定を表示。職業画面で勤務曜日・出退勤時刻を設定できます。
+• 村の設定のスクロール保持と背景選択時の説明を改善しました。
+• 食事中の席移動と、指示した行動の終了後に瞬間移動する問題を改善しました。
+• 食事ログに食習慣や味の好みを反映。行動の進捗バーも調整しました。
+• スーツケース型の建物の絵と夜間照明を更新しました。
+</ja-JP>

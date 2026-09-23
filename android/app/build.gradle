@@ -15,8 +15,8 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         buildConfigField "boolean", "WEBVIEW_INSPECTION", "false"
-        versionCode 476
-        versionName "1.0.424"
+        versionCode 478
+        versionName "1.0.426"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

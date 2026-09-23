@@ -170,7 +170,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   eligible.forEach((characterId,index)=>{
     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
-    const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
+    const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(scene.needKey&&scene.recoveryStartedAt?`need:${scene.needKey}:${scene.recoveryStartedAt}:${roomKey}`:scene.manualDirective&&scene.economyActivityId?`manual:${scene.economyActivityId}:${roomKey}`:context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
     const pinned=placements.find(item=>item.roomKey===roomKey&&item.id===(scene.furniture?.id||scene.meetingFurniture?.id)&&(!pattern||pattern.test(item.item)));
     let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&pattern&&pattern.test(item.item));
     // Select actual seats for dining and screen viewing, not the tabletop/TV.
@@ -216,7 +216,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
       // Opening a home hydrates the current scene at its destination. Walking is
       // reserved for a scene change observed while this home remains on screen.
-      const shouldWalk=Boolean(target&&old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
+      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
       current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey:destination.roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }

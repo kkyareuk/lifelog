@@ -1,0 +1,240 @@
+--- a/runtime\home-simulation.js
++++ b/runtime\home-simulation.js
+@@ -170,7 +170,7 @@
+   eligible.forEach((characterId,index)=>{
+     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
+     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
+-    const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
++    const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(scene.needKey&&scene.recoveryStartedAt?`need:${scene.needKey}:${scene.recoveryStartedAt}:${roomKey}`:scene.manualDirective&&scene.economyActivityId?`manual:${scene.economyActivityId}:${roomKey}`:context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
+     const pinned=placements.find(item=>item.roomKey===roomKey&&item.id===(scene.furniture?.id||scene.meetingFurniture?.id)&&(!pattern||pattern.test(item.item)));
+     let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&pattern&&pattern.test(item.item));
+     // Select actual seats for dining and screen viewing, not the tabletop/TV.
+@@ -213,7 +213,7 @@
+       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
+       // Opening a home hydrates the current scene at its destination. Walking is
+       // reserved for a scene change observed while this home remains on screen.
+-      const shouldWalk=Boolean(target&&old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
++      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
+       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
+       current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey:destination.roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+     }
+--- a/runtime\meeting-journey.js
++++ b/runtime\meeting-journey.js
+@@ -3,7 +3,7 @@
+ function location(world,c,scene={},position){
+  const homeId=scene.home?(scene.visitHomeId||c.homeId):'',home=world.homes?.[homeId],room=scene.room&&home?.rooms?.[scene.room]?scene.room:Object.keys(home?.rooms||{})[0]||'living';
+  const place=world.world?.places?.find(p=>p.id===scene.placeId),agent=home?.lifeSimulation?.agents?.[c.id];
+- const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:scene.goal?.point|| (agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60)),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};
++ const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:scene.meetingLocation?.point||scene.goal?.point|| (agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60)),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};
+  if(position?.homeId===homeId&&position.room===room&&Number.isFinite(position.point?.x)&&Number.isFinite(position.point?.y))value.point=point(position.point.x,position.point.y);
+  if(!home&&!place&&position?.townId===value.townId&&Number.isFinite(position.map?.x)&&Number.isFinite(position.map?.y))value.map=point(position.map.x,position.map.y);
+  return value;
+@@ -60,7 +60,7 @@
+   const old=entries.get(c.id),home=s=>s?.home?(s.visitHomeId||c.homeId):'';
+   let journey=old?.journey;
+   if(scene.manualDirective||scene.meetingJourney||Math.abs(Date.now()-now)>120000){entries.set(c.id,{scene,seen:now});return scene}
+-  if(old&&old.scene!==scene&&home(old.scene)!==home(scene)&&now-old.seen<120000){journey=planMeetingJourney(world,c,c,now,old.scene,scene)}
++  if(old&&old.scene!==scene&&(home(old.scene)!==home(scene)||old.scene.manualDirective&&!scene.manualDirective)&&now-old.seen<120000){journey=planMeetingJourney(world,c,c,now,old.scene,scene)}
+   if(journey&&now>=journey.arrivesAt)journey=null;
+   entries.set(c.id,{scene,seen:now,journey});
+   if(entries.size>512)entries.delete(entries.keys().next().value);
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,3 +1,5 @@
++import {careerWeeklyRoutines} from './career-work.js';
++import {mealObservation} from './meal-observation.js';
+ import {automaticMeal} from './automatic-cooking.js';
+ import {needDuration} from './need-pacing.js';
+ import {currentDuties,employmentsFor,todayCareerDuty} from './salary.js';
+@@ -251,7 +253,7 @@
+     return [
+       ...(careRoutineFor(owner,date,state)?[{item:careRoutineFor(owner,date,state),ownerId,kind:"weekly"}]:[]),
+       ...(state.monthlyRoutines?.[ownerId]||[]).filter(item=>item.date===scheduleDateKey(date)).map(item=>({item,ownerId,kind:"monthly"})),
+-      ...(state.routines?.[ownerId]||[]).filter(item=>Number(item.day)===date.getDay()).map(item=>({item,ownerId,kind:"weekly"}))
++      ...[...(state.routines?.[ownerId]||[]).filter(item=>!['업무','work'].includes(item.type)),...careerWeeklyRoutines(state,owner)].filter(item=>Number(item.day)===date.getDay()).map(item=>({item,ownerId,kind:"weekly"}))
+     ];
+   });
+   return sources.filter(({item,ownerId})=>ownerId===c.id||(item.withIds||[]).includes(c.id)).map(({item,ownerId,kind})=>{
+@@ -2985,7 +2987,7 @@
+   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}:${state.preventInterTownMovement}:${state.towns.map(t=>[t.id,t.era,t.culture].join(':')).join('|')}`;
+   const cached=signatureCache.get(c);
+   if(cached?.character===c&&cached.revision===revision)return cached.value;
+-  const value=JSON.stringify({preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:employmentsFor(c).map(e=>[e.jobId,e.rankId,e.department,e.specialty]),economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
++  const value=JSON.stringify({careerSchedules:c.careerSchedules,careerEmployments:c.wallet?.employments,preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:employmentsFor(c).map(e=>[e.jobId,e.rankId,e.department,e.specialty]),economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+   signatureCache.set(c,{character:c,revision,value});
+   return value;
+ }
+@@ -4858,10 +4860,12 @@
+     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
+       const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime(),recoveryEndsAt:(c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime())+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+ 
++      if(need==='hunger'){const eating=mealObservation(c,moment.recoveryStartedAt,state.uiLanguage);Object.assign(moment,eating,{baseTitle:eating.title,baseDesc:eating.desc})}
+       if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
+       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
+     }
+   }
++  if(!rawCurrent.manualDirective&&/^(식사하는 중|Eating a meal|食事中)$/.test(rawCurrent.title||'')){const eating=mealObservation(c,rawCurrent.minute,state.uiLanguage);rawCurrent={...rawCurrent,...eating,baseTitle:eating.title,baseDesc:eating.desc}}
+   if(rawCurrent.home&&rawCurrent.withId&&!rawCurrent.groupInteraction&&!rawCurrent.manualDirective){
+     const other=state.characters[rawCurrent.withId];
+     const aligned=resolveHomeEncounter(c,rawCurrent,other?baseEventFor(other,date):null,date);
+--- a/runtime\state.js
++++ b/runtime\state.js
+@@ -1255,7 +1255,7 @@
+ }
+ const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","appearanceCareLevel","accessoryUse","accessories","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
+ SIMULATION_FIELDS.add("needSettings");SIMULATION_FIELDS.add("diligence");SIMULATION_FIELDS.add("autonomousActivityBlocks");
+-const touchCharacterTimelines=ids=>{
++export const touchCharacterTimelines=ids=>{
+   const stamp=Date.now();
+   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
+ };
+--- a/runtime\town-background.js
++++ b/runtime\town-background.js
+@@ -1,8 +1,8 @@
+ // Arkenwald is a fictional blend of fifteenth-century France and England.
+ // Its setting controls ambience and everyday tools, never a food blacklist.
+ export const TOWN_BACKGROUNDS={
+- drawer:{name:['서랍마을','Drawer Village','引き出し村'],description:['시대와 문화가 자유롭게 어우러지는 마을이에요.','A village where eras and cultures freely mingle.','時代と文化が自由に混ざり合う村です。']},
+- arkenwald:{dlc:'medieval',name:['아르켄발트 (Arkenwald)','Arkenwald','アーケンヴァルト (Arkenwald)'],description:['1400년대 프랑스와 잉글랜드의 생활을 바탕으로 한 가상 국가예요. 시대에 맞는 도구·생활과 선술집 배경음을 사용해요. 음식 선택은 제한하지 않아요.','A fictional realm inspired by fifteenth-century France and England, with period everyday tools and tavern ambience. Food choices remain unrestricted.','1400年代のフランスとイングランドの暮らしを基にした架空の国です。時代に合った道具・生活と酒場の環境音を使います。料理の選択は制限しません。']}
++ drawer:{name:['서랍마을','Drawer Village','引き出し村'],description:['자유로운 상상으로 채우는 나만의 마을.','A village shaped by your imagination.','自由な想像でつくる、自分だけの村。']},
++ arkenwald:{dlc:'medieval',priceKRW:7900,name:['아르켄발트','Arkenwald','アーケンヴァルト'],description:['성벽과 장터, 촛불이 어우러진 중세의 일상.','Medieval life among castle walls, markets and candlelight.','城壁と市場、ろうそくの灯りが彩る中世の暮らし。']}
+ };
+ export const townBackground=town=>town?.backgroundSetting==='arkenwald'?'arkenwald':'drawer';
+ export const backgroundCopy=(key,field,language='ko')=>TOWN_BACKGROUNDS[key][field][{ko:0,en:1,ja:2}[language]||0];
+@@ -17,5 +17,14 @@
+ export const hasMedievalDlc=()=>globalThis.window?.ParallelCityAuth?.getInfo?.()?.entitlements?.dlcPacks?.includes('medieval')===true;
+ export function townBackgroundFields(town,language='ko'){
+  const selected=townBackground(town),title=({ko:'마을 배경',en:'Village setting',ja:'村の背景設定'})[language]||'마을 배경';
+- return `<fieldset class="town-setting-fields"><legend>${title}</legend><label>${title}<select data-world-background-setting>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${selected===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<small><b>${backgroundCopy(key,'name',language)}</b> — ${backgroundCopy(key,'description',language)}</small>`).join('')}<label>${({ko:'마을 배경음',en:'Village music',ja:'村のBGM'})[language]||'마을 배경음'}<select data-world-background-music>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${townMusic(town)===key?'selected':''}>${backgroundCopy(key,'name',language)}${key==='arkenwald'?' · DLC':''}</option>`).join('')}</select></label><small>${({ko:'배경 설정과 별개로 음악을 선택할 수 있어요. 아르켄발트 음악은 집·마을·기본 화면에 따라 달라져요.',en:'Choose music independently of the setting. Arkenwald has different music for homes, villages and other screens.',ja:'背景設定とは別に音楽を選べます。アーケンヴァルトでは家・村・その他の画面で曲が変わります。'})[language]}</small></fieldset>`;
++ return `<label><b>${title}</b><select data-world-background-setting>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${selected===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label><label><b>${({ko:'마을 배경음',en:'Village music',ja:'村のBGM'})[language]||'마을 배경음'}</b><select data-world-background-music>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${townMusic(town)===key?'selected':''}>${backgroundCopy(key,'name',language)}${key==='arkenwald'?' · DLC':''}</option>`).join('')}</select></label>`;
+ }
++export function bindTownBackgroundPicker(root,language='ko'){
++ for(const select of root.querySelectorAll('[data-world-background-setting]')){
++  if(select.dataset.backgroundPicker)continue;select.dataset.backgroundPicker='1';
++  const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-label',({ko:'마을 배경 선택',en:'Choose village setting',ja:'村の背景を選択'})[language]);
++  const update=()=>trigger.textContent=(select.selectedOptions[0]?.textContent||'')+' ▾';update();select.hidden=true;select.style.setProperty('display','none','important');select.after(trigger);
++  trigger.onclick=()=>{const d=document.createElement('dialog');d.className='speech-picker-dialog';const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');title.textContent=({ko:'마을 배경',en:'Village setting',ja:'村の背景設定'})[language];close.textContent='×';close.type='button';close.onclick=()=>d.close();header.append(title,close);d.append(header);const list=document.createElement('div');list.className='speech-picker-options';
++   for(const key of Object.keys(TOWN_BACKGROUNDS)){const button=document.createElement('button'),name=document.createElement('b'),desc=document.createElement('small');button.type='button';button.setAttribute('aria-pressed',String(select.value===key));name.textContent=backgroundCopy(key,'name',language)+(key==='arkenwald'?' · DLC':'');desc.textContent=backgroundCopy(key,'description',language);button.append(name,desc);button.onclick=()=>{select.value=key;update();d.close();select.dispatchEvent(new Event('change',{bubbles:true}))};list.append(button)}d.append(list);d.addEventListener('close',()=>d.remove(),{once:true});document.body.append(d);d.showModal();};
++ }
++}
+--- a/runtime\town-edit-draft.js
++++ b/runtime\town-edit-draft.js
+@@ -3,6 +3,14 @@
+ const key=s=>`${globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid||'guest'}:${s.activeGroupId}:${s.selectedTownId||s.group?.towns?.[0]?.id}`;
+ export const townEditDraft=s=>drafts.get(key(s));
+ export const discardTownEdit=s=>!townEditDraft(s)?.saving&&drafts.delete(key(s));
++// A committed home form edit is independent of the town placement draft.
++export function acknowledgeHomeSave(s,id,patch,previousRevision,revision){
++ const d=townEditDraft(s);if(!d)return;
++ const identity='saveHomePlacement:'+id,operation=d.operations.get(identity);
++ if(operation){for(const field of Object.keys(patch))delete operation.patch?.[field];if(!Object.keys(operation.patch||{}).length&&!operation.create&&!operation.remove)d.operations.delete(identity)}
++ if(d.revision===previousRevision)d.revision=revision;
++ if(!d.operations.size)drafts.delete(key(s));
++}
+ export function stageTownEdit(s,action,input){
+  let draft=townEditDraft(s);if(draft?.saving)throw Error('edit-saving');
+  if(!draft){draft={revision:Number(s.group.buildingRevision)||0,town:structuredClone(s.group.towns.find(t=>t.id===(s.selectedTownId||s.group.towns[0].id))),homes:structuredClone(s.homes||[]),operations:new Map(),created:new Set()};drafts.set(key(s),draft)}
+--- /dev/null
++++ b/runtime/meal-observation.js
+@@ -0,0 +1,30 @@
++// Describe observed eating habits without inventing a dish or its ingredients.
++const habits=[
++ [/천천히/,['한입씩 오래 씹는 중','한입을 오래 씹으며 식감이 달라지는 것을 느끼고 있어요.','Savoring each bite','Chewing each bite slowly and noticing how its texture changes.','一口ずつ味わっているところ','一口ずつゆっくり噛み、食感の変化を感じています。']],
++ [/빠르게/,['부지런히 식사하는 중','한입을 삼키면 곧바로 다음 한입을 준비하며 빠르게 먹고 있어요.','Eating briskly','Preparing the next bite as soon as the last is swallowed.','手早く食べているところ','一口飲み込むとすぐ次の一口を用意し、手早く食べています。']],
++ [/맨 마지막/,['좋아하는 한입을 남겨 두는 중','좋아하는 부분은 마지막에 먹으려고 접시 한쪽에 남겨 두고 있어요.','Saving the best bite','Keeping the favorite part to one side to enjoy at the end.','好物を最後に残しているところ','好きな部分を最後に楽しもうと、皿の端に残しています。']],
++ [/맨 먼저/,['좋아하는 것부터 먹는 중','마음에 드는 부분부터 골라 첫입을 즐기고 있어요.','Starting with a favorite','Picking out the favorite part to enjoy first.','好物から食べているところ','好きな部分から選んで、最初の一口を楽しんでいます。']],
++ [/섞지 않고/,['음식을 따로 맛보는 중','음식이 서로 섞이지 않게 나누어 각각의 맛을 보고 있어요.','Tasting foods separately','Keeping the foods apart to taste each one on its own.','別々に味わっているところ','料理が混ざらないように分け、それぞれの味を楽しんでいます。']],
++ [/번갈아/,['반찬을 번갈아 먹는 중','반찬을 한입씩 번갈아 먹으며 입안의 맛을 바꾸고 있어요.','Alternating bites','Alternating between side dishes to change the flavor of each bite.','おかずを交互に食べているところ','おかずを一口ずつ交互に食べ、口の中の味を変えています。']],
++ [/소스|후추/,['간을 맞추며 먹는 중','먼저 한입 맛을 본 뒤 소스나 후추를 조금 더하며 간을 맞추고 있어요.','Adjusting the seasoning','Tasting a bite before adding a little sauce or pepper.','味を調えながら食べているところ','まず一口味を確かめ、ソースや胡椒を少し足して味を調えています。']],
++ [/간을 바꾸지/,['원래의 간을 즐기는 중','양념을 더하지 않고 나온 그대로의 간과 향을 느끼며 먹고 있어요.','Enjoying the original seasoning','Eating without extra seasoning and taking in the original flavor and aroma.','そのままの味を楽しんでいるところ','調味料を足さず、出されたままの味と香りを楽しんでいます。']],
++ [/한입 크기/,['한입 크기로 나누는 중','음식을 먹기 좋은 크기로 잘라 한 조각씩 입에 넣고 있어요.','Preparing bite-size pieces','Cutting the food into manageable pieces and eating them one at a time.','一口大に分けているところ','食べやすい大きさに切り、一切れずつ口に運んでいます。']],
++ [/냄새/,['향부터 음미하는 중','먹기 전에 가까이에서 향을 맡고 천천히 첫입을 맛보고 있어요.','Taking in the aroma','Smelling the food up close before slowly tasting the first bite.','香りから楽しんでいるところ','食べる前に近くで香りを確かめ、ゆっくり最初の一口を味わっています。']],
++ [/조용/,['조용히 맛을 음미하는 중','식기가 부딪히지 않게 조심하며 한입씩 조용히 먹고 있어요.','Enjoying a quiet meal','Eating quietly and taking care not to clatter the utensils.','静かに味わっているところ','食器を鳴らさないよう気をつけながら、一口ずつ静かに食べています。']]
++];
++const neutral=[
++ ['한입의 맛을 살피는 중','첫입을 천천히 맛보고 간과 식감을 확인하며 식사를 이어 가고 있어요.','Tasting the first bite','Tasting the first bite slowly, checking the seasoning and texture, then continuing the meal.','一口の味を確かめているところ','最初の一口をゆっくり味わい、味付けと食感を確かめながら食べています。'],
++ ['잠시 식사에 집중하는 중','식기를 고쳐 쥐고 한입씩 맛보며 배를 채우고 있어요.','Focusing on the meal','Adjusting the utensils and enjoying the meal one bite at a time.','食事に集中しているところ','食器を持ち直し、一口ずつ味わいながらお腹を満たしています。']
++];
++export function mealObservation(character,seed,language='ko'){
++ const index=({ko:0,en:2,ja:4})[language]||0;
++ const pool=habits.filter(([pattern])=>(character.eatingHabits||[]).some(h=>pattern.test(h))).map(([,copy])=>copy);
++ let hash=0;for(const letter of `${character.id}:${seed}`)hash=(Math.imul(hash,31)+letter.charCodeAt(0))>>>0;
++ const copy=(pool.length?pool:neutral)[hash%(pool.length||neutral.length)];
++ const preferences=(character.foodPreferences||[]).join(' '),taste=Number(character.spiceTolerance)<=1?
++ ['매운맛에 약해 자극이 강하지 않은지 조금씩 맛보며 확인하고 있어요.','Sensitive to spicy food, they test small bites to check the heat.','辛い物は苦手なので、刺激が強くないか少しずつ確かめています。']:
++ /바삭|튀김/.test(preferences)?['바삭한 식감을 좋아해 한입마다 씹히는 느낌에 신경 쓰고 있어요.','Fond of crisp textures, they pay attention to how each bite feels.','歯ごたえのある食感が好きで、一口ごとの噛み心地を確かめています。']:
++ Number(character.sweetPreference)>=4?['단맛을 좋아해서 양념에 달큰한 맛이 있는지도 살피고 있어요.','With a sweet tooth, they check for sweetness in the seasoning.','甘い味が好きで、味付けに甘みがあるかも確かめています。']:null;
++ const detail=taste?.[({ko:0,en:1,ja:2})[language]||0]||'';
++ return {title:copy[index],desc:copy[index+1]+(detail?' '+detail:'')};
++}
+--- /dev/null
++++ b/runtime/career-work.js
+@@ -0,0 +1,37 @@
++import {careersFor} from './career-world.js';
++import {employmentsFor} from './salary.js';
++// Game schedules, not a claim about real-world working conditions.
++const defaults={
++ 'builtin-student':[[1,2,3,4,5],'09:00','15:00'],
++ 'builtin-doctor':[[1,2,3,4,5],'09:00','17:00'],
++ 'builtin-nurse':[[1,2,3,4,5],'07:00','15:00'],
++ 'builtin-teacher':[[1,2,3,4,5],'08:30','16:30'],
++ 'builtin-professor':[[1,2,3,4],'10:00','17:00'],
++ 'builtin-chef':[[2,3,4,5,6],'11:00','21:00'],
++ 'builtin-sanitation':[[1,2,3,4,5],'06:00','14:00'],
++ 'builtin-innkeeper':[[0,2,3,4,5,6],'08:00','18:00'],
++ 'builtin-religious':[[0,2,3,4,5,6],'08:00','16:00'],
++ 'builtin-singer':[[2,3,4,5,6],'13:00','21:00'],
++ 'builtin-idol':[[1,2,3,4,5,6],'10:00','19:00'],
++ 'builtin-artist':[[1,2,3,4,5],'11:00','18:00'],
++ 'builtin-soldier':[[1,2,3,4,5],'07:00','17:00'],
++ 'builtin-criminal':[[1,3,5],'20:00','23:00']
++};
++export function careerAssignments(world,c){
++ const jobs=employmentsFor(c);if(jobs.length)return jobs.filter(e=>e.jobId!=='builtin-none');
++ const job=careersFor(world).find(j=>j.name===c.job&&j.id!=='builtin-none');
++ return job?[{id:'legacy-'+job.id,jobId:job.id,rankId:job.ranks[0]?.id}]:[];
++}
++export function validWorkSchedule(value){return value&&Array.isArray(value.days)&&value.days.length<=7&&value.days.every(d=>Number.isInteger(d)&&d>=0&&d<=6)&&['start','end'].every(k=>/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value[k]||''))&&value.start!==value.end}
++export function defaultWorkSchedule(entry){
++ let [days,start,end]=defaults[entry.jobId]||[[1,2,3,4,5],'09:00','18:00'];
++ if(entry.jobId==='builtin-doctor'&&entry.rankId==='rank-1'){start='08:00';end='18:00'}
++ if(entry.jobId==='builtin-office'&&/director|executive|president|ceo/.test(entry.rankId)){start='10:00';end='18:00'}
++ return {days:[...days],start,end};
++}
++export function workScheduleFor(c,entry){const own=c.careerSchedules?.[entry.id];return validWorkSchedule(own)?{...own,days:[...new Set(own.days)]}:defaultWorkSchedule(entry)}
++export function careerWeeklyRoutines(world,c){
++ const entries=careerAssignments(world,c),existing=(world.routines?.[c.id]||[]).filter(r=>['업무','work'].includes(r.type));
++ if(existing.length&&!entries.some(e=>c.careerSchedules?.[e.id]==='default'||validWorkSchedule(c.careerSchedules?.[e.id])))return existing;
++ return entries.flatMap(entry=>{const schedule=workScheduleFor(c,entry);return schedule.days.flatMap(day=>{const base={id:`career-work:${entry.id}:${day}`,type:'업무',day,start:schedule.start,end:schedule.end,title:entry.jobName||c.job||'',withIds:[],placeId:c.workplaceId==='home'?'':c.workplaceId||'',home:!c.workplaceId||c.workplaceId==='home',visitHomeId:!c.workplaceId||c.workplaceId==='home'?c.homeId:'',room:'study',careerEmploymentId:entry.id};return schedule.end<schedule.start&&schedule.end!=='00:00'?[base,{...base,id:base.id+':after-midnight',day:(day+1)%7,start:'00:00'}]:[base]})});
++}
+--- /dev/null
++++ b/runtime/career-work-ui.js
+@@ -0,0 +1,28 @@
++import {careerAssignments,workScheduleFor,validWorkSchedule} from './career-work.js';
++import {careersFor} from './career-world.js';
++import {careerLabel} from './career-catalog.js';
++import {save,touchCharacterTimelines} from './state.js?v=20260909dev305';
++export function openWorkSchedule(world,c,snapshot,onSaved){
++ const language=world.uiLanguage||'ko',t=(ko,en,ja)=>({ko,en,ja}[language]||ko),dialog=document.createElement('dialog');dialog.className='career-dialog';
++ const body=document.createElement('section');body.className='career-body';const heading=document.createElement('h2');heading.textContent=t('근무 일정 직접 정하기','Set work schedule','勤務予定を設定');body.append(heading);
++ const inputs=[];
++ for(const entry of careerAssignments(world,c)){
++  const job=careersFor(world).find(j=>j.id===entry.jobId),rank=job?.ranks.find(r=>r.id===entry.rankId),section=document.createElement('section');section.className='career-rank';const title=document.createElement('h3');title.textContent=[careerLabel(job,language),careerLabel(rank,language)].filter(Boolean).join(' · ');section.append(title);
++  const value=workScheduleFor(c,entry),checks=[],days=document.createElement('div');days.className='career-weekdays';
++  t('일 월 화 수 목 금 토','Sun Mon Tue Wed Thu Fri Sat','日 月 火 水 木 金 土').split(' ').forEach((name,day)=>{const label=document.createElement('label'),input=document.createElement('input');input.type='checkbox';input.checked=value.days.includes(day);label.append(input,document.createTextNode(name));days.append(label);checks.push(input)});section.append(days);
++  const time=(name,v)=>{const label=document.createElement('label'),input=document.createElement('input');label.textContent=name;input.type='time';input.required=true;input.value=v;label.append(input);section.append(label);return input};
++  const start=time(t('출근 시각','Shift starts','出勤時刻'),value.start),end=time(t('퇴근 시각','Shift ends','退勤時刻'),value.end);inputs.push({entry,checks,start,end});body.append(section);
++ }
++ const status=document.createElement('p');status.setAttribute('role','status');body.append(status);
++ const button=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;body.append(b);return b};
++ const persist=async reset=>{
++  const next=reset?Object.fromEntries(careerAssignments(world,c).map(e=>[e.id,'default'])):{...c.careerSchedules};if(!reset)for(const row of inputs){const value={days:row.checks.flatMap((v,i)=>v.checked?[i]:[]),start:row.start.value,end:row.end.value};if(!validWorkSchedule(value)){status.textContent=t('근무 요일과 서로 다른 시작·종료 시각을 확인해 주세요.','Check workdays and distinct start/end times.','勤務曜日と異なる開始・終了時刻を確認してください。');return}next[row.entry.id]=value}
++  const controls=[...body.querySelectorAll('input,button')];controls.forEach(n=>n.disabled=true);status.textContent=t('관공서에 서류 제출하는 중…','Submitting paperwork at the municipal office…','役所に書類を提出しています…');
++  const previous=c.careerSchedules;
++  try{if(snapshot){const api=window.DrawerVillageGroups,live=api.getSnapshot();if(live.activeGroupId!==snapshot.activeGroupId)throw Error('context');const record=live.residents.find(r=>r.id===c.id);if(record?.ownerUid!==window.ParallelCityAuth?.getInfo?.()?.user?.uid)throw Error('owner');const profile=JSON.parse(record.profileJson||'{}');await api.saveResident({groupId:snapshot.activeGroupId,id:c.id,profile:{...profile,careerSchedules:next}});record.profileJson=JSON.stringify({...profile,careerSchedules:next});c.careerSchedules=next}else{c.careerSchedules=next;touchCharacterTimelines([c.id]);if(!await save(true))throw Error('save')}
++   dialog.close();onSaved?.();
++  }catch{c.careerSchedules=previous;status.textContent=t('저장하지 못했어요. 다시 시도해 주세요.','Could not save. Please retry.','保存できませんでした。再試行してください。');controls.forEach(n=>n.disabled=false)}
++ };
++ button(t('저장','Save','保存'),()=>persist(false)).disabled=!inputs.length;
++ button(t('직업 기본 일정 사용','Use career defaults','職業の標準予定に戻す'),()=>persist(true));button(t('닫기','Close','閉じる'),()=>dialog.close());dialog.append(body);dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();return dialog;
++}

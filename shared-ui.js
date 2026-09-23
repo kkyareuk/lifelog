@@ -5,7 +5,7 @@ import {bindSharedHomeDeletion} from './shared-home-delete.js';
 import {showSharedResidentCreator} from './shared-create-resident.js?v=20260909dev305';
 import {runBackgroundAction} from './background-actions.js?v=20260909dev305';
 import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev305';
-import {withTownEditDraft,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev305';
+import {withTownEditDraft,acknowledgeHomeSave,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev305';
 import {bindSharedHome} from './shared-home-editor.js?v=20260909dev305';
 import {residentText} from './shared-residents.js?v=20260909dev305';
 import {sharedSelection,withSharedWorld,decodeShared,buildSharedWorld} from './shared-world.js?v=20260909dev305';
@@ -119,7 +119,7 @@ export function bindSharedUi({prepareImage,bindRoomGeometry,render,toast:notify,
   if(el.matches('[data-view-source],[data-view-target]')){stop(e);select[el.hasAttribute('data-view-source')?'source':'target']=el.value;render();return}
   if(el.matches('[data-character-view]')){stop(e);saveView(el.dataset.source,el.dataset.target,el.dataset.viewField,el.value);return}
   if(el.matches('[data-place-field]')){stop(e);const field=el.dataset.placeField;saveBuilding(el.dataset.placeId,field==='type'?{}:{[field]:['spicy','sweet'].includes(field)||el.type==='number'||el.type==='range'?Number(el.value):el.value},field==='type'?{type:el.value}:{});return}
-  if(el.matches('[data-home-field],[data-home-name]')){stop(e);const field=el.dataset.homeField||'name';if(field==='townId')return;saveItem('home',el.dataset.homeId,{[field]:el.type==='range'?Number(el.value):el.value});return}
+  if(el.matches('[data-home-field],[data-home-name]')){stop(e);const field=el.dataset.homeField||'name';if(field==='townId')return;const id=el.dataset.homeId,patch={[field]:el.type==='range'?Number(el.value):el.value};if(root.matches('.home-page')){enqueue(async()=>{const current=api().getSnapshot();if(current.activeGroupId!==s.activeGroupId)throw Error('groups/context-changed');const revision=Number(current.group.buildingRevision)||0,result=await api().saveHomePlacement({groupId:s.activeGroupId,id,patch,revision});const latest=api().getSnapshot();if(latest.activeGroupId!==s.activeGroupId)return;latest.homes=latest.homes.map(h=>h.id===id?{...h,...result.home}:h);latest.group.buildingRevision=result.revision;acknowledgeHomeSave(latest,id,patch,revision,result.revision);toast('저장했어요')},toast)}else saveItem('home',id,patch);return}
   if(el.matches('[data-world-background-music]')){stop(e);const key=el.value;if(key==='arkenwald'&&!hasMedievalDlc()){toast(({ko:'아르켄발트 음악은 중세 DLC에 포함돼요.',en:'Arkenwald music requires the medieval DLC.',ja:'アーケンヴァルトの音楽には中世DLCが必要です。'})[state.uiLanguage]);render();return}saveTown({backgroundMusic:key});return;}
   if(el.matches('[data-world-background-setting]')){stop(e);const key=el.value;if(key==='arkenwald'&&!hasMedievalDlc()){toast(({ko:'아르켄발트는 중세 DLC에 포함돼요.',en:'Arkenwald requires the medieval DLC.',ja:'アーケンヴァルトには中世DLCが必要です。'})[state.uiLanguage]);render();return}saveTown({backgroundSetting:key,era:key==='arkenwald'?'medieval':'modern',culture:key==='arkenwald'?'europe':'mixed'});return;}
   const attr=[...el.attributes].find(a=>a.name.startsWith('data-world-'));if(attr){stop(e);const key=attr.name.slice(11).replace(/-([a-z])/g,(_,c)=>c.toUpperCase());saveTown({[key]:el.type==='checkbox'?el.checked:el.value})}

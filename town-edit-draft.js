@@ -3,6 +3,14 @@ const drafts=new Map();
 const key=s=>`${globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid||'guest'}:${s.activeGroupId}:${s.selectedTownId||s.group?.towns?.[0]?.id}`;
 export const townEditDraft=s=>drafts.get(key(s));
 export const discardTownEdit=s=>!townEditDraft(s)?.saving&&drafts.delete(key(s));
+// A committed home form edit is independent of the town placement draft.
+export function acknowledgeHomeSave(s,id,patch,previousRevision,revision){
+ const d=townEditDraft(s);if(!d)return;
+ const identity='saveHomePlacement:'+id,operation=d.operations.get(identity);
+ if(operation){for(const field of Object.keys(patch))delete operation.patch?.[field];if(!Object.keys(operation.patch||{}).length&&!operation.create&&!operation.remove)d.operations.delete(identity)}
+ if(d.revision===previousRevision)d.revision=revision;
+ if(!d.operations.size)drafts.delete(key(s));
+}
 export function stageTownEdit(s,action,input){
  let draft=townEditDraft(s);if(draft?.saving)throw Error('edit-saving');
  if(!draft){draft={revision:Number(s.group.buildingRevision)||0,town:structuredClone(s.group.towns.find(t=>t.id===(s.selectedTownId||s.group.towns[0].id))),homes:structuredClone(s.homes||[]),operations:new Map(),created:new Set()};drafts.set(key(s),draft)}
