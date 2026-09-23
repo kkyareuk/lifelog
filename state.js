@@ -283,6 +283,8 @@ const fresh=()=>({schema:36,activeTab:"observe",characterPane:"profile",characte
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
+  {id:"theatre",name:"서랍 공연장",type:"공연장",emoji:"🎭",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],x:42,y:50,color:"#c784ab"},
+  {id:"inn",name:"달빛 여관",type:"여관",emoji:"🏨",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],x:82,y:68,color:"#c5a37f"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
 ],decorations:[]}});
 
@@ -2397,7 +2399,7 @@ export function addTown(limit=2){
   if(state.towns.length>=limit)return null;
   syncTown();
   const id=uid(),base=fresh().world;
-  const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:[],decorations:[]};
+  const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:structuredClone(base.places).map(p=>({...p,id:uid()})),decorations:[]};
   state.towns.push(town);state.activeTownId=id;state.world=copyWorldForSave(town);save(true);return id;
 }
 export function switchTown(id,{activeId,deferSave=false}={}){

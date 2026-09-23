@@ -1,3 +1,5 @@
+import {householdScene} from './household-life.js';
+import {libraryScene} from './library-life.js';
 import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
 import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
 import {officeEmployment,officeDuty} from './career-duties.js';
@@ -4866,6 +4868,7 @@ export function eventFor(c,date=new Date()){
     privateLifeEvent(c,date);
     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
+    if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
     current=adaptTownActivity(state,c,current);
     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
     if(Math.abs(Date.now()-date.getTime())<60000&&advancePlayerNotes(c,current,date.getTime()))save(false,false);

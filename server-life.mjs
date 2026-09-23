@@ -1,3 +1,4 @@
+import {bookAction} from './library-life.js';
 import {actOnFood} from './prepared-food.js';
 import {finishCooking} from './cooking.js';
 import {finishCoffee} from './coffee-crafting.js';
@@ -16,6 +17,7 @@ export function advanceSharedLife(snapshot,now,command=null){
     const date=new Date(now),scenes={};
     for(const id of world.order){finishCoffee(world,world.characters[id],now);finishCooking(world,world.characters[id],now);}
     if(command?.kind==='food')actOnFood(world,command.characterId,command.dishId,command.action,command.options,now);
+    else if(command?.kind==='library')bookAction(world,command.characterId,command.bookId,command.action,now);
     else if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
     for(const id of [...world.order].sort())eventFor(world.characters[id],date);
     for(const id of world.order){
@@ -27,8 +29,8 @@ export function advanceSharedLife(snapshot,now,command=null){
     }
     const lives=world.order.map(id=>{
       const c=world.characters[id],days=Object.fromEntries(Object.entries(c.days||{}).sort(([a],[b])=>{const stamp=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getTime()};return stamp(a)-stamp(b)}).slice(-2).map(([key,day])=>[key,{...day,entries:visibleTimeline(c,new Date(Number(key.split("-")[0]),Number(key.split("-")[1])-1,Number(key.split("-")[2]),23,59)).slice(-80)}]));
-      let json=JSON.stringify({noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
-      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
+      let json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
+      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
       return {id,lifeJson:json};
     });

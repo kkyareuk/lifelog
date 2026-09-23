@@ -4203,18 +4203,13 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   .routine-bottom-sheet form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.routine-bottom-sheet h2,.routine-bottom-sheet fieldset,.routine-bottom-sheet label:has(textarea),.routine-group-shortcuts,.routine-sheet-actions{grid-column:1/-1}.routine-sheet-actions{display:flex;justify-content:flex-end;gap:8px}.routine-sheet-handle{width:50px;height:5px;margin:0 auto 12px;border-radius:999px;background:#aaa}
 }
 
-/* 집 방 안의 주민은 작은 지도 점이 아니라 한눈에 알아볼 수 있는 생활 아이콘으로 표시한다. */
+/* 서 있는 주민도 가구 사용 중 아이콘과 비슷한 크기로 표시한다. */
 .room-empty-image{display:none!important}
 @media(max-width:720px),(min-width:721px) and (orientation:portrait){
-  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .avatar{
-    width:54px!important;
-    height:54px!important;
-    flex:0 0 54px!important;
-  }
-  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{
-    width:62px!important;
-    height:62px!important;
-    flex:0 0 62px!important;
+  html.native-app[data-active-tab="home"] .home-person:not(.is-seated):not(.is-couple-bed-user) :is(.avatar,.sprite){
+    width:58px!important;
+    height:58px!important;
+    flex:0 0 58px!important;
   }
   html.native-app[data-active-tab="home"] .home-person-status{
     max-width:112px!important;

@@ -30,7 +30,7 @@ const includedDirectories=new Set([
   "world-assets"
 ]);
 
-const includedFiles=new Set(["court-world.css","court-world-ui.js","court-world-data.js","home-canvas.css","character-money.css","career.css","building-interior.css","apple-login.js","apple-login.css","title-screen.css",
+const includedFiles=new Set(["storage-ui.css","court-world.css","court-world-ui.js","court-world-data.js","home-canvas.css","character-money.css","career.css","building-interior.css","apple-login.js","apple-login.css","title-screen.css",
   "banner-ads.css","diamond-shop.css","diamond-shop.js",
   "relationship-context.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",

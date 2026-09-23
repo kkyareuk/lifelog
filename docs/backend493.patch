@@ -1,0 +1,270 @@
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -21,7 +21,7 @@
+         if(group.playerNoteVersion!==1){const mail=await tx.get(ref.collection('mail').orderBy('createdAt','desc').limit(300));for(const resident of residents){const notes=Array.isArray(resident.playerNotes)?[...resident.playerNotes]:[],ids=new Set(notes.map(n=>n.id));for(const doc of [...mail.docs].reverse()){const n=doc.data();if(n.targetId!==resident.id||n.sourceId||ids.has(doc.id))continue;notes.push({id:doc.id,createdAt:n.createdAt,homeId:resident.residences?.find(r=>r.isPrimary)?.homeId||resident.sharedHomeId||''});ids.add(doc.id)}if(notes.length!==(resident.playerNotes||[]).length){resident.playerNotes=notes.slice(-300);noteMigrations.push(resident)}}}
+         if(input.command){
+           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
+-          if(!['food','message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
++          if(!['library','food','message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
+           if(['message','remote_checkin','phone_call','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
+           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
+             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
+@@ -33,7 +33,7 @@
+           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
+         }
+         const recipeEntitlements={},owners=[...new Set(residents.map(r=>r.ownerUid).filter(Boolean))],ownerPacks=new Map(await Promise.all(owners.map(async owner=>{const user=await tx.get(db.collection('users').doc(owner));return [owner,user.data()?.entitlements?.dlcPacks||[]]})));for(const resident of residents)recipeEntitlements[resident.id]=ownerPacks.get(resident.ownerUid)||[];
+-        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!r.playerNotes?.some(n=>!life.noteReceipts?.[n.id]?.readAt)||!!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
++        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!r.playerNotes?.some(n=>!life.noteReceipts?.[n.id]?.readAt)||!!life.household?.active||!!life.library?.active||!!life.library?.picking||!!life.library?.notice||!!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
+         for(const resident of noteMigrations)tx.update(ref.collection('residents').doc(resident.id),{playerNotes:resident.playerNotes});
+         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
+         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
+@@ -43,7 +43,7 @@
+           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
+         }
+         const future=[now+300000];
+-        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
++        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.activityEndsAt,value.household?.active?.endsAt,value.library?.active?.endsAt,value.library?.picking?.endsAt,value.library?.notice?.endsAt,value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+         const lifeNextAt=Math.max(now+1000,Math.min(...future));
+         tx.update(ref,{playerNoteVersion:1,lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
+       });
+--- a/runtime/server-life.mjs
++++ b/runtime/server-life.mjs
+@@ -1,3 +1,4 @@
++import {bookAction} from './library-life.js';
+ import {actOnFood} from './prepared-food.js';
+ import {finishCooking} from './cooking.js';
+ import {finishCoffee} from './coffee-crafting.js';
+@@ -16,6 +17,7 @@
+     const date=new Date(now),scenes={};
+     for(const id of world.order){finishCoffee(world,world.characters[id],now);finishCooking(world,world.characters[id],now);}
+     if(command?.kind==='food')actOnFood(world,command.characterId,command.dishId,command.action,command.options,now);
++    else if(command?.kind==='library')bookAction(world,command.characterId,command.bookId,command.action,now);
+     else if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
+     for(const id of [...world.order].sort())eventFor(world.characters[id],date);
+     for(const id of world.order){
+@@ -27,8 +29,8 @@
+     }
+     const lives=world.order.map(id=>{
+       const c=world.characters[id],days=Object.fromEntries(Object.entries(c.days||{}).sort(([a],[b])=>{const stamp=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getTime()};return stamp(a)-stamp(b)}).slice(-2).map(([key,day])=>[key,{...day,entries:visibleTimeline(c,new Date(Number(key.split("-")[0]),Number(key.split("-")[1])-1,Number(key.split("-")[2]),23,59)).slice(-80)}]));
+-      let json=JSON.stringify({noteReceipts:c.noteReceipts||{},wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
+-      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({noteReceipts:c.noteReceipts||{},wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
++      let json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
++      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
+       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
+       return {id,lifeJson:json};
+     });
+--- a/runtime/shared-world.js
++++ b/runtime/shared-world.js
+@@ -34,7 +34,7 @@
+     const profile=restoreWardrobe(recovered,r.id,catalog),life=decodeShared(r.lifeJson),schedule=decodeShared(r.scheduleJson);
+     const homeId=Array.isArray(r.residences)?(r.residences.find(item=>item.isPrimary&&homes[item.homeId])?.homeId||r.residences.find(item=>homes[item.homeId])?.homeId||''):(snapshot.homes||[]).some(h=>h.id===r.sharedHomeId)?r.sharedHomeId:(snapshot.homes||[]).find(h=>h.ownerUid===r.ownerUid&&h.sourceHomeId===(r.sourceHomeId||profile.homeId))?.id||'';
+     const remap=items=>(items||[]).map(item=>({...item,townId:towns.some(t=>t.id===item.townId)?item.townId:r.townId,homeId:homes[item.homeId]?item.homeId:homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id||((snapshot.residents||[]).some(x=>x.id===id)?id:null)).filter(Boolean)}));
+-    characters[r.id]={...profile,playerNotes:(r.playerNotes||[]).map(n=>({...n,homeId:homes[n.homeId]?n.homeId:homeId})),noteReceipts:life.noteReceipts||{},wallet:life.wallet||profile.wallet,cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
++    characters[r.id]={...profile,playerNotes:(r.playerNotes||[]).map(n=>({...n,homeId:homes[n.homeId]?n.homeId:homeId})),library:life.library||profile.library,household:life.household||profile.household,noteReceipts:life.noteReceipts||{},cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},wallet:life.wallet||profile.wallet,gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
+       residences:Array.isArray(r.residences)?r.residences.filter(item=>homes[item.homeId]):homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
+       wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};
+     if(group.courtTheme==='court'&&!options.editor){characters[r.id].job=courtJobName(profile.courtJob,language);characters[r.id].jobTitle=profile.courtJobTitle||'';}
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -1,3 +1,5 @@
++import {householdScene} from './household-life.js';
++import {libraryScene} from './library-life.js';
+ import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
+ import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
+ import {officeEmployment,officeDuty} from './career-duties.js';
+@@ -9,9 +11,9 @@
+ import {finishCooking} from './cooking.js';
+ import {adaptTownActivity} from './town-setting.js';
+ import {sharedBathScene,isTubBath} from './shared-bath.js?v=20260909dev305';
+-import {settleMoneyScene} from './character-money.js';
+ import {finishCoffee} from './coffee-crafting.js';
+ import {recentNarrativeEntries,pickHomeNarrative,homeNarrativeKey,mayFollowUp} from './narrative-selection.js';
++import {settleMoneyScene} from './character-money.js';
+ import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
+ import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
+ import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
+@@ -4866,6 +4868,7 @@
+     privateLifeEvent(c,date);
+     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
++    if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
+     current=adaptTownActivity(state,c,current);
+     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
+     if(Math.abs(Date.now()-date.getTime())<60000&&advancePlayerNotes(c,current,date.getTime()))save(false,false);
+--- a/runtime/state.js
++++ b/runtime/state.js
+@@ -1,9 +1,9 @@
+-import {activityPrice,payActivity,moneySettings} from './character-money.js';
+ import {COFFEE_DRINK_MS,COFFEE_BREW_MS} from './coffee-needs.js';
+ import {directedNeed,needDuration} from './need-pacing.js';
+ import {canStartCooking,startCooking,finishCooking} from './cooking.js';
+ import {characterTown,townActivityAllowed} from './town-setting.js';
+ import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine,canUseCoffeeTool} from './coffee-crafting.js';
++import {activityPrice,payActivity,moneySettings} from './character-money.js';
+ import {planGroupActivity,groupActivityCopy,groupDestination} from './group-activity.js';
+ import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
+ import {normalizeLanguageFields} from './character-language.js';
+@@ -283,6 +283,8 @@
+   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
+   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
+   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
++  {id:"theatre",name:"서랍 공연장",type:"공연장",emoji:"🎭",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],x:42,y:50,color:"#c784ab"},
++  {id:"inn",name:"달빛 여관",type:"여관",emoji:"🏨",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],x:82,y:68,color:"#c5a37f"},
+   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
+ ],decorations:[]}});
+ 
+@@ -2397,7 +2399,7 @@
+   if(state.towns.length>=limit)return null;
+   syncTown();
+   const id=uid(),base=fresh().world;
+-  const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:[],decorations:[]};
++  const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:structuredClone(base.places).map(p=>({...p,id:uid()})),decorations:[]};
+   state.towns.push(town);state.activeTownId=id;state.world=copyWorldForSave(town);save(true);return id;
+ }
+ export function switchTown(id,{activeId,deferSave=false}={}){
+--- a/runtime/automatic-cooking.js
++++ b/runtime/automatic-cooking.js
+@@ -14,7 +14,7 @@
+  // A wallet marks a character that has opted into the economy. Never backfill
+  // missed meals or interrupt the user's command, a journey or an appointment.
+  if(world.sharedContext&&!world.recipeEntitlements)return false;
+- if(scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
++ if(c.household?.active||c.library?.active||scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
+  const window=mealWindow(now,c.id);if(!window||c.cooking?.lastAutomaticMeal===window.key||needsAt(c,now).hunger>65)return false;
+  const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
+  const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));
+--- a/runtime/prepared-food.js
++++ b/runtime/prepared-food.js
+@@ -6,23 +6,40 @@
+ export function placeCookedFood(world,c,job){
+  const data=c.cooking;data.dishes??=[];if(data.dishes.some(d=>d.id===job.id))return;
+  const home=world.homes?.[job.homeId],room=home?.rooms?.[job.room],table=room?.furniturePlacements?.find(p=>/카운터|조리대|식탁|탁자|counter|table/i.test(p.item||''));
+- data.dishes.push({...(job.recipeSnapshot?{recipeSnapshot:structuredClone(job.recipeSnapshot)}:{}),id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
++ data.dishes.push({...(job.recipeSnapshot?{recipeSnapshot:structuredClone(job.recipeSnapshot)}:{}),id:job.id,recipeId:job.recipeId,rating:Math.max(1,Math.min(5,1+Math.floor((Number(data.experience)||0)/20))),createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
+ }
+ const access=(c,home)=>c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id)||home.residents?.includes(c.id);
+ export function actOnFood(world,actorId,dishId,action,options={},now=Date.now()){
++ if(action==='clearSpoiled'){
++  const actor=world.characters?.[actorId],home=world.homes?.[options.homeId];if(!actor||!home||!access(actor,home))throw Error('food-access');
++  if(actor.household?.active?.endsAt>now||actor.cooking?.active?.endsAt>now)throw Error('food-busy');
++  const spoiled=preparedFoods(world).filter(x=>x.dish.homeId===home.id&&x.dish.storage==='fridge'&&foodSpoiled(x.dish,now));
++  for(const {dish,owner}of spoiled){owner.cooking.dishes=owner.cooking.dishes.filter(d=>d.id!==dish.id);owner.cooking.inventory??={};owner.cooking.inventory[dish.recipeId]=Math.max(0,(owner.cooking.inventory[dish.recipeId]||0)-1);}
++  if(spoiled.length)beginFoodTask(world,actor,spoiled[0].dish,'discard',now);return true;
++ }
+  const actor=world.characters?.[actorId],found=preparedFoods(world).find(x=>x.dish.id===dishId);if(!actor||!found)throw Error('food-missing');
+  const {dish,owner}=found,home=world.homes?.[dish.homeId];if(!home||!access(actor,home))throw Error('food-access');
+- if(!['eat','discard','move','fridge'].includes(action))throw Error('food-action');
++ if(!['eat','discard','move','fridge','pack'].includes(action))throw Error('food-action');
+  if(action==='eat'&&foodSpoiled(dish,now))throw Error('food-spoiled');
+- if(action==='discard'&&actor.id!==owner.id)throw Error('food-owner');
++ if(dish.storage==='lunchbox'&&dish.holderId!==actorId)throw Error('food-owner');
++ if(actor.household?.active?.endsAt>now||actor.cooking?.active?.endsAt>now)throw Error('food-busy');
+  if(action==='eat'||action==='discard'){
+   owner.cooking.dishes=owner.cooking.dishes.filter(d=>d.id!==dish.id);owner.cooking.inventory??={};owner.cooking.inventory[dish.recipeId]=Math.max(0,(Number(owner.cooking.inventory[dish.recipeId])||0)-1);
+-  if(action==='eat'){actor.lifeNeeds={...actor.lifeNeeds,...needsAt(actor,now),updatedAt:now};actor.lifeNeeds.hunger=Math.min(100,actor.lifeNeeds.hunger+65);}
++  if(action==='eat'){actor.lifeNeeds={...actor.lifeNeeds,...needsAt(actor,now),updatedAt:now,recovering:['hunger'],activeNeed:'hunger',needStartedAt:now,recoveryEndsAt:now+30000};}
++  beginFoodTask(world,actor,dish,action,now);
+   return true;
+  }
++ if(action==='pack'){if(foodSpoiled(dish,now))throw Error('food-spoiled');dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage='lunchbox';dish.holderId=actorId;beginFoodTask(world,actor,dish,action,now);return true;}
+  const roomKey=String(options.room||dish.room),room=home.rooms?.[roomKey];if(!room)throw Error('food-room');
+  const placements=room.furniturePlacements||[],surface=options.furnitureId?placements.find(p=>p.id===options.furnitureId):null;
+  if(action==='fridge'&&!placements.some(p=>/냉장고|refrigerator|fridge|冷蔵庫/i.test(p.item||'')))throw Error('food-fridge');
+  if(options.furnitureId&&!surface)throw Error('food-surface');
+- dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage=action==='fridge'?'fridge':'room';dish.room=roomKey;dish.furnitureId=surface?.id||'';dish.x=Math.max(5,Math.min(95,Number(surface?.x??options.x??dish.x)||50));dish.y=Math.max(5,Math.min(95,Number(surface?.y??options.y??dish.y)||65));return true;
++ dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage=action==='fridge'?'fridge':'room';dish.room=roomKey;dish.furnitureId=surface?.id||'';dish.x=Math.max(5,Math.min(95,Number(surface?.x??options.x??dish.x)||50));dish.y=Math.max(5,Math.min(95,Number(surface?.y??options.y??dish.y)||65));if(action==='fridge')beginFoodTask(world,actor,dish,action,now);return true;
+ }
++
++
++// A prepared serving is reserved once, while its actual meal takes thirty seconds.
++function beginFoodTask(world,c,dish,action,now){
++ c.household??={};c.household.active={id:dish.id+':'+action+':'+now,action,recipeId:dish.recipeId,recipeSnapshot:dish.recipeSnapshot||null,homeId:dish.homeId,room:dish.room,startedAt:now,endsAt:now+(action==='eat'?30000:action==='pack'?10000:5000)};
++ delete world.characterDirectives?.[c.id];
++}
+--- a/runtime/household-life.js
++++ b/runtime/household-life.js
+@@ -0,0 +1,37 @@
++import {preparedFoods,foodSpoiled,actOnFood} from './prepared-food.js';
++import {needsAt} from './life-needs.js';
++import {savedRecipeById} from './cooking.js';
++import {recipeName} from './recipe-localizations.js';
++const text=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
++export function householdScene(world,c,scene,now){
++ const data=c.household??={},active=data.active,lang=world.uiLanguage||'ko';
++ if(active&&now>=active.endsAt){if(active.action==='eat')c.lifeNeeds={...c.lifeNeeds,...needsAt(c,now),updatedAt:now,recovering:[],activeNeed:'',recoveryEndsAt:0};delete data.active;data.lastAt=now;}
++ if(data.active&&world.characterDirectives?.[c.id]?.startedAt>data.active.startedAt)delete data.active;
++ if(!data.active&&!scene.manualDirective&&!scene.routineId&&!scene.transit&&!scene.sleeping&&!scene.groupInteraction&&(!scene.needKey||scene.needKey==='hunger')&&scene.home&&now-(data.lastAt||0)>60000){
++  const homeId=scene.visitHomeId||c.homeId,home=world.homes?.[homeId],foods=preparedFoods(world).filter(x=>x.dish.homeId===homeId);
++  const fridge=Object.entries(home?.rooms||{}).find(([,r])=>r.furniturePlacements?.some(p=>/냉장고|fridge|refrigerator/i.test(p.item)));
++  const spoiled=foods.find(x=>foodSpoiled(x.dish,now)&&x.dish.storage!=='lunchbox');
++  const edible=foods.find(x=>!foodSpoiled(x.dish,now)&&(x.dish.storage!=='lunchbox'||x.dish.holderId===c.id));
++  const unclaimed=foods.find(x=>x.dish.storage==='room'&&now-x.dish.createdAt>30000&&!foodSpoiled(x.dish,now));
++  const hungry=Object.values(world.characters||{}).some(p=>p.homeId===homeId&&needsAt(p,now).hunger<65);
++  try{
++   if(spoiled&&!c.autonomousActivityBlocks?.includes('chores'))actOnFood(world,c.id,spoiled.dish.id,'discard',{},now);
++   else if(edible&&needsAt(c,now).hunger<60&&!c.autonomousActivityBlocks?.includes('eating'))actOnFood(world,c.id,edible.dish.id,'eat',{},now);
++   else if(unclaimed&&fridge&&!hungry&&!c.autonomousActivityBlocks?.includes('chores')){
++    const work=c.employment||c.employments?.[0],morning=new Date(now).getHours();
++    if(work&&morning>=6&&morning<9&&!foods.some(x=>x.dish.holderId===c.id&&x.dish.storage==='lunchbox'))actOnFood(world,c.id,unclaimed.dish.id,'pack',{},now);
++    else actOnFood(world,c.id,unclaimed.dish.id,'fridge',{room:fridge[0]},now);
++   }
++  }catch{/* Another character may have reserved the serving. */}
++ }
++ const job=data.active;if(!job)return scene;
++ const recipe=savedRecipeById(job.recipeId,world,job),name=recipe?recipeName(recipe,lang):text(lang,'음식','food','料理');
++ const copy={
++ eat:[name+' 먹는 중','Eating '+name,name+'を食べています'],
++ fridge:['남은 음식을 냉장고에 넣고 있어요','Putting leftovers in the refrigerator','残った料理を冷蔵庫に入れています'],
++ pack:['음식을 도시락에 담고 있어요','Packing a lunchbox','料理をお弁当箱に詰めています'],
++ discard:['상태를 확인하고 음식을 치우고 있어요','Checking and clearing away food','状態を確かめて料理を片付けています']
++ }[job.action]||[];
++ const title=copy[{ko:0,en:1,ja:2}[lang]||0],desc=job.action==='eat'?text(lang,'한 입씩 맛을 음미하며 식사하고 있어요.','They enjoy the flavor, one bite at a time.','一口ずつ味わいながら食事をしています。'):title;
++ return {...scene,sleeping:false,transit:false,groupInteraction:false,withId:undefined,withIds:[],furniture:undefined,meetingFurniture:undefined,needKey:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined,home:true,visitHomeId:job.homeId,room:job.room,title,desc,baseTitle:title,baseDesc:desc,activityStartedAt:job.startedAt,activityEndsAt:job.endsAt,householdActivity:true,manualDirective:true,actionKind:job.action==='eat'?'eating':'chores',activityFamily:job.action==='eat'?'eating':'chores',...(job.action==='eat'?{needKey:'hunger',recoveryStartedAt:job.startedAt,recoveryEndsAt:job.endsAt}:{})};
++}
+--- a/runtime/library-life.js
++++ b/runtime/library-life.js
+@@ -0,0 +1,44 @@
++import {ensureWallet,payActivity} from './character-money.js';
++export const DAY=86400000,LOAN_DAYS=14;
++const titles=[
++ ['primer','서랍마을 이야기','Stories of Drawer Village','引き出し村の物語',true],
++ ['garden','작은 정원의 사계절','Four Seasons in a Small Garden','小さな庭の四季',true],
++ ['mystery','닫힌 방의 열쇠','The Key to the Locked Room','閉ざされた部屋の鍵',false],
++ ['stars','별을 따라 걷는 밤','A Walk Beneath the Stars','星をたどる夜',false],
++ ['travel','먼 항구에서 온 편지','Letters from a Distant Port','遠い港からの手紙',false],
++ ['history','오래된 도시의 기록','Chronicles of an Old City','古い都市の記録',false]
++];
++export const libraryBooks=world=>[...titles.map(([id,ko,en,ja,basic])=>({id:'library-'+id,name:ko,names:{ko,en,ja},basic,price:15000})),...(world.catalog?.book||[]).filter(b=>!b.deleted).map(b=>({...b,id:'catalog-'+b.id,custom:true,price:15000}))];
++export const bookName=(b,lang)=>b?.names?.[lang]||b?.name||'';
++export function ownedBooks(world,c){const data=c.library||{};return libraryBooks(world).filter(b=>b.basic||b.custom||data.owned?.includes(b.id)||data.loans?.some(l=>l.bookId===b.id&&!l.returnedAt));}
++export function bookAction(world,id,bookId,action,now=Date.now()){
++ const c=world.characters?.[id],book=libraryBooks(world).find(b=>b.id===bookId);if(!c||!book)throw Error('book-missing');
++ const data=c.library??={owned:[],loans:[]};data.owned??=[];data.loans??=[];
++ const loan=data.loans.find(l=>l.bookId===bookId&&!l.returnedAt);
++ if(action==='buy'){if(ownedBooks(world,c).some(b=>b.id===bookId))return;ensureWallet(c,now);if(!payActivity(world,[id],book.price,'book:'+bookId,now))throw Error('money-insufficient');data.owned.push(bookId);}
++ else if(action==='borrow'){if(!(world.world?.places||[]).some(p=>/도서관|library/i.test([p.type,p.name].join(' '))))throw Error('library-missing');if(ownedBooks(world,c).some(b=>b.id===bookId))return;if(data.loans.filter(l=>!l.returnedAt).length>=5)throw Error('book-limit');data.loans=data.loans.filter(l=>!l.returnedAt);data.loans.push({bookId,borrowedAt:now,dueAt:now+LOAN_DAYS*DAY});}
++ else if(action==='return'){if(!loan)throw Error('book-loan');loan.returnedAt=now;if(data.active?.bookId===bookId)delete data.active;}
++ else if(action==='read'){if(!ownedBooks(world,c).some(b=>b.id===bookId))throw Error('book-unowned');if(c.cooking?.active||c.household?.active)throw Error('activity-busy');delete world.characterDirectives?.[id];data.active={bookId,explicit:true,startedAt:now,endsAt:now+180000};}
++ else throw Error('book-action');
++}
++const copy=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
++export function libraryScene(world,c,scene,now){
++ const data=c.library??={owned:[],loans:[]},lang=world.uiLanguage||'ko';
++ // Commands and appointments take precedence over automatic book handling.
++ const busy=scene.manualDirective||scene.routineId||scene.transit||scene.sleeping||scene.needKey||scene.groupInteraction;
++ const careful=Number(c.perceivingJudging)>=4||/계획|철저|질서|꼼꼼/.test([c.planningStyle,c.neatness,...(c.characterTraits||[])].join(' '));
++ for(const loan of data.loans||[]){if(loan.returnedAt)continue;
++  if(careful&&now>=loan.dueAt-DAY&&!busy){loan.returnedAt=now;data.notice={startedAt:now,endsAt:now+10000,returning:true,bookId:loan.bookId};}
++  else if(now>=loan.dueAt+14*DAY&&now-(loan.lastCallAt||0)>=DAY&&!busy){loan.lastCallAt=now;data.notice={startedAt:now,endsAt:now+15000,bookId:loan.bookId};}
++ }
++ const notice=data.notice;if(notice&&now<notice.endsAt&&!busy){const title=notice.returning?copy(lang,'도서관에 책을 반납하고 있어요','Returning a library book','図書館の本を返しています'):copy(lang,'도서관의 연체 안내 전화를 받고 있어요','Taking a library overdue reminder call','図書館から延滞の連絡を受けています');return {...scene,title,desc:title,baseTitle:title,baseDesc:title,activityStartedAt:notice.startedAt,activityEndsAt:notice.endsAt};}
++ if(data.active&&now>=data.active.endsAt){data.lastReadAt=data.active.endsAt;c.timelineResetAt=now;delete world.dailyPlans?.[c.id];delete data.active;delete data.picking;}
++ if(data.active&&scene.manualDirective&&world.characterDirectives?.[c.id]?.startedAt>data.active.startedAt)delete data.active;
++ if(!data.active&&scene.home&&!busy&&/읽을 책을 고르는|choosing.*book|本.*選/.test([scene.title,scene.baseTitle].join(' '))&&now-(data.lastReadAt||0)>60000){
++  data.picking??={startedAt:now,endsAt:now+5000};
++  if(now>=data.picking.endsAt){const books=ownedBooks(world,c),seed=[...c.id].reduce((n,x)=>n+x.charCodeAt(0),0)+Math.floor(now/DAY);if(books.length)data.active={bookId:books[seed%books.length].id,startedAt:data.picking.endsAt,endsAt:data.picking.endsAt+180000};delete data.picking;}
++  else return {...scene,activityStartedAt:data.picking.startedAt,activityEndsAt:data.picking.endsAt};
++ }
++ if(data.active&&(!busy||data.active.explicit)){const book=libraryBooks(world).find(b=>b.id===data.active.bookId);if(!book){delete data.active;return scene;}const name=bookName(book,lang),title=copy(lang,name+' 읽는 중','Reading '+name,name+'を読んでいます'),desc=copy(lang,'책장을 넘기며 마음에 남는 구절을 천천히 읽고 있어요.','They turn the pages and linger over memorable passages.','ページをめくり、心に残る一節をゆっくり読んでいます。');return {...scene,sleeping:false,transit:false,groupInteraction:false,withId:undefined,withIds:[],needKey:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined,furniture:undefined,meetingFurniture:undefined,home:true,visitHomeId:c.homeId,room:Object.entries(world.homes?.[c.homeId]?.rooms||{}).find(([k,r])=>r.type==='study'||k==='study')?.[0]||'living',title,desc,baseTitle:title,baseDesc:desc,activityFamily:'reading',actionKind:'read',activityStartedAt:data.active.startedAt,activityEndsAt:data.active.endsAt};}
++ return scene;
++}
