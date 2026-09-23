@@ -1,0 +1,9 @@
+<ko-KR>
+캐릭터 직업·직급·부서·급여 설정을 전체설정 3페이지로 모았어요. 기존 3페이지부터는 한 페이지씩 뒤로 이동해요. 간편설정과 재산 설정을 같은 정보에 연결하고 홈 직업란에는 오늘의 업무를 표시해요. 기본 직업은 읽기 전용으로 바꾸고 직접 만든 직업은 기존 규칙에 따라 편집할 수 있어요. 서랍은 캐릭터·관계를 맨 위에, 직업·재산을 맨 아래에 배치했어요.
+</ko-KR>
+<en-US>
+Career, rank, department and pay settings are now on page 3 of Full Settings. Later pages move back by one. Quick Settings and wealth settings share the same information, and the home career label shows today's duty. Built-in careers are read-only; custom careers follow existing editing rules. Characters and Relationships are at the top of the drawer, with Careers and Economy at the bottom.
+</en-US>
+<ja-JP>
+職業・職階・部署・給与設定を詳細設定の3ページ目にまとめました。以降のページは1ページずつ後ろに移動します。簡単設定と資産設定を同じ情報に連携し、ホームの職業欄には今日の業務を表示します。基本職業は閲覧専用となり、自作の職業は既存のルールに従って編集できます。引き出しの最上部にキャラクター・関係、最下部に職業・資産を配置しました。
+</ja-JP>
