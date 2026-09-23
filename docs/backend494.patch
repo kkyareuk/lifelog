@@ -1,0 +1,301 @@
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -33,7 +33,7 @@
+           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
+         }
+         const recipeEntitlements={},owners=[...new Set(residents.map(r=>r.ownerUid).filter(Boolean))],ownerPacks=new Map(await Promise.all(owners.map(async owner=>{const user=await tx.get(db.collection('users').doc(owner));return [owner,user.data()?.entitlements?.dlcPacks||[]]})));for(const resident of residents)recipeEntitlements[resident.id]=ownerPacks.get(resident.ownerUid)||[];
+-        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!r.playerNotes?.some(n=>!life.noteReceipts?.[n.id]?.readAt)||!!life.household?.active||!!life.library?.active||!!life.library?.picking||!!life.library?.notice||!!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
++        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!r.playerNotes?.some(n=>!life.noteReceipts?.[n.id]?.readAt)||!!life.household?.active||!!life.household?.returning||!!life.library?.active||!!life.library?.picking||!!life.library?.notice||!!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
+         for(const resident of noteMigrations)tx.update(ref.collection('residents').doc(resident.id),{playerNotes:resident.playerNotes});
+         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
+         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
+@@ -43,7 +43,7 @@
+           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
+         }
+         const future=[now+300000];
+-        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.activityEndsAt,value.household?.active?.endsAt,value.library?.active?.endsAt,value.library?.picking?.endsAt,value.library?.notice?.endsAt,value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
++        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.activityEndsAt,value.household?.active?.endsAt,value.household?.returning?.endsAt,value.library?.active?.endsAt,value.library?.picking?.endsAt,value.library?.notice?.endsAt,value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+         const lifeNextAt=Math.max(now+1000,Math.min(...future));
+         tx.update(ref,{playerNoteVersion:1,lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
+       });
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -1,3 +1,5 @@
++import {respectRoomPrivacy} from './room-privacy.js';
++import {setFoodSceneResolver} from './prepared-food.js';
+ import {householdScene} from './household-life.js';
+ import {libraryScene} from './library-life.js';
+ import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
+@@ -4825,19 +4827,8 @@
+  const now=+date,base=baseEventFor(c,date);
+  if(!base?.home||base.transit||activeScheduledRoutine(c,date))return;
+  const homeId=base.visitHomeId||c.homeId,home=state.homes[homeId];if(!home)return;
+- const currentDirective=state.characterDirectives?.[c.id];if(currentDirective?.endsAt>now&&(currentDirective.targetId||currentDirective.kind==='privacy-exit'))return;
++ const currentDirective=state.characterDirectives?.[c.id];if(currentDirective?.endsAt>now&&true)return;
+  const others=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean);
+- const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
+- if(privateOther){
+-  if(isTubBath(base)&&sharedBathScene(state,c,base,person=>baseEventFor(person,date),now).pairedBath)return;
+-  const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
+-  if(ids.includes(c.id)||poly||spousePrivacyExempt(state.relationships,c.id,privateOther.id,e))return;
+-  const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
+-  const exit=Object.keys(home.rooms||{}).find(key=>key!==base.room&&key===entranceRoom(home))||Object.keys(home.rooms||{}).find(key=>key!==base.room);if(!exit)return;
+-  const journey=planMeetingJourney(state,c,c,now,base,{home:true,visitHomeId:homeId,room:exit,townId:c.townId});
+-  const copy={ko:{title:jealous?'당황하고 질투하며 자리를 피하는 중':'깜짝 놀라 방에서 나오는 중',desc:jealous?'연인이 다른 사람과 함께 있는 모습을 보고 마음이 상했어요. 우선 방을 나와 마음을 가라앉히고 있어요.':'사적인 시간을 보내는 모습을 보고 놀랐어요. 방을 나와 상대의 시간을 존중해요.'},en:{title:jealous?'Leaving, startled and jealous':'Startled, leaving the room',desc:jealous?'Seeing their partner with someone else hurt. They leave the room to gather their thoughts.':'They are surprised to interrupt a private moment and step outside to give them privacy.'},ja:{title:jealous?'驚きと嫉妬を抱えて部屋を出るところ':'驚いて部屋を出るところ',desc:jealous?'恋人が別の相手といる姿に傷つき、気持ちを落ち着けるため部屋を出ます。':'私的な時間を邪魔して驚き、相手の時間を尊重して部屋を出ます。'}};
+-  state.characterDirectives[c.id]={id:`privacy-${c.id}-${now}`,kind:'privacy-exit',startedAt:now,endsAt:now+120000,journey,room:exit,homeId,targetId:'',withIds:[],copy,privacyStartled:true,jealous};c.timelineResetAt=now;save(true);return;
+- }
+  const block=Math.floor(now/7200000),eager=/먼저 다가|신체 접촉을 좋아|적극/.test([c.touchReaction,c.affectionStyle].join(' ')),roll=[...c.id+String(block)].reduce((n,x)=>(n*31+x.charCodeAt(0))>>>0,0);
+  if(c.autonomousActivityBlocks?.includes('affection')||roll%(eager?6:24)!==0||c.lastPrivateBlock===block||Math.floor(Number(currentDirective?.startedAt)/7200000)===block)return;
+  const target=others.find(other=>!other.autonomousActivityBlocks?.includes('affection')&&other.lastPrivateBlock!==block&&contactAllowed(c,other,'affection')&&isAdultAge(c.ageGroup)&&isAdultAge(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
+@@ -4867,6 +4858,7 @@
+     automaticViewExpression(c,date);
+     privateLifeEvent(c,date);
+     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
++    current=respectRoomPrivacy(state,c,current,other=>baseEventFor(other,date),room=>roomEntryAllowed(c,state.homes[current.visitHomeId||c.homeId],room));
+     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
+     if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
+     current=adaptTownActivity(state,c,current);
+@@ -5044,3 +5036,5 @@
+  try{for(const language of ["ko","en","ja"]){state.uiLanguage=language;const value=giftEntryFor(source,character,date);copy[language]={title:value?.title||"",desc:value?.desc||""}}}finally{state.uiLanguage=previous}
+  return copy;
+ },personalSceneChoices);
++
++setFoodSceneResolver((world,c,now)=>calculateEventFor(c,new Date(now)));
+--- a/runtime/automatic-cooking.js
++++ b/runtime/automatic-cooking.js
+@@ -1,3 +1,5 @@
++import {isHomeSleepScene} from './home-simulation.js?v=20260909dev305';
++import {scheduledSleeping} from './sleep-clock.js';
+ import {RECIPES} from './recipes.js';
+ import {cookingLevel,canStartCooking} from './cooking.js';
+ import {recipeUnlocked} from './cooking-access.js';
+@@ -14,7 +16,7 @@
+  // A wallet marks a character that has opted into the economy. Never backfill
+  // missed meals or interrupt the user's command, a journey or an appointment.
+  if(world.sharedContext&&!world.recipeEntitlements)return false;
+- if(c.household?.active||c.library?.active||scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
++ if(isHomeSleepScene(scene)||scheduledSleeping(c,new Date(now))||c.household?.returning||c.household?.active||c.library?.active||scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
+  const window=mealWindow(now,c.id);if(!window||c.cooking?.lastAutomaticMeal===window.key||needsAt(c,now).hunger>65)return false;
+  const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
+  const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));
+--- a/runtime/household-life.js
++++ b/runtime/household-life.js
+@@ -1,3 +1,6 @@
++import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev305';
++import {isHomeSleepScene} from './home-simulation.js?v=20260909dev305';
++import {scheduledSleeping} from './sleep-clock.js';
+ import {preparedFoods,foodSpoiled,actOnFood} from './prepared-food.js';
+ import {needsAt} from './life-needs.js';
+ import {savedRecipeById} from './cooking.js';
+@@ -5,9 +8,10 @@
+ const text=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
+ export function householdScene(world,c,scene,now){
+  const data=c.household??={},active=data.active,lang=world.uiLanguage||'ko';
+- if(active&&now>=active.endsAt){if(active.action==='eat')c.lifeNeeds={...c.lifeNeeds,...needsAt(c,now),updatedAt:now,recovering:[],activeNeed:'',recoveryEndsAt:0};delete data.active;data.lastAt=now;}
+- if(data.active&&world.characterDirectives?.[c.id]?.startedAt>data.active.startedAt)delete data.active;
+- if(!data.active&&!scene.manualDirective&&!scene.routineId&&!scene.transit&&!scene.sleeping&&!scene.groupInteraction&&(!scene.needKey||scene.needKey==='hunger')&&scene.home&&now-(data.lastAt||0)>60000){
++ if(active&&now>=active.endsAt){if(active.action==='eat')c.lifeNeeds={...c.lifeNeeds,...needsAt(c,now),hunger:100,updatedAt:now,recovering:[],activeNeed:'',recoveryEndsAt:0};data.returning={journey:planMeetingJourney(world,c,c,active.endsAt,{home:true,visitHomeId:active.homeId,room:active.room,meetingLocation:active.journey?.to},scheduledSleeping(c,new Date(now))&&isHomeSleepScene(active.origin)?active.origin:scene)};data.returning.endsAt=data.returning.journey.arrivesAt;delete data.active;data.lastAt=now;}
++ if(data.active&&world.characterDirectives?.[c.id]?.startedAt>(data.active.requestedAt||data.active.startedAt))delete data.active;
++ if(data.returning){if(world.characterDirectives?.[c.id]?.startedAt>data.returning.journey.startedAt||now>=data.returning.endsAt)delete data.returning;else return movingScene(scene,data.returning,c,now,lang);}
++ if(!data.active&&!isHomeSleepScene(scene)&&!scheduledSleeping(c,new Date(now))&&!scene.manualDirective&&!scene.routineId&&!scene.transit&&!scene.sleeping&&!scene.groupInteraction&&(!scene.needKey||scene.needKey==='hunger')&&scene.home&&now-(data.lastAt||0)>60000){
+   const homeId=scene.visitHomeId||c.homeId,home=world.homes?.[homeId],foods=preparedFoods(world).filter(x=>x.dish.homeId===homeId);
+   const fridge=Object.entries(home?.rooms||{}).find(([,r])=>r.furniturePlacements?.some(p=>/냉장고|fridge|refrigerator/i.test(p.item)));
+   const spoiled=foods.find(x=>foodSpoiled(x.dish,now)&&x.dish.storage!=='lunchbox');
+@@ -25,13 +29,21 @@
+   }catch{/* Another character may have reserved the serving. */}
+  }
+  const job=data.active;if(!job)return scene;
++ if(job.journey&&now<job.startedAt)return movingScene(scene,job,c,now,lang);
++ if(job.action==='eat'&&!job.recoveryStarted){c.lifeNeeds={...c.lifeNeeds,...needsAt(c,job.startedAt),updatedAt:job.startedAt,recovering:['hunger'],activeNeed:'hunger',needStartedAt:job.startedAt,recoveryEndsAt:job.endsAt};job.recoveryStarted=true;}
++
+  const recipe=savedRecipeById(job.recipeId,world,job),name=recipe?recipeName(recipe,lang):text(lang,'음식','food','料理');
+  const copy={
+  eat:[name+' 먹는 중','Eating '+name,name+'を食べています'],
+  fridge:['남은 음식을 냉장고에 넣고 있어요','Putting leftovers in the refrigerator','残った料理を冷蔵庫に入れています'],
+  pack:['음식을 도시락에 담고 있어요','Packing a lunchbox','料理をお弁当箱に詰めています'],
+- discard:['상태를 확인하고 음식을 치우고 있어요','Checking and clearing away food','状態を確かめて料理を片付けています']
++ discard:['음식을 치우는 중','Clearing away food','料理を片付けています']
+  }[job.action]||[];
+- const title=copy[{ko:0,en:1,ja:2}[lang]||0],desc=job.action==='eat'?text(lang,'한 입씩 맛을 음미하며 식사하고 있어요.','They enjoy the flavor, one bite at a time.','一口ずつ味わいながら食事をしています。'):title;
++ const title=copy[{ko:0,en:1,ja:2}[lang]||0],desc=job.action==='eat'?text(lang,'한 입씩 맛을 음미하며 식사하고 있어요.','They enjoy the flavor, one bite at a time.','一口ずつ味わいながら食事をしています。'):job.action==='discard'?text(lang,'상태를 확인하고 음식을 치우고 있어요.','They check the food and clear it away.','状態を確かめて料理を片付けています。'):title;
+  return {...scene,sleeping:false,transit:false,groupInteraction:false,withId:undefined,withIds:[],furniture:undefined,meetingFurniture:undefined,needKey:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined,home:true,visitHomeId:job.homeId,room:job.room,title,desc,baseTitle:title,baseDesc:desc,activityStartedAt:job.startedAt,activityEndsAt:job.endsAt,householdActivity:true,manualDirective:true,actionKind:job.action==='eat'?'eating':'chores',activityFamily:job.action==='eat'?'eating':'chores',...(job.action==='eat'?{needKey:'hunger',recoveryStartedAt:job.startedAt,recoveryEndsAt:job.endsAt}:{})};
+ }
++
++function movingScene(scene,task,c,now,lang){
++ const moving=meetingScene({...scene,sleeping:false,actionKind:'walk',activityFamily:'walking',needKey:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined,furniture:undefined,meetingFurniture:undefined},task,c.id,now,lang);
++ return {...moving,householdActivity:true,activityStartedAt:task.journey.startedAt,activityEndsAt:task.journey.arrivesAt,recoveryEndsAt:undefined};
++}
+--- a/runtime/prepared-food.js
++++ b/runtime/prepared-food.js
+@@ -1,4 +1,8 @@
++import {planMeetingJourney} from './meeting-journey.js?v=20260909dev305';
+ import {needsAt} from './life-needs.js';
++let foodSceneResolver;
++export function setFoodSceneResolver(resolve){foodSceneResolver=resolve}
++const sourceFor=(world,c,now)=>foodSceneResolver?.(world,c,now)||c.sharedScene||{home:true,visitHomeId:c.homeId,room:c.sleepRoomId||'bedroom',townId:c.townId};
+ export const FOOD_LIFETIME=18*3600000;
+ export const foodRemaining=(dish,now=Date.now())=>Math.max(0,Number(dish.remaining??FOOD_LIFETIME)-Math.max(0,now-Number(dish.updatedAt||dish.createdAt))/(dish.storage==='fridge'?4:1));
+ export const foodSpoiled=(dish,now=Date.now())=>foodRemaining(dish,now)<=0;
+@@ -13,9 +17,10 @@
+  if(action==='clearSpoiled'){
+   const actor=world.characters?.[actorId],home=world.homes?.[options.homeId];if(!actor||!home||!access(actor,home))throw Error('food-access');
+   if(actor.household?.active?.endsAt>now||actor.cooking?.active?.endsAt>now)throw Error('food-busy');
++  const source=sourceFor(world,actor,now);
+   const spoiled=preparedFoods(world).filter(x=>x.dish.homeId===home.id&&x.dish.storage==='fridge'&&foodSpoiled(x.dish,now));
+   for(const {dish,owner}of spoiled){owner.cooking.dishes=owner.cooking.dishes.filter(d=>d.id!==dish.id);owner.cooking.inventory??={};owner.cooking.inventory[dish.recipeId]=Math.max(0,(owner.cooking.inventory[dish.recipeId]||0)-1);}
+-  if(spoiled.length)beginFoodTask(world,actor,spoiled[0].dish,'discard',now);return true;
++  if(spoiled.length)beginFoodTask(world,actor,spoiled[0].dish,'discard',now,source);return true;
+  }
+  const actor=world.characters?.[actorId],found=preparedFoods(world).find(x=>x.dish.id===dishId);if(!actor||!found)throw Error('food-missing');
+  const {dish,owner}=found,home=world.homes?.[dish.homeId];if(!home||!access(actor,home))throw Error('food-access');
+@@ -23,23 +28,29 @@
+  if(action==='eat'&&foodSpoiled(dish,now))throw Error('food-spoiled');
+  if(dish.storage==='lunchbox'&&dish.holderId!==actorId)throw Error('food-owner');
+  if(actor.household?.active?.endsAt>now||actor.cooking?.active?.endsAt>now)throw Error('food-busy');
++ const source=sourceFor(world,actor,now);
+  if(action==='eat'||action==='discard'){
+   owner.cooking.dishes=owner.cooking.dishes.filter(d=>d.id!==dish.id);owner.cooking.inventory??={};owner.cooking.inventory[dish.recipeId]=Math.max(0,(Number(owner.cooking.inventory[dish.recipeId])||0)-1);
+-  if(action==='eat'){actor.lifeNeeds={...actor.lifeNeeds,...needsAt(actor,now),updatedAt:now,recovering:['hunger'],activeNeed:'hunger',needStartedAt:now,recoveryEndsAt:now+30000};}
+-  beginFoodTask(world,actor,dish,action,now);
++  beginFoodTask(world,actor,dish,action,now,source);
+   return true;
+  }
+- if(action==='pack'){if(foodSpoiled(dish,now))throw Error('food-spoiled');dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage='lunchbox';dish.holderId=actorId;beginFoodTask(world,actor,dish,action,now);return true;}
++ if(action==='pack'){if(foodSpoiled(dish,now))throw Error('food-spoiled');dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage='lunchbox';dish.holderId=actorId;beginFoodTask(world,actor,dish,action,now,source);return true;}
+  const roomKey=String(options.room||dish.room),room=home.rooms?.[roomKey];if(!room)throw Error('food-room');
+  const placements=room.furniturePlacements||[],surface=options.furnitureId?placements.find(p=>p.id===options.furnitureId):null;
+  if(action==='fridge'&&!placements.some(p=>/냉장고|refrigerator|fridge|冷蔵庫/i.test(p.item||'')))throw Error('food-fridge');
+  if(options.furnitureId&&!surface)throw Error('food-surface');
+- dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage=action==='fridge'?'fridge':'room';dish.room=roomKey;dish.furnitureId=surface?.id||'';dish.x=Math.max(5,Math.min(95,Number(surface?.x??options.x??dish.x)||50));dish.y=Math.max(5,Math.min(95,Number(surface?.y??options.y??dish.y)||65));if(action==='fridge')beginFoodTask(world,actor,dish,action,now);return true;
++ dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage=action==='fridge'?'fridge':'room';dish.room=roomKey;dish.furnitureId=surface?.id||'';dish.x=Math.max(5,Math.min(95,Number(surface?.x??options.x??dish.x)||50));dish.y=Math.max(5,Math.min(95,Number(surface?.y??options.y??dish.y)||65));if(action==='fridge')beginFoodTask(world,actor,dish,action,now,source);return true;
+ }
+ 
+ 
+ // A prepared serving is reserved once, while its actual meal takes thirty seconds.
+-function beginFoodTask(world,c,dish,action,now){
+- c.household??={};c.household.active={id:dish.id+':'+action+':'+now,action,recipeId:dish.recipeId,recipeSnapshot:dish.recipeSnapshot||null,homeId:dish.homeId,room:dish.room,startedAt:now,endsAt:now+(action==='eat'?30000:action==='pack'?10000:5000)};
++function beginFoodTask(world,c,dish,action,now,source){
++ const destination={home:true,visitHomeId:dish.homeId,room:dish.room,townId:c.townId};
++ const positions=globalThis.window?.ParallelCity?.getMeetingPositions?.([c.id])||{};
++ const journey=planMeetingJourney(world,c,c,now,source,destination,positions);
++ const arrived=journey.arrivesAt;
++ c.household??={};delete c.household.returning;
++ c.household.active={id:dish.id+':'+action+':'+now,action,recipeId:dish.recipeId,recipeSnapshot:dish.recipeSnapshot||null,homeId:dish.homeId,room:dish.room,requestedAt:now,origin:source,journey,startedAt:arrived,endsAt:arrived+(action==='eat'?30000:action==='pack'?10000:5000)};
++ c.lifeNeeds={...c.lifeNeeds,...needsAt(c,now),updatedAt:now,recovering:[],activeNeed:'',recoveryEndsAt:0};
+  delete world.characterDirectives?.[c.id];
+ }
+--- a/runtime/meeting-journey.js
++++ b/runtime/meeting-journey.js
+@@ -12,7 +12,10 @@
+ }
+ export function entranceRoom(home){const rooms=Object.entries(home?.rooms||{});return rooms.find(([key,room])=>/entrance|entry|현관/i.test(key+' '+room.type+' '+room.name))?.[0]||rooms.sort((a,b)=>(Number(a[1].floor)||1)-(Number(b[1].floor)||1))[0]?.[0]||'living'}
+ export function planMeetingJourney(world,actor,target,now,sourceScene,targetScene,positions={}){
+- const from=location(world,actor,sourceScene,positions?.[actor.id]),to=location(world,target,targetScene,targetScene?.goal||positions?.[target.id]),segments=[];let time=now;
++ const measured=positions?.[actor.id];
++ const origin=measured?.homeId&&world.homes?.[measured.homeId]?.rooms?.[measured.room]?{...sourceScene,home:true,visitHomeId:measured.homeId,room:measured.room}:sourceScene;
++ const from=location(world,actor,origin,measured),to=location(world,target,targetScene,targetScene?.goal||(target.id!==actor.id?positions?.[target.id]:null)),segments=[];let time=now;
++ if(sourceScene?.meetingJourney&&!measured){const segment=sourceScene.meetingJourney;from.point=journeyPosition(segment,now);if(segment.surface==='town')from.map=from.point;}
+  const add=(surface,homeId,fromRoom,toRoom,a,b,seconds)=>{segments.push({surface,homeId,fromRoom,toRoom,from:a,to:b,start:time,end:time+seconds*1000});time+=seconds*1000};
+  if(from.home&&to.home&&from.homeId===to.homeId){const rooms=world.homes[from.homeId].rooms;if((Number(rooms[from.room]?.floor)||1)!==(Number(rooms[to.room]?.floor)||1)){add('home',from.homeId,from.room,from.room,from.point,{x:50,y:94},5);add('home',to.homeId,to.room,to.room,{x:50,y:94},to.point,5)}else add('home',from.homeId,from.room,to.room,from.point,to.point,10);}
+  else{
+@@ -33,7 +36,7 @@
+  const moving={ko:[`${partner}를 만나러 가는 중`,'상대가 있는 곳으로 걸어가고 있어요.'],en:[`Walking to meet ${partner}`,'They are walking to where the other character is.'],ja:[`${partner}に会いに行くところ`,'相手がいる場所へ歩いて向かっています。']}[language]||{};
+  const waiting={ko:[`${partner}를 기다리는 중`,'있던 자리에서 다가오는 상대를 기다리고 있어요.'],en:[`Waiting for ${partner}`,'They are staying where they are as the other character approaches.'],ja:[`${partner}を待っているところ`,'今いる場所で、こちらに向かう相手を待っています。']}[language]||{};
+  const text=directive.privacyStartled?[copy.title,copy.desc]:arrived?[copy.title,copy.desc]:!directive.targetId?({ko:['이동하는 중','할 일을 하러 걸어가고 있어요.'],en:['On the way','Walking to the activity location.'],ja:['移動中','行動する場所へ歩いています。']}[language]||moving):actor?moving:waiting;
+- const nearby=actor&&arrived?{...where,point:point(where.point?.x-8,where.point?.y),map:point(where.map?.x-3,where.map?.y)}:where;
++ const nearby=actor&&arrived&&directive.targetId?{...where,point:point(where.point?.x-8,where.point?.y),map:point(where.map?.x-3,where.map?.y)}:where;
+  return {...scene,title:text[0]||scene.title,desc:text[1]||scene.desc,copy:undefined,localizedCopy:arrived?scene.localizedCopy:undefined,home:Boolean(where.home),visitHomeId:where.homeId||'',room:where.room||'',placeId:where.placeId||'',townId:where.townId,mood:directive.jealous?'질투':directive.privacyStartled?'놀람':arrived?(scene.mood||'평온'):'평온',transit:actor&&!arrived&&!where.home,meetingKind:directive.kind,economyActivityId:directive.id,economyEndsAt:directive.endsAt,lifeTaskId:arrived?directive.lifeTask:undefined,recoveryEndsAt:directive.endsAt,actionKind:arrived&&directive.kind==='nap'?'sleep':scene.actionKind,privacyStartled:!!directive.privacyStartled,jealous:!!directive.jealous,contactRejected:!!directive.contactRejected,contactTone:arrived?(directive.copy?.[language]||directive.copy?.ko)?.contactTone:undefined,meetingFurniture:arrived?directive.furniture:null,meetingActorId:j.actorId,participantOrder:scene.participantOrder||j.participantOrder,groupInteraction:arrived&&Boolean(directive.targetId),withId:arrived?directive.targetId:undefined,withIds:arrived?(directive.withIds||[]).filter(id=>id!==characterId):[],meetingJourney:actor&&!arrived&&segment?{...segment,arrivesAt:j.arrivesAt}:null,meetingWaiting:!actor&&!arrived,meetingLocation:nearby,manualDirective:true};
+ }
+ export function journeyPosition(segment,now){
+@@ -44,10 +47,13 @@
+ export function captureMeetingPositions(ids,townId){
+  const positions={};
+  for(const id of ids.filter(Boolean)){
+-  const home=[...document.querySelectorAll('[data-home-person]')].find(e=>e.dataset.homePerson===id),room=home?.closest('.room[data-room-key]');
+-  if(room){const r=room.getBoundingClientRect(),p=(home.querySelector('.home-person-visual')||home).getBoundingClientRect();positions[id]={homeId:room.dataset.homeId,room:room.dataset.roomKey,point:point((p.x+p.width/2-r.x)/r.width*100,(p.y+p.height/2-r.y)/r.height*100)};continue}
+-  const actor=[...document.querySelectorAll('.town-traveler,.meeting-walker')].find(e=>e.dataset.person===id);
+-  if(actor&&!actor.closest('[data-room-canvas]')){const r=actor.offsetParent?.getBoundingClientRect(),p=actor.getBoundingClientRect();if(r)positions[id]={townId,map:point((p.x+p.width/2-r.x)/r.width*100,(p.y+p.height/2-r.y)/r.height*100)}}
++  const actor=[...document.querySelectorAll('[data-home-person],.meeting-walker,.town-traveler')].find(e=>(e.dataset.homePerson||e.dataset.person)===id);
++  if(!actor)continue;
++  const canvas=actor.closest('[data-room-canvas]'),visual=actor.querySelector('.home-person-visual,.avatar,.sprite')||actor,p=visual.getBoundingClientRect(),x=p.x+p.width/2,y=p.y+p.height/2;
++  const rooms=canvas?[...canvas.querySelectorAll('.room[data-room-key]')]:[];
++  const room=actor.closest('.room[data-room-key]')||rooms.find(e=>{const r=e.getBoundingClientRect();return x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom});
++  if(room){const r=room.getBoundingClientRect();positions[id]={homeId:room.dataset.homeId||canvas?.dataset.homeId,room:room.dataset.roomKey,point:point((x-r.x)/r.width*100,(y-r.y)/r.height*100)};continue}
++  if(!canvas){const r=actor.closest('.town-environment')?.getBoundingClientRect();if(r)positions[id]={townId,map:point((x-r.x)/r.width*100,(y-r.y)/r.height*100)}}
+  }
+  return positions;
+ }
+@@ -62,7 +68,7 @@
+   const old=entries.get(c.id),home=s=>s?.home?(s.visitHomeId||c.homeId):'';
+   let journey=old?.journey;
+   if(scene.manualDirective||scene.meetingJourney||Math.abs(Date.now()-now)>120000){entries.set(c.id,{scene,seen:now});return scene}
+-  if(old&&old.scene!==scene&&(home(old.scene)!==home(scene)||old.scene.manualDirective&&!scene.manualDirective)&&now-old.seen<120000){journey=planMeetingJourney(world,c,c,now,old.scene,scene)}
++  if(old&&old.scene!==scene&&(home(old.scene)!==home(scene)||old.scene.manualDirective&&!scene.manualDirective)&&now-old.seen<120000){journey=planMeetingJourney(world,c,c,now,old.scene,scene,typeof document==='undefined'?{}:captureMeetingPositions([c.id],c.townId))}
+   if(journey&&now>=journey.arrivesAt)journey=null;
+   entries.set(c.id,{scene,seen:now,journey});
+   if(entries.size>512)entries.delete(entries.keys().next().value);
+--- a/runtime/home-simulation.js
++++ b/runtime/home-simulation.js
+@@ -176,7 +176,10 @@
+     let candidates=pinned?[pinned]:placements.filter(item=>item.roomKey===roomKey&&pattern&&pattern.test(item.item));
+     // Select actual seats for dining and screen viewing, not the tabletop/TV.
+     const diningTables=candidates.filter(item=>item.item==='식탁');
+-    if(diningTables.length)candidates=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&diningTables.some(table=>item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
++    if(diningTables.length)candidates=diningTables.flatMap(table=>{
++      const chairs=placements.filter(item=>item.roomKey===roomKey&&item.item==='의자'&&(item.tableId===table.id||!item.tableId&&Math.hypot(item.x-table.x,item.y-table.y)<28));
++      return chairs.length?chairs:[table];
++    }).filter((item,index,all)=>all.findIndex(other=>other.id===item.id)===index);
+     const watching=/TV|홈시어터|프로젝터|빔프로젝터/.test(candidates[0]?.item||'');
+     const sofas=placements.filter(item=>item.roomKey===roomKey&&item.item==='소파'&&(occupied.get(item.id)||0)<2);
+     const resting=/쉬|휴식|relax|resting|休む|休ん/.test(scene.title||'');
+@@ -215,7 +218,7 @@
+       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
+       // Opening a home hydrates the current scene at its destination. Walking is
+       // reserved for a scene change observed while this home remains on screen.
+-      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
++      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%520):now;
+       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
+       current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey:destination.roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+     }
+@@ -259,7 +262,7 @@
+       agent.interactionId=interactionId;
+       if(hydrateInteraction){Object.assign(agent,{phase:"using",fromRoomKey:roomKey,roomKey,fromX:destination.x,fromY:destination.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now,interactionId,approachingInteraction:false});return}
+       if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}
+-      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%1800);
++      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%580);
+       Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:startsAt,arrivesAt:startsAt+duration,endsAt:Math.max(agent.endsAt,startsAt+duration+5_000),interactionId,approachingInteraction:true});
+     });
+   });
+@@ -268,7 +271,7 @@
+   // 결정적인 방향으로만 밀어 재렌더할 때 좌우가 뒤집히거나 떨리지 않는다.
+   const agents=eligible.map(id=>current.agents[id]).filter(Boolean);
+   for(let i=0;i<agents.length;i+=1)for(let j=i+1;j<agents.length;j+=1){
+-    const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey||a.furnitureId&&b.furnitureId&&["의자","소파"].includes(a.item)&&["의자","소파"].includes(b.item))continue;
++    const a=agents[i],b=agents[j];if(a.phase==="walking"||b.phase==="walking"||a.furnitureId||b.furnitureId||a.roomKey!==b.roomKey||a.furnitureId&&b.furnitureId&&["의자","소파"].includes(a.item)&&["의자","소파"].includes(b.item))continue;
+     const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?10:23,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
+     if(distance>=minDistance)continue;
+     const direction=hash(`${a.characterId}:${b.characterId}`)%2?1:-1,shift=(minDistance-distance)/2+1;
+--- a/runtime/room-privacy.js
++++ b/runtime/room-privacy.js
+@@ -0,0 +1,21 @@
++import {roomActivityKey} from './room-activities.js?v=20260909dev305';
++export function privateRoomOccupant(world,c,homeId,room,sceneFor){
++ return Object.values(world.characters||{}).find(other=>{
++  if(other.id===c.id)return false;
++  const scene=sceneFor(other);
++  if(!scene?.home||scene.meetingJourney||scene.transit||(scene.visitHomeId||other.homeId)!==homeId||scene.room!==room)return false;
++  if([scene.withId,...(scene.withIds||[])].includes(c.id))return false;
++  return ['hygiene','toilet','affection'].includes(roomActivityKey(scene));
++ });
++}
++export function respectRoomPrivacy(world,c,scene,sceneFor,canEnter=()=>true){
++ if(!scene?.home||scene.manualDirective||scene.meetingJourney||scene.transit)return scene;
++ const homeId=scene.visitHomeId||c.homeId,home=world.homes?.[homeId];
++ if(!home||!privateRoomOccupant(world,c,homeId,scene.room,sceneFor))return scene;
++ const previous=home.lifeSimulation?.agents?.[c.id]?.roomKey;
++ const rooms=Object.keys(home.rooms).sort((a,b)=>Number(b===previous)-Number(a===previous));
++ const room=rooms.find(key=>key!==scene.room&&canEnter(home.rooms[key])&&!privateRoomOccupant(world,c,homeId,key,sceneFor));
++ if(!room)return {...scene,roomActivityBlocked:true};
++ const copy=({ko:['다른 방에서 잠시 쉬는 중','사적인 시간을 보내는 사람을 방해하지 않고 다른 방에서 쉬고 있어요.'],en:['Resting in another room','They are resting elsewhere to give the other person privacy.'],ja:['別の部屋で休んでいます','相手の私的な時間を邪魔しないよう、別の部屋で休んでいます。']})[world.uiLanguage||'ko'];
++ return {...scene,room,title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],localizedCopy:undefined,actionKind:'rest',meetingKind:undefined,furniture:undefined,meetingFurniture:undefined,needKey:undefined,lifeTaskId:undefined,sleeping:false,groupInteraction:false,withId:undefined,withIds:[],homeEncounter:null,recoveryStartedAt:undefined,recoveryEndsAt:0,privacyWaiting:true};
++}

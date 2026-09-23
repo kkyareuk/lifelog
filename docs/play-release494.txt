@@ -1,0 +1,9 @@
+<ko-KR>
+이동 중 0.7초 이상 멈추면 현재 위치에서 원래 목적지로 계속 이동해요. 음식 정리·식사 전후 순간이동과 자는 중 자동 식사를 수정했어요. 사용 중인 자리와 이동 목적지를 유지하고 사적인 방에는 자율 진입하지 않아요. 욕구 창 수치를 실시간으로 갱신하고 밤 마을이 잠깐 밝아지는 현상을 수정했어요.
+</ko-KR>
+<en-US>
+Walks stuck for 0.7 seconds resume from the current position toward the original destination. Fixed teleporting around meals and cleanup, and automatic meals during sleep. Active positions and destinations stay stable, and autonomous residents respect private rooms. Needs update live while the panel is open. Fixed brief daylight flashes at night.
+</en-US>
+<ja-JP>
+移動中に0.7秒止まると、現在地から元の目的地へ進みます。食事や片付け前後の瞬間移動と、睡眠中の自動食事を修正しました。使用中の位置と移動先を維持し、私的な時間を過ごす部屋への自律的な入室を控えます。欲求の表示をリアルタイムで更新し、夜の村が一瞬明るくなる問題を修正しました。
+</ja-JP>
