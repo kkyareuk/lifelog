@@ -1,3 +1,4 @@
+import {playerNoteLogs} from './player-notes.js';
 import {buildingRoomKey} from './building-room-location.js';
 import {activityProgressMarkup} from './activity-progress.js';
 import {roomFoodMarkup} from './prepared-food-ui.js';
@@ -1800,7 +1801,7 @@ function homeDailyLog(chars,h){
       if(!x.home&&previousAtThisHome&&!returningHome)own.push({minute:Math.max(previous.minute+1,x.minute-8),time:time(Math.max(previous.minute+1,x.minute-8)),title:"외출",desc:`${x.title} 일정을 위해 집을 나섰어요. 문을 잠그고 필요한 소지품을 확인했어요.`,room:"entry",character:c,important:true});
       if(atThisHome&&previous&&!previous.home)own.push({minute:Math.max(previous.minute+1,x.minute-5),time:time(Math.max(previous.minute+1,x.minute-5)),title:"귀가",desc:"바깥 일정을 마치고 돌아와 신발과 겉옷을 정리하며 집 안으로 들어왔어요.",room:"entry",character:c,important:true});
     });
-    return own;
+    return [...own.filter(x=>!x.playerNoteId),...playerNoteLogs(c,now.getTime(),state.uiLanguage).filter(x=>x.visitHomeId===h.id).map(x=>({...x,character:c}))];
   });
   const daySeed=Number(`${now.getFullYear()}${now.getMonth()+1}${now.getDate()}`),residents=chars.length?chars:[state.characters[state.activeId]].filter(Boolean),pets=h.pets||[];
   const characterAtHomeAt=(character,minute)=>{
@@ -1823,9 +1824,9 @@ function homeDailyLog(chars,h){
   // 제목만 조금 다른 항목이 겹쳐도 하나의 순간으로 보이도록 마지막 항목만 남깁니다.
   const deduped=[],seenEntries=new Set();
   entries.forEach(item=>{
-    const key=[item.character?.id||item.pet?.id||"house",item.time||item.minute].join("|");
+    const key=[item.character?.id||item.pet?.id||"house",item.playerNoteId?item.interactionId:item.time||item.minute].join("|");
     if(seenEntries.has(key)){
-      const index=deduped.findIndex(previous=>[previous.character?.id||previous.pet?.id||"house",previous.time||previous.minute].join("|")===key);
+      const index=deduped.findIndex(previous=>[previous.character?.id||previous.pet?.id||"house",previous.playerNoteId?previous.interactionId:previous.time||previous.minute].join("|")===key);
       if(index>=0)deduped[index]=item;
       return;
     }

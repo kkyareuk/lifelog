@@ -21,6 +21,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  const key=id(input.requestId),ref=root.collection('mail').doc(key),old=await tx.get(ref);if(old.exists){if(old.data().senderUid!==uid)fail('request-id-conflict',409);return {id:key}}
  const targetId=id(input.targetId),sourceId=input.sourceId?id(input.sourceId):'',[target,source]=await Promise.all([tx.get(root.collection('residents').doc(targetId)),sourceId?tx.get(root.collection('residents').doc(sourceId)):null]);
  if(!target.exists||sourceId&&(!source?.exists||source.data().ownerUid!==uid||sourceId===targetId))fail('character-owner-required',403);
+ const deliverNote=()=>{if(sourceId)return;const notes=Array.isArray(target.data().playerNotes)?target.data().playerNotes:[];if(notes.some(n=>n.id===key))return;tx.update(target.ref,{playerNotes:[...notes,{id:key,createdAt:clock(),homeId:target.data().residences?.find(r=>r.isPrimary)?.homeId||target.data().sharedHomeId||''}].slice(-300)});tx.update(root,{lifeUpdatedAt:0,lifeNextAt:0})};
  const senderPhoto=sourceId?require('./mail-portrait')(source.data()):member.photoURL||'';
  if(sent.length>=30)fail('mail-rate-limit',429);
  const recipientUid=target.data().ownerUid,recipient=await tx.get(root.collection('members').doc(recipientUid));if(!recipient.exists)fail('recipient-left-group',409);
@@ -29,7 +30,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  if(input.gift&&recipientUid!==uid&&input.giftWorkflow===2){
   if(group.rules?.allowGifts===false)fail('gifts-disabled',403);
   const pendingGift=require('./mail-gift-receipts').giftValue(input.gift,source?.data().name||member.displayName||'Village owner'),commitGift=await require('./mail-gift-receipts').reserve(db,tx,uid,clock());
-  reserve();commitGift();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
+  reserve();commitGift();deliverNote();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
   notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
  }
  let gift=null,catalogRef,catalogItems,profile;
@@ -40,5 +41,5 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  const value={senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift,createdAt:clock()};
  reserve();if(gift){tx.set(catalogRef,{items:catalogItems},{merge:true});tx.update(root.collection('residents').doc(targetId),{profileJson:JSON.stringify(profile),updatedAt:clock()});tx.update(root,{lifeUpdatedAt:0})}
  for(const life of giftLives)tx.update(root.collection("residents").doc(life.id),{lifeJson:life.lifeJson});
- tx.create(ref,value);if(recipientUid!==uid)notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
+ deliverNote();tx.create(ref,value);if(recipientUid!==uid)notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
 });

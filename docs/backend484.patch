@@ -1,0 +1,165 @@
+--- a/account-mailbox.js
++++ b/account-mailbox.js
+@@ -12,7 +12,8 @@
+    const responder=p.respondedAt?(p.responderUid?await get(root.collection('members').doc(p.responderUid)):recipient):null;
+    const source=p.sourceId?await get(root.collection('residents').doc(p.sourceId)):null;
+ 
+-   return {id:d.id,...p,creationInput:undefined,groupId:root.id,senderDisplayName:sender.data()?.displayName||'',responderDisplayName:responder?.data()?.displayName||p.responderDisplayName||'',responderPhoto:responder?.data()?.photoURL||p.responderPhoto||'',recipientDisplayName:recipient?.data()?.displayName||p.recipientDisplayName||'',senderKind:kind==='proposals'?'user':p.sourceId?'character':'user',senderPhoto:p.senderPhoto||(kind==='proposals'?sender.data()?.photoURL:p.sourceId?require('./mail-portrait')(source?.data()):sender.data()?.photoURL)||''};
++   let characterReadAt=0;if(kind==='mail'&&p.targetId&&!p.sourceId){const target=await get(root.collection('residents').doc(p.targetId));try{characterReadAt=JSON.parse(target.data()?.lifeJson||'{}').noteReceipts?.[d.id]?.readAt||0}catch{}}
++   return {id:d.id,...p,characterReadAt,creationInput:undefined,groupId:root.id,senderDisplayName:sender.data()?.displayName||'',responderDisplayName:responder?.data()?.displayName||p.responderDisplayName||'',responderPhoto:responder?.data()?.photoURL||p.responderPhoto||'',recipientDisplayName:recipient?.data()?.displayName||p.recipientDisplayName||'',senderKind:kind==='proposals'?'user':p.sourceId?'character':'user',senderPhoto:p.senderPhoto||(kind==='proposals'?sender.data()?.photoURL:p.sourceId?require('./mail-portrait')(source?.data()):sender.data()?.photoURL)||''};
+   }));return [key,values.filter(Boolean)];
+  }));const notices=await readPage(db.collection('villageAnnouncements'),'notices',/^villageAnnouncements\/[^/]+$/);const incoming=entries.find(([key])=>key==='incomingMail');incoming[1].push(...notices.docs.map(d=>({id:'notice-'+d.id,...d.data(),recipientUid:uid})));const transfers=await db.collection('users').doc(uid).collection('characterTransfers').get();return {...Object.fromEntries(entries),mailCursors,characterTransfers:transfers.docs.map(d=>d.data())};
+ };
+--- a/shared-mail.js
++++ b/shared-mail.js
+@@ -21,6 +21,7 @@
+  const key=id(input.requestId),ref=root.collection('mail').doc(key),old=await tx.get(ref);if(old.exists){if(old.data().senderUid!==uid)fail('request-id-conflict',409);return {id:key}}
+  const targetId=id(input.targetId),sourceId=input.sourceId?id(input.sourceId):'',[target,source]=await Promise.all([tx.get(root.collection('residents').doc(targetId)),sourceId?tx.get(root.collection('residents').doc(sourceId)):null]);
+  if(!target.exists||sourceId&&(!source?.exists||source.data().ownerUid!==uid||sourceId===targetId))fail('character-owner-required',403);
++ const deliverNote=()=>{if(sourceId)return;const notes=Array.isArray(target.data().playerNotes)?target.data().playerNotes:[];if(notes.some(n=>n.id===key))return;tx.update(target.ref,{playerNotes:[...notes,{id:key,createdAt:clock(),homeId:target.data().residences?.find(r=>r.isPrimary)?.homeId||target.data().sharedHomeId||''}].slice(-300)});tx.update(root,{lifeUpdatedAt:0,lifeNextAt:0})};
+  const senderPhoto=sourceId?require('./mail-portrait')(source.data()):member.photoURL||'';
+  if(sent.length>=30)fail('mail-rate-limit',429);
+  const recipientUid=target.data().ownerUid,recipient=await tx.get(root.collection('members').doc(recipientUid));if(!recipient.exists)fail('recipient-left-group',409);
+@@ -29,7 +30,7 @@
+  if(input.gift&&recipientUid!==uid&&input.giftWorkflow===2){
+   if(group.rules?.allowGifts===false)fail('gifts-disabled',403);
+   const pendingGift=require('./mail-gift-receipts').giftValue(input.gift,source?.data().name||member.displayName||'Village owner'),commitGift=await require('./mail-gift-receipts').reserve(db,tx,uid,clock());
+-  reserve();commitGift();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
++  reserve();commitGift();deliverNote();tx.create(ref,{senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift:pendingGift,createdAt:clock()});
+   notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
+  }
+  let gift=null,catalogRef,catalogItems,profile;
+@@ -40,5 +41,5 @@
+  const value={senderUid:uid,recipientUid,sourceId,targetId,senderPhoto,sourceName:source?.data().name||member.displayName||'Village owner',targetName:target.data().name,subject,body,gift,createdAt:clock()};
+  reserve();if(gift){tx.set(catalogRef,{items:catalogItems},{merge:true});tx.update(root.collection('residents').doc(targetId),{profileJson:JSON.stringify(profile),updatedAt:clock()});tx.update(root,{lifeUpdatedAt:0})}
+  for(const life of giftLives)tx.update(root.collection("residents").doc(life.id),{lifeJson:life.lifeJson});
+- tx.create(ref,value);if(recipientUid!==uid)notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
++ deliverNote();tx.create(ref,value);if(recipientUid!==uid)notify(tx,recipientUid,root.id+'-'+key+'-mail',root.id,key,'mail-received');return {id:key};
+ });
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -14,9 +14,11 @@
+       const advance=await engine();
+       return db.runTransaction(async tx=>{
+         const {ref,group}=await context(tx,input.groupId,uid),now=clock();
+-        if(!input.command&&group.lifeUpdatedAt&&(now-Number(group.lifeUpdatedAt)<1000||Number(group.lifeNextAt)>now))return {updated:false};
++        if(group.playerNoteVersion===1&&!input.command&&group.lifeUpdatedAt&&(now-Number(group.lifeUpdatedAt)<1000||Number(group.lifeNextAt)>now))return {updated:false};
+         const [r,h,relationships,declarations,catalog,perceptions,schedules]=await Promise.all([tx.get(ref.collection('residents')),tx.get(ref.collection('homes')),tx.get(ref.collection('relationships')),tx.get(ref.collection('declarations')),tx.get(ref.collection('catalog')),tx.get(ref.collection('perceptions')),tx.get(ref.collection('schedules'))]);
+         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
++        const noteMigrations=[];
++        if(group.playerNoteVersion!==1){const mail=await tx.get(ref.collection('mail').orderBy('createdAt','desc').limit(300));for(const resident of residents){const notes=Array.isArray(resident.playerNotes)?[...resident.playerNotes]:[],ids=new Set(notes.map(n=>n.id));for(const doc of [...mail.docs].reverse()){const n=doc.data();if(n.targetId!==resident.id||n.sourceId||ids.has(doc.id))continue;notes.push({id:doc.id,createdAt:n.createdAt,homeId:resident.residences?.find(r=>r.isPrimary)?.homeId||resident.sharedHomeId||''});ids.add(doc.id)}if(notes.length!==(resident.playerNotes||[]).length){resident.playerNotes=notes.slice(-300);noteMigrations.push(resident)}}}
+         if(input.command){
+           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
+           if(!['food','message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
+@@ -31,7 +33,8 @@
+           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
+         }
+         const recipeEntitlements={},owners=[...new Set(residents.map(r=>r.ownerUid).filter(Boolean))],ownerPacks=new Map(await Promise.all(owners.map(async owner=>{const user=await tx.get(db.collection('users').doc(owner));return [owner,user.data()?.entitlements?.dlcPacks||[]]})));for(const resident of residents)recipeEntitlements[resident.id]=ownerPacks.get(resident.ownerUid)||[];
+-        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
++        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!r.playerNotes?.some(n=>!life.noteReceipts?.[n.id]?.readAt)||!!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
++        for(const resident of noteMigrations)tx.update(ref.collection('residents').doc(resident.id),{playerNotes:resident.playerNotes});
+         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
+         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
+         for(const life of lives){
+@@ -42,7 +45,7 @@
+         const future=[now+300000];
+         for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+         const lifeNextAt=Math.max(now+1000,Math.min(...future));
+-        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
++        tx.update(ref,{playerNoteVersion:1,lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
+       });
+     },
+     saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);const patch={};if(input.photoURL!==undefined){if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');patch.photoURL=input.photoURL}if(input.name!==undefined){patch.name=String(input.name).trim().slice(0,80);if(!patch.name)fail('name-required')}if(input.description!==undefined)patch.description=String(input.description).slice(0,500);tx.update(ref,patch);return {saved:true}}),
+--- a/runtime\server-life.mjs
++++ b/runtime\server-life.mjs
+@@ -27,8 +27,8 @@
+     }
+     const lives=world.order.map(id=>{
+       const c=world.characters[id],days=Object.fromEntries(Object.entries(c.days||{}).sort(([a],[b])=>{const stamp=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getTime()};return stamp(a)-stamp(b)}).slice(-2).map(([key,day])=>[key,{...day,entries:visibleTimeline(c,new Date(Number(key.split("-")[0]),Number(key.split("-")[1])-1,Number(key.split("-")[2]),23,59)).slice(-80)}]));
+-      let json=JSON.stringify({wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
+-      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
++      let json=JSON.stringify({noteReceipts:c.noteReceipts||{},wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
++      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({noteReceipts:c.noteReceipts||{},wallet:c.wallet||null,cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
+       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
+       return {id,lifeJson:json};
+     });
+--- a/runtime\shared-world.js
++++ b/runtime\shared-world.js
+@@ -34,7 +34,7 @@
+     const profile=restoreWardrobe(recovered,r.id,catalog),life=decodeShared(r.lifeJson),schedule=decodeShared(r.scheduleJson);
+     const homeId=Array.isArray(r.residences)?(r.residences.find(item=>item.isPrimary&&homes[item.homeId])?.homeId||r.residences.find(item=>homes[item.homeId])?.homeId||''):(snapshot.homes||[]).some(h=>h.id===r.sharedHomeId)?r.sharedHomeId:(snapshot.homes||[]).find(h=>h.ownerUid===r.ownerUid&&h.sourceHomeId===(r.sourceHomeId||profile.homeId))?.id||'';
+     const remap=items=>(items||[]).map(item=>({...item,townId:towns.some(t=>t.id===item.townId)?item.townId:r.townId,homeId:homes[item.homeId]?item.homeId:homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id||((snapshot.residents||[]).some(x=>x.id===id)?id:null)).filter(Boolean)}));
+-    characters[r.id]={...profile,wallet:life.wallet||profile.wallet,cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
++    characters[r.id]={...profile,playerNotes:(r.playerNotes||[]).map(n=>({...n,homeId:homes[n.homeId]?n.homeId:homeId})),noteReceipts:life.noteReceipts||{},wallet:life.wallet||profile.wallet,cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
+       residences:Array.isArray(r.residences)?r.residences.filter(item=>homes[item.homeId]):homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
+       wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};
+     if(group.courtTheme==='court'&&!options.editor){characters[r.id].job=courtJobName(profile.courtJob,language);characters[r.id].jobTitle=profile.courtJobTitle||'';}
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,3 +1,4 @@
++import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
+ import {officeEmployment,officeDuty} from './career-duties.js';
+ import {careerWeeklyRoutines} from './career-work.js';
+ import {mealObservation} from './meal-observation.js';
+@@ -4841,12 +4842,15 @@
+   try{return withSimulationBatch(()=>{
+     if(Math.abs(Date.now()-date.getTime())<60000&&finishCooking(state,c,date.getTime()))save(false,false);
+     if(Math.abs(Date.now()-date.getTime())<60000&&finishCoffee(state,c,date.getTime()))save(false,false);
++    if(Math.abs(Date.now()-date.getTime())<60000&&syncLocalPlayerNotes(state,c))save(false,false);
+     automaticViewExpression(c,date);
+     privateLifeEvent(c,date);
+     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
+     current=adaptTownActivity(state,c,current);
+     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
++    if(Math.abs(Date.now()-date.getTime())<60000&&advancePlayerNotes(c,current,date.getTime()))save(false,false);
++    current=playerNoteScene(c,current,date.getTime(),state.uiLanguage);
+     const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
+     return bathing!==current?commitLiveEntry(c,date,bathing):current;
+   })}catch(error){return sceneFailure(c,date,error)}
+--- /dev/null
++++ b/runtime/player-notes.js
+@@ -0,0 +1,43 @@
++const text=(lang,ko,en,ja)=>({ko,en,ja}[lang]||ko);
++export function enqueuePlayerNote(c,note){
++ if(!c||!note?.id||note.sourceId||!Number.isFinite(Number(note.createdAt)))return false;
++ c.playerNotes=Array.isArray(c.playerNotes)?c.playerNotes:[];
++ if(c.playerNotes.some(n=>n.id===note.id))return false;
++ c.playerNotes.push({id:String(note.id),createdAt:Number(note.createdAt),homeId:note.homeId||c.homeId||''});
++ c.playerNotes=c.playerNotes.slice(-300);return true;
++}
++const sleeping=s=>s.actionKind==='sleep'||/자는|잠든|수면|낮잠|sleep|nap|眠|寝/.test((s.title||'').toLowerCase());
++const available=s=>s?.home&&!s.transit&&!s.manualDirective&&!s.routineId&&!s.withId&&!s.groupInteraction&&!sleeping(s)&&!s.lifeTaskId&&!s.economyWork&&!s.cooking&&!['meal','eat','wash','toilet','bath'].includes(s.actionKind)&&!/요리|조리|식사|용변|씻|목욕|cooking|料理/.test(s.title||'');
++export function advancePlayerNotes(c,scene,now=Date.now()){
++ if(!c?.playerNotes?.length)return false;
++ c.noteReceipts??={};let changed=false;
++ const active=c.playerNotes.find(n=>c.noteReceipts[n.id]?.startedAt&&!c.noteReceipts[n.id]?.readAt);
++ if(active){const r=c.noteReceipts[active.id];
++  if(r.endsAt&&now>=r.endsAt){r.readAt=r.endsAt;changed=true;}
++  else if(!available(scene)){if(r.endsAt){r.remainingMs=r.endsAt-now;r.endsAt=0;return true}return false;}
++  else {if(!r.endsAt){r.endsAt=now+(r.remainingMs||60000);r.homeId=scene.visitHomeId||c.homeId;r.room=scene.room||'living';return true}return false;}
++ }
++ const last=Math.max(0,...Object.values(c.noteReceipts).map(r=>Number(r.readAt)||0));
++ if(now<last+1000||!available(scene))return changed;
++ const note=c.playerNotes.find(n=>n.createdAt<=now&&!c.noteReceipts[n.id]);
++ if(note){c.noteReceipts[note.id]={startedAt:now,endsAt:now+60000,readAt:0,homeId:scene.visitHomeId||c.homeId,room:scene.room||'living'};changed=true;}
++ const ids=new Set(c.playerNotes.map(n=>n.id));c.noteReceipts=Object.fromEntries(Object.entries(c.noteReceipts).filter(([id])=>ids.has(id)));return changed;
++}
++export function playerNoteScene(c,scene,now=Date.now(),lang='ko'){
++ const note=c?.playerNotes?.find(n=>{const r=c.noteReceipts?.[n.id];return r&&r.startedAt<=now&&now<r.endsAt&&!r.readAt;});
++ if(!note||!available(scene))return scene;
++ const r=c.noteReceipts[note.id],d=new Date(r.startedAt),minute=d.getHours()*60+d.getMinutes();
++ return {...scene,home:true,visitHomeId:r.homeId,room:r.room,placeId:'',title:text(lang,'사용자가 보낸 쪽지를 읽는 중','Reading your note','ユーザーからの手紙を読んでいます'),desc:text(lang,'도착한 쪽지를 펼쳐 한 줄씩 읽고 있어요. 마지막 줄까지 읽은 뒤 잘 접어 간직해요.','They unfold your note and read it line by line, then fold it carefully to keep.','届いた手紙を広げて一行ずつ読み、最後まで読んでから丁寧に畳んでしまいます。'),kind:'read',actionKind:'read',playerNoteId:note.id,interactionId:'player-note:'+note.id,recoveryEndsAt:r.endsAt,minute,time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),withId:'',withIds:[],groupInteraction:false,copy:Object.fromEntries(['en','ja'].map(l=>[l,{title:text(l,'사용자가 보낸 쪽지를 읽는 중','Reading your note','ユーザーからの手紙を読んでいます'),desc:text(l,'','They unfold your note and read it line by line, then fold it carefully to keep.','届いた手紙を広げて一行ずつ読み、最後まで読んでから丁寧に畳んでしまいます。')}])),localizedCopy:undefined};
++}
++export function playerNoteLogs(c,now=Date.now(),lang='ko'){
++ const day=new Date(now).toDateString(),rows=[];
++ for(const n of c.playerNotes||[]){const r=c.noteReceipts?.[n.id];for(const [kind,at,homeId,room] of [['arrival',n.createdAt,n.homeId,'entry'],['read',r?.startedAt,r?.homeId,r?.room]]){if(!at||at>now||new Date(at).toDateString()!==day)continue;const d=new Date(at),reading=kind==='read';rows.push({home:true,visitHomeId:homeId,room,minute:d.getHours()*60+d.getMinutes(),time:String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'),playerNoteId:n.id,noteEvent:kind,interactionId:'player-note:'+n.id+':'+kind,important:true,title:reading?text(lang,'사용자가 보낸 쪽지를 읽는 중','Reading your note','ユーザーの手紙を読む'):text(lang,'사용자의 쪽지가 도착했어요','Your note arrived','ユーザーから手紙が届きました'),desc:reading?text(lang,'쪽지를 펼쳐 한 줄씩 읽고 있어요.','They unfold your note and read it line by line.','手紙を広げて一行ずつ読んでいます。'):text(lang,`${c.name} 앞으로 보낸 쪽지가 집 우편함에 도착했어요.`,`A note addressed to ${c.name} arrived in the home mailbox.`,`${c.name}宛ての手紙が家の郵便受けに届きました。`)});}}
++ return rows;
++}
++let cachedKey,cachedRaw,cachedRows=[];
++export function syncLocalPlayerNotes(world,c){
++ if(world.sharedContext||typeof localStorage==='undefined')return false;
++ const key='drawer-player-mail:'+(globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid||'guest');let raw;try{raw=localStorage.getItem(key)||'[]';}catch{return false;}
++ if(key!==cachedKey||raw!==cachedRaw){cachedKey=key;cachedRaw=raw;try{const parsed=JSON.parse(raw);cachedRows=Array.isArray(parsed)?parsed:[]}catch{cachedRows=[];}}
++ let changed=false;for(const n of cachedRows)if(n.targetId===c.id&&!n.sourceId)changed=enqueuePlayerNote(c,n)||changed;return changed;
++}

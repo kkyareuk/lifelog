@@ -1,3 +1,4 @@
+import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
 import {officeEmployment,officeDuty} from './career-duties.js';
 import {careerWeeklyRoutines} from './career-work.js';
 import {mealObservation} from './meal-observation.js';
@@ -4841,12 +4842,15 @@ export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{
     if(Math.abs(Date.now()-date.getTime())<60000&&finishCooking(state,c,date.getTime()))save(false,false);
     if(Math.abs(Date.now()-date.getTime())<60000&&finishCoffee(state,c,date.getTime()))save(false,false);
+    if(Math.abs(Date.now()-date.getTime())<60000&&syncLocalPlayerNotes(state,c))save(false,false);
     automaticViewExpression(c,date);
     privateLifeEvent(c,date);
     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
     current=adaptTownActivity(state,c,current);
     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
+    if(Math.abs(Date.now()-date.getTime())<60000&&advancePlayerNotes(c,current,date.getTime()))save(false,false);
+    current=playerNoteScene(c,current,date.getTime(),state.uiLanguage);
     const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
     return bathing!==current?commitLiveEntry(c,date,bathing):current;
   })}catch(error){return sceneFailure(c,date,error)}
