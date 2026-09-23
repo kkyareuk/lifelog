@@ -1,3 +1,6 @@
+import {syncActivityProgress} from './activity-progress.js';
+import './prepared-food-ui.js';
+import {hasMedievalDlc,TOWN_BACKGROUNDS} from './town-background.js';
 import {syncCookingUI} from './cooking-ui.js';
 import {TOWN_ERAS,TOWN_CULTURES} from './town-setting.js';
 import {bindCourtWorld,isCourtWorld} from './court-world-ui.js';
@@ -118,11 +121,11 @@ let mailboxRefreshTimer=0,meetingRefreshTimer=0;
 function scheduleMeetingRefresh(){
  clearTimeout(meetingRefreshTimer);
  if(!["observe","home","town"].includes(state.activeTab))return;
- const s=activeShared(),world=s?buildSharedWorld(s,state.uiLanguage):state,now=Date.now(),ends=[...Object.values(world.characterDirectives||{}).flatMap(d=>d.journey?.segments?.map(s=>s.end)||[]),...entranceTransitionEnds(now)].filter(t=>t>now);
+ const s=activeShared(),world=s?buildSharedWorld(s,state.uiLanguage):state,now=Date.now(),ends=[...Object.values(world.characterDirectives||{}).flatMap(d=>[d.endsAt,...(d.journey?.segments?.map(s=>s.end)||[])]),...entranceTransitionEnds(now)].filter(t=>t>now);
  const day=new Date(now),key=`${day.getFullYear()}-${day.getMonth()+1}-${day.getDate()}`;
- for(const c of Object.values(world.characters||{})){const entries=c.sharedScene?[c.sharedScene]:(c.days?.[key]?.entries||[]);for(const e of entries){const at=nextRoutinePhaseAt(e,now);if(Number.isFinite(at))ends.push(at)}}
+ for(const c of Object.values(world.characters||{})){const entries=c.sharedScene?[c.sharedScene]:(c.days?.[key]?.entries||[]);for(const e of entries){if(e.recoveryEndsAt>now)ends.push(e.recoveryEndsAt);const at=nextRoutinePhaseAt(e,now);if(Number.isFinite(at))ends.push(at)}}
  if(!ends.length)return;
- const refresh=()=>{if(document.querySelector('dialog[open],.routine-sheet-backdrop')||state.homeEditMode||isDeferredMobileTextControl(document.activeElement)){meetingRefreshTimer=setTimeout(refresh,2000);return}render()};
+ const refresh=async()=>{if(document.querySelector('dialog[open],.routine-sheet-backdrop')||state.homeEditMode||isDeferredMobileTextControl(document.activeElement)){meetingRefreshTimer=setTimeout(refresh,2000);return}if(s)await window.DrawerVillageGroups.advanceLife(true).catch(()=>{});render()};
  meetingRefreshTimer=setTimeout(refresh,Math.max(50,Math.min(...ends)-now+30));
 }
 document.addEventListener("contextmenu",event=>{
@@ -1588,6 +1591,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
     bindSpeechStylePickers(document.querySelector("#app"),active(),state.uiLanguage);
     document.querySelectorAll('textarea,input:not([type]),input[type=text]').forEach(el=>{if(el.maxLength<0||el.maxLength>500)el.maxLength=500});
     applyTheme();
+    afterScreenRender(syncActivityProgress);
     afterScreenRender(()=>syncBackgroundMusic(state));
     if(!selectionOnly)afterScreenRender(scheduleMeetingRefresh);
     afterScreenRender(()=>syncMovementAudio(state));
@@ -2680,7 +2684,7 @@ function bind(){
     button.addEventListener('click',event=>toggleGameHudMoment(button,event));
     button.addEventListener('keydown',event=>{
       if(event.key!=="Enter"&&event.key!==" ")return;
-      toggleGameHudMoment(button,event);
+      playInteractionSound('log-toggle',state);toggleGameHudMoment(button,event);
     });
   });
   $$('[data-character-command]').forEach(button=>button.addEventListener('click',event=>{
@@ -4269,12 +4273,15 @@ function bind(){
   }));
   $("[data-world-travel-allowed]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.travelAllowed=e.target.checked;saveTownProfile();showToast(e.target.checked?"이 마을의 이동 경로를 열었어요":"이 마을을 오가는 이동을 막았어요")});
   $("[data-world-description]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.description=e.target.value;save()});
-  for(const [field,choices] of [['era',TOWN_ERAS],['culture',TOWN_CULTURES]]){
-    $(`[data-world-${field}]`)?.addEventListener('change',e=>{
-      if(currentTownMode()!=='town'||!Object.hasOwn(choices,e.target.value))return;
-      state.world[field]=e.target.value;saveTownProfile();renderPreservingPageScroll(e.target);
-    });
-  }
+  $('[data-world-background-music]')?.addEventListener('change',e=>{
+    const key=e.target.value;if(key==='arkenwald'&&!hasMedievalDlc()){showToast(({ko:'아르켄발트 음악은 중세 DLC에 포함돼요.',en:'Arkenwald music requires the medieval DLC.',ja:'アーケンヴァルトの音楽には中世DLCが必要です。'})[state.uiLanguage]);render();return;}
+    state.world.backgroundMusic=key;saveTownProfile();syncBackgroundMusic(state);
+  });
+  $('[data-world-background-setting]')?.addEventListener('change',e=>{
+    const key=e.target.value;if(currentTownMode()!=='town'||!Object.hasOwn(TOWN_BACKGROUNDS,key))return;
+    if(key==='arkenwald'&&!hasMedievalDlc()){e.target.value=state.world.backgroundSetting||'drawer';showToast(({ko:'아르켄발트는 중세 DLC에 포함돼요.',en:'Arkenwald is included in the medieval DLC.',ja:'アーケンヴァルトは中世DLCに含まれます。'})[state.uiLanguage]||'아르켄발트는 중세 DLC에 포함돼요.');return;}
+    Object.assign(state.world,{backgroundSetting:key,era:key==='arkenwald'?'medieval':'modern',culture:key==='arkenwald'?'europe':'mixed'});saveTownProfile();renderPreservingPageScroll(e.target);
+  });
   $("[data-town-illustration-open]")?.addEventListener("click",()=>$("[data-town-illustration-dialog]")?.showModal());
   $$('[data-town-illustration]').forEach(button=>button.addEventListener("click",()=>{if(setWorldBackground(button.dataset.townIllustration)){button.closest("dialog")?.close();render();showToast("마을 전체 배경 일러스트를 바꿨어요")}}));
   $$('[data-town-illustration-locked]').forEach(button=>button.addEventListener("click",()=>showToast("기후 확장 DLC에서 제공될 마을 일러스트예요")));

@@ -1,0 +1,19 @@
+const assert=require('node:assert/strict'),fixture=require('./court-fixture.cjs');
+(async()=>{
+ const {advanceSharedLife}=await import('../server-life.mjs'),g=await import('../state.js?v=20260909dev305'),{db,data}=fixture();
+ const id=g.createCharacter(),profile=structuredClone(g.state.characters[id]),home=structuredClone(g.state.homes[id]);profile.wake='00:00';profile.sleep='00:00';
+ data.set('groups/g',{ownerUid:'host',towns:[{id:'t',name:'Town',places:[]}],rules:{}});data.delete('groups/g/residents/b');data.delete('groups/g/residents/c');data.set('groups/g/residents/a',{ownerUid:'member',name:'Cook',townId:'t',sharedHomeId:'h',sourceHomeId:id,profileJson:JSON.stringify(profile),scheduleJson:'{}'});data.set('groups/g/homes/h',{ownerUid:'member',townId:'t',sourceHomeId:id,layoutJson:JSON.stringify(home)});
+ let now=Date.now();const api=require('../functions/shared-town').createSharedTownService({db,engine:async()=>advanceSharedLife,clock:()=>now});
+ await assert.rejects(api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundSetting:'arkenwald'}}),/medieval-dlc-required/);
+ data.set('users/host',{entitlements:{dlcPacks:['medieval']}});await api.saveTown('host',{groupId:'g',townId:'t',revision:0,patch:{backgroundSetting:'arkenwald',era:'medieval',culture:'europe'}});
+ const command={characterId:'a',kind:'meal',lifeTask:'simple_cook',recipeId:'miyeokguk',cookingRequestId:'meal-test-476'};
+ await assert.rejects(api.advance('host',{groupId:'g',command}),/character-owner-required/);
+ await api.advance('member',{groupId:'g',command});let life=JSON.parse(data.get('groups/g/residents/a').lifeJson),balance=life.wallet.balance;assert(life.cooking.active);const job=life.cooking.active;
+ now+=6000;await api.advance('member',{groupId:'g',command});assert.equal(JSON.parse(data.get('groups/g/residents/a').lifeJson).wallet.balance,balance,'retry does not double charge');
+ now=job.endsAt+1;await api.advance('member',{groupId:'g'});life=JSON.parse(data.get('groups/g/residents/a').lifeJson);assert.equal(life.cooking.dishes.length,1);
+ now+=6000;await api.advance('member',{groupId:'g',command:{kind:'food',characterId:'a',dishId:job.id,action:'eat'}});life=JSON.parse(data.get('groups/g/residents/a').lifeJson);assert.equal(life.cooking.dishes.length,0);assert.equal(life.cooking.inventory.miyeokguk,0);
+ now+=6000;await assert.rejects(api.advance('member',{groupId:'g',command:{kind:'food',characterId:'a',dishId:job.id,action:'eat'}}),/food-missing/);
+ now+=6000;await api.advance('member',{groupId:'g',command:{kind:'wash',lifeTask:'toilet',characterId:'a'}});life=JSON.parse(data.get('groups/g/residents/a').lifeJson);assert.equal(life.directive.endsAt-Math.max(life.directive.startedAt,life.directive.journey?.arrivesAt||0),10000);
+ const {eventFor}=await import('../simulation.js?v=20260909dev305');const local=g.state.characters[id],stamp=Date.now();Object.assign(local,{wake:'00:00',sleep:'00:00',lifeNeeds:{sleep:90,hunger:90,toilet:0,hygiene:90,social:90,updatedAt:stamp}});delete g.state.characterDirectives[id];const first=eventFor(local,new Date(stamp));assert.equal(first.needKey,'toilet');const after=eventFor(local,new Date(stamp+11000));assert.notEqual(after.needKey,'toilet');assert(local.lifeNeeds.toilet>75);
+ console.log('PASS476 shared transaction: DLC authorization, character ownership, unrestricted medieval-town Korean recipe, exactly-once cost/food, consumption replay denied, 10-second toilet after arrival');
+})().catch(e=>{console.error(e);process.exitCode=1});

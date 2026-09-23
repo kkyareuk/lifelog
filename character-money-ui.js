@@ -1,3 +1,4 @@
+import {openCareerDashboard} from './career-dashboard.js';
 import {bindWalletAccounts,walletBalance} from './wallet-sharing.js';
 import {renderWalletSharing} from './wallet-sharing-ui.js';
 import {openEmployment,openCareerWorld,mountEmployment} from './career-ui.js';
@@ -18,7 +19,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
   const d=document.createElement('dialog'),title=document.createElement('h2'),message=document.createElement('p'),close=document.createElement('button');d.className='character-money-coming';title.id='money-coming-title';title.textContent=pane==='work'?words(world.uiLanguage,'직장','Work','仕事'):words(world.uiLanguage,'지갑','Wallet','財布');d.setAttribute('aria-labelledby',title.id);message.textContent=words(world.uiLanguage,'준비 중입니다.','Coming soon.','準備中です。');close.textContent=words(world.uiLanguage,'닫기','Close','閉じる');close.onclick=()=>d.close();d.onclose=()=>d.remove();d.append(title,message,close);document.body.append(d);d.showModal();return d;
  }
 
- if(pane==='work')return openEmployment(world,c,snapshot);
+ if(pane==='work')return openCareerDashboard(world,c,snapshot);
  applyWorldCurrency(world,c);bindWalletAccounts(world);
  const tr=(ko,en,ja)=>words(world.uiLanguage,ko,en,ja),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',canEdit=!snapshot||c.ownerUid===uid,accountState=state;
  if(economyAvailable()&&!c.wallet&&!snapshot){ensureWallet(c);applyWorldCurrency(world,c);bindWalletAccounts(world);save(true)}
@@ -81,7 +82,7 @@ export function bindCharacterMoney(){
  }
  const currentBalance=hud?.querySelector('[data-character-balance]');if(currentBalance){currentBalance.textContent=displayMoney(walletBalance(c.wallet),c,world.uiLanguage);currentBalance.title=currentBalance.textContent;}
  document.querySelectorAll('[data-employment-editor]').forEach(el=>{if(!el.dataset.mounted){el.dataset.mounted='true';const character=world.characters[el.dataset.employmentEditor];if(character)mountEmployment(el,world,character,snapshot);}});
- document.querySelectorAll('[data-open-career-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('work',b.dataset.openCareerSettings));
+ document.querySelectorAll('[data-open-career-settings]').forEach(b=>b.onclick=()=>{const character=world.characters[b.dataset.openCareerSettings];if(character)openEmployment(world,character,snapshot)});
  document.querySelectorAll('[data-character-money-settings]').forEach(b=>b.onclick=()=>openCharacterMoney('settings',b.dataset.characterMoneySettings));
 
 }

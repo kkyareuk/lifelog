@@ -1,5 +1,6 @@
 // A semantic action selects one effect; generic clicks never accompany it.
 export function interactionSound(control,state={}){
+ if(control.matches('[data-toggle-game-hud-moment]'))return 'log-toggle';
  if(state.activeTab==='observe'&&control.matches('[data-home-character],[data-multiplayer-resident]'))return 'book-page';
  if(control.matches('[data-close-full-character-settings]'))return 'book-close';
  if(control.closest('[data-character-full-ui-version],.desktop-character-editor')&&[...control.attributes].some(a=>/^data-character-.*(?:pane|overview-target)$/.test(a.name)))return 'book-page';

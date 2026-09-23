@@ -1,7 +1,8 @@
 const minute=value=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));return m&&+m[1]<24&&+m[2]<60?+m[1]*60 + +m[2]:null};
 export function sleepWindow(character){
- const wake=minute(character.wake),sleep=minute(character.sleep);
- return {wake:wake??420,sleep:sleep??1380,disabled:character.autonomousActivityBlocks?.includes('sleep')||wake===sleep&&wake!==null};
+ let wake=minute(character.wake),sleep=minute(character.sleep);
+ const equal=wake===sleep&&wake!==null;if(character.needSettings?.sleepVariation&&!equal){let seed=0;for(const ch of String(character.id||''))seed=(seed*31+ch.charCodeAt(0))>>>0;const shift=seed%31-15;wake=((wake??420)+shift+1440)%1440;sleep=((sleep??1380)+shift+1440)%1440;}
+ return {wake:wake??420,sleep:sleep??1380,disabled:character.autonomousActivityBlocks?.includes('sleep')||equal};
 }
 export function scheduledSleeping(character,date=new Date()){
  const {wake,sleep,disabled}=sleepWindow(character),n=date.getHours()*60+date.getMinutes();

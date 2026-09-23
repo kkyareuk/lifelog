@@ -1,3 +1,4 @@
+import {actOnFood} from './prepared-food.js';
 import {finishCooking} from './cooking.js';
 import {finishCoffee} from './coffee-crafting.js';
 import {rememberScene} from './story-events.js?v=20260909dev305';
@@ -14,7 +15,8 @@ export function advanceSharedLife(snapshot,now,command=null){
   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
     const date=new Date(now),scenes={};
     for(const id of world.order){finishCoffee(world,world.characters[id],now);finishCooking(world,world.characters[id],now);}
-    if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
+    if(command?.kind==='food')actOnFood(world,command.characterId,command.dishId,command.action,command.options,now);
+    else if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
     for(const id of [...world.order].sort())eventFor(world.characters[id],date);
     for(const id of world.order){
       scenes[id]=eventFor(world.characters[id],date);rememberScene(world.characters[id],scenes[id],now);

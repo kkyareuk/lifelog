@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {backgroundMusicPlaylist,townMusic,townBackgroundFields} from '../town-background.js';
+assert.equal(townMusic({backgroundSetting:'arkenwald'}),'arkenwald');
+assert.equal(townMusic({backgroundSetting:'arkenwald',backgroundMusic:'drawer'}),'drawer');
+assert.deepEqual(backgroundMusicPlaylist({backgroundMusic:'drawer'},'home'),['./assets/audio/main-theme.mp3']);
+assert.match(backgroundMusicPlaylist({backgroundMusic:'arkenwald'},'home')[0],/arkenwald-home/);
+assert.match(backgroundMusicPlaylist({backgroundMusic:'arkenwald'},'town')[0],/arkenwald-town/);
+const listeners={},win={};globalThis.document={baseURI:'https://example.test/',visibilityState:'visible',addEventListener:(e,f)=>listeners[e]=f};globalThis.window={addEventListener:(e,f)=>win[e]=f};globalThis.localStorage={getItem:()=>null};
+let player;globalThis.Audio=class {constructor(src){this.src=new URL(src,document.baseURI).href;this.paused=true;this.volume=0;this.events={};this.plays=0;player=this}addEventListener(e,f){this.events[e]=f}pause(){this.paused=true}play(){this.plays++;this.paused=false;return Promise.resolve()}};
+const {syncBackgroundMusic}=await import('../background-music.js');const state={world:{backgroundSetting:'arkenwald'},activeTab:'observe'};
+syncBackgroundMusic(state);assert.equal(player,undefined);listeners.pointerdown();await Promise.resolve();await Promise.resolve();const first=player.src;assert.match(first,/arkenwald-(tavern|waltz)/);syncBackgroundMusic(state);assert.equal(player.src,first);assert.equal(player.plays,1,'rerender must not restart music');
+player.paused=true;player.events.ended();await Promise.resolve();await Promise.resolve();assert.notEqual(player.src,first,'next song avoids immediate repeat');
+state.activeTab='home';syncBackgroundMusic(state);await Promise.resolve();await Promise.resolve();assert.match(player.src,/arkenwald-home/);assert(player.loop);
+state.activeTab='town';syncBackgroundMusic(state);await Promise.resolve();await Promise.resolve();assert.match(player.src,/arkenwald-town/);
+state.world.backgroundMusic='drawer';syncBackgroundMusic(state);await Promise.resolve();await Promise.resolve();assert.match(player.src,/main-theme/);globalThis.localStorage.getItem=()=>JSON.stringify({backgroundMusicMuted:true});syncBackgroundMusic(state);assert(player.paused);win.pagehide();
+for(const lang of ['ko','en','ja'])assert.match(townBackgroundFields({},lang),/data-world-background-music/);
+console.log('PASS476 music: screen playlists, independent preference, random no-repeat, stable rerender, mute, three languages');

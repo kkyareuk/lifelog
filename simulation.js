@@ -1,3 +1,5 @@
+import {automaticMeal} from './automatic-cooking.js';
+import {needDuration} from './need-pacing.js';
 import {currentDuties,employmentsFor,todayCareerDuty} from './salary.js';
 import {finishCooking} from './cooking.js';
 import {adaptTownActivity} from './town-setting.js';
@@ -3563,7 +3565,7 @@ function calculateBaseEvent(c,date=new Date()){
   }
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   const sources=giftSources(date);
-  const past=list.filter(x=>(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>(!x.needKey||!x.recoveryEndsAt||date.getTime()<x.recoveryEndsAt)&&(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
@@ -4823,6 +4825,7 @@ export function eventFor(c,date=new Date()){
     automaticViewExpression(c,date);
     privateLifeEvent(c,date);
     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+    if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
     current=adaptTownActivity(state,c,current);
     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
     const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
@@ -4853,7 +4856,7 @@ function calculateEventFor(c,date){
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,coffee?{actionKind:'eating'}:{needKey:need}));
     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
-      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime(),recoveryEndsAt:(c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime())+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
 
       if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);

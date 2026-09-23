@@ -1,0 +1,334 @@
+--- a/runtime\cooking.js
++++ b/runtime\cooking.js
+@@ -1,3 +1,5 @@
++import {recipeUnlocked} from './cooking-access.js';
++import {placeCookedFood} from './prepared-food.js';
+ import {recipeName} from './recipe-localizations.js';
+ import {recipeDurations,cookingStepAt} from './cooking-timing.js';
+ import {RECIPES} from './recipes.js';
+@@ -6,9 +8,11 @@
+ import {characterTown,historicalTown} from './town-setting.js';
+ export const recipeById=id=>RECIPES.find(r=>r.id===id);
+ export const savedRecipeById=id=>recipeById(id)||LEGACY_RECIPES.find(r=>r.id===id);
+-export function cookingLevel(c){return Math.max(1,Math.min(5,1+Math.floor((Number(c?.cooking?.experience)||0)/10)))}
+-const preindustrialRecipes=new Set(['miyeokguk','bulgogi','galbijjim','yakgwa','miso_shiru','onigiri','tamagoyaki','chawanmushi','tempura','kitsune_udon','mitarashi_dango','focaccia']);
+-export function recipeAllowed(town,recipe){return !!recipe&&(recipe.cuisine==='fantasy'||!historicalTown(town)||!recipe.appliance&&recipe.cuisine==='medieval'||!recipe.appliance&&town?.era!=='medieval'&&preindustrialRecipes.has(recipe.id))}
++export const COOKING_XP=[0,8,24,48,80];
++export function cookingLevel(c){const xp=Number(c?.cooking?.experience)||0;return c?.cooking?.experienceVersion===2?COOKING_XP.filter(n=>xp>=n).length:Math.max(1,Math.min(5,1+Math.floor(xp/10)))}
++function upgradeExperience(data){if(data.experienceVersion===2)return;const old=Number(data.experience)||0,level=Math.min(4,Math.floor(old/10));data.experience=COOKING_XP[level]+(level<4?(old%10)/10*(COOKING_XP[level+1]-COOKING_XP[level]):0);data.experienceVersion=2;}
++// Keep saved fantasy dishes readable; unpublished recipes cannot be started.
++export function recipeAllowed(town,recipe){return !!recipe&&recipe.cuisine!=='fantasy'}
+ export function cookingState(c){return c.cooking??={experience:0,inventory:{},history:[],requests:[],active:null}}
+ export function cookingProgress(job,now=Date.now()){
+  const recipe=job?.recipeVersion===472?recipeById(job.recipeId):LEGACY_RECIPES.find(r=>r.id===job?.recipeId);if(!recipe)return null;
+@@ -17,6 +21,8 @@
+ }
+ export function canStartCooking(world,c,recipeId,now=Date.now()){
+  const r=recipeById(recipeId);if(!r||!recipeAllowed(characterTown(world,c),r))return 'cooking-era';
++ if(!recipeUnlocked(world,c,r))return 'cooking-dlc';
++ if((c.cooking?.dishes?.length||0)>=200)return 'cooking-storage';
+  if(cookingLevel(c)<r.level)return 'cooking-level';
+  if(c.cooking?.active&&now<c.cooking.active.endsAt)return 'cooking-busy';
+  return '';
+@@ -40,8 +46,11 @@
+ export function finishCooking(world,c,now){
+  const data=c.cooking,job=data?.active;if(!job||now<job.endsAt)return false;
+  const recipe=recipeById(job.recipeId)||LEGACY_RECIPES.find(r=>r.id===job.recipeId);if(!recipe)return false;
+- data.inventory??={};data.inventory[recipe.id]=Math.min(99,(Number(data.inventory[recipe.id])||0)+1);
+- data.experience=Math.min(100000,(Number(data.experience)||0)+1);
++ placeCookedFood(world,c,job);
++ data.inventory??={};data.inventory[recipe.id]=Math.min(200,(Number(data.inventory[recipe.id])||0)+1);
++ upgradeExperience(data);
++ const repeats=(data.history||[]).slice(0,8).filter(h=>h.recipeId===recipe.id).length;
++ data.experience=Math.min(100000,(Number(data.experience)||0)+Math.max(.35,(.7+recipe.level*.15)/(1+repeats*.12))); 
+  data.history=[{...job,completedAt:job.endsAt},...(data.history||[])].slice(0,30);
+  data.active=null;return true;
+ }
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -19,7 +19,7 @@
+         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
+         if(input.command){
+           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
+-          if(!['message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
++          if(!['food','message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
+           if(['message','remote_checkin','phone_call','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
+           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
+             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
+@@ -30,7 +30,8 @@
+           for(const key of new Set([input.command.targetId,...extras])){const contact=residents.find(r=>r.id===key);if(contact)await require('./user-safety').allowContact(db,tx,uid,contact.ownerUid);}
+           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
+         }
+-        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{return !!JSON.parse(r.lifeJson||'{}').cooking?.active}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
++        const recipeEntitlements={},owners=[...new Set(residents.map(r=>r.ownerUid).filter(Boolean))],ownerPacks=new Map(await Promise.all(owners.map(async owner=>{const user=await tx.get(db.collection('users').doc(owner));return [owner,user.data()?.entitlements?.dlcPacks||[]]})));for(const resident of residents)recipeEntitlements[resident.id]=ownerPacks.get(resident.ownerUid)||[];
++        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
+         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
+         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
+         for(const life of lives){
+@@ -39,7 +40,7 @@
+           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
+         }
+         const future=[now+300000];
+-        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
++        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+         const lifeNextAt=Math.max(now+1000,Math.min(...future));
+         tx.update(ref,{lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
+       });
+@@ -136,10 +137,12 @@
+       const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
+       const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
+       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
+-      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','bg','travelAllowed','transportModes'];
++      if((input.patch?.backgroundSetting==='arkenwald'&&town.backgroundSetting!=='arkenwald')||(input.patch?.backgroundMusic==='arkenwald'&&town.backgroundMusic!=='arkenwald')){const user=await tx.get(db.collection('users').doc(uid));if(!user.data()?.entitlements?.dlcPacks?.includes('medieval'))fail('medieval-dlc-required',403);}
++      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','bg','travelAllowed','transportModes'];
+       for(const [key,value] of Object.entries(input.patch||{})){
+         if(!fields.includes(key))fail('invalid-town-field');
+         if(key==='era'&&!['modern','medieval','joseon','rococo','victorian','cyberpunk'].includes(value)||key==='culture'&&!['mixed','europe','korea','japan','china','usa','italy'].includes(value))fail('invalid-town-setting');
++        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald'].includes(value))fail('invalid-town-setting');
+         if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
+         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
+         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
+--- a/runtime\life-needs.js
++++ b/runtime\life-needs.js
+@@ -1,3 +1,4 @@
++import {needDuration,needFrequency,needVariation} from './need-pacing.js';
+ import {roomActivityKey} from './room-activities.js?v=20260909dev305';
+ import {sleepNeedAfter} from './sleep-clock.js';
+ import {isDrinkingCoffee} from './coffee-needs.js';
+@@ -9,13 +10,13 @@
+  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
+  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
+  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
+- const recovery={sleep:4,hunger:8,toilet:100,hygiene:8,social:4};
++ const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:80*60000/needDuration(c,key)]));
+  const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
+- return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key])+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
++ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
+ }
+ export function advanceNeeds(c,scene,now=Date.now()){
+  const old=c.lifeNeeds,values=needsAt(c,now);
+- if(old&&now<=old.updatedAt)return false;
++ if(old&&now<old.updatedAt)return false;
+  // Attribute elapsed time only to the previously observed action. Never give a
+  // newly started action credit for an offline interval.
+  const recovering=[],moving=scene?.transit||scene?.meetingJourney||scene?.meetingWaiting||scene?.roomActivityBlocked||scene?.homeEncounter&&!scene.homeEncounter.arrived;
+--- a/runtime\server-life.mjs
++++ b/runtime\server-life.mjs
+@@ -1,3 +1,4 @@
++import {actOnFood} from './prepared-food.js';
+ import {finishCooking} from './cooking.js';
+ import {finishCoffee} from './coffee-crafting.js';
+ import {rememberScene} from './story-events.js?v=20260909dev305';
+@@ -14,7 +15,8 @@
+   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
+     const date=new Date(now),scenes={};
+     for(const id of world.order){finishCoffee(world,world.characters[id],now);finishCooking(world,world.characters[id],now);}
+-    if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
++    if(command?.kind==='food')actOnFood(world,command.characterId,command.dishId,command.action,command.options,now);
++    else if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{recipeId:command.recipeId,cookingRequestId:command.cookingRequestId,companionIds:command.companionIds,targetId:command.targetId||"",topic:command.topic||"",payment:command.payment||"split",workTask:command.workTask||"",lifeTask:command.lifeTask||"",subjectId:command.subjectId||"",positions:command.positions,contextTarget:command.contextTarget,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
+     for(const id of [...world.order].sort())eventFor(world.characters[id],date);
+     for(const id of world.order){
+       scenes[id]=eventFor(world.characters[id],date);rememberScene(world.characters[id],scenes[id],now);
+--- a/runtime\shared-world.js
++++ b/runtime\shared-world.js
+@@ -51,7 +51,7 @@
+   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
+   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
+   const activeId=state.activeTab==='routine'&&sharedSelection(snapshot).routineCharacter&&characters[sharedSelection(snapshot).routineCharacter]?sharedSelection(snapshot).routineCharacter:snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
+-  return bindWalletAccounts({...base,walletSharing:group.walletSharing,economy:group.economy,courtRanks:group.courtRanks,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
++  return bindWalletAccounts({...base,recipeEntitlements:snapshot.recipeEntitlements,walletSharing:group.walletSharing,economy:group.economy,courtRanks:group.courtRanks,courtTheme:group.courtTheme||'basic',courtProfiles:snapshot.courtProfiles||[],courtPairs:snapshot.courtPairs||[],relationshipChangeMode:group.rules?.relationshipChangeMode||'dynamic',preventInterTownMovement:group.rules?.allowInterTownMovement===false,catalog,relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:sharedCharacterOrder(Object.keys(characters),uid,group.id||snapshot.activeGroupId),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
+     characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
+     sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0});
+ }
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,3 +1,5 @@
++import {automaticMeal} from './automatic-cooking.js';
++import {needDuration} from './need-pacing.js';
+ import {currentDuties,employmentsFor,todayCareerDuty} from './salary.js';
+ import {finishCooking} from './cooking.js';
+ import {adaptTownActivity} from './town-setting.js';
+@@ -3563,7 +3565,7 @@
+   }
+   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
+   const sources=giftSources(date);
+-  const past=list.filter(x=>(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
++  const past=list.filter(x=>(!x.needKey||!x.recoveryEndsAt||date.getTime()<x.recoveryEndsAt)&&(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+   const last=past.at(-1);
+   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
+   if(last&&n-last.minute>=nextGap){
+@@ -4823,6 +4825,7 @@
+     automaticViewExpression(c,date);
+     privateLifeEvent(c,date);
+     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
++    if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
+     current=adaptTownActivity(state,c,current);
+     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
+     const bathing=sharedBathScene(state,c,current,person=>baseEventFor(person,date),date.getTime());
+@@ -4853,7 +4856,7 @@
+     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
+     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,coffee?{actionKind:'eating'}:{needKey:need}));
+     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
+-      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
++      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime(),recoveryEndsAt:(c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime())+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+ 
+       if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
+       return localizeLifeLog(commitLiveEntry(c,date,moment),state.uiLanguage,state,c.id);
+--- a/runtime\sleep-clock.js
++++ b/runtime\sleep-clock.js
+@@ -1,7 +1,8 @@
+ const minute=value=>{const m=/^(\d{1,2}):(\d{2})$/.exec(String(value||''));return m&&+m[1]<24&&+m[2]<60?+m[1]*60 + +m[2]:null};
+ export function sleepWindow(character){
+- const wake=minute(character.wake),sleep=minute(character.sleep);
+- return {wake:wake??420,sleep:sleep??1380,disabled:character.autonomousActivityBlocks?.includes('sleep')||wake===sleep&&wake!==null};
++ let wake=minute(character.wake),sleep=minute(character.sleep);
++ const equal=wake===sleep&&wake!==null;if(character.needSettings?.sleepVariation&&!equal){let seed=0;for(const ch of String(character.id||''))seed=(seed*31+ch.charCodeAt(0))>>>0;const shift=seed%31-15;wake=((wake??420)+shift+1440)%1440;sleep=((sleep??1380)+shift+1440)%1440;}
++ return {wake:wake??420,sleep:sleep??1380,disabled:character.autonomousActivityBlocks?.includes('sleep')||equal};
+ }
+ export function scheduledSleeping(character,date=new Date()){
+  const {wake,sleep,disabled}=sleepWindow(character),n=date.getHours()*60+date.getMinutes();
+--- a/runtime\state.js
++++ b/runtime\state.js
+@@ -1,4 +1,5 @@
+ import {activityPrice,payActivity,moneySettings} from './character-money.js';
++import {directedNeed,needDuration} from './need-pacing.js';
+ import {canStartCooking,startCooking,finishCooking} from './cooking.js';
+ import {characterTown,townActivityAllowed} from './town-setting.js';
+ import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine} from './coffee-crafting.js';
+@@ -1253,7 +1254,7 @@
+   save(true);
+ }
+ const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","appearanceCareLevel","accessoryUse","accessories","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
+-SIMULATION_FIELDS.add("diligence");SIMULATION_FIELDS.add("autonomousActivityBlocks");
++SIMULATION_FIELDS.add("needSettings");SIMULATION_FIELDS.add("diligence");SIMULATION_FIELDS.add("autonomousActivityBlocks");
+ const touchCharacterTimelines=ids=>{
+   const stamp=Date.now();
+   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
+@@ -1656,6 +1657,7 @@
+ 
+   const sharedHomeId=journey?.to.homeId||"";
+   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
++  const recoveryNeed=directedNeed(task?.id,kind);if(recoveryNeed&&!target&&!options.recipeId)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+needDuration(character,recoveryNeed);
+   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
+   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
+   if(options.recipeId&&!startCooking(state,character,directive,options.recipeId,options.cookingRequestId,startedAt))return false;
+--- a/runtime\town-setting.js
++++ b/runtime\town-setting.js
+@@ -1,7 +1,8 @@
++import {townBackgroundFields} from './town-background.js';
+ export const TOWN_ERAS={modern:['현대','Modern','現代'],medieval:['중세','Medieval','中世'],joseon:['조선 시대','Joseon period','朝鮮時代'],rococo:['로코코 시대','Rococo period','ロココ時代'],victorian:['빅토리안 시대','Victorian period','ヴィクトリア朝時代'],cyberpunk:['사이버펑크','Cyberpunk','サイバーパンク']};
+ export const TOWN_CULTURES={mixed:['자유·혼합','Mixed','自由・混合'],europe:['유럽','Europe','ヨーロッパ'],korea:['한국','Korea','韓国'],japan:['일본','Japan','日本'],china:['중국','China','中国'],usa:['미국','United States','アメリカ'],italy:['이탈리아','Italy','イタリア']};
+ export const settingLabel=(map,key,language='ko')=>(map[key]||Object.values(map)[0])[{ko:0,en:1,ja:2}[language]||0];
+-export function normalizeTownSetting(town={}){return {era:Object.hasOwn(TOWN_ERAS,town.era)?town.era:'modern',culture:Object.hasOwn(TOWN_CULTURES,town.culture)?town.culture:'mixed'}}
++export function normalizeTownSetting(town={}){if(town.backgroundSetting)return {backgroundSetting:town.backgroundSetting==='arkenwald'?'arkenwald':'drawer',era:town.backgroundSetting==='arkenwald'?'medieval':'modern',culture:town.backgroundSetting==='arkenwald'?'europe':'mixed'};return {era:Object.hasOwn(TOWN_ERAS,town.era)?town.era:'modern',culture:Object.hasOwn(TOWN_CULTURES,town.culture)?town.culture:'mixed'}}
+ export const historicalTown=town=>!['modern','cyberpunk'].includes(normalizeTownSetting(town).era);
+ export function characterTown(world,character={},scene={}){const id=scene.townId||world.homes?.[scene.visitHomeId]?.townId||character.townId||world.homes?.[character.homeId]?.townId;return world.towns?.find(t=>t.id===id)||world.world||{}}
+ const electronic=/게임기|전기(?:기기|레인지|밥솥|포트|주전자|히터|제품|면도기)|자판기|자동차|버스|지하철|이메일|앱을|스마트폰|휴대폰|핸드폰|컴퓨터|노트북|태블릿|텔레비전|\bTV\b|전자레인지|전기밥솥|냉장고|에어컨|청소기|세탁기|드라이어|커피머신|에스프레소|캡슐\s*커피|온라인|인터넷|소셜\s*미디어|SNS|유튜브|스트리밍|비디오\s*게임|콘솔\s*게임|영상\s*통화|충전|키보드|마우스|smartphone|cellphone|computer|laptop|tablet|television|microwave|refrigerator|washing machine|hair dryer|coffee machine|espresso|capsule coffee|online|internet|social media|streaming|video game|charging|keyboard|スマホ|携帯|パソコン|タブレット|テレビ|電子レンジ|冷蔵庫|洗濯機|ドライヤー|コーヒーメーカー|オンライン|インターネット|動画|充電/i;
+@@ -19,7 +20,4 @@
+  const [title,desc]=alternatives[key][{ko:0,en:1,ja:2}[world.uiLanguage]||0],kind=key==='social'?'talk':key==='reading'?'read':key;
+  return {...item,title,desc,baseTitle:title,baseDesc:desc,sharedCanonicalTitle:title,sharedCanonicalDesc:desc,sharedPerspectives:undefined,sharedActionText:undefined,baseScene:undefined,localizedCopy:true,kind,actionKind:kind,activityFamily:key,lifeTaskId:'',lifeTask:'',furniture:null,furnitureKey:'',remote:false,remoteContact:false,...(!group?{groupInteraction:false,withId:null,withIds:[],participantOrder:[]}:{}),eraAdapted:true};
+ }
+-export function townSettingFields(town,language='ko'){
+- const value=normalizeTownSetting(town),l={ko:['시대','국가·문화권','시대에 맞는 생활 행동을 사용해요. 국가·문화권은 음식과 생활 소재의 기준이에요.'],en:['Era','Country and culture','Activities follow the era. Country and culture guide food and everyday themes.'],ja:['時代','国・文化圏','時代に合った行動を使います。国・文化圏は料理や暮らしの題材の基準になります。']}[language]||['시대','국가·문화권',''];
+- return `<fieldset class="town-setting-fields"><legend>${l[0]} · ${l[1]}</legend><label>${l[0]}<select data-world-era>${Object.keys(TOWN_ERAS).map(key=>`<option value="${key}" ${value.era===key?'selected':''}>${settingLabel(TOWN_ERAS,key,language)}</option>`).join('')}</select></label><label>${l[1]}<select data-world-culture>${Object.keys(TOWN_CULTURES).map(key=>`<option value="${key}" ${value.culture===key?'selected':''}>${settingLabel(TOWN_CULTURES,key,language)}</option>`).join('')}</select></label><small>${l[2]}</small></fieldset>`;
+-}
++export const townSettingFields=townBackgroundFields;
+--- /dev/null
++++ b/runtime/automatic-cooking.js
+@@ -0,0 +1,25 @@
++import {RECIPES} from './recipes.js';
++import {cookingLevel,canStartCooking} from './cooking.js';
++import {recipeUnlocked} from './cooking-access.js';
++import {needsAt} from './life-needs.js';
++import {preparedFoods,foodSpoiled,actOnFood} from './prepared-food.js';
++export function mealWindow(now,id){
++ const d=new Date(now),hour=d.getHours(),slot=hour>=6&&hour<11?'breakfast':hour>=11&&hour<15?'lunch':hour>=17&&hour<22?'dinner':'';if(!slot)return null;
++ let seed=0;for(const char of `${id}:${d.toDateString()}:${slot}`)seed=(seed*31+char.charCodeAt(0))>>>0;
++ const earliest={breakfast:7,lunch:12,dinner:18}[slot]*60+seed%61;if(hour*60+d.getMinutes()<earliest)return null;
++ return {key:`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}:${slot}`,slot,seed};
++}
++export function automaticMeal(world,c,scene,now,start){
++ // A wallet marks a character that has opted into the economy. Never backfill
++ // missed meals or interrupt the user's command, a journey or an appointment.
++ if(world.sharedContext&&!world.recipeEntitlements)return false;
++ if(!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
++ const window=mealWindow(now,c.id);if(!window||c.cooking?.lastAutomaticMeal===window.key||needsAt(c,now).hunger>65)return false;
++ const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
++ const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));
++ const suitable=available.filter(r=>window.slot==='breakfast'?/죽|수프|국|빵|토스트|오트|달걀|오니기리|요거트|샌드위치/.test(r.name):window.slot==='lunch'?/밥|면|파스타|김밥|샌드위치|덮밥|스튜/.test(r.name):!/케이크|디저트|아이스크림|푸딩/.test(r.name));
++ const pool=suitable.length?suitable:available,recipe=pool[window.seed%pool.length];if(!recipe)return false;
++ const requestId=`auto-${c.id.slice(0,45)}-${window.key.replace(/[^a-zA-Z0-9_-]/g,'-')}`;
++ if(!start(c.id,'meal',{recipeId:recipe.id,cookingRequestId:requestId,lifeTask:'simple_cook',now,scenes:{[c.id]:scene}}))return false;
++ c.cooking.lastAutomaticMeal=window.key;return true;
++}
+--- /dev/null
++++ b/runtime/prepared-food.js
+@@ -0,0 +1,28 @@
++import {needsAt} from './life-needs.js';
++export const FOOD_LIFETIME=18*3600000;
++export const foodRemaining=(dish,now=Date.now())=>Math.max(0,Number(dish.remaining??FOOD_LIFETIME)-Math.max(0,now-Number(dish.updatedAt||dish.createdAt))/(dish.storage==='fridge'?4:1));
++export const foodSpoiled=(dish,now=Date.now())=>foodRemaining(dish,now)<=0;
++export function preparedFoods(world){return Object.values(world.characters||{}).flatMap(c=>(c.cooking?.dishes||[]).map(dish=>({dish,owner:c})))}
++export function placeCookedFood(world,c,job){
++ const data=c.cooking;data.dishes??=[];if(data.dishes.some(d=>d.id===job.id))return;
++ const home=world.homes?.[job.homeId],room=home?.rooms?.[job.room],table=room?.furniturePlacements?.find(p=>/카운터|조리대|식탁|탁자|counter|table/i.test(p.item||''));
++ data.dishes.push({id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
++}
++const access=(c,home)=>c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id)||home.residents?.includes(c.id);
++export function actOnFood(world,actorId,dishId,action,options={},now=Date.now()){
++ const actor=world.characters?.[actorId],found=preparedFoods(world).find(x=>x.dish.id===dishId);if(!actor||!found)throw Error('food-missing');
++ const {dish,owner}=found,home=world.homes?.[dish.homeId];if(!home||!access(actor,home))throw Error('food-access');
++ if(!['eat','discard','move','fridge'].includes(action))throw Error('food-action');
++ if(action==='eat'&&foodSpoiled(dish,now))throw Error('food-spoiled');
++ if(action==='discard'&&actor.id!==owner.id)throw Error('food-owner');
++ if(action==='eat'||action==='discard'){
++  owner.cooking.dishes=owner.cooking.dishes.filter(d=>d.id!==dish.id);owner.cooking.inventory??={};owner.cooking.inventory[dish.recipeId]=Math.max(0,(Number(owner.cooking.inventory[dish.recipeId])||0)-1);
++  if(action==='eat'){actor.lifeNeeds={...actor.lifeNeeds,...needsAt(actor,now),updatedAt:now};actor.lifeNeeds.hunger=Math.min(100,actor.lifeNeeds.hunger+65);}
++  return true;
++ }
++ const roomKey=String(options.room||dish.room),room=home.rooms?.[roomKey];if(!room)throw Error('food-room');
++ const placements=room.furniturePlacements||[],surface=options.furnitureId?placements.find(p=>p.id===options.furnitureId):null;
++ if(action==='fridge'&&!placements.some(p=>/냉장고|refrigerator|fridge|冷蔵庫/i.test(p.item||'')))throw Error('food-fridge');
++ if(options.furnitureId&&!surface)throw Error('food-surface');
++ dish.remaining=foodRemaining(dish,now);dish.updatedAt=now;dish.storage=action==='fridge'?'fridge':'room';dish.room=roomKey;dish.furnitureId=surface?.id||'';dish.x=Math.max(5,Math.min(95,Number(surface?.x??options.x??dish.x)||50));dish.y=Math.max(5,Math.min(95,Number(surface?.y??options.y??dish.y)||65));return true;
++}
+--- /dev/null
++++ b/runtime/need-pacing.js
+@@ -0,0 +1,5 @@
++const clamp=(value,lo,hi,fallback)=>Number.isFinite(Number(value))?Math.max(lo,Math.min(hi,Number(value))):fallback;
++export function needFrequency(c,key){return clamp(c.needSettings?.frequency?.[key],.25,2,1)}
++export function needVariation(c,key){let n=2166136261;for(const ch of `${c.id}:${key}`)n=Math.imul(n^ch.charCodeAt(0),16777619)>>>0;return .85+(n%301)/1000}
++export function needDuration(c,key){const seconds={toilet:10,hunger:90,hygiene:60,social:120,sleep:600}[key]||60;return seconds*1000*(key==='toilet'?1:clamp(c.needSettings?.duration,.5,2,1))}
++export function directedNeed(task,kind){if(task==='toilet')return 'toilet';if(task==='meal'||!task&&kind==='meal')return 'hunger';if(['shower','bath','wash','face','teeth','hair_wash','hands'].includes(task)||!task&&kind==='wash')return 'hygiene';return ''}
+--- /dev/null
++++ b/runtime/town-background.js
+@@ -0,0 +1,21 @@
++// Arkenwald is a fictional blend of fifteenth-century France and England.
++// Its setting controls ambience and everyday tools, never a food blacklist.
++export const TOWN_BACKGROUNDS={
++ drawer:{name:['서랍마을','Drawer Village','引き出し村'],description:['시대와 문화가 자유롭게 어우러지는 마을이에요.','A village where eras and cultures freely mingle.','時代と文化が自由に混ざり合う村です。']},
++ arkenwald:{dlc:'medieval',name:['아르켄발트 (Arkenwald)','Arkenwald','アーケンヴァルト (Arkenwald)'],description:['1400년대 프랑스와 잉글랜드의 생활을 바탕으로 한 가상 국가예요. 시대에 맞는 도구·생활과 선술집 배경음을 사용해요. 음식 선택은 제한하지 않아요.','A fictional realm inspired by fifteenth-century France and England, with period everyday tools and tavern ambience. Food choices remain unrestricted.','1400年代のフランスとイングランドの暮らしを基にした架空の国です。時代に合った道具・生活と酒場の環境音を使います。料理の選択は制限しません。']}
++};
++export const townBackground=town=>town?.backgroundSetting==='arkenwald'?'arkenwald':'drawer';
++export const backgroundCopy=(key,field,language='ko')=>TOWN_BACKGROUNDS[key][field][{ko:0,en:1,ja:2}[language]||0];
++export const townMusic=town=>['drawer','arkenwald'].includes(town?.backgroundMusic)?town.backgroundMusic:townBackground(town);
++export function backgroundMusicPlaylist(town,screen='observe'){
++ if(townMusic(town)!=='arkenwald')return ['./assets/audio/main-theme.mp3'];
++ if(screen==='home')return ['./assets/audio/arkenwald-home.mp3'];
++ if(screen==='town')return ['./assets/audio/arkenwald-town.mp3'];
++ return ['./assets/audio/arkenwald-tavern.mp3','./assets/audio/arkenwald-waltz.mp3'];
++}
++export const backgroundMusicSource=(town,screen='observe')=>backgroundMusicPlaylist(town,screen)[0];
++export const hasMedievalDlc=()=>globalThis.window?.ParallelCityAuth?.getInfo?.()?.entitlements?.dlcPacks?.includes('medieval')===true;
++export function townBackgroundFields(town,language='ko'){
++ const selected=townBackground(town),title=({ko:'마을 배경',en:'Village setting',ja:'村の背景設定'})[language]||'마을 배경';
++ return `<fieldset class="town-setting-fields"><legend>${title}</legend><label>${title}<select data-world-background-setting>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${selected===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<small><b>${backgroundCopy(key,'name',language)}</b> — ${backgroundCopy(key,'description',language)}</small>`).join('')}<label>${({ko:'마을 배경음',en:'Village music',ja:'村のBGM'})[language]||'마을 배경음'}<select data-world-background-music>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${townMusic(town)===key?'selected':''}>${backgroundCopy(key,'name',language)}${key==='arkenwald'?' · DLC':''}</option>`).join('')}</select></label><small>${({ko:'배경 설정과 별개로 음악을 선택할 수 있어요. 아르켄발트 음악은 집·마을·기본 화면에 따라 달라져요.',en:'Choose music independently of the setting. Arkenwald has different music for homes, villages and other screens.',ja:'背景設定とは別に音楽を選べます。アーケンヴァルトでは家・村・その他の画面で曲が変わります。'})[language]}</small></fieldset>`;
++}
+--- /dev/null
++++ b/runtime/cooking-access.js
+@@ -0,0 +1,5 @@
++export function medievalCookingAccess(world,c){
++ if(world.recipeEntitlements)return world.recipeEntitlements[c.id]?.includes('medieval')===true;
++ const auth=globalThis.window?.ParallelCityAuth?.getInfo?.();return auth?.entitlements?.dlcPacks?.includes('medieval')===true&&(!world.sharedContext||c.ownerUid===auth.user?.uid);
++}
++export const recipeUnlocked=(world,c,recipe)=>!!recipe&&recipe.cuisine!=='fantasy'&&(recipe.cuisine!=='medieval'||medievalCookingAccess(world,c));

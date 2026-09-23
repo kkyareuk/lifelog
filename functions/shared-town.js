@@ -19,7 +19,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
-          if(!['message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
+          if(!['food','message','remote_checkin','phone_call','wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind))fail('invalid-command');
           if(['message','remote_checkin','phone_call','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
@@ -30,7 +30,8 @@ function createSharedTownService({db,engine,clock=Date.now}){
           for(const key of new Set([input.command.targetId,...extras])){const contact=residents.find(r=>r.id===key);if(contact)await require('./user-safety').allowContact(db,tx,uid,contact.ownerUid);}
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
-        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{return !!JSON.parse(r.lifeJson||'{}').cooking?.active}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
+        const recipeEntitlements={},owners=[...new Set(residents.map(r=>r.ownerUid).filter(Boolean))],ownerPacks=new Map(await Promise.all(owners.map(async owner=>{const user=await tx.get(db.collection('users').doc(owner));return [owner,user.data()?.entitlements?.dlcPacks||[]]})));for(const resident of residents)recipeEntitlements[resident.id]=ownerPacks.get(resident.ownerUid)||[];
+        const lives=advance({recipeEntitlements,group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command||residents.some(r=>{try{const life=JSON.parse(r.lifeJson||'{}');return !!life.cooking?.active||!!life.directive||!!life.lifeNeeds?.activeNeed}catch{return false}})?now:Math.floor(now/60000)*60000,input.command||null);
         for(const wallet of lives.homeWallets||[]){const old=h.docs.find(d=>d.id===wallet.id)?.data()?.commonWallet;if(JSON.stringify(old)!==JSON.stringify(wallet.commonWallet))tx.update(ref.collection('homes').doc(wallet.id),{commonWallet:wallet.commonWallet});}
         const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
         for(const life of lives){
@@ -39,7 +40,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
         }
         const future=[now+300000];
-        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.scene?.recoveryEndsAt,value.cooking?.active?.endsAt,value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
         const lifeNextAt=Math.max(now+1000,Math.min(...future));
         tx.update(ref,{lifeUpdatedAt:now,lifeNextAt,...(lives.walletSharing?{walletSharing:lives.walletSharing}:{})});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
       });
@@ -136,10 +137,12 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
       const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
-      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','bg','travelAllowed','transportModes'];
+      if((input.patch?.backgroundSetting==='arkenwald'&&town.backgroundSetting!=='arkenwald')||(input.patch?.backgroundMusic==='arkenwald'&&town.backgroundMusic!=='arkenwald')){const user=await tx.get(db.collection('users').doc(uid));if(!user.data()?.entitlements?.dlcPacks?.includes('medieval'))fail('medieval-dlc-required',403);}
+      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','bg','travelAllowed','transportModes'];
       for(const [key,value] of Object.entries(input.patch||{})){
         if(!fields.includes(key))fail('invalid-town-field');
         if(key==='era'&&!['modern','medieval','joseon','rococo','victorian','cyberpunk'].includes(value)||key==='culture'&&!['mixed','europe','korea','japan','china','usa','italy'].includes(value))fail('invalid-town-setting');
+        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald'].includes(value))fail('invalid-town-setting');
         if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}

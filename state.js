@@ -1,3 +1,4 @@
+import {directedNeed,needDuration} from './need-pacing.js';
 import {canStartCooking,startCooking,finishCooking} from './cooking.js';
 import {characterTown,townActivityAllowed} from './town-setting.js';
 import {coffeeRecipe,canCraftCoffee,reserveCoffee,finishCoffee,isCoffeeMachine} from './coffee-crafting.js';
@@ -1253,7 +1254,7 @@ export function deleteCharacter(id){
   save(true);
 }
 const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","appearanceCareLevel","accessoryUse","accessories","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
-SIMULATION_FIELDS.add("diligence");SIMULATION_FIELDS.add("autonomousActivityBlocks");
+SIMULATION_FIELDS.add("needSettings");SIMULATION_FIELDS.add("diligence");SIMULATION_FIELDS.add("autonomousActivityBlocks");
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
@@ -1656,6 +1657,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
 
   const sharedHomeId=journey?.to.homeId||"";
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
+  const recoveryNeed=directedNeed(task?.id,kind);if(recoveryNeed&&!target&&!options.recipeId)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+needDuration(character,recoveryNeed);
   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
   if(options.recipeId&&!startCooking(state,character,directive,options.recipeId,options.cookingRequestId,startedAt))return false;

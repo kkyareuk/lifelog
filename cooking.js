@@ -1,3 +1,5 @@
+import {recipeUnlocked} from './cooking-access.js';
+import {placeCookedFood} from './prepared-food.js';
 import {recipeName} from './recipe-localizations.js';
 import {recipeDurations,cookingStepAt} from './cooking-timing.js';
 import {RECIPES} from './recipes.js';
@@ -6,9 +8,11 @@ import {BASE_MEAL,ensureWallet,payActivity} from './character-money.js';
 import {characterTown,historicalTown} from './town-setting.js';
 export const recipeById=id=>RECIPES.find(r=>r.id===id);
 export const savedRecipeById=id=>recipeById(id)||LEGACY_RECIPES.find(r=>r.id===id);
-export function cookingLevel(c){return Math.max(1,Math.min(5,1+Math.floor((Number(c?.cooking?.experience)||0)/10)))}
-const preindustrialRecipes=new Set(['miyeokguk','bulgogi','galbijjim','yakgwa','miso_shiru','onigiri','tamagoyaki','chawanmushi','tempura','kitsune_udon','mitarashi_dango','focaccia']);
-export function recipeAllowed(town,recipe){return !!recipe&&(recipe.cuisine==='fantasy'||!historicalTown(town)||!recipe.appliance&&recipe.cuisine==='medieval'||!recipe.appliance&&town?.era!=='medieval'&&preindustrialRecipes.has(recipe.id))}
+export const COOKING_XP=[0,8,24,48,80];
+export function cookingLevel(c){const xp=Number(c?.cooking?.experience)||0;return c?.cooking?.experienceVersion===2?COOKING_XP.filter(n=>xp>=n).length:Math.max(1,Math.min(5,1+Math.floor(xp/10)))}
+function upgradeExperience(data){if(data.experienceVersion===2)return;const old=Number(data.experience)||0,level=Math.min(4,Math.floor(old/10));data.experience=COOKING_XP[level]+(level<4?(old%10)/10*(COOKING_XP[level+1]-COOKING_XP[level]):0);data.experienceVersion=2;}
+// Keep saved fantasy dishes readable; unpublished recipes cannot be started.
+export function recipeAllowed(town,recipe){return !!recipe&&recipe.cuisine!=='fantasy'}
 export function cookingState(c){return c.cooking??={experience:0,inventory:{},history:[],requests:[],active:null}}
 export function cookingProgress(job,now=Date.now()){
  const recipe=job?.recipeVersion===472?recipeById(job.recipeId):LEGACY_RECIPES.find(r=>r.id===job?.recipeId);if(!recipe)return null;
@@ -17,6 +21,8 @@ export function cookingProgress(job,now=Date.now()){
 }
 export function canStartCooking(world,c,recipeId,now=Date.now()){
  const r=recipeById(recipeId);if(!r||!recipeAllowed(characterTown(world,c),r))return 'cooking-era';
+ if(!recipeUnlocked(world,c,r))return 'cooking-dlc';
+ if((c.cooking?.dishes?.length||0)>=200)return 'cooking-storage';
  if(cookingLevel(c)<r.level)return 'cooking-level';
  if(c.cooking?.active&&now<c.cooking.active.endsAt)return 'cooking-busy';
  return '';
@@ -40,8 +46,11 @@ export function startCooking(world,c,directive,recipeId,requestId,now){
 export function finishCooking(world,c,now){
  const data=c.cooking,job=data?.active;if(!job||now<job.endsAt)return false;
  const recipe=recipeById(job.recipeId)||LEGACY_RECIPES.find(r=>r.id===job.recipeId);if(!recipe)return false;
- data.inventory??={};data.inventory[recipe.id]=Math.min(99,(Number(data.inventory[recipe.id])||0)+1);
- data.experience=Math.min(100000,(Number(data.experience)||0)+1);
+ placeCookedFood(world,c,job);
+ data.inventory??={};data.inventory[recipe.id]=Math.min(200,(Number(data.inventory[recipe.id])||0)+1);
+ upgradeExperience(data);
+ const repeats=(data.history||[]).slice(0,8).filter(h=>h.recipeId===recipe.id).length;
+ data.experience=Math.min(100000,(Number(data.experience)||0)+Math.max(.35,(.7+recipe.level*.15)/(1+repeats*.12))); 
  data.history=[{...job,completedAt:job.endsAt},...(data.history||[])].slice(0,30);
  data.active=null;return true;
 }

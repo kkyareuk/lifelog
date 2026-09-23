@@ -1,3 +1,4 @@
+import {hasMedievalDlc} from './town-background.js';
 import {sharedCapacity} from './shared-capacity.js';
 import {canEditSharedHome} from './shared-home-access.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
@@ -119,6 +120,8 @@ export function bindSharedUi({prepareImage,bindRoomGeometry,render,toast:notify,
   if(el.matches('[data-character-view]')){stop(e);saveView(el.dataset.source,el.dataset.target,el.dataset.viewField,el.value);return}
   if(el.matches('[data-place-field]')){stop(e);const field=el.dataset.placeField;saveBuilding(el.dataset.placeId,field==='type'?{}:{[field]:['spicy','sweet'].includes(field)||el.type==='number'||el.type==='range'?Number(el.value):el.value},field==='type'?{type:el.value}:{});return}
   if(el.matches('[data-home-field],[data-home-name]')){stop(e);const field=el.dataset.homeField||'name';if(field==='townId')return;saveItem('home',el.dataset.homeId,{[field]:el.type==='range'?Number(el.value):el.value});return}
+  if(el.matches('[data-world-background-music]')){stop(e);const key=el.value;if(key==='arkenwald'&&!hasMedievalDlc()){toast(({ko:'아르켄발트 음악은 중세 DLC에 포함돼요.',en:'Arkenwald music requires the medieval DLC.',ja:'アーケンヴァルトの音楽には中世DLCが必要です。'})[state.uiLanguage]);render();return}saveTown({backgroundMusic:key});return;}
+  if(el.matches('[data-world-background-setting]')){stop(e);const key=el.value;if(key==='arkenwald'&&!hasMedievalDlc()){toast(({ko:'아르켄발트는 중세 DLC에 포함돼요.',en:'Arkenwald requires the medieval DLC.',ja:'アーケンヴァルトには中世DLCが必要です。'})[state.uiLanguage]);render();return}saveTown({backgroundSetting:key,era:key==='arkenwald'?'medieval':'modern',culture:key==='arkenwald'?'europe':'mixed'});return;}
   const attr=[...el.attributes].find(a=>a.name.startsWith('data-world-'));if(attr){stop(e);const key=attr.name.slice(11).replace(/-([a-z])/g,(_,c)=>c.toUpperCase());saveTown({[key]:el.type==='checkbox'?el.checked:el.value})}
  },true);
  root.addEventListener('input',e=>{if(e.target.matches('[data-place-field],[data-home-field],[data-home-name],[data-world-name],[data-world-description]'))e.stopImmediatePropagation()},true);

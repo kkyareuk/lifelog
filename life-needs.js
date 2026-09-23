@@ -1,3 +1,4 @@
+import {needDuration,needFrequency,needVariation} from './need-pacing.js';
 import {roomActivityKey} from './room-activities.js?v=20260909dev305';
 import {sleepNeedAfter} from './sleep-clock.js';
 import {isDrinkingCoffee} from './coffee-needs.js';
@@ -9,13 +10,13 @@ export function needsAt(c,now=Date.now()){
  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
- const recovery={sleep:4,hunger:8,toilet:100,hygiene:8,social:4};
+ const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:80*60000/needDuration(c,key)]));
  const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
- return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key])+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
+ return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
 }
 export function advanceNeeds(c,scene,now=Date.now()){
  const old=c.lifeNeeds,values=needsAt(c,now);
- if(old&&now<=old.updatedAt)return false;
+ if(old&&now<old.updatedAt)return false;
  // Attribute elapsed time only to the previously observed action. Never give a
  // newly started action credit for an offline interval.
  const recovering=[],moving=scene?.transit||scene?.meetingJourney||scene?.meetingWaiting||scene?.roomActivityBlocked||scene?.homeEncounter&&!scene.homeEncounter.arrived;
