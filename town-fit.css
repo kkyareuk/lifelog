@@ -41,7 +41,7 @@
   min-width:0!important;
   overflow:auto!important;
   overscroll-behavior:contain!important;
-  touch-action:pan-x pan-y!important;
+  touch-action:none!important;
   scroll-behavior:smooth;
   scrollbar-color:color-mix(in srgb,var(--p) 58%,#8d98a5) color-mix(in srgb,var(--panel) 82%,#d9dfe5);
   scrollbar-width:thin!important;
@@ -65,7 +65,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
   aspect-ratio:auto!important;
   overflow:hidden!important;
   transform:none;
-  touch-action:pan-x pan-y!important;
+  touch-action:none!important;
 }
 :is(.town-map-scroll,.standard-observe-view .viewport) .world-bg{
   position:absolute!important;
@@ -239,7 +239,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
     width:100vw!important;
     height:100dvh!important;
     overflow:auto!important;
-    touch-action:pan-x pan-y!important;
+    touch-action:none!important;
     border-radius:0!important;
     scrollbar-width:none!important;
   }
@@ -249,7 +249,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
     min-width:var(--town-canvas-width)!important;
     height:var(--town-canvas-height)!important;
     min-height:var(--town-canvas-height)!important;
-    touch-action:pan-x pan-y!important;
+    touch-action:none!important;
   }
   html.native-app[data-active-tab="town"] .mobile-town-shell:not(.buildings-editing):not(.decorations-editing) .town-map-scroll .place{
     touch-action:manipulation!important;

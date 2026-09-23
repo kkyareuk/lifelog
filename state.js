@@ -16,7 +16,7 @@ import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {writeAnswerDelta,writeChoiceDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
 import {contactNarrative,rejectsContact,botherNarrative} from './contact-narrative.js?v=20260909dev305';
-import {contextDestination} from './context-actions.js?v=20260909dev305';
+import {contextDestination,contextHome} from './context-actions.js?v=20260909dev305';
 import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
 import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
 import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
@@ -1591,7 +1591,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(options.lifeTask&&!task)return false;
   finishCoffee(state,character,Number(options.now??Date.now()));
   if(!townActivityAllowed(characterTown(state,character),task||{kind,lifeTask:options.lifeTask}))return false;
-  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
+  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(contextHome(state,options.contextTarget)?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
   if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}

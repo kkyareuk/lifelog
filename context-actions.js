@@ -1,3 +1,4 @@
+import {buildingInterior} from './building-interior-model.js';
 import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
 import {placeActions} from './place-activities.js';
 import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
@@ -33,13 +34,17 @@ export function contextActions(target){
  if(/컴퓨터|게임/i.test(item))return [{kind:'game',label:label('게임하기','Play a game','ゲームをする')},{kind:'relax',label:label('쉬기','Relax','くつろぐ')}];
  return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},{kind:'chores',lifeTask:'clean',label:label('청소하기','Clean','掃除する')}];
 }
+export function contextHome(world,target){
+ if(target.placeId){const town=world.towns?.find(t=>t.id===world.activeTownId)||world.world,place=town?.places?.find(p=>p.id===target.placeId);if(!place)return null;const home=buildingInterior(place,town.id||world.activeTownId,world.uiLanguage);return home.id===target.homeId?home:null}
+ return world.homes[target.homeId];
+}
 export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='',companionId=''){
  if(!target||typeof target!=='object')return null;
  if(target.type==='place'){
   const place=(world.world.places||[]).find(p=>p.id===target.id);if(!place||!placeActions(place).some(a=>a.kind===kind&&(a.lifeTask||'')===lifeTask))return null;
   return {home:false,placeId:place.id,townId:world.activeTownId||c.townId};
  }
- const home=world.homes[target.homeId],room=home?.rooms?.[target.room];
+ const home=contextHome(world,target),room=home?.rooms?.[target.room];
  if(!home||!room||home.townId&&c.townId&&home.townId!==c.townId)return null;
  if(!roomEntryAllowed(c,home,room)||!roomActivityAllowed(room,{kind,lifeTask}))return null;
  let furniture=null;
@@ -58,7 +63,7 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
   const used=users.length;
   if(used>=(kind==='affection'?1:capacity))return null;
  }
- return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
+ return {home:!home.placeId,...(home.placeId?{placeId:home.placeId}:{}),visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
 }
 
 const action=(kind,ko,en,ja)=>({kind,label:label(ko,en,ja)});

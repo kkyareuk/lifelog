@@ -2,6 +2,7 @@ import {careersFor} from './career-world.js';
 import {employmentsFor} from './salary.js';
 // Game schedules, not a claim about real-world working conditions.
 const defaults={
+ 'builtin-barista':[[1,2,3,4,5],'08:00','17:00'],
  'builtin-student':[[1,2,3,4,5],'09:00','15:00'],
  'builtin-doctor':[[1,2,3,4,5],'09:00','17:00'],
  'builtin-nurse':[[1,2,3,4,5],'07:00','15:00'],

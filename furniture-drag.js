@@ -38,7 +38,7 @@ export function bindFurnitureDrag(root,{getHome,select=()=>{},move,resize=()=>{}
   if(d.ghost.parentElement!==target.layer)target.layer.append(d.ghost);d.ghost.style.setProperty('--furniture-x',pos.x+'%');d.ghost.style.setProperty('--furniture-y',pos.y+'%');for(const part of d.parts){if(part.ghost.parentElement!==target.layer)target.layer.append(part.ghost);part.ghost.style.setProperty('--furniture-x',(pos.x+part.dx)+'%');part.ghost.style.setProperty('--furniture-y',(pos.y+part.dy)+'%')}
  };
  root.addEventListener('pointerdown',e=>{
-  if(e.button!==0||drag||!root.querySelector('.home.is-editing')&&!root.matches('.home.is-editing')||e.target.closest('dialog,.furniture-edit-toolbar,[data-home-furniture-drawer]'))return;
+  if(e.button!==0||drag||!root.querySelector('.home.is-editing')&&!root.matches('.home.is-editing')||e.target.closest('.furniture-edit-toolbar,[data-home-furniture-drawer]')||e.target.closest('dialog')!==root.closest('dialog'))return;
   const room=e.target.closest('.room[data-room-key]');if(!room)return;
   const hits=[...room.querySelectorAll('[data-furniture-placement]')].filter(el=>{const r=furniturePaintedBounds(furnitureArt(el));return e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom}).sort((a,b)=>Number(getComputedStyle(b).zIndex||0)-Number(getComputedStyle(a).zIndex||0)||(a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?1:-1));if(!hits.length)return;
   // Cycle layers only after a tap finishes. Starting another drag must not select the support underneath.

@@ -2,7 +2,7 @@ const views=new Map();
 export function bindSceneZoom(root=document){
  for(const viewport of root.querySelectorAll('.home-canvas-viewport,.town-map-scroll')){
   if(viewport.dataset.zoomBound)return;const scene=viewport.querySelector(':scope > .rooms,:scope > .world');if(!scene)continue;
-  viewport.dataset.zoomBound='1';viewport.style.touchAction='none';viewport.style.setProperty('overflow','hidden','important');viewport.style.overflowAnchor='none';viewport.scrollLeft=0;viewport.scrollTop=0;
+  viewport.dataset.zoomBound='1';viewport.style.setProperty('touch-action','none','important');viewport.style.setProperty('overflow','hidden','important');viewport.style.overflowAnchor='none';viewport.scrollLeft=0;viewport.scrollTop=0;
   const key=viewport.dataset.homePan||'town',pose=views.get(key)||{scale:1,x:0,y:0};views.set(key,pose);if(views.size>80)views.delete(views.keys().next().value);
   const eventRoot=viewport.closest('.home-page')||viewport;
   const points=new Map();let gesture=null,pending=null,consumed=false,frame=0,rect=viewport.getBoundingClientRect();

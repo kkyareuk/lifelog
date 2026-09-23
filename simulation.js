@@ -1,4 +1,4 @@
-import {officeEmployment,officeDuty} from './office-work.js';
+import {officeEmployment,officeDuty} from './career-duties.js';
 import {careerWeeklyRoutines} from './career-work.js';
 import {mealObservation} from './meal-observation.js';
 import {automaticMeal} from './automatic-cooking.js';

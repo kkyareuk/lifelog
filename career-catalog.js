@@ -1,3 +1,4 @@
+import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
 // Fictional game balance: one salary unit equals one ordinary restaurant meal.
 export const BUILTIN_CAREERS = [
   {
@@ -3622,3 +3623,7 @@ export const careerLabel=(entry,language="ko")=>entry?.names?.[language]||entry?
 const corporate=BUILTIN_CAREERS.find(j=>j.id==='builtin-office'),ceo=BUILTIN_CAREERS.find(j=>j.id==='builtin-ceo');
 corporate.ranks.push(...[['director','이사','Director','取締役',850],['executive','상무','Executive director','常務',1000],['senior-executive','전무','Senior executive director','専務',1200],['vice-president','부사장','Vice president','副社長',1500]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:structuredClone(corporate.ranks.at(-1).duties)})),...ceo.ranks.map(r=>({...r,id:'ceo-'+r.id})));
 BUILTIN_CAREERS.splice(BUILTIN_CAREERS.indexOf(ceo),1);
+
+const dutyEntry=row=>({name:row[0],description:row[1],copy:{en:{name:row[2],description:row[3]},ja:{name:row[4],description:row[5]}}});
+BUILTIN_CAREERS.find(j=>j.id==='builtin-politician').ranks.forEach(rank=>rank.duties=POLITICIAN_DUTIES.map(dutyEntry));
+BUILTIN_CAREERS.push({id:'builtin-barista',name:'바리스타',names:{en:'Barista',ja:'バリスタ'},builtin:true,payDay:25,departments:['커피 바','매장 운영'],ranks:[['rank-1','견습 바리스타','Trainee barista','見習いバリスタ',210],['rank-2','바리스타','Barista','バリスタ',270],['rank-3','선임 바리스타','Senior barista','シニアバリスタ',340],['rank-4','카페 매니저','Cafe manager','カフェマネージャー',430]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:BARISTA_DUTIES.map(dutyEntry)}))});

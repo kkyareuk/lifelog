@@ -1,0 +1,190 @@
+--- a/runtime\career-catalog.js
++++ b/runtime\career-catalog.js
+@@ -1,3 +1,4 @@
++import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
+ // Fictional game balance: one salary unit equals one ordinary restaurant meal.
+ export const BUILTIN_CAREERS = [
+   {
+@@ -3622,3 +3623,7 @@
+ const corporate=BUILTIN_CAREERS.find(j=>j.id==='builtin-office'),ceo=BUILTIN_CAREERS.find(j=>j.id==='builtin-ceo');
+ corporate.ranks.push(...[['director','이사','Director','取締役',850],['executive','상무','Executive director','常務',1000],['senior-executive','전무','Senior executive director','専務',1200],['vice-president','부사장','Vice president','副社長',1500]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:structuredClone(corporate.ranks.at(-1).duties)})),...ceo.ranks.map(r=>({...r,id:'ceo-'+r.id})));
+ BUILTIN_CAREERS.splice(BUILTIN_CAREERS.indexOf(ceo),1);
++
++const dutyEntry=row=>({name:row[0],description:row[1],copy:{en:{name:row[2],description:row[3]},ja:{name:row[4],description:row[5]}}});
++BUILTIN_CAREERS.find(j=>j.id==='builtin-politician').ranks.forEach(rank=>rank.duties=POLITICIAN_DUTIES.map(dutyEntry));
++BUILTIN_CAREERS.push({id:'builtin-barista',name:'바리스타',names:{en:'Barista',ja:'バリスタ'},builtin:true,payDay:25,departments:['커피 바','매장 운영'],ranks:[['rank-1','견습 바리스타','Trainee barista','見習いバリスタ',210],['rank-2','바리스타','Barista','バリスタ',270],['rank-3','선임 바리스타','Senior barista','シニアバリスタ',340],['rank-4','카페 매니저','Cafe manager','カフェマネージャー',430]].map(([id,name,en,ja,salaryMeals])=>({id,name,names:{en,ja},salaryMeals,duties:BARISTA_DUTIES.map(dutyEntry)}))});
+--- a/runtime\career-work.js
++++ b/runtime\career-work.js
+@@ -2,6 +2,7 @@
+ import {employmentsFor} from './salary.js';
+ // Game schedules, not a claim about real-world working conditions.
+ const defaults={
++ 'builtin-barista':[[1,2,3,4,5],'08:00','17:00'],
+  'builtin-student':[[1,2,3,4,5],'09:00','15:00'],
+  'builtin-doctor':[[1,2,3,4,5],'09:00','17:00'],
+  'builtin-nurse':[[1,2,3,4,5],'07:00','15:00'],
+--- a/runtime\context-actions.js
++++ b/runtime\context-actions.js
+@@ -1,3 +1,4 @@
++import {buildingInterior} from './building-interior-model.js';
+ import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
+ import {placeActions} from './place-activities.js';
+ import {roomActivityAllowed} from './room-activities.js?v=20260909dev305';
+@@ -33,13 +34,17 @@
+  if(/컴퓨터|게임/i.test(item))return [{kind:'game',label:label('게임하기','Play a game','ゲームをする')},{kind:'relax',label:label('쉬기','Relax','くつろぐ')}];
+  return [{kind:'rest',label:label('여기서 쉬기','Rest here','ここで休む')},{kind:'chores',lifeTask:'clean',label:label('청소하기','Clean','掃除する')}];
+ }
++export function contextHome(world,target){
++ if(target.placeId){const town=world.towns?.find(t=>t.id===world.activeTownId)||world.world,place=town?.places?.find(p=>p.id===target.placeId);if(!place)return null;const home=buildingInterior(place,town.id||world.activeTownId,world.uiLanguage);return home.id===target.homeId?home:null}
++ return world.homes[target.homeId];
++}
+ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='',companionId=''){
+  if(!target||typeof target!=='object')return null;
+  if(target.type==='place'){
+   const place=(world.world.places||[]).find(p=>p.id===target.id);if(!place||!placeActions(place).some(a=>a.kind===kind&&(a.lifeTask||'')===lifeTask))return null;
+   return {home:false,placeId:place.id,townId:world.activeTownId||c.townId};
+  }
+- const home=world.homes[target.homeId],room=home?.rooms?.[target.room];
++ const home=contextHome(world,target),room=home?.rooms?.[target.room];
+  if(!home||!room||home.townId&&c.townId&&home.townId!==c.townId)return null;
+  if(!roomEntryAllowed(c,home,room)||!roomActivityAllowed(room,{kind,lifeTask}))return null;
+  let furniture=null;
+@@ -58,7 +63,7 @@
+   const used=users.length;
+   if(used>=(kind==='affection'?1:capacity))return null;
+  }
+- return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
++ return {home:!home.placeId,...(home.placeId?{placeId:home.placeId}:{}),visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
+ }
+ 
+ const action=(kind,ko,en,ja)=>({kind,label:label(ko,en,ja)});
+--- a/runtime\routine-scenes.js
++++ b/runtime\routine-scenes.js
+@@ -1,4 +1,4 @@
+-import {officeDuty} from './office-work.js';
++import {officeDuty} from './career-duties.js';
+ // Pure projection: schedule progress needs no extra database writes or random calls.
+ const hash=s=>[...s].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
+ const text=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
+--- a/runtime\salary.js
++++ b/runtime\salary.js
+@@ -1,4 +1,4 @@
+-import {officeDuty} from './office-work.js';
++import {officeDuty} from './career-duties.js';
+ import {careerWeeklyRoutines} from './career-work.js';
+ import {careersFor} from './career-world.js';
+ import {careerLabel} from './career-catalog.js';
+--- a/runtime\simulation.js
++++ b/runtime\simulation.js
+@@ -1,4 +1,4 @@
+-import {officeEmployment,officeDuty} from './office-work.js';
++import {officeEmployment,officeDuty} from './career-duties.js';
+ import {careerWeeklyRoutines} from './career-work.js';
+ import {mealObservation} from './meal-observation.js';
+ import {automaticMeal} from './automatic-cooking.js';
+--- a/runtime\state.js
++++ b/runtime\state.js
+@@ -16,7 +16,7 @@
+ import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
+ import {writeAnswerDelta,writeChoiceDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
+ import {contactNarrative,rejectsContact,botherNarrative} from './contact-narrative.js?v=20260909dev305';
+-import {contextDestination} from './context-actions.js?v=20260909dev305';
++import {contextDestination,contextHome} from './context-actions.js?v=20260909dev305';
+ import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
+ import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
+ import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
+@@ -1591,7 +1591,7 @@
+   if(options.lifeTask&&!task)return false;
+   finishCoffee(state,character,Number(options.now??Date.now()));
+   if(!townActivityAllowed(characterTown(state,character),task||{kind,lifeTask:options.lifeTask}))return false;
+-  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(state.homes[options.contextTarget.homeId]?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
++  if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(contextHome(state,options.contextTarget)?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
+   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
+   if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
+   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
+--- /dev/null
++++ b/runtime/career-duties.js
+@@ -0,0 +1,12 @@
++import {officeDuty as corporateDuty,officeEmployment as corporateEmployment} from './office-work.js';
++import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
++export function officeEmployment(c,id){return corporateEmployment(c,id)||employment(c,id)}
++function employment(c,id){const all=c.wallet?.employments||[],entry=id?all.find(e=>e.id===id):all[0];if(entry)return ['builtin-politician','builtin-barista'].includes(entry.jobId)?entry:null;return !all.length&&['정치인','바리스타'].includes(c.job)?{jobId:c.job==='정치인'?'builtin-politician':'builtin-barista'}:null}
++export function officeDuty(c,date,start,end,language='ko',id){
++ const corporate=corporateDuty(c,date,start,end,language,id);if(corporate)return corporate;
++ const job=employment(c,id),minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60;if(!job||minute<start||minute>=end)return null;
++ const list=job.jobId==='builtin-politician'?POLITICIAN_DUTIES:BARISTA_DUTIES;
++ const hash=[...String(c.id)+String(id||'')].reduce((h,v)=>(Math.imul(h,31)+v.charCodeAt(0))>>>0,0);
++ const slot=Math.floor(date.getTime()/2700000),index=minute>=end-10?list.length-1:minute<start+10?0:1+(slot+hash)%(list.length-2),row=list[index],offset=language==='en'?2:language==='ja'?4:0;
++ return {title:row[offset],desc:row[offset+1],officeTaskId:job.jobId+':'+index,officeRole:job.jobId,officeRoom:'workspace',economyWork:true};
++}
+--- /dev/null
++++ b/runtime/career-duty-data.js
+@@ -0,0 +1,2 @@
++export const POLITICIAN_DUTIES=[["민원 답변 확인", "담당 부서가 보낸 답변을 민원 내용과 대조하고, 빠진 설명을 다시 요청하고 있어요.", "Reviewing constituent replies", "They compare the department’s reply with the original concern and request missing details.", "陳情への回答を確認中", "担当部署の回答と相談内容を照合し、不足している説明を求めています。"], ["예산안 검토", "사업별 예산표에서 작년 집행액과 올해 요구액을 나란히 비교하고 있어요.", "Reviewing the budget", "They compare last year’s spending with this year’s request for each project.", "予算案を検討中", "事業ごとに昨年の執行額と今年の要求額を比較しています。"], ["주민 면담", "주민이 설명하는 통학로 문제를 지도에 표시하고 담당자에게 확인할 내용을 적고 있어요.", "Meeting residents", "They mark a school-route problem on a map and note questions for the responsible office.", "住民と面談中", "通学路の問題を地図に記し、担当者への確認事項を書き留めています。"], ["정책 자료 조사", "제안하려는 정책과 비슷한 사례를 찾아 효과와 비용을 비교하고 있어요.", "Researching policy", "They compare costs and outcomes of policies similar to their proposal.", "政策資料を調査中", "提案に似た政策の事例を探し、効果と費用を比較しています。"], ["공청회 질문 준비", "공청회에 제출된 의견에서 쟁점을 추려 전문가에게 물어볼 질문을 다듬고 있어요.", "Preparing hearing questions", "They identify issues in submitted comments and refine questions for experts.", "公聴会の質問を準備中", "寄せられた意見から論点を整理し、専門家への質問を練っています。"], ["조례 문구 검토", "조례 초안의 적용 대상과 시행일을 확인하고 모호한 문구에 표시하고 있어요.", "Reviewing draft wording", "They check who a draft ordinance covers and mark ambiguous wording.", "条例案の文言を確認中", "条例案の対象と施行日を確認し、曖昧な表現に印を付けています。"], ["현장 점검 기록", "현장에서 찍어 온 사진과 담당자의 설명을 맞춰 보고 개선 요청을 정리하고 있어요.", "Reviewing site notes", "They compare site photographs with staff explanations and list improvements.", "現場記録を確認中", "現場の写真と担当者の説明を照合し、改善要望をまとめています。"], ["회의 발언 준비", "회의에서 짚을 핵심 수치의 출처를 확인하고 발언 시간을 맞춰 읽어 보고 있어요.", "Preparing remarks", "They check sources for key figures and rehearse within the allotted speaking time.", "会議の発言を準備中", "重要な数値の出典を確認し、持ち時間に収まるよう発言を練習しています。"], ["이해관계자 의견 조율", "서로 다른 요구를 항목별로 나눠 공통점과 추가 협의가 필요한 부분을 확인하고 있어요.", "Comparing stakeholder views", "They separate shared priorities from issues that need further discussion.", "関係者の意見を調整中", "異なる要望を項目ごとに分け、共通点と協議が必要な点を確認しています。"], ["의정 활동 보고", "오늘 검토한 안건과 다음 회의까지 확인할 사항을 활동 보고에 적고 있어요.", "Writing an activity report", "They record reviewed agenda items and checks needed before the next meeting.", "活動報告を作成中", "検討した議題と次の会議までの確認事項を活動報告に書いています。"], ["자료 공개 범위 확인", "배포할 정책 자료에서 개인 정보가 들어간 부분을 가리고 공개용 문서를 확인하고 있어요.", "Checking publication materials", "They redact personal details and review the public version of policy documents.", "公開資料を確認中", "配布資料の個人情報を伏せ、公開用の文書を確認しています。"], ["후속 요청 전달", "미답변 민원의 담당 부서와 회신 기한을 정리해 후속 요청을 보내고 있어요.", "Sending follow-up requests", "They send follow-up requests with the responsible office and reply deadline.", "追加確認を依頼中", "未回答の相談について担当部署と回答期限を整理し、確認を依頼しています。"]];
++export const BARISTA_DUTIES=[["추출 상태 점검", "원두 분쇄도를 조금 조절하고 에스프레소의 추출 시간과 맛을 확인하고 있어요.", "Dialing in espresso", "They adjust the grind and check espresso extraction time and taste.", "抽出を調整中", "挽き目を調整し、エスプレッソの抽出時間と味を確認しています。"], ["주문 확인", "주문표의 음료 크기와 우유 변경 사항을 확인하고 컵을 준비하고 있어요.", "Checking drink orders", "They check drink sizes and milk substitutions and prepare cups.", "注文を確認中", "ドリンクのサイズとミルクの変更を確認し、カップを用意しています。"], ["우유 스티밍", "피처의 온도를 살피며 우유에 고운 거품을 내고 있어요.", "Steaming milk", "They monitor the pitcher’s temperature while making silky milk foam.", "ミルクをスチーム中", "ピッチャーの温度を確かめながら、きめ細かな泡を作っています。"], ["라떼 만들기", "에스프레소 위로 우유를 천천히 붓고 잔 가장자리를 닦고 있어요.", "Making a latte", "They pour milk into espresso and wipe the rim of the cup.", "ラテを作っているところ", "エスプレッソにミルクをゆっくり注ぎ、カップの縁を拭いています。"], ["드립 커피 내리기", "저울을 보며 물을 나눠 붓고 커피가 내려오는 속도를 살피고 있어요.", "Pouring filter coffee", "They weigh each pour and watch the coffee draw down.", "ドリップコーヒーを抽出中", "はかりを見ながら分けてお湯を注ぎ、落ちる速度を確かめています。"], ["음료 전달", "완성한 음료와 주문 번호를 확인하고 손님에게 건네고 있어요.", "Handing over drinks", "They match finished drinks to order numbers and hand them to guests.", "ドリンクを渡しているところ", "完成した飲み物と注文番号を確認し、お客さんに渡しています。"], ["커피 바 정돈", "사용한 피처를 씻고 스팀 완드를 닦아 다음 주문을 받을 준비를 하고 있어요.", "Resetting the coffee bar", "They wash pitchers and clean the steam wand for the next order.", "コーヒーバーを整頓中", "ピッチャーを洗い、スチームワンドを拭いて次の注文に備えています。"], ["원두 재고 확인", "원두 봉투의 개봉일과 남은 양을 확인하고 먼저 사용할 원두를 앞에 두고 있어요.", "Checking bean stock", "They check opening dates and quantities and place older beans first.", "豆の在庫を確認中", "豆の開封日と残量を確認し、先に使う豆を手前に置いています。"]];
+--- /dev/null
++++ b/runtime/building-interior-model.js
+@@ -0,0 +1,12 @@
++import {defaultBuildingRooms,legacyBuildingRooms} from './building-interior-presets.js';
++export function buildingInterior(place,townId,language='ko'){
++  const saved=place.interior&&typeof place.interior==='object'?structuredClone(place.interior):{};
++  const home={...saved,id:'place-interior:'+townId+':'+place.id,placeId:place.id,townId,name:place.name,kind:place.type,canvasColumns:saved.canvasColumns||12,canvasRows:saved.canvasRows||16,canvasFitVersion:1,floorCount:saved.floorCount||1,activeFloor:saved.activeFloor||1,
++    rooms:saved.rooms||defaultBuildingRooms(place,language)};
++  // Upgrade untouched equal-quarter defaults only; never replace custom layouts.
++  if(saved.rooms){const old=legacyBuildingRooms(place,language),keys=Object.keys(old);if(Object.keys(saved.rooms).length===keys.length&&keys.every(k=>{const a=saved.rooms[k],b=old[k];return a&&a.name===b.name&&a.type===b.type&&a.floor===b.floor&&!a.image&&!a.floorImage&&!a.hideFurniture&&!a.ownerCharacterIds?.length&&a.floorMaterial===b.floorMaterial&&a.wallMaterial===b.wallMaterial&&JSON.stringify(a.layout)===JSON.stringify(b.layout)&&JSON.stringify(a.furniture)===JSON.stringify(b.furniture)&&a.furniturePlacements?.every((p,i)=>p.id===b.furniturePlacements[i]?.id&&p.x===b.furniturePlacements[i]?.x&&p.y===b.furniturePlacements[i]?.y)}))home.rooms=defaultBuildingRooms(place,language);}
++  // Building rooms use editable surfaces. Keep saved images, but never paint a
++  // building-wide photo over the room's walls/floor and furniture.
++  for(const room of Object.values(home.rooms)){if(room.usePhoto)room.usePhoto=false;if(room.floorMaterial==='custom')room.floorMaterial='natural'}
++  return home;
++}
+--- /dev/null
++++ b/runtime/building-interior-presets.js
+@@ -0,0 +1,48 @@
++import {snapFurniturePosition,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
++// Default interiors use ordinary editable room/furniture data. Saved layouts win.
++const room=(names,type,items)=>({names,type,items});
++const lobby=()=>room(['로비','Lobby','ロビー'],'living',['카운터','소파','작은 테이블','화분']);
++const bathroom=()=>room(['화장실','Restroom','お手洗い'],'bathroom',['세면대','변기']);
++const presets={
++ '병원':[room(['접수·대기실','Reception and waiting','受付・待合室'],'living',['카운터','컴퓨터','소파','의자']),room(['진료실','Consultation room','診察室'],'study',['책상','의자','침대','수납장']),room(['병동','Ward','病棟'],'bedroom',['1인 침대','협탁','1인 침대','협탁']),bathroom()],
++ '카페':[room(['카페 좌석','Cafe seating','カフェ席'],'dining',['식탁','의자','의자','식탁','의자','의자']),room(['주문·커피 바','Order and coffee bar','注文・コーヒーバー'],'kitchen',['카운터','커피머신','커피포트','티 세트','찬장']),room(['직원 휴게실','Staff room','スタッフルーム'],'living',['소파','작은 테이블','옷걸이']),bathroom()],
++ '음식점':[room(['식사 공간','Dining area','客席'],'dining',['식탁','의자','의자','식탁','의자','의자']),room(['주방','Kitchen','厨房'],'kitchen',['조리대','인덕션','냉장고','오븐','찬장']),lobby(),bathroom()],
++ '학교':[room(['교실','Classroom','教室'],'study',['책상','의자','책상','의자','책장']),room(['교무실','Teachers office','職員室'],'study',['책상','컴퓨터','책장','의자']),room(['도서실','Reading room','図書室'],'study',['책장','책장','작은 테이블','의자']),bathroom()],
++ '도서관':[room(['열람실','Reading hall','閲覧室'],'study',['책상','의자','책상','의자']),room(['서가','Book stacks','書架'],'study',['책장','책장','책장','독서 의자']),lobby(),bathroom()],
++ '사무실':[room(['사무 공간','Workspace','執務室'],'study',['책상','컴퓨터','의자','책상','컴퓨터','의자']),room(['회의실','Meeting room','会議室'],'dining',['식탁','의자','의자','의자']),lobby(),bathroom()],
++ '관공서':[room(['민원 창구','Service desk','窓口'],'study',['카운터','컴퓨터','의자','의자']),room(['사무실','Office','事務室'],'study',['책상','컴퓨터','수납장','의자']),lobby(),bathroom()],
++ '숙박':[lobby(),room(['객실 1','Guest room 1','客室1'],'guest',['침대','협탁','옷장']),room(['객실 2','Guest room 2','客室2'],'guest',['침대','협탁','작은 책상']),bathroom()],
++ '옷가게':[room(['매장','Showroom','売り場'],'storage',['옷걸이','옷걸이','선반','카운터']),room(['피팅룸','Fitting room','試着室'],'bedroom',['전신거울','옷걸이','의자']),room(['재고실','Stockroom','倉庫'],'storage',['선반','보관 상자','보관 상자']),bathroom()],
++ '상점':[room(['판매 공간','Shop floor','売り場'],'storage',['선반','선반','수납장','카운터']),room(['창고','Stockroom','倉庫'],'storage',['선반','보관 상자','보관 상자']),lobby(),bathroom()],
++ '공연장':[room(['무대','Stage','舞台'],'hobby',['피아노','악기','오디오']),room(['관객석','Audience seats','客席'],'living',['의자','의자','의자','의자','의자','의자']),room(['대기실','Backstage','楽屋'],'bedroom',['화장대','옷걸이','소파']),bathroom()],
++ '공원':[room(['쉼터','Rest area','休憩所'],'balcony',['화분','야외 의자','작은 테이블','화분']),room(['정원','Garden','庭園'],'balcony',['화분','화분 2','야외 의자','원예 도구']),lobby(),bathroom()]
++};
++export function legacyBuildingRooms(place,language='ko'){
++ const specs=presets[place.type]||[lobby(),room(['다목적실','Common room','多目的室'],'hobby',['작업대','책장','의자']),room(['휴게실','Lounge','休憩室'],'living',['소파','작은 테이블','화분']),bathroom()];
++ return Object.fromEntries(specs.map((spec,index)=>{const key='area'+index,dining=spec.type==='dining'&&spec.items.length===6,positions=dining?[[50,35],[23,35],[77,35],[50,72],[23,72],[77,72]]:[[22,36],[55,36],[80,36],[22,72],[55,72],[80,72]],placements=spec.items.map((item,i)=>({id:key+'-f'+i,item,x:positions[i][0],y:positions[i][1],rotation:0,scale:1,...(dining&&item==='의자'?{tableId:key+'-f'+(i<3?0:3)}:{})}));return [key,{name:spec.names[({ko:0,en:1,ja:2})[language]||0],type:spec.type,floor:1,floorMaterial:place.type==='병원'||spec.type==='bathroom'?'cream':'natural',wallMaterial:place.type==='병원'||spec.type==='bathroom'?'sky-tile':'cream-panel',size:'넓은 방',layout:{x:index%2*50,y:Math.floor(index/2)*50,w:50,h:50},furniture:[...spec.items],furniturePlacements:placements}] }));
++}
++
++// Whole cells on the same 12 x 16 canvas used by the house editor.
++const rectangles={
++ '카페':[[0,0,8,16],[8,0,4,9],[8,9,4,4],[8,13,4,3]],
++ '음식점':[[0,0,8,12],[8,0,4,13],[0,12,8,4],[8,13,4,3]],
++ '옷가게':[[0,0,9,16],[9,0,3,5],[9,5,3,8],[9,13,3,3]],
++ '병원':[[0,0,8,6],[8,0,4,10],[0,6,8,10],[8,10,4,6]],
++ '숙박':[[0,0,8,5],[0,5,6,11],[6,5,6,11],[8,0,4,5]]
++};
++export function defaultBuildingRooms(place,language='ko'){
++ const rooms=legacyBuildingRooms(place,language);
++ if(place.type==='공원'){
++  const lawn=rooms.area0;lawn.name=({ko:'잔디 공원',en:'Grass park',ja:'芝生の公園'})[language]||'잔디 공원';
++  lawn.floorMaterial='grass';lawn.wallMaterial='none';lawn.outdoor=true;
++  lawn.furniture=['야외 의자','작은 테이블','화분','원예 도구'];
++  lawn.furniturePlacements=lawn.furniture.map((item,i)=>({id:'area0-f'+i,item,x:[25,50,75,25][i],y:[35,35,65,75][i],rotation:0,scale:1}));
++  delete rooms.area1;delete rooms.area2;
++ }
++ const layout=place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
++ for(const [key,room] of Object.entries(rooms)){
++  const [x,y,w,h]=layout[key];room.layout={x:x/12*100,y:y/16*100,w:w/12*100,h:h/16*100};
++  for(const p of room.furniturePlacements){Object.assign(p,snapFurniturePosition(p.x,p.y,{columns:w,rows:h},furnitureFootprint(p.item)));if(p.tableId){p.seatSide=p.x<(room.furniturePlacements.find(t=>t.id===p.tableId)?.x||50)?'west':'east';p.rotation=p.seatSide==='west'?90:270}}
++ }
++ return rooms;
++}

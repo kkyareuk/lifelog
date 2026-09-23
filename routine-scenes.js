@@ -1,4 +1,4 @@
-import {officeDuty} from './office-work.js';
+import {officeDuty} from './career-duties.js';
 // Pure projection: schedule progress needs no extra database writes or random calls.
 const hash=s=>[...s].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
 const text=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);

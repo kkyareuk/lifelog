@@ -126,7 +126,7 @@ export function scheduleSceneDepth(){
       bounds.sort((a,b)=>a.bottom-b.bottom);
       orderAttachedFurniture(bounds).forEach(({element},index)=>updates.push([element,10+index*3]));
       // Occupancy badges are UI labels, not actors standing behind buildings.
-      if(!scene.matches('.room'))scene.querySelectorAll('.place-people').forEach(element=>updates.push([element,20+bounds.length*3]));
+      if(!scene.matches('.room'))scene.querySelectorAll('.person,.meeting-walker').forEach(element=>updates.push([element,20+bounds.length*3]));
       // Back frame remains above a table intersecting its seat, without raising
       // every chair above unrelated furniture elsewhere in the room.
       for(const item of bounds.filter(x=>x.element.matches('.chair-frame-overlay'))){

@@ -11,21 +11,23 @@ export function installContextMenu({world,execute,enabled,openHome,openPlace}){
  let menu=null,start=null;const close=()=>{menu?.close();menu?.remove();menu=null};
  document.addEventListener('pointerdown',e=>{start={x:e.clientX,y:e.clientY}},true);
  const handle=e=>{
+  const building=e.type==='drawer-building-activities';
   const requested=e.type==='drawer-open-activities'||e.type==='drawer-open-place-activities';
-  if(!requested&&(!enabled()||e.target.closest('dialog,aside,header,nav,[data-context-menu]')))return;
-  if(!requested&&start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>12)return;
-  const el=requested?(e.detail.anchor||document.body):e.target.closest('[data-furniture-placement],[data-home-occupant="character"],[data-home-person],[data-person],.room[data-room-key],[data-place],[data-home-map]');if(!el)return;
+  if(!requested&&!building&&(!enabled()||e.target.closest('dialog,aside,header,nav,[data-context-menu]')))return;
+  if(!requested&&!building&&start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)>12)return;
+  const el=building?e.detail.anchor:requested?(e.detail.anchor||document.body):e.target.closest('[data-furniture-placement],[data-home-occupant="character"],[data-home-person],[data-person],.room[data-room-key],[data-place],[data-home-map]');if(!el)return;
   // Home residents first open their current-activity card; its command button
   // opens activities. Do not swallow that handler in the capture phase.
   if(!requested&&el.matches('[data-home-occupant="character"],[data-home-person],[data-person]'))return;
-  if(!requested&&e.target.closest('button')&&e.target.closest('button')!==el)return;
-  const info=world(),w=info.state,lang=w.uiLanguage||'ko',copy=words[lang]||words.ko;
+  if(!requested&&!building&&e.target.closest('button')&&e.target.closest('button')!==el)return;
+  const info=building?e.detail.info:world(),w=info.state,lang=w.uiLanguage||'ko',copy=words[lang]||words.ko;
   let target,title;
   if(e.type==='drawer-open-place-activities'){target={type:'place',id:e.detail.id,place:w.world.places.find(p=>p.id===e.detail.id)};title=target.place?.name;}else if(requested){target={type:'self',id:e.detail.id};title=w.characters[e.detail.id]?.name;}
   else if(el.dataset.furniturePlacement){const homeId=el.dataset.homeId,room=el.dataset.roomKey,item=w.homes[homeId]?.rooms?.[room]?.furniturePlacements?.find(p=>p.id===el.dataset.furniturePlacement);if(!item)return;target={type:'furniture',homeId,room,id:item.id,item:item.item};title=item.item;}
   else if(el.dataset.homeOccupant||el.dataset.homePerson||el.dataset.person){const id=el.dataset.characterId||el.dataset.homePerson||el.dataset.person;if(!w.characters[id])return;target={type:'person',id};title=w.characters[id].name;}
   else if(el.dataset.place){target={type:'place',id:el.dataset.place,place:w.world.places.find(p=>p.id===el.dataset.place)};title=target.place?.name;}
   else {const homeId=el.dataset.homeId||el.dataset.homeMap,home=w.homes[homeId],room=el.dataset.roomKey||Object.keys(home?.rooms||{})[0];if(!home?.rooms?.[room])return;target={type:'room',homeId,room};title=home.rooms[room].name;}
+  if(building)target.placeId=e.detail.placeId;
   e.preventDefault();e.stopImmediatePropagation();close();
   const buildingHome=el.dataset.homeMap;
   const d=document.createElement('dialog');menu=d;d.className='context-action-menu';d.dataset.contextMenu='';const h=document.createElement('h2');h.textContent=title||'';const x=document.createElement('button');x.textContent='×';x.setAttribute('aria-label',copy.close);x.onclick=close;d.append(x,h);
@@ -46,7 +48,7 @@ export function installContextMenu({world,execute,enabled,openHome,openPlace}){
   const initial=()=>{paint(recommendedContextActions(target,w,actors.find(c=>c.id===select.value)).filter(a=>!economyAvailable()||!['simple_cook','full_cook'].includes(a.lifeTask)));const heading=document.createElement('small');heading.textContent=({ko:'추천 행동',en:'Suggested actions',ja:'おすすめの行動'})[lang]||'추천 행동';list.prepend(heading);if(buildingHome&&openHome){const enter=document.createElement('button');enter.textContent=({ko:'들어가기',en:'Enter home',ja:'家に入る'})[lang]||'들어가기';enter.dataset.enterHome=buildingHome;enter.onclick=()=>{close();openHome(buildingHome,info)};list.prepend(enter)}if(target.type==='place'&&openPlace&&!document.querySelector('.building-interior-dialog')){const enter=document.createElement('button');enter.textContent=({ko:'건물 내부 보기 · 꾸미기',en:'Enter / decorate building',ja:'建物の中を見る・飾る'})[lang];enter.dataset.enterPlace=target.id;enter.onclick=()=>{close();openPlace(target.id,info)};list.prepend(enter)}if(economyAvailable()&&((target.type==='self')||(target.type==='room'&&['kitchen','주방'].includes(w.homes[target.homeId]?.rooms?.[target.room]?.type||target.room))||(target.type==='furniture'&&/냉장|싱크|가스|오븐|조리|인덕션/.test(target.item||'')))){const recipeButton=document.createElement('button');recipeButton.textContent=({ko:'요리하기',en:'Cook',ja:'料理する'})[lang];recipeButton.disabled=!actors.length;recipeButton.onclick=()=>{const id=select.value;close();openCooking(id)};list.append(recipeButton)}const extra=document.createElement('button');extra.textContent=copy.more;extra.disabled=!actors.length;extra.onclick=categories;list.append(extra)};select.onchange=initial;requested?categories():initial();
   document.body.append(d);d.showModal();const box=el.getBoundingClientRect(),size=d.getBoundingClientRect();d.style.left=Math.max(8,Math.min(innerWidth-size.width-8,box.left))+'px';d.style.top=Math.max(8,Math.min(innerHeight-size.height-8,box.bottom+6))+'px';d.onclose=()=>{d.remove();if(menu===d)menu=null;window.dispatchEvent(new Event('drawer-context-dismissed'))};d.addEventListener('click',event=>{if(event.target!==d)return;const r=d.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)close()});
  };
- document.addEventListener('click',handle,true);document.addEventListener('drawer-open-activities',handle);document.addEventListener('drawer-open-place-activities',handle);
+ document.addEventListener('drawer-building-activities',handle);document.addEventListener('click',handle,true);document.addEventListener('drawer-open-activities',handle);document.addEventListener('drawer-open-place-activities',handle);
  // A native Android picker or system bars can resize the viewport. Keep the menu alive.
  window.addEventListener('pagehide',close);window.addEventListener('resize',()=>{if(menu?.open){menu.style.left='8px';menu.style.top='8px'}});
  return close;

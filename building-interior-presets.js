@@ -1,3 +1,4 @@
+import {snapFurniturePosition,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 // Default interiors use ordinary editable room/furniture data. Saved layouts win.
 const room=(names,type,items)=>({names,type,items});
 const lobby=()=>room(['로비','Lobby','ロビー'],'living',['카운터','소파','작은 테이블','화분']);
@@ -16,7 +17,32 @@ const presets={
  '공연장':[room(['무대','Stage','舞台'],'hobby',['피아노','악기','오디오']),room(['관객석','Audience seats','客席'],'living',['의자','의자','의자','의자','의자','의자']),room(['대기실','Backstage','楽屋'],'bedroom',['화장대','옷걸이','소파']),bathroom()],
  '공원':[room(['쉼터','Rest area','休憩所'],'balcony',['화분','야외 의자','작은 테이블','화분']),room(['정원','Garden','庭園'],'balcony',['화분','화분 2','야외 의자','원예 도구']),lobby(),bathroom()]
 };
-export function defaultBuildingRooms(place,language='ko'){
+export function legacyBuildingRooms(place,language='ko'){
  const specs=presets[place.type]||[lobby(),room(['다목적실','Common room','多目的室'],'hobby',['작업대','책장','의자']),room(['휴게실','Lounge','休憩室'],'living',['소파','작은 테이블','화분']),bathroom()];
  return Object.fromEntries(specs.map((spec,index)=>{const key='area'+index,dining=spec.type==='dining'&&spec.items.length===6,positions=dining?[[50,35],[23,35],[77,35],[50,72],[23,72],[77,72]]:[[22,36],[55,36],[80,36],[22,72],[55,72],[80,72]],placements=spec.items.map((item,i)=>({id:key+'-f'+i,item,x:positions[i][0],y:positions[i][1],rotation:0,scale:1,...(dining&&item==='의자'?{tableId:key+'-f'+(i<3?0:3)}:{})}));return [key,{name:spec.names[({ko:0,en:1,ja:2})[language]||0],type:spec.type,floor:1,floorMaterial:place.type==='병원'||spec.type==='bathroom'?'cream':'natural',wallMaterial:place.type==='병원'||spec.type==='bathroom'?'sky-tile':'cream-panel',size:'넓은 방',layout:{x:index%2*50,y:Math.floor(index/2)*50,w:50,h:50},furniture:[...spec.items],furniturePlacements:placements}] }));
+}
+
+// Whole cells on the same 12 x 16 canvas used by the house editor.
+const rectangles={
+ '카페':[[0,0,8,16],[8,0,4,9],[8,9,4,4],[8,13,4,3]],
+ '음식점':[[0,0,8,12],[8,0,4,13],[0,12,8,4],[8,13,4,3]],
+ '옷가게':[[0,0,9,16],[9,0,3,5],[9,5,3,8],[9,13,3,3]],
+ '병원':[[0,0,8,6],[8,0,4,10],[0,6,8,10],[8,10,4,6]],
+ '숙박':[[0,0,8,5],[0,5,6,11],[6,5,6,11],[8,0,4,5]]
+};
+export function defaultBuildingRooms(place,language='ko'){
+ const rooms=legacyBuildingRooms(place,language);
+ if(place.type==='공원'){
+  const lawn=rooms.area0;lawn.name=({ko:'잔디 공원',en:'Grass park',ja:'芝生の公園'})[language]||'잔디 공원';
+  lawn.floorMaterial='grass';lawn.wallMaterial='none';lawn.outdoor=true;
+  lawn.furniture=['야외 의자','작은 테이블','화분','원예 도구'];
+  lawn.furniturePlacements=lawn.furniture.map((item,i)=>({id:'area0-f'+i,item,x:[25,50,75,25][i],y:[35,35,65,75][i],rotation:0,scale:1}));
+  delete rooms.area1;delete rooms.area2;
+ }
+ const layout=place.type==='공원'?{area0:[0,0,10,16],area3:[10,0,2,4]}:Object.fromEntries(Object.keys(rooms).map((key,i)=>[key,(rectangles[place.type]||[[0,0,8,11],[8,0,4,13],[0,11,8,5],[8,13,4,3]])[i]]));
+ for(const [key,room] of Object.entries(rooms)){
+  const [x,y,w,h]=layout[key];room.layout={x:x/12*100,y:y/16*100,w:w/12*100,h:h/16*100};
+  for(const p of room.furniturePlacements){Object.assign(p,snapFurniturePosition(p.x,p.y,{columns:w,rows:h},furnitureFootprint(p.item)));if(p.tableId){p.seatSide=p.x<(room.furniturePlacements.find(t=>t.id===p.tableId)?.x||50)?'west':'east';p.rotation=p.seatSide==='west'?90:270}}
+ }
+ return rooms;
 }
