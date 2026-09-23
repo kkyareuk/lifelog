@@ -1,0 +1,9 @@
+<ko-KR>
+재산 유형 변경 시 경고 후 잔액이 함께 바뀌고 소비 유형이 저장돼요. 지갑 설정에서 캐릭터를 골라 재산을 합칠 수 있어요. 다른 유저와는 수락 후 공유하며, 해제 금액도 조정해 모두 동의하면 나눠요. 회사원과 CEO를 통합하고 임원 직급과 N잡을 추가했어요. 멀티 캐릭터 연락 선택·해제, 소속 표시와 사진 비율을 개선하고 이사한 캐릭터의 편지 사진을 보완했어요.
+</ko-KR>
+<en-US>
+Wealth changes now update the balance after confirmation. Share one balance with selected characters; other owners must agree. Adjust the amounts when ending sharing and finalize with everyone's consent. Corporate and CEO careers are combined, with executive ranks and multiple jobs. Improved multiplayer contact selection, removal, affiliations and portrait proportions, including moved characters' mail portraits.
+</en-US>
+<ja-JP>
+資産の種類を変更すると、確認後に残高も変わります。キャラクターを選んで残高を共有でき、他のユーザーとは承認後に合算します。共有解除時は金額を調整し、全員の同意後に分配します。会社員とCEOを統合し、役員職階と複業を追加しました。マルチキャラクターの連絡選択・解除、所属表示、写真の比率、引っ越したキャラクターの手紙の写真を改善しました。
+</ja-JP>
