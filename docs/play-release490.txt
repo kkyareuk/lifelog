@@ -1,0 +1,9 @@
+<ko-KR>
+마시는 소리를 세 번만 재생하도록 조정했어요. 커피는 15초 동안 내리고 20초 동안 마시며 수면 욕구가 서서히 약 30% 회복돼요. 집 정보·방 정보·구성원·소파 배치와 사용을 직접 따라 하는 집 튜토리얼을 새로 만들었어요.
+</ko-KR>
+<en-US>
+Drinking now plays three gulps without looping. Brew coffee in 15 seconds and drink it in 20 seconds, gradually restoring about 30 sleep points. A new hands-on home guide walks through home and room information, residents, and placing and using a sofa.
+</en-US>
+<ja-JP>
+飲む音を3回だけ再生するように調整しました。コーヒーは15秒で淹れ、20秒かけて飲み、睡眠欲求が徐々に約30ポイント回復します。家の情報・部屋情報・住人の設定からソファの配置と使用まで、実際に操作する家のチュートリアルを新しくしました。
+</ja-JP>
