@@ -22,5 +22,5 @@
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.423-475-internal.aab
 - SHA256: 564A27A2576B172D00511595CE3495836148736D5536E1DAAE8F97538C908C90
 - sharedTownApi: sharedtownapi-00115-pay,2026-09-23T02:47:42.226324369Z. 실제 배포167파일과 준비 소스 일치. 기존 배포를 기준으로 이번 변경만 적용.
-- Play 내부 release354 업로드 및 최종 제공 상태 확인 중.
-- 원격 dev에 기능 반영. 운영main의 자동 웹 연결 때문에 코드 병합 없이 릴리스 문서만 main에 반영.
+- Play 내부 release354: 2026-09-23 11:52 KST 내부 테스터에게 제공됨 확인.
+- 기능 커밋 f0cf78ea 원격 dev에 반영. 운영main의 자동 웹 연결 때문에 코드 병합 없이 릴리스 문서만 main에 반영.
