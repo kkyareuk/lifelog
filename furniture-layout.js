@@ -100,6 +100,7 @@ export const isBedFurniture=item=>/침대/.test(String(item||""));
 export const furnitureCapacity=item=>String(item||"")==="커플 침대"?2:isBedFurniture(item)?1:0;
 export const furnitureFootprint=item=>FURNITURE_FOOTPRINTS[String(item||"")]||footprint(1,1);
 
+export const furnitureImage=value=>typeof value==='string'&&value.length<1500000&&(/^(https:\/\/[^\s<>"']+|data:image\/(?:png|webp|jpeg);base64,[A-Za-z0-9+/=]+|local-media:\/\/[^\s<>"']+)$/.test(value))?value:'';
 export function normalizeFurniturePlacement(value,index=0){
   if(!value||typeof value!=="object"||Array.isArray(value))return null;
   const legacyItem=String(value.item||"").trim().slice(0,80);
@@ -109,6 +110,8 @@ export function normalizeFurniturePlacement(value,index=0){
   return {
     id:String(value.id||`furniture-${index+1}`).slice(0,120),
     item,
+    image: furnitureImage(value.image),
+    imageWidth:clamp(value.imageWidth||512,1,2048),imageHeight:clamp(value.imageHeight||512,1,2048),
     x:clamp(value.x,.5,99.5),
     y:clamp(value.y,.5,99.5),
     scale:clamp(value.scale||1,.55,1.8),

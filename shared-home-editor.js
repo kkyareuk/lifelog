@@ -1,6 +1,6 @@
 import {canEditSharedHome} from './shared-home-access.js';
 import {bindHomeCanvas} from './home-canvas.js';
-import {addSharedRoomPhotos} from './shared-home-photo.js';
+import {addSharedRoomPhotos,sharedImageSession} from './shared-home-photo.js';
 import {bindRoomSurfacePicker} from './room-surface-picker.js';
 import {showFurnitureProps} from './furniture-props-editor.js';
 import {bindSharedHomeDeletion} from './shared-home-delete.js';
@@ -32,6 +32,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
   const next=queue.push(layout);next.catch(e=>toast(e.message));return next;
  }
  bindHomeCanvas(root,{home,canEdit,scope:s.activeGroupId,apply:patch=>{Object.assign(home,patch);commit()},render});
+ const photoOptions={...(s.activeGroupId?sharedImageSession():{}),flush:commit};
  const change=fn=>{if(!canEdit)return;const result=runIsolatedWorld(world,fn);commit();return result};
  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=!canEdit);
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});
@@ -53,8 +54,8 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
   if(selection.homeEditMode&&b.matches('[data-delete-home],[data-home-image],[data-open-room-image-menu]')){stop(e);return}
  },true);
  // Replace personal callbacks with isolated shared-world callbacks; search and drag/drop keep the existing drawer.
- if(canEdit){bindHomeEditorUI(root,{state:world,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
- if(selection.homeEditMode&&canEdit)bindFurnitureEditor(root,{state:world,render,
+ if(canEdit){bindHomeEditorUI(root,{state:world,photoOptions,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
+ if(selection.homeEditMode&&canEdit)bindFurnitureEditor(root,{state:world,render,photoOptions,
   updateFurniturePlacement:(...args)=>change(()=>updateFurniturePlacement(...args)),
   moveFurniturePlacement:(...args)=>change(()=>moveFurniturePlacement(...args)),
   deleteFurniturePlacement:(...args)=>change(()=>deleteFurniturePlacement(...args)),

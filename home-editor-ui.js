@@ -1,3 +1,4 @@
+import {openFurniturePhotos} from './furniture-photos.js';
 import {furniturePaintedBounds,furnitureArt} from './furniture-painted-bounds.js';
 import {positionBedOccupants} from './bed-occupant-layout.js';
 import {bindEditorPosition} from './home-editor-position.js';
@@ -89,7 +90,7 @@ export function homeInformationMarkup(home,photo,state,t){
 
 export {positionBedOccupants as fitCoupleBedOccupants} from './bed-occupant-layout.js';
 
-export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded}){
+export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded,photoOptions={}}){
   bindEditorPosition(root,state.activeHomeId,state.uiLanguage);
   positionBedOccupants(root);
   const copy=homeEditorCopy(state.uiLanguage);
@@ -107,6 +108,9 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
   const drawer=root.querySelector("[data-home-furniture-drawer]");if(!drawer)return;
   const home=state.homes[drawer.dataset.homeId];if(!home)return;
   const ui=drawerState(home),items=drawer.querySelector("[data-home-furniture-items]"),content=drawer.querySelector(".home-drawer-content");
+  drawer.querySelector('[data-furniture-photo-library]')?.remove();
+  const photoButton=document.createElement('button');photoButton.type='button';photoButton.textContent=({ko:'사진 가구 추가',en:'Add photo furniture',ja:'写真家具を追加'}[state.uiLanguage]||'사진 가구 추가');photoButton.dataset.furniturePhotoLibrary='';drawer.querySelector('.home-drawer-search').append(photoButton);
+  photoButton.onclick=()=>{const roomKey=root.querySelector('[data-room-canvas] .room[data-room-key]')?.dataset.roomKey;if(!roomKey)return;openFurniturePhotos({world:state,...photoOptions,apply:async patch=>{photoOptions.assertCurrent?.();const id=addFurniture(home.id,roomKey,patch.item);if(!id)throw Error('Room missing');updateFurniture(home.id,roomKey,id,patch);await photoOptions.flush?.();selectAdded(home.id,roomKey,id)}})};
   const draw=()=>{
     const matches=filteredFurniture({...ui,type:"all"},state.uiLanguage);
     items.innerHTML=matches.map(item=>`<button type="button" data-home-add-furniture="${escape(item)}" ${ui.room?"":"disabled"}>${furniturePickerArt(item)}<b>${escape(furnitureLabel(item,state.uiLanguage))}</b></button>`).join("");

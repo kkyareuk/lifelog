@@ -1,3 +1,4 @@
+import {tutorialEvent} from './intro-tour.js';
 import {catalogFoodCost} from './catalog-recipes.js';
 import {state,addCatalogItem as addPersonal,updateCatalogItem as updatePersonal,deleteCatalogItem as deletePersonal,save} from './state.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
@@ -143,7 +144,7 @@ export function mountDictionary(callbacks){
       try{
         const stored=await commit();
         if(owner!==saveOwner||ui.editing!==editing)return;
-        if(stored){drafts.delete(key);closeEditor();actions.toast(scope?tr('공유 사전에 저장됨'):'기기에 저장됨')}
+        if(stored){tutorialEvent("catalog-saved");drafts.delete(key);closeEditor();actions.toast(scope?tr('공유 사전에 저장됨'):'기기에 저장됨')}
         else{
           drafts.set(key,structuredClone(ui.draft));
           actions.toast('저장하지 못했어요. 입력 내용은 앱을 닫기 전까지 유지돼요.');

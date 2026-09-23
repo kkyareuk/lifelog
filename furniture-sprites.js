@@ -1,6 +1,8 @@
+import {furnitureImage,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 // Cropped original pixels; directional art is selected without image processing.
 const ROOT='assets/furniture/wood/';
 export function furnitureSprite(placement={}){
+ if(furnitureImage(placement.image))return {src:placement.image,kind:'custom',direction:'front',width:placement.imageWidth||512,height:placement.imageHeight||512,scale:527*furnitureFootprint(placement.item).columns/(2*(placement.imageWidth||512)),flip:placement.flipped?-1:1};
   const kind=({'소파':'sofa','의자':'chair','식탁':'table','침대':'single-bed','1인 침대':'single-bed','TV':'tv','화분':'plant','책장':'bookcase','화분 2':'plant-flower','협탁':'nightstand','카운터':'counter','냉장고':'fridge','인덕션':'induction'})[placement.item];
   if(!kind)return null;
   const turn=((Math.round((Number(placement.rotation)||0)/90)%4)+4)%4;

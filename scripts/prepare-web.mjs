@@ -185,7 +185,11 @@ for(const tag of index.matchAll(/<link\b[^>]*rel=["']stylesheet["'][^>]*>/gi)){
  const href=tag[0].match(/href=["']([^"']+)["']/i)?.[1];
  if(!href||/^(https?:|data:)/i.test(href))continue;
  const file=new URL(href,output);file.search="";file.hash="";
- try{await access(file)}catch{throw new Error(`배포 스타일 파일이 없습니다: ${href}`)}
+ try{await access(file)}catch(error){
+  const name=relative(outputPath,fileURLToPath(file)).replaceAll("\\","/");
+  if(error.code!=="ENOENT"||name.startsWith("../")||!name.endsWith(".css"))throw error;
+  await mkdir(new URL("./",file),{recursive:true});await writeFile(file,await readSource(new URL(name,root)));
+ }
 }
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");

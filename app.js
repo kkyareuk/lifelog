@@ -1,3 +1,4 @@
+import {contextualGuide,stopContextualGuide} from './feature-tour.js';
 import {syncLifeSound} from './life-audio.js';
 import {syncActivityProgress} from './activity-progress.js';
 import './prepared-food-ui.js';
@@ -18,7 +19,7 @@ import './selection-popup.js';
 import {notificationCharacters,notificationKeys,selectedNotificationIds,setNotificationCharacter} from './notification-characters.js';
 import {authoredSelf,ownerLogTemplate} from './character-language.js';
 import {characterLanguageFields,bindCharacterLanguageFields} from './character-language-ui.js';
-import {startIntroTour,introTourActive} from './intro-tour.js';
+import {startIntroTour,introTourActive,introProgress,tutorialEvent} from './intro-tour.js';
 import {installLogOrder} from './log-order.js';
 import {saveFailureMessage,saveFailureDiagnostic} from './save-status.js?v=20260909dev305';
 import {profileExporter,saveNativeProfile} from './profile-document-export.js?v=20260909dev305';
@@ -1218,7 +1219,7 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
     const search=dialog.querySelector("[data-furniture-search]"),empty=dialog.querySelector("[data-furniture-search-empty]");
     search?.addEventListener("input",()=>{const query=search.value.trim().toLocaleLowerCase(),choices=[...dialog.querySelectorAll("[data-furniture-choice]")];let visible=0;choices.forEach(button=>{const matches=!query||button.dataset.furnitureSearchLabel.includes(query);button.hidden=!matches;if(matches)visible++});if(empty)empty.hidden=visible>0});
     dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
-      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);setActiveHomeFloor(homeId,home.rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
+      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);if(placementId)tutorialEvent("room-edited");setActiveHomeFloor(homeId,home.rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
     });
     dialog.querySelectorAll("[data-open-bed-assignment]").forEach(button=>button.onclick=()=>{const placementId=button.dataset.openBedAssignment;dialog.onclose=()=>dialog.remove();dialog.close();openBedAssignmentDialog(homeId,roomKey,placementId)});
   };
@@ -1781,8 +1782,20 @@ function restoreMobileCharacterDialogs(){
   }
 }
 
+function beginIntroTour(restart=false){
+ stopContextualGuide();
+ return startIntroTour({language:state.uiLanguage,restart,hasCharacter:()=>state.order.length>0,go:tab=>window.DrawerVillageNavigation.go(tab),create:({name,traits})=>{
+  if(state.order.length)return state.activeId;
+  const id=createCharacter(characterLimit());if(!id)return null;
+  const c=state.characters[id];c.name=String(name||'').trim();
+  if(traits.includes(0))c.socialEnergy=2;if(traits.includes(1))c.socialEnergy=4;
+  if(traits.includes(2))c.planningStyle='계획적';if(traits.includes(3))c.planningStyle='즉흥적';
+  localStorage.setItem(ONBOARDING_KEY,'done');localStorage.setItem(SETUP_COACH_KEY,'done');save();return id;
+ }});
+}
 function maybeShowPageGuide(){
   if(introTourActive())return;
+  if(contextualGuide(state.activeTab,state))return;
   const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
   const accountGuides=window.ParallelCityAuth?.getInfo?.().guideState;
   if(accountGuides&&!accountGuides.loaded)return;
@@ -1900,7 +1913,7 @@ function bindDirectActivityCommand(root,characterId,close){
     if(open){button.setAttribute("aria-expanded","true");command.querySelector(`[data-direct-panel="${CSS.escape(button.dataset.directCategory)}"]`).hidden=false}
   });
   installDirectSteps(command,copy,state.characters[characterId],state);
-  command.querySelectorAll("[data-direct-simple-action]").forEach(action=>action.onclick=async()=>{action.disabled=true;try{if(await execute(action.dataset.directSimpleAction,{workTask:action.dataset.workTask,lifeTask:action.dataset.lifeTask})){close();renderAfterCommand()}}catch(error){showToast(error.message)}finally{action.disabled=false}});
+  command.querySelectorAll("[data-direct-simple-action]").forEach(action=>action.onclick=async()=>{action.disabled=true;try{if(await execute(action.dataset.directSimpleAction,{workTask:action.dataset.workTask,lifeTask:action.dataset.lifeTask})){tutorialEvent('action-success');close();renderAfterCommand()}}catch(error){showToast(error.message)}finally{action.disabled=false}});
   const choose=(selector,attribute)=>command.querySelectorAll(selector).forEach(button=>button.onclick=()=>{command.querySelectorAll(selector).forEach(item=>item.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");command.dataset[attribute]=button.dataset[attribute]} );
   choose("[data-direct-target]","directTarget");choose("[data-direct-subject]","directSubject");choose("[data-direct-topic]","directTopic");
   command.querySelectorAll("[data-direct-social-action]").forEach(button=>button.onclick=()=>{
@@ -1914,7 +1927,7 @@ function bindDirectActivityCommand(root,characterId,close){
     if(!targetId)return showToast(copy.chooseTarget);
     const custom=command.querySelector("[data-direct-custom-topic]")?.value.trim(),topic=custom||command.dataset.directTopic||"";
     let accepted=false;event.currentTarget.disabled=true;try{accepted=await execute(kind,{targetId,subjectId,topic,payment:command.querySelector("[data-direct-payment]")?.value||"split"})}catch(error){showToast(error.message);return}finally{command.querySelector("[data-direct-social-submit]").disabled=false}
-    if(accepted){close();renderAfterCommand()}else showToast(contactFailure(state.characters[characterId],state.characters[targetId],kind,state.uiLanguage)||({ko:'행동할 장소를 찾지 못했어요. 캐릭터의 집 연결과 현재 위치를 확인해 주세요.',en:'No location is available. Check the character’s home connection and current location.',ja:'行動できる場所が見つかりません。家の接続と現在地を確認してください。'}[state.uiLanguage]));
+    if(accepted){tutorialEvent('action-success');close();renderAfterCommand()}else showToast(contactFailure(state.characters[characterId],state.characters[targetId],kind,state.uiLanguage)||({ko:'행동할 장소를 찾지 못했어요. 캐릭터의 집 연결과 현재 위치를 확인해 주세요.',en:'No location is available. Check the character’s home connection and current location.',ja:'行動できる場所が見つかりません。家の接続と現在地を確認してください。'}[state.uiLanguage]));
   });
 }
 
@@ -2521,7 +2534,7 @@ document.addEventListener("click",event=>{
 
 function bind(){
   bindSceneZoom();
-  document.querySelectorAll("[data-intro-tour]").forEach(button=>button.onclick=()=>startIntroTour({language:state.uiLanguage,hasCharacter:()=>state.order.length>0,go:tab=>window.DrawerVillageNavigation.go(tab)}));
+  document.querySelectorAll("[data-intro-tour]").forEach(button=>button.onclick=()=>beginIntroTour(true));
   installLogOrder(document);
   $("[data-auth-retry]")?.addEventListener("click",()=>location.reload());
 
@@ -2693,6 +2706,7 @@ function bind(){
       playInteractionSound('log-toggle',state);toggleGameHudMoment(button,event);
     });
   });
+  $$('.native-main-character').forEach(figure=>{figure.setAttribute('role','button');figure.tabIndex=0;figure.setAttribute('aria-label',({ko:'캐릭터 행동 선택',en:'Choose character activity',ja:'キャラクターの行動を選ぶ'})[state.uiLanguage]||'캐릭터 행동 선택');const open=()=>document.querySelector('[data-character-command]')?.click();figure.addEventListener('click',open);figure.addEventListener('keydown',e=>{if(['Enter',' '].includes(e.key)){e.preventDefault();open()}})});
   $$('[data-character-command]').forEach(button=>button.addEventListener('click',event=>{
     event.preventDefault();
     event.stopPropagation();
@@ -2943,12 +2957,7 @@ function bind(){
   $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()});
   $("[data-welcome-create]")?.addEventListener("click",()=>{
     if(window.ParallelCityAuth?.getInfo?.().busy||state.order.length)return;
-    if(!createCharacter(characterLimit()))return;
-    localStorage.setItem(ONBOARDING_KEY,"done");
-    localStorage.setItem(SETUP_COACH_KEY,"character-editing");
-    setNavigationTabIntent("character");state.characterSettingsView="hub";setCharacterPane("visual");
-    mobileCharacterEditorPane="";mobileCharacterEditorScroll=0;mobileCharacterDraftDirty=false;
-    save();render();
+    beginIntroTour(true);
   });
   $("[data-welcome-restore]")?.addEventListener("click",()=>{
     if(window.ParallelCityAuth?.getInfo?.().busy)return;
@@ -3353,7 +3362,7 @@ function bind(){
       render();showToast(copy.done);
     }
   });
-  $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
+  $$("[data-room-name]").forEach(el=>el.oninput=()=>{updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"});if(el.value.trim())tutorialEvent("room-edited")});
   $$("[data-room-type]").forEach(el=>el.onchange=()=>{
     const editors=$$(".mobile-room-editors details"),openIndex=editors.indexOf(el.closest("details"));
     setRoomType(el.dataset.homeId,el.dataset.roomType,el.value);render();
@@ -3907,7 +3916,7 @@ function bind(){
     try{await explicitSave("캐릭터 저장",{renderAfter:!fullBook});advanceFirstSetupAfterCharacter()}
     finally{delete button.dataset.saving}
   }));
-  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("사전 저장"));
+  $("[data-catalog-save]")?.addEventListener("click",async()=>{if(await explicitSave("사전 저장"))tutorialEvent("catalog-saved")});
   $("[data-town-save]")?.addEventListener("click",event=>{const shell=event.currentTarget.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="town")return;explicitSave("마을 저장")});
   $$(".place-editor details").forEach(details=>{
     const audienceTitle=details.querySelector(".town-audience-field h4")||[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
@@ -4417,7 +4426,7 @@ function bind(){
         render();
       };
     }
-    dialog?.showModal();
+    dialog?.showModal();if(dialog?.open)tutorialEvent("view-opened");
   });
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
   $("[data-open-official-relations]")?.addEventListener("click",()=>{const dialog=$("[data-official-relation-dialog]");if(dialog&&!dialog.open)dialog.showModal()});
@@ -5427,7 +5436,7 @@ function openRoutineDialog(id,draft=null,onSave=null){
     if(onSave){onSave({days,monthly:false,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),memberIds:[c.id,...[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value)],sourceId:c.id,notes:dialog.querySelector("[name=notes]").value.trim()},item.sharedScheduleId||"",()=>closeRoutineSheet(dialog));return}
     if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
     const saved=updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
-    if(saved)closeRoutineSheet(dialog,"save",()=>render());
+    if(saved){tutorialEvent("routine-saved");closeRoutineSheet(dialog,"save",()=>render());}
   };
 }
 
@@ -5451,7 +5460,7 @@ function openMonthlyRoutineDialog(id,draft=null,onSave=null){
     if(onSave){onSave({date:dialog.querySelector("[name=date]").value,monthly:true,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),memberIds:[c.id,...[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value)],sourceId:c.id,notes:dialog.querySelector("[name=notes]").value.trim()},item.sharedScheduleId||"",()=>closeRoutineSheet(dialog));return}
     if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
     updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
-    closeRoutineSheet(dialog,"save",()=>render());
+    tutorialEvent("routine-saved");closeRoutineSheet(dialog,"save",()=>render());
   };
 }
 
@@ -6303,7 +6312,7 @@ if(document.documentElement.dataset.drawerRendered!=="1")setNavigationTabIntent(
 if(startupTab==="character")state.characterSettingsView="hub";
 if(startupTab==="settings")setSettingsPane(startupSettingsPane||"home");
 recordTabHistory(state.activeTab,true);
-mountTitleScreen({getState:()=>state,onEnter:()=>render()});
+mountTitleScreen({getState:()=>state,onEnter:()=>{render();const progress=introProgress();if(!progress.done&&(progress.step||!state.order.length))beginIntroTour()}});
 render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();

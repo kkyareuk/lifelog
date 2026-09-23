@@ -1,3 +1,4 @@
+import {openFurniturePhotos} from './furniture-photos.js';
 import {bindFurnitureDrag} from './furniture-drag.js';
 import {furnitureSprite} from './furniture-sprites.js';
 import {furnitureFootprint,isBedFurniture} from './furniture-layout.js';
@@ -11,8 +12,8 @@ function setFurniturePlacementStyle(element,placement){
   element.style.setProperty("--furniture-x",`${placement.x}%`);
   element.style.setProperty("--furniture-y",`${placement.y}%`);
   element.style.setProperty("--furniture-scale",String(placement.scale));
-  const perspective=bedPerspective(placement),couple=placement.item==='커플 침대',sprite=furnitureSprite(placement);
-  element.style.setProperty("--furniture-rotation",`${sprite?0:couple?perspective.artRotation:placement.rotation}deg`);
+  const perspective=bedPerspective(placement),couple=!placement.image&&placement.item==='커플 침대',sprite=furnitureSprite(placement);
+  element.style.setProperty("--furniture-rotation",`${sprite&&sprite.kind!=='custom'?0:couple?perspective.artRotation:placement.rotation}deg`);
   element.style.setProperty("--furniture-layer",String(placement.layer));
   element.style.setProperty("--furniture-flip",String(sprite?.flip??(couple?perspective.artFlip:placement.flipped?-1:1)));
   if(couple){element.dataset.bedSide=String(perspective.side);element.dataset.bedDirection=String(perspective.direction);element.querySelectorAll('.couple-bed-layer').forEach(image=>{const layer=['base','quilt','footboard'].find(key=>image.classList.contains('couple-bed-'+key));image.src=`assets/furniture/couple-bed/couple-bed-${perspective.side?'side-':''}${layer}.${perspective.side?'svg':'png'}`})}
@@ -33,12 +34,14 @@ function setFurniturePlacementStyle(element,placement){
   fitFurnitureSelection(element);
 }
 
-export function bindFurnitureEditor(root,{state,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,setActiveHomeFloor,render,openFurniturePropsDialog,openBedAssignmentDialog,pending=null,onPending=()=>{}}){
+export function bindFurnitureEditor(root,{state,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,setActiveHomeFloor,render,openFurniturePropsDialog,openBedAssignmentDialog,pending=null,onPending=()=>{},photoOptions={}}){
   if(!root)return;
   let pendingFurnitureSelection=pending;
   const rerender=()=>{onPending(pendingFurnitureSelection);render()};
   const toolbar=root.querySelector("[data-furniture-edit-toolbar]");
   if(!toolbar)return;
+  toolbar.querySelector('[data-furniture-command="photo"]')?.remove();
+  const photo=document.createElement('button');photo.type='button';photo.textContent=({ko:'가구 사진',en:'Furniture photo',ja:'家具の写真'}[state.uiLanguage]||'가구 사진');photo.dataset.furnitureCommand='photo';toolbar.querySelector('.furniture-edit-actions').append(photo);
   let selected=null;
   const positionToolbar=()=>{
     if(!selected?.isConnected||toolbar.hidden)return;
@@ -95,6 +98,7 @@ export function bindFurnitureEditor(root,{state,updateFurniturePlacement,moveFur
     if(command==="done"){clearSelection();return}
     const {homeId,roomKey,placementId}=toolbar.dataset;
     const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!current)return;
+    if(command==="photo"){openFurniturePhotos({world:state,placement:current,...photoOptions,apply:async image=>{if(photoOptions.assertCurrent)photoOptions.assertCurrent();const result=updateFurniturePlacement(homeId,roomKey,placementId,image);if(!result)throw Error('Furniture missing');await photoOptions.flush?.();pendingFurnitureSelection={homeId,roomKey,placementId};rerender()}});return}
     if(command==="props"){openFurniturePropsDialog?.(homeId,roomKey,placementId);return}
     if(command==="assign"){openBedAssignmentDialog?.(homeId,roomKey,placementId,{returnToFurniture:false});return}
     if(command==="delete"){

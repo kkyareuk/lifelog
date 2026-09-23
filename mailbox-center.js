@@ -1,3 +1,4 @@
+import {tutorialEvent} from './intro-tour.js';
 import {enqueuePlayerNote} from './player-notes.js';
 import {notificationCharacters,notificationKeys} from './notification-characters.js';
 import {relationshipMailRows,respondRelationshipLetter} from './relationship-letters.js';
@@ -87,7 +88,7 @@ export function bindMailbox(render,toast){
   if(window.ParallelCityAuth?.getInfo?.()?.user?.uid!==account)throw Error('Account changed');if(data.recipientKind!=='character'){const userTarget=data.targetId.startsWith('user:'),parts=data.targetId.split(':'),groupId=userTarget?parts[1]:data.recipientKind.slice(6);const [giftKind,giftId]=(data.gift||'').split('|'),giftItem=mailCatalog(s.activeGroupId?buildSharedWorld(s,state.uiLanguage):state)[giftKind]?.find(i=>i.id===giftId);await window.DrawerVillageGroups.sendMail({...data,gift:giftItem?{kind:giftKind,item:{...giftItem,image:giftItem.image||''}}:null,groupId,audience:userTarget?'member':'announcement',targetUid:userTarget?parts.slice(2).join(':'):'',recipientScope:data.targetId==='announcement'?'all':data.targetId,requestId});folder='sent';render();return}const world=s.activeGroupId?buildSharedWorld(s,state.uiLanguage):state,[kind,itemId]=(data.gift||'').split('|'),item=mailCatalog(world)?.[kind]?.find(i=>i.id===itemId),target=world.characters[data.targetId];if(!target||data.sourceId===data.targetId)throw Error(mt('서로 다른 캐릭터를 골라 주세요.','Choose different characters.','別のキャラクターを選んでください。'));
   if(s.activeGroupId)await window.DrawerVillageGroups.sendMail({...data,groupId:s.activeGroupId,gift:item?{kind,item:{...item,image:item.image||''}}:null,requestId});
   else{if(item){if(data.sourceId)recordCharacterInteraction({type:'gift',actorId:data.sourceId,targetId:data.targetId,itemKind:kind,itemId});else{target.inventory??={};target.inventory[kind]??=[];if(!target.inventory[kind].includes(itemId))target.inventory[kind].push(itemId);save(true)}}const rows=localLetters();rows.push({id:crypto.randomUUID(),...data,sourceName:world.characters[data.sourceId]?.name||mt('나','Me','自分'),targetName:target.name,gift:item?{kind,item:{id:item.id,name:item.name}}:null,createdAt:Date.now()});localStorage.setItem(storageKey(),JSON.stringify(rows.slice(-300)));if(enqueuePlayerNote(target,rows.at(-1)))await save(true)}
-  folder='sent';page=0;toast(mt('우편을 보냈어요.','Mail sent.','送信しました。'));render();
+  tutorialEvent('mail-sent');folder='sent';page=0;toast(mt('우편을 보냈어요.','Mail sent.','送信しました。'));render();
  });});
 }
 function openLetter(id,proposal,render,toast,groupId){
