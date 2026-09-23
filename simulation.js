@@ -1,3 +1,4 @@
+import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
 import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
 import {officeEmployment,officeDuty} from './career-duties.js';
 import {careerWeeklyRoutines} from './career-work.js';
@@ -15,8 +16,8 @@ import {sleepWindow,scheduledSleeping} from './sleep-clock.js';
 import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
 import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
 import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
-import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
-import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
+import {roomActivityKey,roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
+import {furnitureMeetingKey,advanceNeeds,urgentNeed,needRecoveryStart,needsAt} from './life-needs.js';
 import {spousePrivacyExempt} from './private-scene-policy.js';
 import {coffeeCopy} from './coffee-needs.js';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
@@ -2803,7 +2804,7 @@ function buildScene(c,date){
     list.push(work);
   }
   const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
-  const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%4===0;
+  const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%2===0;
   const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
   if(eatsOutForLunch&&lunchPlace?.type==="음식점"){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
@@ -2849,9 +2850,9 @@ function buildScene(c,date){
       || /연애 감정|사랑/.test(String(view.overall||""))
     );
   });
-  const socialChance=romanticConnection?2:4;
+  const socialChance=2;
   const socialDay=hash(`${c.id}:${dayKey(date)}:social-day`)%socialChance===0;
-  const socialMinute=1080+(hash(`${c.id}:${dayKey(date)}:social-minute`)%181);
+  const socialMinute=romanticConnection?1080+(hash(`${c.id}:${dayKey(date)}:social-minute`)%181):600+(hash(`${c.id}:${dayKey(date)}:social-minute`)%601);
   const social=socialDay?socialEvent(c,socialMinute,date):null; if(social)list.push(social);
   if(social?.withId){
     const socialPartner=state.characters[social.withId];
@@ -3428,7 +3429,7 @@ function liveGapEvent(c,last,n,date){
   ];
   const followupMatch=followups.find(([pattern])=>pattern.test(previousContext)),followup=followupMatch?.[1];
   const foodFollowup=/요리하는|아침 준비|빵을 굽|빵을 만들|식사를 준비|간식을 챙기|끓이|굽는 중|볶는 중/.test(previousContext);
-  if(mayFollowUp(last,followup)&&(!foodFollowup||!isDeepNight(n)||nightSnackAllowed(c,date,n)))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId,homeFollowup:true,narrativeKey:"followup:"+followups.indexOf(followupMatch)});
+  if(mayFollowUp(last,followup)&&(!foodFollowup||needsAt(c,date.getTime()).hunger<75&&(!isDeepNight(n)||nightSnackAllowed(c,date,n))))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId,homeFollowup:true,narrativeKey:"followup:"+followups.indexOf(followupMatch)});
   const scripts=[...homeActivityPoolFor(c,date,n),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
@@ -3499,7 +3500,14 @@ function liveGapEvent(c,last,n,date){
   if(moodAction)scripts.unshift([...moodAction,null,{moodResponse:true,moodSourceTone:currentMood.tone}]);
   if(!isDeepNight(n)||nightSnackAllowed(c,date,n))scripts.push(["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"]);
   const recent=recentNarrativeEntries(c,dayKey(date),minute,5);
-  const script=pickHomeNarrative(scripts,recent,`${c.id}:${dayKey(date)}:${minute}:live`,moodAction?scripts[0]:null);
+  const home=state.homes[homeIdForDate(c,date)||c.homeId],full=needsAt(c,date.getTime()).hunger>=75;
+  const allowed=scripts.filter(script=>{
+    const scene={title:script[0],...(script[4]||{})},room=home?.rooms?.[script[2]];
+    return autonomousAllowed(c,scene)&&(!room||roomActivityAllowed(room,scene))&&(!full||!['eating','cooking'].includes(roomActivityKey(scene)));
+  });
+  const candidates=diverseHomePool(allowed.length?allowed:scripts,recent,peerActivities(c,state.characters,dayKey(date),n));
+  const preferred=moodAction&&candidates.includes(scripts[0])?scripts[0]:null;
+  const script=pickHomeNarrative(candidates,recent,`${c.id}:${dayKey(date)}:${minute}:live`,preferred);
   return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],{...(script[4]||{}),narrativeKey:homeNarrativeKey(script)});
 }
 function forcedHomeEventFor(c,date=new Date()){
@@ -3601,7 +3609,12 @@ function calculateBaseEvent(c,date=new Date()){
     const sceneMinute=n-plannedMinute<=15?plannedMinute:n;
     return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,sceneMinute,date),date));
   }
-  if(last)return withResidenceLocation(c,last,date);
+  if(last){
+    const finishedMeal=discretionary(last)&&roomActivityKey(last)==='eating'&&needsAt(c,date.getTime()).hunger>=99&&c.lifeNeeds?.recovering?.includes('hunger');
+    const duplicate=duplicatedActivity(c,last,peerActivities(c,state.characters,dayKey(date),n));
+    if(last.home&&(finishedMeal||duplicate))return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,{...last,homeFollowup:true},n,date),date));
+    return withResidenceLocation(c,last,date);
+  }
   // 생성 당일에는 생성 시각 이전의 일정을 타임라인에서 제외한다. 예전에는
   // 그 결과 과거 장면이 하나도 없으면 24시간 동안 캐릭터 전체를 "대기"로
   // 막아 버렸다. 이제 생성 직후에도 현재 시각의 실제 행동을 하나 만들어
@@ -4891,7 +4904,7 @@ function calculateEventFor(c,date){
     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,coffee?{actionKind:'eating'}:{needKey:need}));
     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
-      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime(),recoveryEndsAt:(c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime())+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:needRecoveryStart(c,need,date.getTime()),recoveryEndsAt:(needRecoveryStart(c,need,date.getTime()))+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
 
       if(need==='hunger'){const eating=mealObservation(c,moment.recoveryStartedAt,state.uiLanguage);Object.assign(moment,eating,{baseTitle:eating.title,baseDesc:eating.desc})}
       if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});

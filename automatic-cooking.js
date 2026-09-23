@@ -2,6 +2,7 @@ import {RECIPES} from './recipes.js';
 import {cookingLevel,canStartCooking} from './cooking.js';
 import {recipeUnlocked} from './cooking-access.js';
 import {needsAt} from './life-needs.js';
+import {roomActivityKey} from './room-activities.js?v=20260909dev305';
 import {preparedFoods,foodSpoiled,actOnFood} from './prepared-food.js';
 export function mealWindow(now,id){
  const d=new Date(now),hour=d.getHours(),slot=hour>=6&&hour<11?'breakfast':hour>=11&&hour<15?'lunch':hour>=17&&hour<22?'dinner':'';if(!slot)return null;
@@ -13,7 +14,7 @@ export function automaticMeal(world,c,scene,now,start){
  // A wallet marks a character that has opted into the economy. Never backfill
  // missed meals or interrupt the user's command, a journey or an appointment.
  if(world.sharedContext&&!world.recipeEntitlements)return false;
- if(!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
+ if(scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
  const window=mealWindow(now,c.id);if(!window||c.cooking?.lastAutomaticMeal===window.key||needsAt(c,now).hunger>65)return false;
  const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
  const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));

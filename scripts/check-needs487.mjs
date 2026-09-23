@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {needsAt,advanceNeeds,urgentNeed,needRecoveryStart} from '../life-needs.js';
+import {needDuration} from '../need-pacing.js';
+import {diverseHomePool,duplicatedActivity,discretionary} from '../autonomy-diversity.js';
+const t=Date.UTC(2026,8,23,5),c={id:'b',lifeNeeds:{hunger:0,sleep:90,toilet:90,hygiene:90,social:90,updatedAt:t}};
+const meal=now=>({needKey:'hunger',actionKind:'eating',recoveryStartedAt:now,recoveryEndsAt:now+needDuration(c,'hunger')});
+advanceNeeds(c,meal(t),t);
+assert(needsAt(c,t+15000).hunger>=49.9);
+assert.equal(needsAt(c,t+30000).hunger,100);
+assert.equal(urgentNeed(c,t+30000),'');
+const restored=JSON.parse(JSON.stringify(c));
+assert.equal(needsAt(restored,t+30000).hunger,100,'reload retains elapsed recovery');
+const tomorrow=t+86400000;
+assert.equal(needRecoveryStart(restored,'hunger',tomorrow),tomorrow,'expired meal must restart');
+advanceNeeds(restored,meal(tomorrow),tomorrow);
+assert.equal(needsAt(restored,tomorrow+30000).hunger,100,'repeat meal recovers after a day offline');
+advanceNeeds(restored,{actionKind:'read'},tomorrow+30000);
+assert.equal(restored.lifeNeeds.activeNeed,'');
+assert(needsAt(restored,tomorrow+60000).hunger>99,'no instant drain');
+const pool=[['책을 읽는 중','a','study'],['청소하는 중','b','living'],['음악을 듣는 중','c','living'],['운동하는 중','d','living']];
+const peers=[];
+for(let i=0;i<4;i++){const options=diverseHomePool(pool,[],peers);assert(options.length);const picked=options[0];assert(!peers.some(p=>p.scene.title===picked[0]));peers.push({id:String(i),scene:{title:picked[0]}});}
+assert(duplicatedActivity(c,{title:'책을 읽는 중'},[{id:'a',scene:{title:'책을 읽는 중'}}]));
+for(const protectedScene of [{manualDirective:true},{routineId:'shift'},{needKey:'hunger'},{dateGroup:'date'},{groupInteraction:true},{withId:'friend'},{sleeping:true}])assert(!discretionary({...protectedScene,title:'책을 읽는 중'}));
+assert(diverseHomePool([pool[0]],[],peers).length,'restricted pools remain usable');
+console.log('PASS 487: 30-second real-time full meal, reload, expired recovery, four distinct activity families, protected joint actions');

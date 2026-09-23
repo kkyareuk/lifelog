@@ -1,0 +1,146 @@
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -1,3 +1,4 @@
++import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
+ import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
+ import {officeEmployment,officeDuty} from './career-duties.js';
+ import {careerWeeklyRoutines} from './career-work.js';
+@@ -15,8 +16,8 @@
+ import {viewExpressionAction,sameExpressionPlace} from './automatic-view-actions.js';
+ import {MAJOR_CLEANUP_PATTERN,entryMomentKey,mergeImmutableEntries,cleanExactRepeatedEntries,cleanRoutineCleanupRest,cleanSameMinuteEntries,cleanShadowedBaseEntries} from './simulation-timeline-cleanup.js';
+ import {configuredAppearanceValue,hairColorText,eyeColorText,appearanceProfile,hairLookPhrase,eyeLookPhrase,appearanceTraitTags} from './simulation-appearance.js';
+-import {roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
+-import {furnitureMeetingKey,advanceNeeds,urgentNeed} from './life-needs.js';
++import {roomActivityKey,roomActivityAllowed,applyRoomActivityPolicy} from './room-activities.js?v=20260909dev305';
++import {furnitureMeetingKey,advanceNeeds,urgentNeed,needRecoveryStart,needsAt} from './life-needs.js';
+ import {spousePrivacyExempt} from './private-scene-policy.js';
+ import {coffeeCopy} from './coffee-needs.js';
+ import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
+@@ -2803,7 +2804,7 @@
+     list.push(work);
+   }
+   const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
+-  const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%4===0;
++  const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%2===0;
+   const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
+   if(eatsOutForLunch&&lunchPlace?.type==="음식점"){
+     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
+@@ -2849,9 +2850,9 @@
+       || /연애 감정|사랑/.test(String(view.overall||""))
+     );
+   });
+-  const socialChance=romanticConnection?2:4;
++  const socialChance=2;
+   const socialDay=hash(`${c.id}:${dayKey(date)}:social-day`)%socialChance===0;
+-  const socialMinute=1080+(hash(`${c.id}:${dayKey(date)}:social-minute`)%181);
++  const socialMinute=romanticConnection?1080+(hash(`${c.id}:${dayKey(date)}:social-minute`)%181):600+(hash(`${c.id}:${dayKey(date)}:social-minute`)%601);
+   const social=socialDay?socialEvent(c,socialMinute,date):null; if(social)list.push(social);
+   if(social?.withId){
+     const socialPartner=state.characters[social.withId];
+@@ -3428,7 +3429,7 @@
+   ];
+   const followupMatch=followups.find(([pattern])=>pattern.test(previousContext)),followup=followupMatch?.[1];
+   const foodFollowup=/요리하는|아침 준비|빵을 굽|빵을 만들|식사를 준비|간식을 챙기|끓이|굽는 중|볶는 중/.test(previousContext);
+-  if(mayFollowUp(last,followup)&&(!foodFollowup||!isDeepNight(n)||nightSnackAllowed(c,date,n)))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId,homeFollowup:true,narrativeKey:"followup:"+followups.indexOf(followupMatch)});
++  if(mayFollowUp(last,followup)&&(!foodFollowup||needsAt(c,date.getTime()).hunger<75&&(!isDeepNight(n)||nightSnackAllowed(c,date,n))))return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId,homeFollowup:true,narrativeKey:"followup:"+followups.indexOf(followupMatch)});
+   const scripts=[...homeActivityPoolFor(c,date,n),
+     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
+     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
+@@ -3499,7 +3500,14 @@
+   if(moodAction)scripts.unshift([...moodAction,null,{moodResponse:true,moodSourceTone:currentMood.tone}]);
+   if(!isDeepNight(n)||nightSnackAllowed(c,date,n))scripts.push(["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"]);
+   const recent=recentNarrativeEntries(c,dayKey(date),minute,5);
+-  const script=pickHomeNarrative(scripts,recent,`${c.id}:${dayKey(date)}:${minute}:live`,moodAction?scripts[0]:null);
++  const home=state.homes[homeIdForDate(c,date)||c.homeId],full=needsAt(c,date.getTime()).hunger>=75;
++  const allowed=scripts.filter(script=>{
++    const scene={title:script[0],...(script[4]||{})},room=home?.rooms?.[script[2]];
++    return autonomousAllowed(c,scene)&&(!room||roomActivityAllowed(room,scene))&&(!full||!['eating','cooking'].includes(roomActivityKey(scene)));
++  });
++  const candidates=diverseHomePool(allowed.length?allowed:scripts,recent,peerActivities(c,state.characters,dayKey(date),n));
++  const preferred=moodAction&&candidates.includes(scripts[0])?scripts[0]:null;
++  const script=pickHomeNarrative(candidates,recent,`${c.id}:${dayKey(date)}:${minute}:live`,preferred);
+   return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],{...(script[4]||{}),narrativeKey:homeNarrativeKey(script)});
+ }
+ function forcedHomeEventFor(c,date=new Date()){
+@@ -3601,7 +3609,12 @@
+     const sceneMinute=n-plannedMinute<=15?plannedMinute:n;
+     return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,sceneMinute,date),date));
+   }
+-  if(last)return withResidenceLocation(c,last,date);
++  if(last){
++    const finishedMeal=discretionary(last)&&roomActivityKey(last)==='eating'&&needsAt(c,date.getTime()).hunger>=99&&c.lifeNeeds?.recovering?.includes('hunger');
++    const duplicate=duplicatedActivity(c,last,peerActivities(c,state.characters,dayKey(date),n));
++    if(last.home&&(finishedMeal||duplicate))return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,{...last,homeFollowup:true},n,date),date));
++    return withResidenceLocation(c,last,date);
++  }
+   // 생성 당일에는 생성 시각 이전의 일정을 타임라인에서 제외한다. 예전에는
+   // 그 결과 과거 장면이 하나도 없으면 24시간 동안 캐릭터 전체를 "대기"로
+   // 막아 버렸다. 이제 생성 직후에도 현재 시각의 실제 행동을 하나 만들어
+@@ -4891,7 +4904,7 @@
+     const home=state.homes[rawCurrent.visitHomeId||c.homeId],type=coffee?'kitchen':{sleep:'bedroom',hunger:'kitchen',toilet:'bath',hygiene:'bath'}[need];
+     const room=Object.entries(home?.rooms||{}).find(([key,r])=>(r.type||key)===type&&roomEntryAllowed(c,home,r)&&roomActivityAllowed(r,coffee?{actionKind:'eating'}:{needKey:need}));
+     if(room){const copy={sleep:['잠자는 중','부족한 수면을 채우며 쉬고 있어요.','Sleeping','Resting to recover lost sleep.','眠っているところ','足りない睡眠を補っています。'],hunger:['식사하는 중','허기를 느껴 식사를 챙기고 있어요.','Eating a meal','Having a meal to satisfy their hunger.','食事中','空腹を感じ、食事を取っています。'],toilet:['용변을 보는 중','잠시 화장실을 사용하고 있어요.','Using the toilet','Taking a bathroom break.','トイレを使っているところ','お手洗いを使っています。'],hygiene:['씻는 중','몸을 씻고 청결을 되찾고 있어요.','Washing','Washing to feel clean again.','体を洗っているところ','体を洗って清潔にしています。']}[need],offset=({ko:0,en:2,ja:4})[state.uiLanguage]||0;
+-      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime(),recoveryEndsAt:(c.lifeNeeds?.activeNeed===need?(c.lifeNeeds.needStartedAt||date.getTime()):date.getTime())+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
++      const moment={...soloSceneFrom(rawCurrent),furniture:undefined,meetingFurniture:undefined,meetingKind:undefined,interactionId:undefined,minute:nowMin(date),room:room[0],title:copy[offset],desc:copy[offset+1],baseTitle:copy[offset],baseDesc:copy[offset+1],needKey:need,recoveryStartedAt:needRecoveryStart(c,need,date.getTime()),recoveryEndsAt:(needRecoveryStart(c,need,date.getTime()))+needDuration(c,need),activityFamily:need==='sleep'&&!sleepingNow(c,date)?'nap':undefined,lifeTaskId:need==='toilet'?'toilet':undefined,sleeping:need==='sleep',actionKind:need==='sleep'?'sleep':need==='hunger'?'eating':'wash',groupInteraction:false,withId:undefined,withIds:[],holdMinutes:need==='toilet'?1:10};
+ 
+       if(need==='hunger'){const eating=mealObservation(c,moment.recoveryStartedAt,state.uiLanguage);Object.assign(moment,eating,{baseTitle:eating.title,baseDesc:eating.desc})}
+       if(coffee)Object.assign(moment,{title:coffeeCopy[offset],desc:coffeeCopy[offset+1],baseTitle:coffeeCopy[offset],baseDesc:coffeeCopy[offset+1],coffeeRecovery:true,activityFamily:'eating',sleeping:false,actionKind:'eating'});
+--- a/runtime/automatic-cooking.js
++++ b/runtime/automatic-cooking.js
+@@ -2,6 +2,7 @@
+ import {cookingLevel,canStartCooking} from './cooking.js';
+ import {recipeUnlocked} from './cooking-access.js';
+ import {needsAt} from './life-needs.js';
++import {roomActivityKey} from './room-activities.js?v=20260909dev305';
+ import {preparedFoods,foodSpoiled,actOnFood} from './prepared-food.js';
+ export function mealWindow(now,id){
+  const d=new Date(now),hour=d.getHours(),slot=hour>=6&&hour<11?'breakfast':hour>=11&&hour<15?'lunch':hour>=17&&hour<22?'dinner':'';if(!slot)return null;
+@@ -13,7 +14,7 @@
+  // A wallet marks a character that has opted into the economy. Never backfill
+  // missed meals or interrupt the user's command, a journey or an appointment.
+  if(world.sharedContext&&!world.recipeEntitlements)return false;
+- if(!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
++ if(scene.needKey||['eating','cooking'].includes(roomActivityKey(scene))||!c.wallet||!scene.home||scene.manualDirective||scene.routineId||scene.dateGroup&&scene.datePurpose||scene.transit||scene.sleeping||c.cooking?.active||c.autonomousActivityBlocks?.some(x=>['eating','cooking'].includes(x)))return false;
+  const window=mealWindow(now,c.id);if(!window||c.cooking?.lastAutomaticMeal===window.key||needsAt(c,now).hunger>65)return false;
+  const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
+  const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));
+--- a/runtime/life-needs.js
++++ b/runtime/life-needs.js
+@@ -10,7 +10,7 @@
+  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
+  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
+  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
+- const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:80*60000/needDuration(c,key)]));
++ const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:100*60000/needDuration(c,key)+rates[key]*needFrequency(c,key)*needVariation(c,key)/60]));
+  const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
+  return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
+ }
+@@ -26,13 +26,16 @@
+   if(isDrinkingCoffee(scene)&&!recovering.includes('sleep'))recovering.push('sleep');
+   if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
+  }
+- if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
+- c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed:scene?.needKey||'',needStartedAt:scene?.needKey?(old?.activeNeed===scene.needKey?old.needStartedAt:now):0};return true;
++ const activeNeed=scene?.needKey||'',startedAt=activeNeed?(Number(scene.recoveryStartedAt)||needRecoveryStart(c,activeNeed,now)):0;
++ if(old&&now-old.updatedAt<60000&&old.activeNeed===activeNeed&&old.needStartedAt===startedAt&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
++ c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed,needStartedAt:startedAt};return true;
+ }
++// A completed recovery is not the next meal's start time (including after reload).
++export function needRecoveryStart(c,key,now){const old=c.lifeNeeds;return old?.activeNeed===key&&Number(old.recoveryEndsAt)>now&&Number(old.needStartedAt)>0?Number(old.needStartedAt):now;}
+ export function urgentNeed(c,now=Date.now(),{allowSleep=true}={}){
+  if(c.needsFixed)return '';
+  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
+- if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<75)return current;
++ if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<(current==='hunger'?100:75)&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
+  return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
+ }
+ export function relationshipPolicy(characters,world={}){
+--- a/runtime/need-pacing.js
++++ b/runtime/need-pacing.js
+@@ -1,5 +1,5 @@
+ const clamp=(value,lo,hi,fallback)=>Number.isFinite(Number(value))?Math.max(lo,Math.min(hi,Number(value))):fallback;
+ export function needFrequency(c,key){return clamp(c.needSettings?.frequency?.[key],.25,2,1)}
+ export function needVariation(c,key){let n=2166136261;for(const ch of `${c.id}:${key}`)n=Math.imul(n^ch.charCodeAt(0),16777619)>>>0;return .85+(n%301)/1000}
+-export function needDuration(c,key){const seconds={toilet:10,hunger:90,hygiene:60,social:120,sleep:600}[key]||60;return seconds*1000*(key==='toilet'?1:clamp(c.needSettings?.duration,.5,2,1))}
++export function needDuration(c,key){const seconds={toilet:10,hunger:30,hygiene:60,social:120,sleep:600}[key]||60;return seconds*1000*(['toilet','hunger'].includes(key)?1:clamp(c.needSettings?.duration,.5,2,1))}
+ export function directedNeed(task,kind){if(task==='toilet')return 'toilet';if(task==='meal'||!task&&kind==='meal')return 'hunger';if(['shower','bath','wash','face','teeth','hair_wash','hands'].includes(task)||!task&&kind==='wash')return 'hygiene';return ''}

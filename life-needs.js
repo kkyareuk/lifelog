@@ -10,7 +10,7 @@ export function needsAt(c,now=Date.now()){
  const saved=c.lifeNeeds||{},hours=Math.max(0,Math.min(24,(now-(Number(saved.updatedAt)||now))/3600000));
  const rates={sleep:5,hunger:9,toilet:7,hygiene:4,social:3};
  const minutes=Math.max(0,Math.min(10,(Math.min(now,Number(saved.recoveryEndsAt)||now)-(Number(saved.updatedAt)||now))/60000));
- const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:80*60000/needDuration(c,key)]));
+ const recovery=Object.fromEntries(Object.keys(NEEDS).map(key=>[key,key==='sleep'?4:100*60000/needDuration(c,key)+rates[key]*needFrequency(c,key)*needVariation(c,key)/60]));
  const sleepValue=sleepNeedAfter(c,clamp(saved.sleep??80),Number(saved.updatedAt)||now,now);
  return Object.fromEntries(Object.keys(NEEDS).map(key=>[key,blockedNeed(c,key)?100:key==='sleep'&&!c.needsFixed?clamp(Math.max(sleepValue,clamp(saved.sleep??80)-hours*5+((saved.recovering||[]).includes('sleep')?minutes*4:0))):clamp(clamp(saved[key]??80)-(c.needsFixed?0:hours*rates[key]*needFrequency(c,key)*needVariation(c,key))+(c.needsFixed?0:(saved.recovering||[]).includes(key)?minutes*recovery[key]:0))]));
 }
@@ -26,13 +26,16 @@ export function advanceNeeds(c,scene,now=Date.now()){
   if(isDrinkingCoffee(scene)&&!recovering.includes('sleep'))recovering.push('sleep');
   if(scene?.groupInteraction&&!scene.sleeping)recovering.push('social');
  }
- if(old&&now-old.updatedAt<60000&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
- c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed:scene?.needKey||'',needStartedAt:scene?.needKey?(old?.activeNeed===scene.needKey?old.needStartedAt:now):0};return true;
+ const activeNeed=scene?.needKey||'',startedAt=activeNeed?(Number(scene.recoveryStartedAt)||needRecoveryStart(c,activeNeed,now)):0;
+ if(old&&now-old.updatedAt<60000&&old.activeNeed===activeNeed&&old.needStartedAt===startedAt&&JSON.stringify(old.recovering)===JSON.stringify(recovering)&&old.recoveryEndsAt===(scene?.recoveryEndsAt||0)&&Object.keys(NEEDS).every(key=>!blockedNeed(c,key)||old[key]===100))return false;
+ c.lifeNeeds={...values,updatedAt:now,recovering,recoveryEndsAt:scene?.recoveryEndsAt||0,activeNeed,needStartedAt:startedAt};return true;
 }
+// A completed recovery is not the next meal's start time (including after reload).
+export function needRecoveryStart(c,key,now){const old=c.lifeNeeds;return old?.activeNeed===key&&Number(old.recoveryEndsAt)>now&&Number(old.needStartedAt)>0?Number(old.needStartedAt):now;}
 export function urgentNeed(c,now=Date.now(),{allowSleep=true}={}){
  if(c.needsFixed)return '';
  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
- if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<75)return current;
+ if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<(current==='hunger'?100:75)&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
  return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
 }
 export function relationshipPolicy(characters,world={}){
