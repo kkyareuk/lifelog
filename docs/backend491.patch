@@ -1,0 +1,89 @@
+--- a/shared-town.js
++++ b/shared-town.js
+@@ -140,13 +140,13 @@
+       const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
+       const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
+       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
+-      if((input.patch?.backgroundSetting==='arkenwald'&&town.backgroundSetting!=='arkenwald')||(input.patch?.backgroundMusic==='arkenwald'&&town.backgroundMusic!=='arkenwald')){const user=await tx.get(db.collection('users').doc(uid));if(!user.data()?.entitlements?.dlcPacks?.includes('medieval'))fail('medieval-dlc-required',403);}
+-      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','bg','travelAllowed','transportModes'];
++      const required=[...new Set(['backgroundSetting','backgroundMusic'].filter(k=>input.patch?.[k]!==town[k]).map(k=>({arkenwald:'medieval',neo_cacheport:'neo_cacheport'})[input.patch?.[k]]).filter(Boolean))];if(required.length){const user=await tx.get(db.collection('users').doc(uid));if(required.some(pack=>!user.data()?.entitlements?.dlcPacks?.includes(pack)))fail('background-dlc-required',403);}
++      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','backgroundRulesEnabled','bg','travelAllowed','transportModes'];
+       for(const [key,value] of Object.entries(input.patch||{})){
+         if(!fields.includes(key))fail('invalid-town-field');
+         if(key==='era'&&!['modern','medieval','joseon','rococo','victorian','cyberpunk'].includes(value)||key==='culture'&&!['mixed','europe','korea','japan','china','usa','italy'].includes(value))fail('invalid-town-setting');
+-        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald'].includes(value))fail('invalid-town-setting');
+-        if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
++        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald','neo_cacheport'].includes(value))fail('invalid-town-setting');
++        if(key==='travelAllowed'||key==='backgroundRulesEnabled'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
+         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
+         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
+       }
+--- a/runtime/town-background.js
++++ b/runtime/town-background.js
+@@ -1,13 +1,15 @@
+ // Arkenwald is a fictional blend of fifteenth-century France and England.
+ // Its setting controls ambience and everyday tools, never a food blacklist.
+ export const TOWN_BACKGROUNDS={
++ neo_cacheport:{dlc:'neo_cacheport',priceKRW:7900,name:['네오 캐시포트','NEO Cacheport','ネオ・キャッシュポート'],description:['네온과 전자음이 흐르는 미래의 항구도시.','A futuristic port city alive with neon and electronic beats.','ネオンと電子音が流れる未来の港湾都市。']},
+  drawer:{name:['서랍마을','Drawer Village','引き出し村'],description:['자유로운 상상으로 채우는 나만의 마을.','A village shaped by your imagination.','自由な想像でつくる、自分だけの村。']},
+  arkenwald:{dlc:'medieval',priceKRW:7900,name:['아르켄발트','Arkenwald','アーケンヴァルト'],description:['성벽과 장터, 촛불이 어우러진 중세의 일상.','Medieval life among castle walls, markets and candlelight.','城壁と市場、ろうそくの灯りが彩る中世の暮らし。']}
+ };
+-export const townBackground=town=>town?.backgroundSetting==='arkenwald'?'arkenwald':'drawer';
++export const townBackground=town=>Object.hasOwn(TOWN_BACKGROUNDS,town?.backgroundSetting)?town.backgroundSetting:'drawer';
+ export const backgroundCopy=(key,field,language='ko')=>TOWN_BACKGROUNDS[key][field][{ko:0,en:1,ja:2}[language]||0];
+-export const townMusic=town=>['drawer','arkenwald'].includes(town?.backgroundMusic)?town.backgroundMusic:townBackground(town);
++export const townMusic=town=>Object.hasOwn(TOWN_BACKGROUNDS,town?.backgroundMusic)?town.backgroundMusic:townBackground(town);
+ export function backgroundMusicPlaylist(town,screen='observe'){
++ if(townMusic(town)==='neo_cacheport'){if(screen==='home')return ['./assets/audio/neo-home.mp3'];if(screen==='town')return ['./assets/audio/neo-kaleidoscope.mp3'];return ['./assets/audio/neo-tokyo.mp3','./assets/audio/neo-synthwave.mp3','./assets/audio/neo-kaleidoscope.mp3']}
+  if(townMusic(town)!=='arkenwald')return ['./assets/audio/main-theme.mp3'];
+  if(screen==='home')return ['./assets/audio/arkenwald-home.mp3'];
+  if(screen==='town')return ['./assets/audio/arkenwald-town.mp3'];
+@@ -17,7 +19,7 @@
+ export const hasMedievalDlc=()=>globalThis.window?.ParallelCityAuth?.getInfo?.()?.entitlements?.dlcPacks?.includes('medieval')===true;
+ export function townBackgroundFields(town,language='ko'){
+  const selected=townBackground(town),title=({ko:'마을 배경',en:'Village setting',ja:'村の背景設定'})[language]||'마을 배경';
+- return `<label><b>${title}</b><select data-world-background-setting>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${selected===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label><label><b>${({ko:'마을 배경음',en:'Village music',ja:'村のBGM'})[language]||'마을 배경음'}</b><select data-world-background-music>${Object.keys(TOWN_BACKGROUNDS).map(key=>`<option value="${key}" ${townMusic(town)===key?'selected':''}>${backgroundCopy(key,'name',language)}${key==='arkenwald'?' · DLC':''}</option>`).join('')}</select></label>`;
++ return `<fieldset class="town-background-field"><legend>${({ko:'마을 세계관',en:'Village world',ja:'村の世界観'})[language]||'마을 세계관'}</legend><div class="town-background-grid"><label><b>${title}</b><select data-world-background-setting>${['drawer','arkenwald','neo_cacheport'].map(key=>`<option value="${key}" ${selected===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label><label><b>${({ko:'마을 배경음',en:'Village music',ja:'村のBGM'})[language]||'마을 배경음'}</b><select data-world-background-music>${['drawer','arkenwald','neo_cacheport'].map(key=>`<option value="${key}" ${townMusic(town)===key?'selected':''}>${backgroundCopy(key,'name',language)}${TOWN_BACKGROUNDS[key].dlc?' · DLC':''}</option>`).join('')}</select></label></div><label class="town-background-rules"><input type="checkbox" data-world-background-rules ${town.backgroundRulesEnabled!==false?'checked':''}><span>${({ko:'마을 배경 규칙 적용',en:'Apply village setting rules',ja:'村の背景ルールを適用'})[language]||'마을 배경 규칙 적용'}</span></label></fieldset>`;
+ }
+ export function bindTownBackgroundPicker(root,language='ko'){
+  for(const select of root.querySelectorAll('[data-world-background-setting]')){
+@@ -25,6 +27,10 @@
+   const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');trigger.setAttribute('aria-label',({ko:'마을 배경 선택',en:'Choose village setting',ja:'村の背景を選択'})[language]);
+   const update=()=>trigger.textContent=(select.selectedOptions[0]?.textContent||'')+' ▾';update();select.hidden=true;select.style.setProperty('display','none','important');select.after(trigger);
+   trigger.onclick=()=>{const d=document.createElement('dialog');d.className='speech-picker-dialog';const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');title.textContent=({ko:'마을 배경',en:'Village setting',ja:'村の背景設定'})[language];close.textContent='×';close.type='button';close.onclick=()=>d.close();header.append(title,close);d.append(header);const list=document.createElement('div');list.className='speech-picker-options';
+-   for(const key of Object.keys(TOWN_BACKGROUNDS)){const button=document.createElement('button'),name=document.createElement('b'),desc=document.createElement('small');button.type='button';button.setAttribute('aria-pressed',String(select.value===key));name.textContent=backgroundCopy(key,'name',language)+(key==='arkenwald'?' · DLC':'');desc.textContent=backgroundCopy(key,'description',language);button.append(name,desc);button.onclick=()=>{select.value=key;update();d.close();select.dispatchEvent(new Event('change',{bubbles:true}))};list.append(button)}d.append(list);d.addEventListener('close',()=>d.remove(),{once:true});document.body.append(d);d.showModal();};
++   for(const key of ['drawer','arkenwald','neo_cacheport']){const button=document.createElement('button'),name=document.createElement('b'),desc=document.createElement('small');button.type='button';button.setAttribute('aria-pressed',String(select.value===key));name.textContent=backgroundCopy(key,'name',language)+(TOWN_BACKGROUNDS[key].dlc?' · DLC':'');desc.textContent=backgroundCopy(key,'description',language);button.append(name,desc);button.onclick=()=>{select.value=key;update();d.close();select.dispatchEvent(new Event('change',{bubbles:true}));update()};list.append(button)}d.append(list);d.addEventListener('close',()=>d.remove(),{once:true});document.body.append(d);d.showModal();};
+  }
+ }
++
++export const hasBackgroundDlc=key=>Object.hasOwn(TOWN_BACKGROUNDS,key)&&(!TOWN_BACKGROUNDS[key].dlc||globalThis.window?.ParallelCityAuth?.getInfo?.()?.entitlements?.dlcPacks?.includes(TOWN_BACKGROUNDS[key].dlc)===true);
++export const backgroundAccessMessage=(language='ko')=>({ko:'이 마을 배경과 음악은 해당 DLC에 포함돼요.',en:'This village setting and music require its DLC.',ja:'この村の背景と音楽には対応するDLCが必要です。'})[language];
++export const backgroundSettings=(key,enabled=true)=>({backgroundSetting:key,backgroundRulesEnabled:enabled,era:enabled?(key==='arkenwald'?'medieval':key==='neo_cacheport'?'cyberpunk':'modern'):'modern',culture:enabled&&key==='arkenwald'?'europe':'mixed'});
+--- a/runtime/town-setting.js
++++ b/runtime/town-setting.js
+@@ -1,8 +1,8 @@
+-import {townBackgroundFields} from './town-background.js';
++import {townBackgroundFields,backgroundSettings,townBackground} from './town-background.js';
+ export const TOWN_ERAS={modern:['현대','Modern','現代'],medieval:['중세','Medieval','中世'],joseon:['조선 시대','Joseon period','朝鮮時代'],rococo:['로코코 시대','Rococo period','ロココ時代'],victorian:['빅토리안 시대','Victorian period','ヴィクトリア朝時代'],cyberpunk:['사이버펑크','Cyberpunk','サイバーパンク']};
+ export const TOWN_CULTURES={mixed:['자유·혼합','Mixed','自由・混合'],europe:['유럽','Europe','ヨーロッパ'],korea:['한국','Korea','韓国'],japan:['일본','Japan','日本'],china:['중국','China','中国'],usa:['미국','United States','アメリカ'],italy:['이탈리아','Italy','イタリア']};
+ export const settingLabel=(map,key,language='ko')=>(map[key]||Object.values(map)[0])[{ko:0,en:1,ja:2}[language]||0];
+-export function normalizeTownSetting(town={}){if(town.backgroundSetting)return {backgroundSetting:town.backgroundSetting==='arkenwald'?'arkenwald':'drawer',era:town.backgroundSetting==='arkenwald'?'medieval':'modern',culture:town.backgroundSetting==='arkenwald'?'europe':'mixed'};return {era:Object.hasOwn(TOWN_ERAS,town.era)?town.era:'modern',culture:Object.hasOwn(TOWN_CULTURES,town.culture)?town.culture:'mixed'}}
++export function normalizeTownSetting(town={}){if(town.backgroundSetting)return backgroundSettings(townBackground(town),town.backgroundRulesEnabled!==false);return {era:Object.hasOwn(TOWN_ERAS,town.era)?town.era:'modern',culture:Object.hasOwn(TOWN_CULTURES,town.culture)?town.culture:'mixed'}}
+ export const historicalTown=town=>!['modern','cyberpunk'].includes(normalizeTownSetting(town).era);
+ export function characterTown(world,character={},scene={}){const id=scene.townId||world.homes?.[scene.visitHomeId]?.townId||character.townId||world.homes?.[character.homeId]?.townId;return world.towns?.find(t=>t.id===id)||world.world||{}}
+ const electronic=/게임기|전기(?:기기|레인지|밥솥|포트|주전자|히터|제품|면도기)|자판기|자동차|버스|지하철|이메일|앱을|스마트폰|휴대폰|핸드폰|컴퓨터|노트북|태블릿|텔레비전|\bTV\b|전자레인지|전기밥솥|냉장고|에어컨|청소기|세탁기|드라이어|커피머신|에스프레소|캡슐\s*커피|온라인|인터넷|소셜\s*미디어|SNS|유튜브|스트리밍|비디오\s*게임|콘솔\s*게임|영상\s*통화|충전|키보드|마우스|smartphone|cellphone|computer|laptop|tablet|television|microwave|refrigerator|washing machine|hair dryer|coffee machine|espresso|capsule coffee|online|internet|social media|streaming|video game|charging|keyboard|スマホ|携帯|パソコン|タブレット|テレビ|電子レンジ|冷蔵庫|洗濯機|ドライヤー|コーヒーメーカー|オンライン|インターネット|動画|充電/i;
+--- a/runtime/town-profile.js
++++ b/runtime/town-profile.js
+@@ -1,3 +1,4 @@
++import {townMusic} from './town-background.js';
+ import {normalizeTownSetting} from './town-setting.js';
+ export const TOWN_TYPE_SUBTYPES={
+   "생활 중심": ["골목 생활권","자급자족 공동체","가족 중심 생활권","직주근접 생활권","24시간 생활권"],
+@@ -43,6 +44,7 @@
+   const bg=selected?.src||"";
+   return {
+     ...normalizeTownSetting(value),
++    backgroundMusic:townMusic(value),
+     townType:safeType,
+     townSubtype:subtypes.includes(value.townSubtype)?value.townSubtype:subtypes[0],
+     reputation:TOWN_REPUTATIONS.includes(value.reputation)?value.reputation:(value.reputation==="알려지지 않음"?"평판 정보 없음":/위험|폐쇄|사건|오염|쇠퇴/.test(value.reputation||"")?"나쁜 평판":/살기 좋|친절|환영|아름다움|복지|평화/.test(value.reputation||"")?"좋은 평판":"대체로 무난한 평판"),
