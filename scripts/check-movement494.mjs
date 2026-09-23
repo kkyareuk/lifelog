@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {movementStalled} from '../movement-recovery.js';
+import {planMeetingJourney} from '../meeting-journey.js';
+import {respectRoomPrivacy} from '../room-privacy.js';
+const c={id:'a',homeId:'h',townId:'t'},other={id:'b',homeId:'h'},world={uiLanguage:'ko',characters:{a:c,b:other},homes:{h:{id:'h',mapX:12,mapY:82,rooms:{bedroom:{},bath:{},living:{}}}},world:{places:[{id:'cafe',x:80,y:20}]}};
+let sample=movementStalled(null,{x:1,y:2},1000);assert(!movementStalled(sample,{x:1,y:2},1699).stalled);assert(movementStalled(sample,{x:1,y:2},1700).stalled);assert(!movementStalled(sample,{x:4,y:2},1700).stalled);
+const source={home:true,room:'bedroom'},goal={home:true,room:'bath',goal:{homeId:'h',room:'bath',point:{x:80,y:50}}};
+const j=planMeetingJourney(world,c,c,1000,source,goal,{a:{homeId:'h',room:'bath',point:{x:20,y:40}}});assert.equal(j.from.room,'bath');assert.equal(j.from.point.x,20);assert.equal(j.to.point.x,80);
+const trip=planMeetingJourney(world,c,c,1000,{home:true,room:'living'},{home:false,placeId:'cafe'});assert.deepEqual(trip.segments.find(s=>s.surface==='town').from,{x:12,y:82});assert.deepEqual(trip.to.map,{x:80,y:20});
+const scene={home:true,room:'bath',actionKind:'rest'},privateScene=()=>({home:true,room:'bath',actionKind:'wash'});
+assert.notEqual(respectRoomPrivacy(world,c,scene,privateScene).room,'bath');assert.equal(respectRoomPrivacy(world,c,{...scene,manualDirective:true},privateScene).room,'bath');
+console.log('PASS 700ms stationary detection, movement reset, measured bath origin, distinct shower destination, actual home→cafe route, autonomous privacy and manual exception');

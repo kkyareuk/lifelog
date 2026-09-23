@@ -125,7 +125,7 @@ function scheduleMeetingRefresh(){
  if(!["observe","home","town"].includes(state.activeTab))return;
  const s=activeShared(),world=s?buildSharedWorld(s,state.uiLanguage):state,now=Date.now(),ends=[...Object.values(world.characterDirectives||{}).flatMap(d=>[d.endsAt,...(d.journey?.segments?.map(s=>s.end)||[])]),...entranceTransitionEnds(now)].filter(t=>t>now);
  const day=new Date(now),key=`${day.getFullYear()}-${day.getMonth()+1}-${day.getDate()}`;
- for(const c of Object.values(world.characters||{})){const entries=c.sharedScene?[c.sharedScene]:(c.days?.[key]?.entries||[]);for(const e of entries){if(e.recoveryEndsAt>now)ends.push(e.recoveryEndsAt);const at=nextRoutinePhaseAt(e,now);if(Number.isFinite(at))ends.push(at)}}
+ for(const c of Object.values(world.characters||{})){for(const task of [c.household?.active,c.household?.returning])if(task)for(const end of [task.endsAt,...(task.journey?.segments?.map(segment=>segment.end)||[])])if(end>now)ends.push(end);const entries=c.sharedScene?[c.sharedScene]:(c.days?.[key]?.entries||[]);for(const e of entries){if(e.recoveryEndsAt>now)ends.push(e.recoveryEndsAt);const at=nextRoutinePhaseAt(e,now);if(Number.isFinite(at))ends.push(at)}}
  if(!ends.length)return;
  const refresh=async()=>{if(document.querySelector('dialog[open],.routine-sheet-backdrop,[data-world-background-setting]')||state.homeEditMode||isDeferredMobileTextControl(document.activeElement)){meetingRefreshTimer=setTimeout(refresh,2000);return}if(s)await window.DrawerVillageGroups.advanceLife(true).catch(()=>{});render()};
  meetingRefreshTimer=setTimeout(refresh,Math.max(50,Math.min(...ends)-now+30));

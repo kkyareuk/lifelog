@@ -35,9 +35,9 @@ export function positionStandingOccupants(scene,rectForFurniture,paintedRect){
   // its animation until arrival, then joins the standing-footprint reservation.
   if(person.dataset.seatId||person.dataset.coupleBedId||person.classList.contains('home-life-walking')){occupied.push({...r,using});continue}
   const container=person.offsetParent||scene,cr=container.getBoundingClientRect();if(!cr.width||!cr.height)continue;
-  const key=[scene.closest('[data-home-pan]')?.dataset.homePan||'',scene.className,person.dataset.characterId||person.dataset.petId,person.style.getPropertyValue('--life-x'),person.style.getPropertyValue('--life-y'),person.dataset.occupantTitle,Math.round(area.width),Math.round(area.height)].join('|');
+  const key=[scene.closest('[data-home-pan]')?.dataset.homePan||'',scene.className,person.dataset.characterId||person.dataset.petId,using,person.dataset.occupantTitle,Math.round(area.width),Math.round(area.height)].join('|');
   const old=positions.get(key),desired=old?moved(r,area.left+old.x*area.width,area.top+old.y*area.height):r;
-  const at=findStandingSpace(desired,area,obstacles);
+  const at=old?desired:findStandingSpace(desired,area,obstacles);
   const left=parseFloat(person.style.left)||parseFloat(person.style.getPropertyValue('--life-x'))||parseFloat(person.style.getPropertyValue('--pet-x'))||50,top=parseFloat(person.style.top)||parseFloat(person.style.getPropertyValue('--life-y'))||parseFloat(person.style.getPropertyValue('--pet-y'))||50;
   person.style.left=left+(at.left-r.left)/cr.width*100+'%';person.style.top=top+(at.top-r.top)/cr.height*100+'%';
   positions.set(key,{x:(at.left-area.left)/area.width,y:(at.top-area.top)/area.height});if(positions.size>500)positions.delete(positions.keys().next().value);

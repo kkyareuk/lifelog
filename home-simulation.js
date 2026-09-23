@@ -218,7 +218,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
       // Opening a home hydrates the current scene at its destination. Walking is
       // reserved for a scene change observed while this home remains on screen.
-      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
+      const shouldWalk=Boolean(old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%520):now;
       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
       current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey:destination.roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
@@ -262,7 +262,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       agent.interactionId=interactionId;
       if(hydrateInteraction){Object.assign(agent,{phase:"using",fromRoomKey:roomKey,roomKey,fromX:destination.x,fromY:destination.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now,interactionId,approachingInteraction:false});return}
       if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}
-      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%1800);
+      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%580);
       Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:startsAt,arrivesAt:startsAt+duration,endsAt:Math.max(agent.endsAt,startsAt+duration+5_000),interactionId,approachingInteraction:true});
     });
   });
@@ -271,7 +271,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   // 결정적인 방향으로만 밀어 재렌더할 때 좌우가 뒤집히거나 떨리지 않는다.
   const agents=eligible.map(id=>current.agents[id]).filter(Boolean);
   for(let i=0;i<agents.length;i+=1)for(let j=i+1;j<agents.length;j+=1){
-    const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey||a.furnitureId&&b.furnitureId&&["의자","소파"].includes(a.item)&&["의자","소파"].includes(b.item))continue;
+    const a=agents[i],b=agents[j];if(a.phase==="walking"||b.phase==="walking"||a.furnitureId||b.furnitureId||a.roomKey!==b.roomKey||a.furnitureId&&b.furnitureId&&["의자","소파"].includes(a.item)&&["의자","소파"].includes(b.item))continue;
     const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?10:23,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
     if(distance>=minDistance)continue;
     const direction=hash(`${a.characterId}:${b.characterId}`)%2?1:-1,shift=(minDistance-distance)/2+1;

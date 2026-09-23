@@ -1,3 +1,5 @@
+import {respectRoomPrivacy} from './room-privacy.js';
+import {setFoodSceneResolver} from './prepared-food.js';
 import {householdScene} from './household-life.js';
 import {libraryScene} from './library-life.js';
 import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
@@ -4825,19 +4827,8 @@ function privateLifeEvent(c,date){
  const now=+date,base=baseEventFor(c,date);
  if(!base?.home||base.transit||activeScheduledRoutine(c,date))return;
  const homeId=base.visitHomeId||c.homeId,home=state.homes[homeId];if(!home)return;
- const currentDirective=state.characterDirectives?.[c.id];if(currentDirective?.endsAt>now&&(currentDirective.targetId||currentDirective.kind==='privacy-exit'))return;
+ const currentDirective=state.characterDirectives?.[c.id];if(currentDirective?.endsAt>now&&true)return;
  const others=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean);
- const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
- if(privateOther){
-  if(isTubBath(base)&&sharedBathScene(state,c,base,person=>baseEventFor(person,date),now).pairedBath)return;
-  const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
-  if(ids.includes(c.id)||poly||spousePrivacyExempt(state.relationships,c.id,privateOther.id,e))return;
-  const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
-  const exit=Object.keys(home.rooms||{}).find(key=>key!==base.room&&key===entranceRoom(home))||Object.keys(home.rooms||{}).find(key=>key!==base.room);if(!exit)return;
-  const journey=planMeetingJourney(state,c,c,now,base,{home:true,visitHomeId:homeId,room:exit,townId:c.townId});
-  const copy={ko:{title:jealous?'당황하고 질투하며 자리를 피하는 중':'깜짝 놀라 방에서 나오는 중',desc:jealous?'연인이 다른 사람과 함께 있는 모습을 보고 마음이 상했어요. 우선 방을 나와 마음을 가라앉히고 있어요.':'사적인 시간을 보내는 모습을 보고 놀랐어요. 방을 나와 상대의 시간을 존중해요.'},en:{title:jealous?'Leaving, startled and jealous':'Startled, leaving the room',desc:jealous?'Seeing their partner with someone else hurt. They leave the room to gather their thoughts.':'They are surprised to interrupt a private moment and step outside to give them privacy.'},ja:{title:jealous?'驚きと嫉妬を抱えて部屋を出るところ':'驚いて部屋を出るところ',desc:jealous?'恋人が別の相手といる姿に傷つき、気持ちを落ち着けるため部屋を出ます。':'私的な時間を邪魔して驚き、相手の時間を尊重して部屋を出ます。'}};
-  state.characterDirectives[c.id]={id:`privacy-${c.id}-${now}`,kind:'privacy-exit',startedAt:now,endsAt:now+120000,journey,room:exit,homeId,targetId:'',withIds:[],copy,privacyStartled:true,jealous};c.timelineResetAt=now;save(true);return;
- }
  const block=Math.floor(now/7200000),eager=/먼저 다가|신체 접촉을 좋아|적극/.test([c.touchReaction,c.affectionStyle].join(' ')),roll=[...c.id+String(block)].reduce((n,x)=>(n*31+x.charCodeAt(0))>>>0,0);
  if(c.autonomousActivityBlocks?.includes('affection')||roll%(eager?6:24)!==0||c.lastPrivateBlock===block||Math.floor(Number(currentDirective?.startedAt)/7200000)===block)return;
  const target=others.find(other=>!other.autonomousActivityBlocks?.includes('affection')&&other.lastPrivateBlock!==block&&contactAllowed(c,other,'affection')&&isAdultAge(c.ageGroup)&&isAdultAge(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
@@ -4867,6 +4858,7 @@ export function eventFor(c,date=new Date()){
     automaticViewExpression(c,date);
     privateLifeEvent(c,date);
     let current=applyRoomActivityPolicy(c,reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,applyEatingSleepSetting(c,calculateEventFor(c,date),state.uiLanguage),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage),state);
+    current=respectRoomPrivacy(state,c,current,other=>baseEventFor(other,date),room=>roomEntryAllowed(c,state.homes[current.visitHomeId||c.homeId],room));
     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
     if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
     current=adaptTownActivity(state,c,current);
@@ -5044,3 +5036,5 @@ setDirectiveSceneResolver(eventFor,(character,source,date)=>{
  try{for(const language of ["ko","en","ja"]){state.uiLanguage=language;const value=giftEntryFor(source,character,date);copy[language]={title:value?.title||"",desc:value?.desc||""}}}finally{state.uiLanguage=previous}
  return copy;
 },personalSceneChoices);
+
+setFoodSceneResolver((world,c,now)=>calculateEventFor(c,new Date(now)));

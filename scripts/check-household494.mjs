@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {actOnFood,setFoodSceneResolver} from '../prepared-food.js';
+import {householdScene} from '../household-life.js';
+import {automaticMeal} from '../automatic-cooking.js';
+import {needsAt} from '../life-needs.js';
+const now=new Date(2026,8,24,2).getTime(),sleep={home:true,room:'bedroom',title:'잠자는 중',actionKind:'sleep',sleeping:true};
+const c={id:'a',name:'A',homeId:'h',sleepRoomId:'bedroom',wake:'07:00',sleep:'23:00',wallet:{},lifeNeeds:{hunger:0,sleep:30,updatedAt:now},cooking:{dishes:[],inventory:{}}},w={characters:{a:c},homes:{h:{id:'h',rooms:{bedroom:{type:'bedroom'},kitchen:{type:'kitchen',furniturePlacements:[{id:'fr',item:'냉장고'}]}}}},world:{places:[]},characterDirectives:{},uiLanguage:'ko'};
+const food=id=>({id,recipeId:'kimchi_jjigae',homeId:'h',room:'kitchen',storage:'fridge',createdAt:now,updatedAt:now,remaining:64800000});
+c.cooking.dishes.push(food('a'));assert.equal(householdScene(w,c,sleep,now),sleep);assert(!c.household.active);assert.equal(automaticMeal(w,c,{...sleep,sleeping:undefined},now,()=>{throw Error('must not cook')}),false);
+setFoodSceneResolver(()=>sleep);
+actOnFood(w,'a','a','discard',{},now);let s=householdScene(w,c,sleep,now);assert.equal(s.meetingJourney.fromRoom,'bedroom');assert.equal(s.meetingJourney.toRoom,'kitchen');assert.equal(s.sleeping,false);assert.equal(s.room,'bedroom');
+const arrival=c.household.active.startedAt,end=c.household.active.endsAt;assert.equal(arrival,now+10000);assert.equal(end,arrival+5000);
+s=householdScene(w,c,sleep,arrival);assert.equal(s.title,'음식을 치우는 중');assert.equal(s.desc,'상태를 확인하고 음식을 치우고 있어요.');assert.equal(s.room,'kitchen');
+s=householdScene(w,c,sleep,end);assert.equal(s.meetingJourney.fromRoom,'kitchen');assert.equal(s.meetingJourney.toRoom,'bedroom');assert.equal(s.sleeping,false);assert.equal(householdScene(w,c,sleep,end+10000),sleep);
+c.cooking.dishes.push(food('b'));actOnFood(w,'a','b','eat',{},now+60000);const start=c.household.active.startedAt;householdScene(w,c,sleep,start-1);assert.equal(needsAt(c,start-1).hunger,0);householdScene(w,c,sleep,start);assert(needsAt(c,start+15000).hunger>=49);householdScene(w,c,sleep,start+30000);assert.equal(needsAt(c,start+30000).hunger,100);
+const restored=structuredClone(w);assert(restored.characters.a.household.returning.journey.segments.length);
+console.log('PASS sleeping autonomy blocked; bedroom→kitchen route; arrival-only work/recovery; distinct cleanup title; kitchen→bedroom route; persisted return');
