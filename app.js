@@ -2,7 +2,7 @@ import {contextualGuide,stopContextualGuide} from './feature-tour.js';
 import {syncLifeSound} from './life-audio.js';
 import {syncActivityProgress} from './activity-progress.js';
 import './prepared-food-ui.js';
-import {bindTownBackgroundPicker,hasMedievalDlc,TOWN_BACKGROUNDS} from './town-background.js';
+import {bindTownBackgroundPicker,hasBackgroundDlc,backgroundAccessMessage,backgroundSettings,TOWN_BACKGROUNDS} from './town-background.js';
 import {syncCookingUI} from './cooking-ui.js';
 import {TOWN_ERAS,TOWN_CULTURES} from './town-setting.js';
 import {bindCourtWorld,isCourtWorld} from './court-world-ui.js';
@@ -2139,6 +2139,7 @@ function openCarEditor(homeId,carId){
 
 let appliedThemeMode="";
 function applyTheme(){
+  const shared=window.DrawerVillageGroups?.getSnapshot?.(),town=shared?.activeGroupId?shared.group?.towns?.find(t=>t.id===(shared.selectedTownId||shared.group?.towns?.[0]?.id)):state.world;document.documentElement.dataset.townBackground=town?.backgroundSetting||'drawer';
   const mode="light";state.colorMode="light";
   if(appliedThemeMode===mode&&document.documentElement.dataset.visualTheme==="drawer-default")return;
   appliedThemeMode=mode;
@@ -4288,14 +4289,15 @@ function bind(){
   }));
   $("[data-world-travel-allowed]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.travelAllowed=e.target.checked;saveTownProfile();showToast(e.target.checked?"이 마을의 이동 경로를 열었어요":"이 마을을 오가는 이동을 막았어요")});
   $("[data-world-description]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.description=e.target.value;save()});
+  $('[data-world-background-rules]')?.addEventListener('change',e=>{Object.assign(state.world,backgroundSettings(state.world.backgroundSetting||'drawer',e.target.checked));saveTownProfile()});
   $('[data-world-background-music]')?.addEventListener('change',e=>{
-    const key=e.target.value;if(key==='arkenwald'&&!hasMedievalDlc()){showToast(({ko:'아르켄발트 음악은 중세 DLC에 포함돼요.',en:'Arkenwald music requires the medieval DLC.',ja:'アーケンヴァルトの音楽には中世DLCが必要です。'})[state.uiLanguage]);render();return;}
+    const key=e.target.value;if(!hasBackgroundDlc(key)){showToast(backgroundAccessMessage(state.uiLanguage));render();return;}
     state.world.backgroundMusic=key;saveTownProfile();syncBackgroundMusic(state);
   });
   $('[data-world-background-setting]')?.addEventListener('change',e=>{
     const key=e.target.value;if(currentTownMode()!=='town'||!Object.hasOwn(TOWN_BACKGROUNDS,key))return;
-    if(key==='arkenwald'&&!hasMedievalDlc()){e.target.value=state.world.backgroundSetting||'drawer';showToast(({ko:'아르켄발트는 중세 DLC에 포함돼요.',en:'Arkenwald is included in the medieval DLC.',ja:'アーケンヴァルトは中世DLCに含まれます。'})[state.uiLanguage]||'아르켄발트는 중세 DLC에 포함돼요.');return;}
-    Object.assign(state.world,{backgroundSetting:key,era:key==='arkenwald'?'medieval':'modern',culture:key==='arkenwald'?'europe':'mixed'});saveTownProfile();renderPreservingPageScroll(e.target);
+    if(!hasBackgroundDlc(key)){e.target.value=state.world.backgroundSetting||'drawer';showToast(backgroundAccessMessage(state.uiLanguage));return;}
+    Object.assign(state.world,backgroundSettings(key,state.world.backgroundRulesEnabled!==false));saveTownProfile();renderPreservingPageScroll(e.target);
   });
   $("[data-town-illustration-open]")?.addEventListener("click",()=>$("[data-town-illustration-dialog]")?.showModal());
   $$('[data-town-illustration]').forEach(button=>button.addEventListener("click",()=>{if(setWorldBackground(button.dataset.townIllustration)){button.closest("dialog")?.close();render();showToast("마을 전체 배경 일러스트를 바꿨어요")}}));

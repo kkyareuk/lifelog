@@ -36,7 +36,7 @@ const includedFiles=new Set(["wallet-sharing.js","wallet-sharing-ui.js","apple-l
   "cooking.css","cooking-animation.css","court-world.css","character-money.css","career.css","building-interior.css","home-canvas.css","banner-ads.css","diamond-shop.css","diamond-shop.js",
   "occupant-panel.js","relationship-metrics.js","relationship-letters.js","speech-reviewed.js","speech-letter-source.js","life-needs.js","life-settings.js","life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css","home-editor-position.css",
-  "index.html","furniture-photos.css","intro-tour.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
+  "index.html","furniture-photos.css","intro-tour.css","neo-theme.css","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","request-deadline.js","auth-bootstrap.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","in-game-feedback.js","discovery-feedback.js","furniture-drag.js", "furniture-drag-size.js","snapshot-codec.js","snapshot-worker.js","snapshot-worker-client.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",

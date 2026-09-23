@@ -4662,9 +4662,9 @@ function townInformationScreen(character){
           ${selectField("마을 인지도","data-world-fame-level",TOWN_FAME_LEVELS,state.world.fameLevel||"거의 알려지지 않음")}
           ${selectField("마을 규모","data-world-size",["작은 정착지","작은 마을","보통 마을","큰 마을","광역 도시"],state.world.size||"보통 마을")}
           ${selectField("지형","data-world-terrain",TOWN_TERRAINS,state.world.terrain||"평야")}
-          ${townSettingFields(state.world,state.uiLanguage)}
         </div>
         <fieldset class="town-transport-field"><legend>${t("교통편 · 여러 개 선택 가능","교통편 · 여러 개 선택 가능")}</legend><div>${transportButtons}</div><label><input type="checkbox" data-world-travel-allowed ${state.world.travelAllowed!==false?"checked":""}><span><b>${t("다른 마을과 이동 가능","다른 마을과 이동 가능")}</b><small>${t("끄면 이 마을을 오가는 일정과 자동 이동이 멈춰요.","끄면 이 마을을 오가는 일정과 자동 이동이 멈춰요.")}</small></span></label></fieldset>
+        ${townSettingFields(state.world,state.uiLanguage)}
         <p class="town-climate-dlc-note"><b>🔒 ${t("기후","기후")}</b><span>${t("기후 설정과 기후별 생활 로그는 기후 확장 DLC에서 제공할 예정이에요.","기후 설정과 기후별 생활 로그는 기후 확장 DLC에서 제공할 예정이에요.")}</span></p>
         <label class="town-information-description"><b>${t("마을 소개","마을 소개")}</b><textarea data-world-description rows="4" maxlength="600" placeholder="${esc(t("이 마을의 분위기와 특징을 적어 주세요.","이 마을의 분위기와 특징을 적어 주세요."))}">${esc(state.world.description||"")}</textarea></label>
         <button type="button" class="town-information-save" data-settings-transfer="world-transfer" data-share-kind="town" data-share-town="${esc(state.activeTownId)}">${({ko:"마을 공유 · 멀티로 이전",en:"Town sharing · Move to multiplayer",ja:"村の共有・マルチへ移転"}[state.uiLanguage]||"마을 공유 · 멀티로 이전")}</button>

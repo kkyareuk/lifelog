@@ -1,0 +1,9 @@
+<ko-KR>
+마을 설정에서 교통편을 위로 옮기고, 마을 배경·배경음·규칙 적용을 하나의 영역으로 묶었어요. 네오 캐시포트 DLC 배경과 네온 UI, 화면별 음악을 추가했어요. 배경음과 규칙을 따로 선택할 수 있고, 다시 실행해도 배경음 선택이 유지돼요.
+</ko-KR>
+<en-US>
+Transport now appears above a dedicated section for village setting, music and rules. Added the NEO Cacheport DLC setting, neon UI and music for each scene. Choose music and setting rules independently. Music selections now persist after restarting.
+</en-US>
+<ja-JP>
+村の設定で交通手段を上に移し、背景・BGM・ルール適用を一つの枠にまとめました。ネオ・キャッシュポートDLCの背景、ネオンUI、画面別の音楽を追加しました。BGMとルールを個別に選べ、再起動後もBGMの選択が保持されます。
+</ja-JP>

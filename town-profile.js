@@ -1,3 +1,4 @@
+import {townMusic} from './town-background.js';
 import {normalizeTownSetting} from './town-setting.js';
 export const TOWN_TYPE_SUBTYPES={
   "생활 중심": ["골목 생활권","자급자족 공동체","가족 중심 생활권","직주근접 생활권","24시간 생활권"],
@@ -43,6 +44,7 @@ export function normalizeTownProfile(value={}){
   const bg=selected?.src||"";
   return {
     ...normalizeTownSetting(value),
+    backgroundMusic:townMusic(value),
     townType:safeType,
     townSubtype:subtypes.includes(value.townSubtype)?value.townSubtype:subtypes[0],
     reputation:TOWN_REPUTATIONS.includes(value.reputation)?value.reputation:(value.reputation==="알려지지 않음"?"평판 정보 없음":/위험|폐쇄|사건|오염|쇠퇴/.test(value.reputation||"")?"나쁜 평판":/살기 좋|친절|환영|아름다움|복지|평화/.test(value.reputation||"")?"좋은 평판":"대체로 무난한 평판"),

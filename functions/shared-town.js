@@ -140,13 +140,13 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
       const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
-      if((input.patch?.backgroundSetting==='arkenwald'&&town.backgroundSetting!=='arkenwald')||(input.patch?.backgroundMusic==='arkenwald'&&town.backgroundMusic!=='arkenwald')){const user=await tx.get(db.collection('users').doc(uid));if(!user.data()?.entitlements?.dlcPacks?.includes('medieval'))fail('medieval-dlc-required',403);}
-      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','bg','travelAllowed','transportModes'];
+      const required=[...new Set(['backgroundSetting','backgroundMusic'].filter(k=>input.patch?.[k]!==town[k]).map(k=>({arkenwald:'medieval',neo_cacheport:'neo_cacheport'})[input.patch?.[k]]).filter(Boolean))];if(required.length){const user=await tx.get(db.collection('users').doc(uid));if(required.some(pack=>!user.data()?.entitlements?.dlcPacks?.includes(pack)))fail('background-dlc-required',403);}
+      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','culture','backgroundSetting','backgroundMusic','backgroundRulesEnabled','bg','travelAllowed','transportModes'];
       for(const [key,value] of Object.entries(input.patch||{})){
         if(!fields.includes(key))fail('invalid-town-field');
         if(key==='era'&&!['modern','medieval','joseon','rococo','victorian','cyberpunk'].includes(value)||key==='culture'&&!['mixed','europe','korea','japan','china','usa','italy'].includes(value))fail('invalid-town-setting');
-        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald'].includes(value))fail('invalid-town-setting');
-        if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
+        if(['backgroundSetting','backgroundMusic'].includes(key)&&!['drawer','arkenwald','neo_cacheport'].includes(value))fail('invalid-town-setting');
+        if(key==='travelAllowed'||key==='backgroundRulesEnabled'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
       }
