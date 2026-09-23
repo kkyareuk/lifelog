@@ -25,6 +25,6 @@
 ## 배포
 - AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.442-494-internal.aab
 - SHA256: 062C91EA1E933A3A4598C4ABDF993E71A7CA195E9B2086C1C589B305E9A51190
-- Play 내부 release371 업로드 완료, 최종 제공 확인 대기.
-- 배포129 소스에서 sharedTownApi 관련 런타임만 수정. docs/backend494.patch 참고. 배포/소스 일치 확인 대기.
-- dev 코드, main 릴리스 문서만, 작업판 main에 기록 예정.
+- Play 내부 release371: 2026-09-24 02:10 KST 내부 테스터에게 제공됨 확인. 지원 기기 감소 없음, 기존 가독화 파일 경고만.
+- 배포129 소스에서 sharedTownApi 관련 런타임만 수정. docs/backend494.patch 참고. sharedtownapi-00130-yol 배포 완료, 소스188개 staging 바이트 일치.
+- 구현73343667 dev 반영. main은 릴리스 문서만, 작업판 main에 완료 기록. 프로덕션·비공개 테스트·Apple 심사 제출 없음.
