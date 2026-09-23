@@ -1,0 +1,9 @@
+<ko-KR>
+직접 추가한 음식이 요리 목록 맨 위에 표시됩니다. 음식 분류·세부 유형·가격대에 맞춰 재료비와 외식 가격을 자동 계산하고, 사전에서 예상 가격을 확인할 수 있습니다. 개인·멀티 마을에서 사용자 요리를 만들 수 있으며, 조리 중 사전을 변경해도 음식이 유지됩니다.
+</ko-KR>
+<en-US>
+Custom dishes now appear first in the cooking list. Ingredient and dining prices are calculated from the selected category, subtype and price range, with a preview in the dictionary. Cook custom dishes in personal and multiplayer towns. Editing the dictionary during cooking preserves your dish.
+</en-US>
+<ja-JP>
+追加した料理を料理一覧の先頭に表示します。分類・詳細タイプ・価格帯から材料費と外食価格を自動計算し、辞典で目安を確認できます。個人・マルチの町でユーザー料理を作れます。調理中に辞典を変更しても料理は保持されます。
+</ja-JP>
