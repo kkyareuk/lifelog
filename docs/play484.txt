@@ -1,0 +1,9 @@
+<ko-KR>
+사용자가 캐릭터에게 보낸 쪽지가 집 생활 로그에 도착 기록으로 남아요. 집에서 쪽지를 펼쳐 읽는 행동을 추가했어요. 잠·식사·근무 중에는 기다리고, 다 읽으면 보낸 우편에 읽음으로 표시돼요.
+</ko-KR>
+<en-US>
+Notes you send to characters now appear in the home log when they arrive. Characters read them at home, waiting until sleep, meals or work are over. Sent mail is marked as read after the character finishes reading.
+</en-US>
+<ja-JP>
+キャラクターに送った手紙の到着が家の生活ログに残ります。家で手紙を読む行動を追加しました。睡眠・食事・勤務中は待ち、読み終えると送信済みの手紙に既読と表示されます。
+</ja-JP>
