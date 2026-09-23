@@ -1,0 +1,9 @@
+<ko-KR>
+요리 중 실제 재료를 썰고 섞고 익히는 애니메이션을 홈 화면에 추가했어요. 휘핑과 장식 과정도 볼 수 있어요. 칼질 효과음의 긴 공백을 줄여 경쾌하게 다듬었어요.
+</ko-KR>
+<en-US>
+Cooking now shows ingredients being chopped, mixed and cooked on the home screen, with whipping and decorating animations too. Chopping sounds have shorter gaps for a steadier rhythm.
+</en-US>
+<ja-JP>
+ホーム画面で、料理の材料を切る・混ぜる・加熱するアニメーションを追加しました。泡立てや飾り付けも表示します。包丁の効果音の長い間を短くし、軽快なリズムに調整しました。
+</ja-JP>
