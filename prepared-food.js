@@ -6,7 +6,7 @@ export function preparedFoods(world){return Object.values(world.characters||{}).
 export function placeCookedFood(world,c,job){
  const data=c.cooking;data.dishes??=[];if(data.dishes.some(d=>d.id===job.id))return;
  const home=world.homes?.[job.homeId],room=home?.rooms?.[job.room],table=room?.furniturePlacements?.find(p=>/카운터|조리대|식탁|탁자|counter|table/i.test(p.item||''));
- data.dishes.push({id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
+ data.dishes.push({...(job.recipeSnapshot?{recipeSnapshot:structuredClone(job.recipeSnapshot)}:{}),id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
 }
 const access=(c,home)=>c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id)||home.residents?.includes(c.id);
 export function actOnFood(world,actorId,dishId,action,options={},now=Date.now()){

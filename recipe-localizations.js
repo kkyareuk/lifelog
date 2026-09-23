@@ -12,4 +12,4 @@ export function recipeStep(recipe,index,language='ko'){
  if(mentioned.length&&verbs[motion])return language==='ja'?mentioned.join('・')+'を'+verbs[motion][1]+'。':verbs[motion][0]+' '+mentioned.join(', ').toLocaleLowerCase()+'.';
  return (actions[motion]||actions.prep)[language==='ja'?1:0];
 }
-export function recipeIngredients(recipe,language='ko'){return recipe.ing.map(id=>ingredientName(id,language))}
+export function recipeIngredients(recipe,language='ko'){return recipe.custom?[({ko:'등록한 음식에 맞는 재료',en:'Ingredients appropriate for the registered dish',ja:'登録した料理に合う材料'})[language]||'Ingredients']:recipe.ing.map(id=>ingredientName(id,language))}

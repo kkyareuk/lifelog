@@ -1,0 +1,116 @@
+--- a/runtime\cooking.js
++++ b/runtime\cooking.js
+@@ -1,3 +1,4 @@
++import {catalogRecipes} from './catalog-recipes.js';
+ import {recipeUnlocked} from './cooking-access.js';
+ import {placeCookedFood} from './prepared-food.js';
+ import {recipeName} from './recipe-localizations.js';
+@@ -6,8 +7,8 @@
+ import {RECIPES as LEGACY_RECIPES} from './cooking-legacy471.js';
+ import {BASE_MEAL,ensureWallet,payActivity} from './character-money.js';
+ import {characterTown,historicalTown} from './town-setting.js';
+-export const recipeById=id=>RECIPES.find(r=>r.id===id);
+-export const savedRecipeById=id=>recipeById(id)||LEGACY_RECIPES.find(r=>r.id===id);
++export const recipeById=(id,world)=>RECIPES.find(r=>r.id===id)||catalogRecipes(world).find(r=>r.id===id);
++export const savedRecipeById=(id,world,saved)=>saved?.recipeSnapshot||recipeById(id,world)||LEGACY_RECIPES.find(r=>r.id===id);
+ export const COOKING_XP=[0,8,24,48,80];
+ export function cookingLevel(c){const xp=Number(c?.cooking?.experience)||0;return c?.cooking?.experienceVersion===2?COOKING_XP.filter(n=>xp>=n).length:Math.max(1,Math.min(5,1+Math.floor(xp/10)))}
+ function upgradeExperience(data){if(data.experienceVersion===2)return;const old=Number(data.experience)||0,level=Math.min(4,Math.floor(old/10));data.experience=COOKING_XP[level]+(level<4?(old%10)/10*(COOKING_XP[level+1]-COOKING_XP[level]):0);data.experienceVersion=2;}
+@@ -15,12 +16,12 @@
+ export function recipeAllowed(town,recipe){return !!recipe&&recipe.cuisine!=='fantasy'}
+ export function cookingState(c){return c.cooking??={experience:0,inventory:{},history:[],requests:[],active:null}}
+ export function cookingProgress(job,now=Date.now()){
+- const recipe=job?.recipeVersion===472?recipeById(job.recipeId):LEGACY_RECIPES.find(r=>r.id===job?.recipeId);if(!recipe)return null;
++ const recipe=job?.recipeSnapshot||(job?.recipeVersion===472?recipeById(job.recipeId):LEGACY_RECIPES.find(r=>r.id===job?.recipeId));if(!recipe)return null;
+  const elapsed=Math.max(0,now-job.startedAt),{step,total}=cookingStepAt(job,recipe,now);
+  return {recipe,step,waiting:now<job.startedAt,complete:now>=job.endsAt,fraction:Math.min(1,elapsed/total)};
+ }
+ export function canStartCooking(world,c,recipeId,now=Date.now()){
+- const r=recipeById(recipeId);if(!r||!recipeAllowed(characterTown(world,c),r))return 'cooking-era';
++ const r=recipeById(recipeId,world);if(!r||!recipeAllowed(characterTown(world,c),r))return 'cooking-era';
+  if(!recipeUnlocked(world,c,r))return 'cooking-dlc';
+  if((c.cooking?.dishes?.length||0)>=200)return 'cooking-storage';
+  if(cookingLevel(c)<r.level)return 'cooking-level';
+@@ -28,7 +29,7 @@
+  return '';
+ }
+ export function startCooking(world,c,directive,recipeId,requestId,now){
+- const r=recipeById(recipeId),error=canStartCooking(world,c,recipeId,now);if(error)return false;
++ const r=recipeById(recipeId,world),error=canStartCooking(world,c,recipeId,now);if(error)return false;
+  const home=world.homes?.[directive.homeId],room=home?.rooms?.[directive.room];
+  if(!room||!['kitchen','주방'].includes(room.type||directive.room))return false;
+  if(typeof requestId!=='string'||!/^[a-zA-Z0-9_-]{8,100}$/.test(requestId))return false;
+@@ -37,7 +38,7 @@
+  ensureWallet(c,now);const amount=Math.round(r.cost.home*BASE_MEAL);
+  if(!payActivity(world,[c.id],amount,'recipe:'+requestId,now,'split'))return false;
+  const data=cookingState(c),startedAt=Math.max(now,Number(directive.journey?.arrivesAt)||now),stepDurations=recipeDurations(r),endsAt=startedAt+stepDurations.reduce((a,b)=>a+b,0);
+- data.active={id:requestId,recipeId:r.id,recipeVersion:472,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
++ data.active={...(r.custom?{recipeSnapshot:structuredClone(r)}:{}),id:requestId,recipeId:r.id,recipeVersion:472,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
+  data.requests=[...(data.requests||[]),requestId].slice(-200);
+  directive.cookingId=requestId;directive.endsAt=endsAt;
+  for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만들기',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
+@@ -45,7 +46,7 @@
+ }
+ export function finishCooking(world,c,now){
+  const data=c.cooking,job=data?.active;if(!job||now<job.endsAt)return false;
+- const recipe=recipeById(job.recipeId)||LEGACY_RECIPES.find(r=>r.id===job.recipeId);if(!recipe)return false;
++ const recipe=savedRecipeById(job.recipeId,world,job);if(!recipe)return false;
+  placeCookedFood(world,c,job);
+  data.inventory??={};data.inventory[recipe.id]=Math.min(200,(Number(data.inventory[recipe.id])||0)+1);
+  upgradeExperience(data);
+--- a/runtime\prepared-food.js
++++ b/runtime\prepared-food.js
+@@ -6,7 +6,7 @@
+ export function placeCookedFood(world,c,job){
+  const data=c.cooking;data.dishes??=[];if(data.dishes.some(d=>d.id===job.id))return;
+  const home=world.homes?.[job.homeId],room=home?.rooms?.[job.room],table=room?.furniturePlacements?.find(p=>/카운터|조리대|식탁|탁자|counter|table/i.test(p.item||''));
+- data.dishes.push({id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
++ data.dishes.push({...(job.recipeSnapshot?{recipeSnapshot:structuredClone(job.recipeSnapshot)}:{}),id:job.id,recipeId:job.recipeId,createdAt:job.endsAt,updatedAt:job.endsAt,remaining:FOOD_LIFETIME,storage:'room',homeId:job.homeId,room:job.room,furnitureId:table?.id||'',x:Math.max(5,Math.min(95,Number(table?.x)||50)),y:Math.max(5,Math.min(95,Number(table?.y)||65))});
+ }
+ const access=(c,home)=>c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id)||home.residents?.includes(c.id);
+ export function actOnFood(world,actorId,dishId,action,options={},now=Date.now()){
+--- a/runtime\recipe-localizations.js
++++ b/runtime\recipe-localizations.js
+@@ -12,4 +12,4 @@
+  if(mentioned.length&&verbs[motion])return language==='ja'?mentioned.join('・')+'を'+verbs[motion][1]+'。':verbs[motion][0]+' '+mentioned.join(', ').toLocaleLowerCase()+'.';
+  return (actions[motion]||actions.prep)[language==='ja'?1:0];
+ }
+-export function recipeIngredients(recipe,language='ko'){return recipe.ing.map(id=>ingredientName(id,language))}
++export function recipeIngredients(recipe,language='ko'){return recipe.custom?[({ko:'등록한 음식에 맞는 재료',en:'Ingredients appropriate for the registered dish',ja:'登録した料理に合う材料'})[language]||'Ingredients']:recipe.ing.map(id=>ingredientName(id,language))}
+--- /dev/null
++++ b/runtime/catalog-recipes.js
+@@ -0,0 +1,34 @@
++// Dictionary food choices are resolved in the current world, including on the server.
++// Never accept a recipe or a price supplied in a cooking command.
++const choice=(options,key,fallback)=>Object.hasOwn(options,key)?options[key]:fallback;
++const categoryPrices={'한식':10000,'일식':14000,'중식':12000,'이탈리아 음식':18000,'양식':18000,'분식':6000,'패스트푸드':7000,'디저트':6500,'빵':4000,'간식':3000};
++const subtypeFactors={'국물':1,'면':.9,'밥':.9,'구이':1.4,'튀김':1.2,'샐러드':.8,'케이크':1.3,'쿠키':.7};
++const priceFactors={'매우 저렴':.45,'저렴':.7,'보통':1,'비쌈':2.5,'매우 비쌈':7};
++export function catalogFoodCost(item={}){
++ const base=choice(categoryPrices,item.category,10000),factor=choice(subtypeFactors,item.subtype,1);
++ const out=Math.min(110000,Math.max(1000,Math.round(base*factor*(choice(priceFactors,item.price,1))/100)*100));
++ const home=Math.max(500,Math.round(out*.45/100)*100);
++ return {home:home/10000,out:out/10000};
++}
++const methods={
++ '국물':['cook','재료를 넣고 국물을 끓이고 있어요'],
++ '면':['cook','면을 익히고 곁들일 재료를 준비하고 있어요'],
++ '밥':['cook','밥과 곁들일 재료를 익히고 있어요'],
++ '구이':['cook','불의 세기를 조절하며 재료를 굽고 있어요'],
++ '튀김':['cook','기름 온도를 살피며 재료를 튀기고 있어요'],
++ '샐러드':['mix','손질한 재료를 가볍게 섞고 있어요'],
++ '케이크':['cook','반죽을 오븐에 넣고 굽고 있어요'],
++ '쿠키':['cook','반죽을 나누어 모양을 잡고 굽고 있어요']
++};
++export function catalogRecipe(item){
++ if(!item||typeof item.id!=='string'||!item.id||typeof item.name!=='string'||!item.name.trim())return null;
++ const subtype=item.subtype||choice({'빵':'쿠키','디저트':'케이크'},item.category,'');
++ return {id:'catalog-food:'+item.id,custom:true,name:item.name.trim().slice(0,160),
++  cuisine:choice({'한식':'korean','일식':'japanese','중식':'chinese','이탈리아 음식':'italian','양식':'american','분식':'quick','패스트푸드':'quick','간식':'quick','디저트':'dessert','빵':'dessert'},item.category,'other'),
++  level:['케이크','구이','튀김'].includes(subtype)?2:1,ing:[],cost:catalogFoodCost(item),
++  steps:[['prep','요리에 필요한 재료를 준비하고 있어요'],['prep','재료를 손질하고 양을 맞추고 있어요'],choice(methods,subtype,['cook','재료의 상태를 살피며 요리를 만들고 있어요']),['plate','완성한 음식을 그릇에 담고 있어요']]};
++}
++export const catalogRecipes=world=>(Array.isArray(world?.catalog?.food)?world.catalog.food:[]).map(catalogRecipe).filter(Boolean);
++export function sortCookingRecipes(recipes,sort='level'){
++ return [...recipes].sort((a,b)=>Number(!!b.custom)-Number(!!a.custom)||(sort==='price'?a.cost.home-b.cost.home||a.level-b.level:a.level-b.level||a.cost.home-b.cost.home));
++}
