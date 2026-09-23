@@ -1,3 +1,4 @@
+import {syncCookingAnimation} from './cooking-animation.js';
 import {recipeUnlocked,medievalCookingAccess} from './cooking-access.js';
 import {preparedFoods} from './prepared-food.js';
 import {savedRecipeById} from './cooking.js';
@@ -37,9 +38,9 @@ let timer=0;
 const settlements=new Set();
 export function syncCookingUI(){
  clearTimeout(timer);stopCookingSound();const id=document.querySelector('[data-observed-character]')?.dataset.observedCharacter||state.activeId;if(!id||!economyAvailable())return;
- const info=context(id),job=info.c?.cooking?.active,host=document.querySelector('[data-game-hud-moment]');if(!job||!host)return;
+ const info=context(id),job=info.c?.cooking?.active,host=document.querySelector('[data-game-hud-moment]');if(!job||!host){document.querySelectorAll('.cooking-animation').forEach(n=>n.remove());return;}
  host.dataset.cookingActive=job.id;let finished=false;
- const tick=async()=>{if(!host.isConnected||document.hidden){stopCookingSound();return}const progress=cookingProgress(job);if(!progress)return;const lang=state.uiLanguage;host.querySelector('h1').textContent=recipeName(progress.recipe,lang);host.querySelector('.game-hud-moment-body>p').textContent=progress.waiting?text(lang,'주방으로 이동하는 중','Heading to the kitchen','キッチンへ移動中'):progress.complete?text(lang,'요리가 완성됐어요.','The dish is ready.','料理が完成しました。'):recipeStep(progress.recipe,progress.step,lang);
+ const tick=async()=>{if(!host.isConnected||document.hidden){stopCookingSound();return}const progress=cookingProgress(job);if(!progress)return;const lang=state.uiLanguage;syncCookingAnimation(host,progress,lang,job.id);host.querySelector('h1').textContent=recipeName(progress.recipe,lang);host.querySelector('.game-hud-moment-body>p').textContent=progress.waiting?text(lang,'주방으로 이동하는 중','Heading to the kitchen','キッチンへ移動中'):progress.complete?text(lang,'요리가 완성됐어요.','The dish is ready.','料理が完成しました。'):recipeStep(progress.recipe,progress.step,lang);
  if(progress.complete){stopCookingSound();if(!finished&&!settlements.has((info.snapshot?.activeGroupId||'local')+':'+job.id)){finished=true;const settlementKey=(info.snapshot?.activeGroupId||'local')+':'+job.id;settlements.add(settlementKey);if(settlements.size>100)settlements.delete(settlements.values().next().value);try{if(info.snapshot){const result=await info.api.advanceLife(true);if(result?.updated===false)throw Error('cooking-pending')}else{finishCooking(state,info.c,Date.now());save(true)}window.dispatchEvent(new Event('drawer-money-updated'))}catch{settlements.delete(settlementKey);finished=false;timer=setTimeout(tick,10000)}}return}
  if(!progress.waiting)playCookingSound(progress.recipe.steps[progress.step],progress.step,state);timer=setTimeout(tick,500);
  };void tick();

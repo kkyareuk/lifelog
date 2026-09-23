@@ -1,0 +1,37 @@
+/* Only the observed cook is animated. Ingredients come from the active recipe. */
+.cooking-animation{position:absolute;bottom:calc(100% + 30px);left:50%;transform:translateX(-50%);width:min(250px,85%);height:145px;pointer-events:none;color:#352519;isolation:isolate;contain:layout style;}
+.cook-worktop{position:relative;width:100%;height:118px;filter:drop-shadow(0 4px 3px #24140755)}
+.cook-vessel{position:absolute;left:14%;top:47%;width:72%;height:44%;background:#abced0;border:3px solid #46656b;box-sizing:border-box;border-radius:10px 10px 70px 70px;overflow:hidden}
+.cook-surface{height:35px;background:#f7eee0;border-radius:50%;transform:translateY(-14px);border:2px solid #8cadaa}
+.vessel-board{left:5%;width:90%;top:61%;height:28%;border-radius:45%;background:repeating-linear-gradient(4deg,#c59360 0 5px,#ba8856 7px 8px);border-color:#855332;transform:rotate(-3deg)}
+.vessel-board .cook-surface{display:none}.vessel-pan{overflow:visible;background:#3e4449;border-color:#222d35;border-radius:50%;height:38%;top:52%}.vessel-pan .cook-surface{background:#626f76;border-color:#303b40;transform:translateY(-6px)}
+.vessel-pan:after{content:'';position:absolute;left:90%;top:25%;width:50%;height:13px;border-radius:7px;background:#49382b}.vessel-pot{border-radius:12px 12px 35px 35px;background:#c47845;border-color:#764126;height:48%;top:42%}.vessel-plate{border-radius:50%;height:30%;top:60%;background:#fff7e5;border-color:#b29a79}
+.cook-vessel-rim{position:absolute;left:14%;top:64%;width:72%;height:25%;border-radius:0 0 70px 70px;background:#92babc;border:3px solid #46656b;border-top:0;box-sizing:border-box;z-index:3}
+.rim-board,.rim-plate{display:none}.rim-pan{top:71%;height:15%;background:#3e4449;border-color:#222d35}.rim-pot{top:63%;background:#c47845;border-color:#764126}
+.cook-food{position:absolute;inset:0;z-index:2}.cook-ingredient{position:absolute;left:var(--x);top:var(--y);font-size:29px;line-height:1;width:32px;height:32px;transform-origin:center}.cook-piece{display:none;position:absolute;inset:0}.cook-piece.piece-a{clip-path:inset(0 48% 0 0)}.cook-piece.piece-b{clip-path:inset(0 0 0 48%)}
+.cook-tool{position:absolute;width:110px;height:85px;left:35%;top:0;z-index:5;overflow:visible}.tool-knife{animation:cook-chop .28s ease-in-out infinite;transform-origin:20% 40%;top:17%}.tool-spoon,.tool-whisk{animation:cook-stir 1s linear infinite;transform-origin:60% 70%}.tool-whisk{animation-duration:.3s}.tool-pipe{animation:cook-decorate 2s ease-in-out infinite}
+.motion-cut .cook-whole,.motion-grind .cook-whole{animation:cook-whole .84s steps(1) infinite}.motion-cut .cook-piece,.motion-grind .cook-piece{display:block;animation:cook-slice .84s ease-out infinite}.motion-cut .piece-b,.motion-grind .piece-b{animation-name:cook-slice-other}
+.motion-mix .cook-ingredient,.motion-stir .cook-ingredient,.motion-knead .cook-ingredient,.motion-whip .cook-ingredient{animation:cook-swirl 1.8s linear infinite;animation-delay:calc(var(--i) * -.23s)}
+.motion-saute .cook-ingredient,.motion-wok .cook-ingredient{animation:cook-toss 1.3s ease-in-out infinite;animation-delay:calc(var(--i) * -.15s)}
+.motion-fry .cook-ingredient,.motion-boil .cook-ingredient,.motion-cook .cook-ingredient{animation:cook-simmer .7s ease-in-out infinite alternate;animation-delay:calc(var(--i) * -.2s)}
+.motion-prep .cook-ingredient,.motion-add .cook-ingredient{animation:cook-add 2.8s ease-in-out infinite;animation-delay:calc(var(--i) * -.35s)}
+.motion-plate .cook-ingredient,.motion-decorate .cook-ingredient{animation:cook-place 3s ease-in-out infinite;animation-delay:calc(var(--i) * -.4s)}
+.cook-bubbles,.cook-steam{display:none;position:absolute;inset:0;z-index:4}.motion-fry .cook-bubbles,.motion-boil .cook-bubbles,.motion-cook .cook-bubbles{display:block}.cook-bubbles i{position:absolute;width:7px;height:7px;border:1.5px solid #ffeba9;border-radius:50%;top:62%;left:calc(24% + var(--i)*9%);animation:cook-bubble .8s ease-out infinite;animation-delay:calc(var(--i) * -.12s)}
+.motion-fry .cook-surface{background:#b99938}.motion-boil .cook-steam,.motion-cook .cook-steam,.motion-saute .cook-steam,.motion-bake .cook-steam{display:block}.cook-steam i{position:absolute;width:9px;height:28px;left:35%;top:20%;border-left:3px solid #fff8e4;border-radius:50%;animation:cook-steam 2s ease-out infinite}.cook-steam i:nth-child(2){left:52%;animation-delay:-.7s}.cook-steam i:nth-child(3){left:65%;animation-delay:-1.3s}
+.cook-cream{position:absolute;z-index:3;top:43%;left:40%;font-size:48px;color:#fffdf0;animation:cook-simmer .4s ease-in-out infinite alternate}.cook-unknown{position:absolute;left:42%;top:38%;font-size:38px}.cook-ingredient-names{font:600 11px/1.4 system-ui,sans-serif;text-align:center;color:#fff9ed;text-shadow:0 1px 3px #291c11,1px 0 2px #291c11,-1px 0 2px #291c11;max-height:32px;overflow:hidden}
+.cooking-animation.is-paused *{animation-play-state:paused!important}
+@keyframes cook-chop{0%,100%{transform:translateY(-12px) rotate(-10deg)}55%{transform:translateY(22px) rotate(7deg)}}
+@keyframes cook-whole{0%,45%{opacity:1}46%,100%{opacity:0}}
+@keyframes cook-slice{0%,45%{opacity:0;transform:none}46%{opacity:1;transform:none}95%,100%{opacity:1;transform:translate(-12px,6px) rotate(-15deg)}}
+@keyframes cook-slice-other{0%,45%{opacity:0;transform:none}46%{opacity:1;transform:none}95%,100%{opacity:1;transform:translate(12px,5px) rotate(18deg)}}
+@keyframes cook-stir{0%,100%{transform:translate(-15px,0) rotate(-10deg)}50%{transform:translate(17px,4px) rotate(16deg)}}
+@keyframes cook-swirl{0%,100%{transform:translate(-14px,0) rotate(-20deg)}25%{transform:translate(0,-10px) rotate(0)}50%{transform:translate(14px,5px) rotate(20deg)}75%{transform:translate(0,13px) rotate(0)}}
+@keyframes cook-toss{0%,100%{transform:translateY(4px)}40%{transform:translate(8px,-30px) rotate(24deg)}70%{transform:translate(-4px,-12px) rotate(-10deg)}}
+@keyframes cook-simmer{from{transform:translateY(0) rotate(-3deg)}to{transform:translateY(-4px) rotate(3deg)}}
+@keyframes cook-add{0%,10%{transform:translateY(-28px);opacity:0}30%,80%{transform:none;opacity:1}100%{transform:none;opacity:0}}
+@keyframes cook-place{0%,15%{transform:translateY(-14px);opacity:0}35%,95%{transform:none;opacity:1}100%{opacity:0}}
+@keyframes cook-bubble{from{transform:translateY(0) scale(.5);opacity:.9}to{transform:translateY(-17px) scale(1.3);opacity:0}}
+@keyframes cook-steam{from{transform:translateY(15px);opacity:0}25%{opacity:.7}to{transform:translateY(-20px);opacity:0}}
+@keyframes cook-decorate{0%,100%{transform:translateX(-20px)}50%{transform:translateX(25px)}}
+@media(prefers-reduced-motion:reduce){.cooking-animation *{animation:none!important}.cooking-animation .cook-piece{display:none}.cooking-animation .cook-whole{opacity:1}}
+@media(max-height:600px){.cooking-animation{height:115px;width:200px;bottom:calc(100% + 22px)}.cook-worktop{height:90px}}

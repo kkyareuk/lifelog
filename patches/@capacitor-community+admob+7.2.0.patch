@@ -33,3 +33,62 @@ index c629139..0ad2460 100644
                      return insets;
                  });
              }
+diff --git a/node_modules/@capacitor-community/admob/ios/Sources/AdMobPlugin/Banner/BannerExecutor.swift b/node_modules/@capacitor-community/admob/ios/Sources/AdMobPlugin/Banner/BannerExecutor.swift
+index 412a97b..fc6cab7 100644
+--- a/node_modules/@capacitor-community/admob/ios/Sources/AdMobPlugin/Banner/BannerExecutor.swift
++++ b/node_modules/@capacitor-community/admob/ios/Sources/AdMobPlugin/Banner/BannerExecutor.swift
+@@ -11,6 +11,12 @@ class BannerExecutor: NSObject, BannerViewDelegate {
+     func showBanner(_ call: CAPPluginCall, _ request: Request, _ adUnitID: String) {
+         if let rootViewController = plugin?.getRootVC() {
+ 
++            rootViewController.loadViewIfNeeded()
++            rootViewController.view.layoutIfNeeded()
++            guard !adUnitID.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
++                call.reject("Missing banner ad unit ID", "0")
++                return
++            }
+             let adSize = call.getString("adSize") ?? "ADAPTIVE_BANNER"
+             let adPosition = call.getString("position") ?? "BOTTOM_CENTER"
+             let adMargin = call.getInt("margin") ?? 0
+@@ -40,9 +46,13 @@ class BannerExecutor: NSObject, BannerViewDelegate {
+                 let frame = { () -> CGRect in
+                     // Here safe area is taken into account, hence the view frame is used
+                     // after the view has been laid out.
+-                    return rootViewController.view.frame.inset(by: rootViewController.view.safeAreaInsets)
++                    return rootViewController.view.bounds.inset(by: rootViewController.view.safeAreaInsets)
+                 }()
+                 let viewWidth = frame.size.width
++                guard viewWidth.isFinite, viewWidth >= 1 else {
++                    call.reject("Banner view is not laid out yet", "banner-layout-pending")
++                    return
++                }
+                 bannerSize = currentOrientationAnchoredAdaptiveBanner(width: viewWidth)
+                 break
+             }
+@@ -51,12 +61,14 @@ class BannerExecutor: NSObject, BannerViewDelegate {
+             self.addBannerViewToView(self.bannerView, adPosition, adMargin)
+             self.bannerView.translatesAutoresizingMaskIntoConstraints = false
+             self.bannerView.adUnitID = adUnitID
+-            self.bannerView.rootViewController = plugin?.getRootVC()
++            self.bannerView.rootViewController = rootViewController
+ 
+-            self.bannerView.load(request)
+             self.bannerView.delegate = self
++            self.bannerView.load(request)
+ 
+             call.resolve([:])
++        } else {
++            call.reject("Banner root view controller is not ready", "banner-controller-pending")
+         }
+     }
+ 
+@@ -163,7 +175,8 @@ class BannerExecutor: NSObject, BannerViewDelegate {
+             "height": 0
+         ])
+         self.plugin?.notifyListeners(BannerAdPluginEvents.FailedToLoad.rawValue, data: [
+-            "code": 0,
++            "code": (error as NSError).code,
++            "domain": (error as NSError).domain,
+             "message": error.localizedDescription
+         ])
+     }

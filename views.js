@@ -1644,7 +1644,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const conversationHtml=!kissScene&&conversationalInteraction
     ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-label="두 캐릭터가 대화를 주고받는 중">${bubbleWords.map(word=>`<i>${word}</i>`).join("")}</span>`
     :"";
-  const actionHtml=companions.length?"":nativeSceneActionProp(c,entry,actionKind,text);
+  const actionHtml=companions.length||c.cooking?.active?"":nativeSceneActionProp(c,entry,actionKind,text);
   const thoughtPerson=entry?.thoughtOfId&&state.characters?.[entry.thoughtOfId]?.id!==c.id?state.characters[entry.thoughtOfId]:null;
   const thoughtHtml=thoughtPerson?`<span class="native-important-thought" aria-label="${esc(thoughtPerson.name)}을 떠올리는 중"><i>…</i>${avatar(thoughtPerson)}<small>${esc(thoughtPerson.name)}</small></span>`:"";
   const atmosphere=tone==="shock"
