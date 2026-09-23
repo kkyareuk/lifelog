@@ -4,8 +4,8 @@ export function positionWorktopUsers(scene){
  for(const person of scene.querySelectorAll('.home-person[data-using-furniture]')){
   if(person.classList.contains('home-life-walking'))continue;
   const appliance=furniture.get(person.dataset.usingFurniture);
-  if(appliance?.dataset.furnitureKind!=='induction')continue;
-  const support=furniture.get(appliance.dataset.surfaceId);
+  if(!appliance)continue;
+  const support=appliance.dataset.furnitureKind==='counter'?appliance:furniture.get(appliance.dataset.surfaceId);
   if(support?.dataset.furnitureKind!=='counter')continue;
   const visual=person.querySelector('.home-person-visual'),container=person.offsetParent;
   if(!visual||!container)continue;

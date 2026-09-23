@@ -1,3 +1,4 @@
+import {positionStandingOccupants} from './scene-collision.js';
 import {orderAttachedFurniture} from './furniture-depth.js';
 import {positionBedOccupants} from './bed-occupant-layout.js';
 import {positionWorktopUsers} from './worktop-users.js';
@@ -22,7 +23,7 @@ function furnitureRect(scene,furniture){
  const art=furniture.querySelector('.room-furniture-art')||furniture;
  if(art.querySelector('.counter-stretch'))return art.getBoundingClientRect();
  const overlay=[...scene.querySelectorAll('.room-couple-bed-overlay')].find(el=>el.dataset.bedOverlay===furniture.dataset.furniturePlacement)||
-  (scene.querySelectorAll('.is-couple-bed').length===1?scene.querySelector('.room-couple-bed-overlay'):null);
+  (furniture.classList.contains('is-couple-bed')&&scene.querySelectorAll('.is-couple-bed').length===1?scene.querySelector('.room-couple-bed-overlay'):null);
  const images=[...art.querySelectorAll('img'),...(overlay?[...overlay.querySelectorAll('img')]:[])];
  const rects=images.map(paintedRect).filter(r=>r.width&&r.height);
  if(rects.length){const left=Math.min(...rects.map(r=>r.left)),right=Math.max(...rects.map(r=>r.right)),top=Math.min(...rects.map(r=>r.top)),bottom=Math.max(...rects.map(r=>r.bottom));return {left,right,top,bottom,width:right-left,height:bottom-top}}
@@ -169,6 +170,7 @@ export function scheduleSceneDepth(){
       const visual=person.querySelector('.home-person-visual');if(visual){visual.style.setProperty('--seat-align-y','0px');const image=visual.querySelector('img'),r=image?paintedRect(image):visual.getBoundingClientRect(),parent=person.offsetParent.getBoundingClientRect();const target=parent.top+parent.height*y/100;visual.style.setProperty('--seat-align-y',(target-r.top-r.height*.78)+'px');}
     }
     positionConversationPartners(labels);
+    for(const scene of root.querySelectorAll('.room'))positionStandingOccupants(scene,furnitureRect,paintedRect);
     const occupied=[...root.querySelectorAll('.home-person-visual,.home-interaction-visual')].map(el=>{
       const images=[...el.querySelectorAll('img')].map(paintedRect);
       return images.length?images: [el.getBoundingClientRect()];
@@ -187,6 +189,10 @@ export function scheduleSceneDepth(){
       occupied.push(placed);
     }
     for(const [element,z] of updates)element.style.zIndex=String(z);
+    for(const scene of root.querySelectorAll('.room')){
+      const top=Math.max(10,...[...scene.querySelectorAll('[data-furniture-placement]')].map(e=>Number(e.style.zIndex)||0));
+      for(const person of scene.querySelectorAll('.home-person:not([data-seat-id]:not([data-seat-id=""])):not([data-couple-bed-id]:not([data-couple-bed-id=""])),.room-pet'))person.style.zIndex=String(top+2);
+    }
   });
 }
 export function bindSceneDepth(nextRoot){
