@@ -1,0 +1,9 @@
+<ko-KR>
+요리와 음식 보관 기능을 추가하고, 직업별 생활 로그를 다양하게 보강했어요. 캐릭터의 이동과 욕구 회복, 집·마을 편집을 개선했어요. 설정을 계정 카드와 6개 메뉴로 정리하고 홈에서 SD/LD를 바로 전환할 수 있어요. Kkyareuk에게 건의하기와 이메일 오류 제보를 복원했으며 익명 문의도 이용할 수 있어요. 영어·일본어 문구와 좁은 화면 표시를 개선했어요.
+</ko-KR>
+<en-US>
+Added cooking, food storage and more varied profession-specific daily logs. Improved character movement, needs recovery, and home and town editing. Settings now has an account card and six categories, and you can switch SD/LD on the home screen. Direct feedback to Kkyareuk and email bug reports are back, with anonymous inquiries available. Improved English, Japanese and small-screen layouts.
+</en-US>
+<ja-JP>
+料理・食品保存と、職業ごとの多彩な生活ログを追加しました。移動、欲求の回復、家・村の編集を改善しました。設定をアカウントカードと6つのメニューに整理し、ホームでSD/LDを切り替えられます。Kkyareukへの要望とメールでの不具合報告を復活し、匿名のお問い合わせも利用できます。英語・日本語と小さい画面での表示を改善しました。
+</ja-JP>
