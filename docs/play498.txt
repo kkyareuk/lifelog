@@ -1,0 +1,9 @@
+<ko-KR>
+설정을 계정 카드와 6개 메뉴로 정리했어요. 언어·글자·애니메이션은 화면 표시에서, 저장 공간·백업은 데이터와 백업에서 관리해요. Kkyareuk에게 건의하기를 복원하고 이메일·익명 문의도 유지했어요. 홈의 SD/LD 버튼은 현재 상태만 표시해요. 용변은 7~15초 동안 진행바와 함께 표시돼요.
+</ko-KR>
+<en-US>
+Settings now has an account card and six categories. Find language, text and animation under Display, and storage and backups under Data & backup. Direct feedback to Kkyareuk is back; email and anonymous reports remain available. The home SD/LD button shows the current mode. Toilet activities last 7–15 seconds with progress bars.
+</en-US>
+<ja-JP>
+設定をアカウントカードと6つのメニューに整理しました。言語・文字・アニメーションは画面表示、容量・バックアップはデータとバックアップにまとめました。Kkyareukへの要望を復活し、メール・匿名お問い合わせも維持しています。ホームのSD/LDボタンは現在の状態のみ表示します。トイレの行動は7～15秒で進行バーを表示します。
+</ja-JP>
