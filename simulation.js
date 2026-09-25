@@ -1,3 +1,4 @@
+import {unemployedHomeLog} from './job-log-runtime.js';
 import {toiletActivity} from './toilet-activity.js';
 import {respectRoomPrivacy} from './room-privacy.js';
 import {setFoodSceneResolver} from './prepared-food.js';
@@ -2786,7 +2787,8 @@ function buildScene(c,date){
   const morning=morningScripts(c,date),commuteMinute=work&&!work.home?work.minute-35:Infinity;
   [wake+150,wake+200,wake+250,wake+300].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
-      const script=morning[index%morning.length];
+      const dayLog=index%2?unemployedHomeLog(c,date,state.uiLanguage,index):null;
+      const script=dayLog?[dayLog.title,dayLog.desc,dayLog.room]:morning[index%morning.length];
       if(/아침 (?:조깅|바깥 운동)을 마치고 (?:집으로 )?돌아(?:오|가)는 중/.test(script[0])){
         list.push(adaptAccessibilityWording(c,entry(minute,script[0],script[1],{
           townId:homeTown.id,
@@ -2952,9 +2954,13 @@ function buildScene(c,date){
     else list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"study",dateMeta));
     if(['업무','work'].includes(item.type)&&officeEmployment(c,item.careerEmploymentId)){
       const base=list.at(-1),dayStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
-      const slots=new Set([minute,minute+10,endMinute-10]);
-      for(let at=Math.ceil((dayStart+minute*60000)/2700000)*2700000;at<dayStart+endMinute*60000;at+=2700000)slots.add((at-dayStart)/60000);
-      for(const at of [...slots].sort((a,b)=>a-b)){if(at<minute||at>=Math.min(endMinute,1440))continue;const duty=officeDuty(c,new Date(dayStart+at*60000),minute,endMinute,state.uiLanguage,item.careerEmploymentId);if(duty)list.push({...base,...duty,time:clock(at),minute:at});}
+      let at=minute;
+      for(let count=0;count<160&&at<Math.min(endMinute,1440);count++){
+        const stamp=dayStart+at*60000,duty=officeDuty(c,new Date(stamp),minute,endMinute,state.uiLanguage,item.careerEmploymentId);
+        if(duty)list.push({...base,...duty,time:clock(at),minute:at});
+        const next=duty?.jobLogEndsAt>stamp?Math.min(duty.jobLogEndsAt,(Math.floor(stamp/2700000)+1)*2700000):Math.min(dayStart+(at<minute+10?minute+10:at<endMinute-10?endMinute-10:endMinute)*60000,(Math.floor(stamp/2700000)+1)*2700000);
+        at=Math.max(at+1/60,(next-dayStart)/60000);
+      }
       if(place&&minute>=20)list.push(entry(minute-20,({ko:'직장으로 출근하는 중',en:'Commuting to work',ja:'職場へ出勤中'})[state.uiLanguage]||'직장으로 출근하는 중',({ko:'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',en:'Travelling to the workplace in time for the shift.',ja:'勤務開始に合わせて職場へ移動しています。'})[state.uiLanguage]||'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',{townId:place.townId,transit:true,destinationId:place.id}));
     }
     const awayFromOwnHome=Boolean(place||(visitHome&&visitHome.id!==currentHomeId));

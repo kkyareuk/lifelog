@@ -1,3 +1,4 @@
+import {jobWorkplace} from './job-log-runtime.js';
 import {careersFor} from './career-world.js';
 import {employmentsFor} from './salary.js';
 // Game schedules, not a claim about real-world working conditions.
@@ -34,5 +35,5 @@ export function workScheduleFor(c,entry){const own=c.careerSchedules?.[entry.id]
 export function careerWeeklyRoutines(world,c){
  const entries=careerAssignments(world,c),existing=(world.routines?.[c.id]||[]).filter(r=>['업무','work'].includes(r.type));
  if(existing.length&&!entries.some(e=>c.careerSchedules?.[e.id]==='default'||validWorkSchedule(c.careerSchedules?.[e.id])))return existing;
- return entries.flatMap(entry=>{const schedule=workScheduleFor(c,entry),venue=!c.workplaceId&&['builtin-singer','builtin-idol'].includes(entry.jobId)?(world.towns?.find(t=>t.id===c.townId)||world.world)?.places?.find(p=>p.type==='공연장')?.id:'',workplace=c.workplaceId||venue;return schedule.days.flatMap(day=>{const base={id:`career-work:${entry.id}:${day}`,type:'업무',day,start:schedule.start,end:schedule.end,title:entry.jobName||c.job||'',withIds:[],placeId:workplace==='home'?'':workplace||'',home:!workplace||workplace==='home',visitHomeId:!workplace||workplace==='home'?c.homeId:'',room:'study',careerEmploymentId:entry.id};return schedule.end<schedule.start&&schedule.end!=='00:00'?[base,{...base,id:base.id+':after-midnight',day:(day+1)%7,start:'00:00'}]:[base]})});
+ return entries.flatMap(entry=>{const schedule=workScheduleFor(c,entry),venue=!c.workplaceId&&['builtin-singer','builtin-idol'].includes(entry.jobId)?(world.towns?.find(t=>t.id===c.townId)||world.world)?.places?.find(p=>p.type==='공연장')?.id:'',workplace=jobWorkplace(world,c,entry)||venue;return schedule.days.flatMap(day=>{const base={id:`career-work:${entry.id}:${day}`,type:'업무',day,start:schedule.start,end:schedule.end,title:entry.jobName||c.job||'',withIds:[],placeId:workplace==='home'?'':workplace||'',home:!workplace||workplace==='home',visitHomeId:!workplace||workplace==='home'?c.homeId:'',room:'study',careerEmploymentId:entry.id};return schedule.end<schedule.start&&schedule.end!=='00:00'?[base,{...base,id:base.id+':after-midnight',day:(day+1)%7,start:'00:00'}]:[base]})});
 }

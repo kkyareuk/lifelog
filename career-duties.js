@@ -1,10 +1,16 @@
+import {jobLogDuty,jobLogIdentity} from './job-log-runtime.js';
 import {performanceDuty} from './performance-tasks.js';
 import {officeDuty as corporateDuty,officeEmployment as corporateEmployment} from './office-work.js';
 import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
-export function officeEmployment(c,id){return corporateEmployment(c,id)||employment(c,id)}
+export function officeEmployment(c,id){return corporateEmployment(c,id)||employment(c,id)||(jobLogIdentity(c,id)?.key!=='unemployed'?jobLogIdentity(c,id)?.employment:null)}
 function employment(c,id){const all=c.wallet?.employments||[],entry=id?all.find(e=>e.id===id):all[0];if(entry)return ['builtin-politician','builtin-barista','builtin-singer','builtin-idol'].includes(entry.jobId)?entry:null;return !all.length&&['정치인','바리스타','가수','아이돌'].includes(c.job)?{jobId:({'정치인':'builtin-politician','바리스타':'builtin-barista','가수':'builtin-singer','아이돌':'builtin-idol'})[c.job]}:null}
-export function officeDuty(c,date,start,end,language='ko',id){
- const corporate=corporateDuty(c,date,start,end,language,id);if(corporate)return corporate;
+export function officeDuty(c,date,start,end,language='ko',id,context={}){
+ const corporate=corporateDuty(c,date,start,end,language,id),base=jobLogDuty(c,date,start,end,language,id,context);
+ // Keep rank-specific corporate and authored performance duties in rotation.
+ const authored=Math.floor(date.getTime()/2700000)%2===0;
+ if(base&&['surprise','calm'].includes(base.jobLogPhase))return base;
+ if(corporate)return authored?corporate:(base||corporate);
+ if(base&&(!authored||!employment(c,id)))return base;
  const job=employment(c,id),minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60;if(!job||minute<start||minute>=end)return null;
  if(['builtin-singer','builtin-idol'].includes(job.jobId))return performanceDuty(c,job,date,start,end,language);
  const list=job.jobId==='builtin-politician'?POLITICIAN_DUTIES:BARISTA_DUTIES;

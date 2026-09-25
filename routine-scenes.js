@@ -1,3 +1,4 @@
+import {jobLogContext} from './job-log-runtime.js';
 import {officeDuty} from './career-duties.js';
 // Pure projection: schedule progress needs no extra database writes or random calls.
 const hash=s=>[...s].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
@@ -12,7 +13,7 @@ export function routineScene(scene,character,world,now=Date.now(),language='ko')
  const people=(scene.participantOrder||[character.id]).map(id=>world.characters?.[id]).filter(Boolean),company=people.length>1;
  let title,desc;
  if(/^(업무|work)$/.test(kind)){
-  const duty=officeDuty(character,date,start,end,language,scene.careerEmploymentId);
+  const duty=officeDuty(character,date,start,end,language,scene.careerEmploymentId,jobLogContext(world,character,scene,now));
   if(duty)return {...scene,...duty,routinePhase:Math.floor(minute/45),routineTitle:name};
   return scene;
  }
@@ -32,6 +33,7 @@ export function routineScene(scene,character,world,now=Date.now(),language='ko')
 
 export function nextRoutinePhaseAt(scene,now=Date.now()){
  if(!scene?.routineId||scene.routineReturned||scene.returningHome)return Infinity;
+ if(scene.jobLogEndsAt>now)return Math.min(scene.jobLogEndsAt,(Math.floor(now/2700000)+1)*2700000);
  const date=new Date(now),day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),start=Number(scene.routineStartMinute),end=Number(scene.routineEndMinute);
  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start)return Infinity;
  if(['builtin-singer','builtin-idol'].includes(scene.officeRole))return [day+(start+10)*60000,day+(start+(Math.floor(((now-day)/60000-start)/35)+1)*35)*60000,day+(end-10)*60000,day+end*60000].filter(at=>at>now).sort((a,b)=>a-b)[0]||Infinity;
