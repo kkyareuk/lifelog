@@ -28,6 +28,7 @@ try{
    await p.locator('[data-settings-pane='+pane+']').click();
    await p.locator('[data-settings-scroll='+pane+']').waitFor();
    assert.equal(await p.locator('.settings-shell').evaluate(el=>el.scrollWidth>el.clientWidth+2),false,lang+':'+pane+' overflow');
+   if(lang==='ko'&&['account','gameplay','support'].includes(pane))await p.screenshot({path:'tmp/settings498-'+pane+'.png'});
    if(pane==='display'){assert.equal(await p.locator('[data-setting=uiLanguage]').count(),1);assert.equal(await p.locator('[data-setting=animationIntensity]').count(),1)}
    if(pane==='gameplay')assert.equal(await p.locator('[data-setting=animationIntensity]').count(),0);
    if(pane==='data')assert.equal(await p.locator('.storage-meter').count(),1);
