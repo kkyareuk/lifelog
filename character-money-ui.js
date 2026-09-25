@@ -4,7 +4,7 @@ import {bindWalletAccounts,walletBalance} from './wallet-sharing.js';
 import {renderWalletSharing} from './wallet-sharing-ui.js';
 import {openEmployment,openCareerWorld,mountEmployment} from './career-ui.js';
 import {applyWorldCurrency} from './career-world.js';
-import {economyAvailable} from './economy-access.js';
+import {economyAvailable,careerAvailable} from './economy-access.js';
 import {displayImageSource} from './local-media.js?v=20260909dev305';
 import {state,save} from './state.js?v=20260909dev305';
 import {INITIAL_MONEY,ensureWallet,moneySettings,displayMoney,moneyFromDisplay,updateMoneySettings,setWalletSharing,moveCommonMoney} from './character-money.js';
@@ -20,6 +20,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
   const d=document.createElement('dialog'),title=document.createElement('h2'),message=document.createElement('p'),close=document.createElement('button');d.className='character-money-coming';title.id='money-coming-title';title.textContent=pane==='work'?words(world.uiLanguage,'직장','Work','仕事'):words(world.uiLanguage,'지갑','Wallet','財布');d.setAttribute('aria-labelledby',title.id);message.textContent=words(world.uiLanguage,'준비 중입니다.','Coming soon.','準備中です。');close.textContent=words(world.uiLanguage,'닫기','Close','閉じる');close.onclick=()=>d.close();d.onclose=()=>d.remove();d.append(title,message,close);document.body.append(d);d.showModal();return d;
  }
 
+ if(pane==='work'&&!careerAvailable())return;
  if(pane==='work')return openCareerDashboard(world,c,snapshot);
  applyWorldCurrency(world,c);bindWalletAccounts(world);
  const tr=(ko,en,ja)=>words(world.uiLanguage,ko,en,ja),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',canEdit=!snapshot||c.ownerUid===uid,accountState=state;
@@ -79,7 +80,13 @@ export function bindCharacterMoney(){
  const hud=document.querySelector('.game-observe-hud,.standard-observe-view');
  if(hud&&!hud.querySelector('.character-money-shortcuts')){
   const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(walletBalance(c.wallet),c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();if(economyAvailable())hud.append(balance);
-  const nav=document.createElement('nav');nav.className='character-money-shortcuts';for(const [key,ko,en,ja] of [['wallet','재산','Wealth','資産'],['work','직업','Career','職業']]){const b=document.createElement('button');b.type='button';const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src='./assets/home-ui/profile-placeholder.png';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
+  const nav=document.createElement('nav');nav.className='character-money-shortcuts';
+  const visual=document.createElement('button');visual.type='button';visual.className='home-visual-shortcut';visual.dataset.homeVisualToggle='';
+  const mode=state.homeVisualMode==='ld'?'ld':'sd',next=mode==='sd'?'ld':'sd';
+  visual.innerHTML='<span><b'+(mode==='sd'?' aria-current="true"':'')+'>SD</b><i aria-hidden="true">↔</i><b'+(mode==='ld'?' aria-current="true"':'')+'>LD</b></span>';
+  visual.setAttribute('aria-label',words(world.uiLanguage,next.toUpperCase()+'로 전환','Switch to '+next.toUpperCase(),next.toUpperCase()+'に切替'));
+  visual.onclick=()=>{state.homeVisualMode=next;save(true);window.dispatchEvent(new Event('drawer-money-updated'))};nav.append(visual);
+  for(const [key,ko,en,ja] of [['wallet','재산','Wealth','資産'],['work','직업','Career','職業']].filter(([key])=>key!=='work'||careerAvailable())){const b=document.createElement('button');b.type='button';b.dataset.moneyShortcut=key;const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src='./assets/home-ui/profile-placeholder.png';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
  }
  const currentBalance=hud?.querySelector('[data-character-balance]');if(currentBalance){currentBalance.textContent=displayMoney(walletBalance(c.wallet),c,world.uiLanguage);currentBalance.title=currentBalance.textContent;}
  document.querySelectorAll('[data-employment-editor]').forEach(el=>{if(!el.dataset.mounted){el.dataset.mounted='true';const character=world.characters[el.dataset.employmentEditor];if(character)mountEmployment(el,world,character,snapshot);}});

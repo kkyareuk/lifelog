@@ -1,3 +1,4 @@
+import {careerAvailable} from './economy-access.js';
 import {quickEconomyMarkup} from './quick-profile-economy.js';
 import {watchMovement} from './movement-recovery.js';
 import {lifeSound,lifeSoundEpisode} from './life-audio.js';
@@ -782,7 +783,7 @@ const visibleTimeline=(c,date=renderSceneDate||new Date())=>{
 };
 export const currentSceneFor=eventFor;
 export const currentTimelineFor=visibleTimeline;
-const careerSettingsLink=(c,overview=false)=>overview?`<div class="overview-field overview-job"><b>${t('직업','Career','職業')}</b><button type="button" data-open-career-settings="${esc(c.id)}" title="${esc(careerCaption(state,c))}">${esc(careerCaption(state,c)||t('설정','Set up','設定'))}</button></div>`:`<button type="button" class="career-settings-link ${overview?'overview-field overview-job':''}" data-open-career-settings="${esc(c.id)}"><b>${t('직업·급여 설정','Career & pay settings','職業・給与設定')}</b><span>${esc(careerCaption(state,c)||t('설정하지 않음','Not set','未設定'))}</span></button>`;
+const careerSettingsLink=(c,overview=false)=>!careerAvailable()?'':overview?`<div class="overview-field overview-job"><b>${t('직업','Career','職業')}</b><button type="button" data-open-career-settings="${esc(c.id)}" title="${esc(careerCaption(state,c))}">${esc(careerCaption(state,c)||t('설정','Set up','設定'))}</button></div>`:`<button type="button" class="career-settings-link ${overview?'overview-field overview-job':''}" data-open-career-settings="${esc(c.id)}"><b>${t('직업·급여 설정','Career & pay settings','職業・給与設定')}</b><span>${esc(careerCaption(state,c)||t('설정하지 않음','Not set','未設定'))}</span></button>`;
 const moneyProfileLabel=value=>({
  '설정하지 않음':t('설정하지 않음','Unspecified','未設定'),
  '형편이 어려움':t('형편이 어려움','Struggling','生活が苦しい'),
@@ -3119,7 +3120,7 @@ function character(){
   const commuteModes=chips("출퇴근 이동수단 · 여러 개 선택 가능",["자차","대중교통","버스","지하철","택시","도보","자전거"],c.commuteModes||[],"commuteModes");
   const photoQuickCard=`<section class="character-photo-quick-card"><span>${c.photo?`<img class="profile-photo-fallback" src="${imageEsc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진 첨부</h3><p>여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.</p><div class="image-actions"><button type="button" class="primary" data-image="photo">사진 파일 선택</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">사진 지우기</button>`:""}</div><small>투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.</small></div></section>`;
   const profileWithLicense=`<section class="profile-license">${photoQuickCard}${townAssignment(c)}${profile}<section class="settings-complete-group profile-complete-settings"><div class="settings-section-heading"><span><small>PROFILE DETAILS</small><h3>생활·관계 설정</h3></span><p>직장·소비·입맛·생활 습관·끌림 설정을 모두 표시해요.</p></div>${profileAdvancedFields}<section class="setting-card character-lifestyle-settings"><h2>운전·흡연·주량</h2><p>캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.</p><div class="fields lifestyle-profile-fields">${lifestyleSelect("운전면허·운전 경험","driverLicense",["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"],c.driverLicense||"면허 없음")}${lifestyleSelect("흡연 여부","smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}${lifestyleSelect("주량","alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</div>${commuteModes}${lifestyleSelect("식습관","foodHabit",["규칙적으로 식사함","식사를 자주 거름","거의 먹지 않음","먹지 않음"],c.foodHabit||"규칙적으로 식사함")}</section>${profileAttractionSettings(c)}</section></section>`;
-  const overviewPane=isCourtWorld()&&state.characterOverviewPane==="court"?"court":state.characterOverviewPane==="basic"?"basic":state.characterOverviewPane==="career"?"career":"life";
+  const overviewPane=isCourtWorld()&&state.characterOverviewPane==="court"?"court":state.characterOverviewPane==="basic"?"basic":state.characterOverviewPane==="career"&&careerAvailable()?"career":"life";
   const overviewOption=(value,current)=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(t(value,value))}</option>`;
   const overviewSelect=(field,values,current,extra="")=>`<select data-field="${field}" ${extra}>${values.map(value=>overviewOption(value,current)).join("")}</select>`;
   const overviewMonth=`<select data-birthday-part="month" aria-label="${esc(t("생일 월","생일 월"))}"><option value="">-</option>${Array.from({length:12},(_,index)=>String(index+1).padStart(2,"0")).map(value=>`<option value="${value}" ${value===birthMonth?"selected":""}>${Number(value)}</option>`).join("")}</select>`;
@@ -3162,8 +3163,8 @@ function character(){
     <div class="overview-field overview-disliked-attraction"><b>${t("비선호하는 특성","비선호하는 특성")}</b><button type="button" data-profile-tags="dislikedAttractionTraits">${(c.dislikedAttractionTraits||[]).length?esc(c.dislikedAttractionTraits.slice(0,2).join(" · ")):t("정하지 않음","Not set","未設定")}<i>＋</i></button></div>
   </section>`;
   const overviewControlsFor=pane=>{
-    const previous=pane==='basic'?'data-character-pane="visual"':`data-character-overview-pane="${pane==='career'?'basic':isCourtWorld()?'court':'career'}"`;
-    const next=pane==='life'?'data-character-pane="body"':`data-character-overview-pane="${pane==='basic'?'career':isCourtWorld()?'court':'life'}"`;
+    const previous=pane==='basic'?'data-character-pane="visual"':`data-character-overview-pane="${pane==='career'?'basic':isCourtWorld()?'court':careerAvailable()?'career':'basic'}"`;
+    const next=pane==='life'?'data-character-pane="body"':`data-character-overview-pane="${pane==='basic'?(careerAvailable()?'career':isCourtWorld()?'court':'life'):isCourtWorld()?'court':'life'}"`;
     return `<nav class="character-overview-page-controls"><button type="button" ${previous} aria-label="${esc(t('이전 페이지','Previous page','前のページ'))}">◀</button><b>${pane==='basic'?2:pane==='career'?3:isCourtWorld()?5:4}</b><button type="button" ${next} aria-label="${esc(t('다음 페이지','Next page','次のページ'))}">▶</button></nav>`;
   };
   const profileOverviewCareerPane=()=>`<section class="character-book-form-page career-book-page" data-overview-page="career">${overviewControlsFor('career')}<div class="career-book-content"><h2>${t('직업·급여','Career & pay','職業・給与')}</h2><div class="employment-editor" data-employment-editor="${esc(c.id)}"></div>${moneySettingsLink(c)}${isCourtWorld()?`<label class="career-workplace">${t("궁정 직업","Court role","宮廷の職業")}${courtJobSelect(c)}</label>`:""}<label class="career-workplace"><b>${t("출근 장소","출근 장소")}</b><select data-field="workplaceId"><option value="">${t("자동 선택 · 없음","자동 선택 · 없음")}</option><option value="home" ${c.workplaceId==="home"?"selected":""}>${t("자택근무","자택근무")}</option>${workplaces.map(place=>`<option value="${place.id}" ${c.workplaceId===place.id?"selected":""}>${esc(place.name)}</option>`).join("")}</select></label></div></section>`;
@@ -3430,7 +3431,7 @@ function character(){
   const fullPageEntries=[
     {key:"visual",pane:"visual",get html(){return characterFullOverview(c)}},
     {key:"overview-basic",pane:"profile",get html(){return profileOverviewBasicPane()}},
-    {key:"overview-career",pane:"profile",get html(){return profileOverviewCareerPane()}},
+    ...(careerAvailable()?[{key:"overview-career",pane:"profile",get html(){return profileOverviewCareerPane()}}]:[]),
     ...(isCourtWorld()?[{key:"overview-court",pane:"profile",get html(){return courtCharacterPage(c)}}]:[]),
     {key:"overview-life",pane:"profile",get html(){return profileOverviewLifePane()}},
     {key:"body-figure",pane:"body",get html(){return bodyFigurePane()}},

@@ -1,3 +1,4 @@
+import {buildingInteriorsAvailable} from './economy-access.js';
 import {showBuildingStaff} from './building-staff.js';
 import {homeRoomBrowser} from './home-editor-ui.js?v=20260909dev305';
 import {state,runIsolatedWorld,save} from './state.js?v=20260909dev305';
@@ -12,6 +13,7 @@ import {latestSaveQueue} from './latest-save-queue.js?v=20260909dev305';
 import {careerCaption} from './salary.js';
 
 export function openBuildingInterior(placeId,{snapshot=null,bindRoomGeometry,editBuilding=()=>{},toast=()=>{}}={}){
+ if(!buildingInteriorsAvailable())return null;
  const groupId=snapshot?.activeGroupId||'',account=window.ParallelCityAuth?.getInfo?.()?.user?.uid||'',personal=state;
  const world=groupId?buildSharedWorld(snapshot,state.uiLanguage):{...state,homes:{...state.homes}},town=world.towns.find(t=>t.id===world.activeTownId)||world.world,place=town.places.find(p=>p.id===placeId);if(!place)return;
  const canEdit=!groupId||snapshot.group?.ownerUid===account||['owner','manager','operator'].includes(snapshot.members?.find(m=>(m.uid||m.id)===account)?.role||snapshot.role);

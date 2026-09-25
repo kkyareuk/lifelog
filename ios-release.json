@@ -1,8 +1,8 @@
 {
-  "version": "1.0.444",
-  "build": 496,
-  "sourceAndroidCode": 496,
+  "version": "1.0.445",
+  "build": 497,
+  "sourceAndroidCode": 497,
   "stage": "testing",
   "appStoreReady": false,
-  "channel": "public"
+  "channel": "internal"
 }

@@ -1,3 +1,4 @@
+import {careerAvailable} from './economy-access.js';
 import {careerWeeklyRoutines,careerAssignments,workScheduleFor} from './career-work.js';
 import {openWorkSchedule} from './career-work-ui.js';
 import {employmentsFor,salaryPreview,careerCaption,todayCareerDuty} from './salary.js';
@@ -26,6 +27,7 @@ export function careerSchedule(world,c,now=Date.now()){
 export function careerCoworkers(world,c){return c.workplaceId&&c.workplaceId!=='home'?Object.values(world.characters||{}).filter(other=>other.id!==c.id&&other.workplaceId===c.workplaceId):[]}
 function el(tag,text,cls){const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n}
 export function openCareerDashboard(world,c,snapshot=null){
+ if(!careerAvailable())return;
  const lang=world.uiLanguage||'ko',tr=(ko,en,ja)=>({ko,en,ja}[lang]||ko),dialog=el('dialog',null,'career-dialog career-dashboard'),header=el('header'),close=el('button','×'),body=el('section',null,'career-body');
  close.type='button';close.setAttribute('aria-label',tr('닫기','Close','閉じる'));close.onclick=()=>dialog.close();header.append(el('h2',c.name+' · '+tr('직업','Career','職業')),close);dialog.append(header,body);dialog.onclose=()=>dialog.remove();
  applyWorldCurrency(world,c);

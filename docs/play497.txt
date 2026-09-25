@@ -1,0 +1,9 @@
+<ko-KR>
+홈 화면 왼쪽 프로필 아래에서 SD/LD를 바로 전환할 수 있어요. 선택은 저장되며 그 아래에 재산·직업 메뉴가 표시돼요. 구체적인 직업별 업무 로그가 포괄적인 일정 문구로 바뀌던 문제를 수정했어요. 사무직의 상세 업무는 유지돼요.
+</ko-KR>
+<en-US>
+Switch between SD and LD directly below the home-screen profile. Your choice is saved, with Wealth and Career underneath. Fixed generic schedule text replacing occupation-specific work logs. Detailed office duties remain available.
+</en-US>
+<ja-JP>
+ホーム左上のプロフィールの下でSD/LDを切り替えられます。選択は保存され、その下に資産・職業メニューが並びます。職業別の具体的な業務ログが汎用的な予定文に置き換わる問題を修正しました。事務職の詳細な業務は維持します。
+</ja-JP>

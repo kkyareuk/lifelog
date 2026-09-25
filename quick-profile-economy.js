@@ -1,3 +1,4 @@
+import {careerAvailable} from './economy-access.js';
 import {careersFor,applyWorldCurrency} from './career-world.js';
 import {careerLabel} from './career-catalog.js';
 import {assignEmployment,employmentsFor} from './salary.js';
@@ -11,7 +12,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 export function quickEconomyMarkup(world,c){
  const tr=(...text)=>words(world.uiLanguage,...text),jobs=careersFor(world).filter(j=>!j.archived),selected=employmentsFor(c)[0]?.jobId||jobs.find(j=>j.name===c.job)?.id||'builtin-none';
  const select=(key,label,items,value)=>'<label>'+label+'<select data-quick-economy="'+key+'">'+items.map(([id,name])=>'<option value="'+esc(id)+'"'+(id===value?' selected':'')+'>'+esc(name)+'</option>').join('')+'</select></label>';
- return '<div data-quick-economy-fields="'+esc(c.id)+'">'+select('job',tr('직업','Career','職業'),jobs.map(j=>[j.id,careerLabel(j,world.uiLanguage)]),selected)+select('wealth',tr('재산 유형','Wealth','資産の種類'),wealth.map(row=>[row[0],tr(...row)]),c.wealth||'평범한 형편')+select('income',tr('소비 유형','Spending style','消費傾向'),spending.map(row=>[row[0],tr(...row)]),c.income||'필요한 만큼 소비')+'<p role="status" hidden></p></div>';
+ return '<div data-quick-economy-fields="'+esc(c.id)+'">'+(careerAvailable()?select('job',tr('직업','Career','職業'),jobs.map(j=>[j.id,careerLabel(j,world.uiLanguage)]),selected):'')+select('wealth',tr('재산 유형','Wealth','資産の種類'),wealth.map(row=>[row[0],tr(...row)]),c.wealth||'평범한 형편')+select('income',tr('소비 유형','Spending style','消費傾向'),spending.map(row=>[row[0],tr(...row)]),c.income||'필요한 만큼 소비')+'<p role="status" hidden></p></div>';
 }
 // Stable IDs/canonical names are stored; translated option labels are display only.
 export function quickCareerChange(world,c,jobId,now=Date.now()){
@@ -26,7 +27,7 @@ export function bindQuickEconomy(root,world,snapshot){
   if(fields.dataset.bound)return;fields.dataset.bound='1';const c=world.characters[fields.dataset.quickEconomyFields];if(!c)continue;
   const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,account=state,lang=world.uiLanguage,tr=(...text)=>words(lang,...text),status=fields.querySelector('[role=status]');let busy=false;
   const valid=()=>fields.isConnected&&state===account&&(!snapshot||window.ParallelCityAuth?.getInfo?.()?.user?.uid===uid&&window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===snapshot.activeGroupId);
-  const sync=()=>{fields.querySelector('[data-quick-economy=job]').value=employmentsFor(c)[0]?.jobId||careersFor(world).find(j=>j.name===c.job)?.id||'builtin-none';fields.querySelector('[data-quick-economy=wealth]').value=c.wealth||'평범한 형편';fields.querySelector('[data-quick-economy=income]').value=c.income||'필요한 만큼 소비';for(const el of fields.querySelectorAll('select'))el.disabled=busy||!!snapshot&&c.ownerUid!==uid||el.dataset.quickEconomy==='wealth'&&!!c.wallet?.poolId;};
+  const sync=()=>{const job=fields.querySelector('[data-quick-economy=job]');if(job)job.value=employmentsFor(c)[0]?.jobId||careersFor(world).find(j=>j.name===c.job)?.id||'builtin-none';fields.querySelector('[data-quick-economy=wealth]').value=c.wealth||'평범한 형편';fields.querySelector('[data-quick-economy=income]').value=c.income||'필요한 만큼 소비';for(const el of fields.querySelectorAll('select'))el.disabled=busy||!!snapshot&&c.ownerUid!==uid||el.dataset.quickEconomy==='wealth'&&!!c.wallet?.poolId;};
   sync();
   for(const el of fields.querySelectorAll('select'))el.onchange=async()=>{
    if(busy||!valid()){sync();return}const key=el.dataset.quickEconomy,value=el.value;

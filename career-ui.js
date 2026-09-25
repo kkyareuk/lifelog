@@ -1,7 +1,7 @@
 import {bindWalletAccounts} from './wallet-sharing.js';
 import {state,save} from './state.js?v=20260909dev305';
 import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
-import {economyAvailable} from './economy-access.js';
+import {economyAvailable,careerAvailable} from './economy-access.js';
 import {ensureWallet,displayMoney,moneyEntry,settleEmployment} from './character-money.js';
 import {careersFor,economyFor,saveCareer,archiveCareer,updateWorldCurrency,applyWorldCurrency} from './career-world.js';
 import {careerLabel} from './career-catalog.js';
@@ -16,11 +16,12 @@ function button(body,label,run){const b=node('button',label);b.type='button';b.o
 function context(){const s=window.DrawerVillageGroups?.getSnapshot?.(),snapshot=s?.activeGroupId&&s.group?s:null;return {snapshot,world:snapshot?buildSharedWorld(snapshot,state.uiLanguage):state}}
 function controller(ui,info){let busy=false;const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,accountState=state;return async(fn)=>{if(busy)return;busy=true;ui.status.textContent=paperwork();ui.d.setAttribute('aria-busy','true');const fields=[...ui.body.querySelectorAll('button,input,select,textarea')].map(e=>[e,e.disabled]);fields.forEach(([e])=>e.disabled=true);try{await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));if(state!==accountState||window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid)throw Error('career-context');if(info.snapshot&&(window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId!==info.snapshot.activeGroupId||window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid))throw Error('career-context');await fn();if(ui.d.isConnected)ui.status.textContent=tr('접수됐어요.','Filed successfully.','受理されました。')}catch(e){ui.status.textContent=errorText(e)}finally{busy=false;ui.d.removeAttribute('aria-busy');fields.forEach(([e,disabled])=>{if(e.isConnected)e.disabled=disabled})}}}
 export function openCareerWorld(pane='jobs'){
+ if(pane==='jobs'&&!careerAvailable())return;
  const info=context(),ui=modal(tr('세계관 직업·재산','World careers and economy','世界の職業・資産')), {world,snapshot}=info;
  if(!economyAvailable()){ui.body.textContent=tr('준비 중입니다.','Coming soon.','準備中です。');return ui.d}
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;let manager=!snapshot||snapshot.group.ownerUid===uid||['manager','operator'].includes(snapshot.members?.find(m=>(m.uid||m.id)===uid)?.role),canCreate=manager||snapshot?.group.rules?.allowMemberCareerAdd===true;
  const run=controller(ui,info),persist=async(action,payload)=>{if(snapshot){const result=await window.DrawerVillageGroups.careerWorld({action,revision:economyFor(world).revision,...payload});world.economy=result.economy;snapshot.group.economy=result.economy;manager=result.canManage;canCreate=result.canCreate}else{if(action==='save')saveCareer(world,payload.career,'',true);else if(action==='archive')archiveCareer(world,payload.id);else updateWorldCurrency(world,payload.unit,payload.mealPrice);if(!await save(true))throw Error('save-failed')}};
- const draw=()=>{ui.d.scrollTop=0;ui.body.replaceChildren();const nav=node('nav');button(nav,tr('직업','Careers','職業'),()=>{pane='jobs';draw()});button(nav,tr('재산·화폐','Currency','資産・通貨'),()=>{pane='currency';draw()});ui.body.append(nav);
+ const draw=()=>{ui.d.scrollTop=0;ui.body.replaceChildren();const nav=node('nav');if(careerAvailable())button(nav,tr('직업','Careers','職業'),()=>{pane='jobs';draw()});button(nav,tr('재산·화폐','Currency','資産・通貨'),()=>{pane='currency';draw()});ui.body.append(nav);
  if(pane==='currency'){const e=economyFor(world),unit=field(ui.body,tr('화폐 이름','Currency name','通貨名'),'text',e.unit),meal=field(ui.body,tr('기본 외식 한 끼 가격','Ordinary restaurant meal price','標準の外食1食の価格'),'number',e.mealPrice);unit.maxLength=20;meal.min='.0001';meal.step='any';ui.body.append(node('p',tr('월급과 재산의 표시에 함께 적용돼요. 기존 재산의 구매력은 유지돼요.','Applies to salary and wealth display while preserving purchasing power.','給与と資産の表示に適用し、購買力は維持します。')));button(ui.body,tr('저장','Save','保存'),()=>run(async()=>{await persist('currency',{unit:unit.value,mealPrice:Number(meal.value)});draw()})).disabled=!manager;unit.disabled=meal.disabled=!manager;return}
  button(ui.body,tr('＋ 직업 만들기','＋ Create career','＋ 職業を作成'),()=>edit({id:'custom-'+crypto.randomUUID(),name:'',payDay:25,ranks:[{id:crypto.randomUUID(),name:'',salaryMeals:250,duties:[]}]})).disabled=!canCreate;
  const list=node('div',null,'career-list');ui.body.append(list);for(const j of careersFor(world).filter(j=>!j.archived)){const b=button(list,careerLabel(j,state.uiLanguage)+' · '+j.ranks.length+tr('개 직급',' ranks','職階'),()=>edit(structuredClone(j)));b.dataset.careerId=j.id;}
@@ -35,9 +36,11 @@ export function openCareerWorld(pane='jobs'){
  if(snapshot)void run(async()=>{const result=await window.DrawerVillageGroups.careerWorld({action:'read'});world.economy=result.economy;manager=result.canManage;canCreate=result.canCreate;draw()});else draw();return ui.d;
 }
 export function openEmployment(world,c,snapshot=null){
+ if(!careerAvailable())return;
  window.dispatchEvent(new CustomEvent('drawer-open-career-page',{detail:{id:c.id,groupId:snapshot?.activeGroupId||''}}));
 }
 export function mountEmployment(container,world,c,snapshot=null){
+ if(!careerAvailable()){container.replaceChildren();return container;}
  if(snapshot?.group?.economy)world.economy=snapshot.group.economy;
  const initialState=state,uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
  const valid=()=>container.isConnected&&state===initialState&&window.ParallelCityAuth?.getInfo?.()?.user?.uid===uid&&(!snapshot||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId===snapshot.activeGroupId);

@@ -178,6 +178,8 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
 window.DRAWER_VILLAGE_NATIVE_BUILD="20260918${releaseChannel}${appVersionCode}";
     window.DRAWER_VILLAGE_ECONOMY_ENABLED=true;
+    window.DRAWER_VILLAGE_CAREER_ENABLED=${releaseChannel!=="public"};
+    window.DRAWER_VILLAGE_BUILDING_INTERIORS_ENABLED=${releaseChannel!=="public"};
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

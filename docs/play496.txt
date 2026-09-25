@@ -1,0 +1,9 @@
+<ko-KR>
+직업·재산·요리 기능을 공개했어요. 근무·급여·지갑 설정, 음식 보관·냉장고·책장, 건물 내부와 가구 사진을 이용해 보세요. 반복 행동·욕구 회복·이동·창 반응 속도를 개선했어요. 마을 건물 드래그, 영어 간편설정, 멀티 방 편집·층 추가를 수정하고 집·멀티 도움말과 이메일 오류 제보를 보완했어요. 요리는 과정 애니메이션 없이 로그와 소리로 진행돼요.
+</ko-KR>
+<en-US>
+Careers, wallets and cooking are now available, with work/pay settings, food storage, refrigerators, bookshelves, building interiors and furniture photos. Improved activity variety, needs recovery, movement and panel responsiveness. Fixed village building dragging, English quick settings and multiplayer room/floor editing. Improved home/multiplayer guides and restored email bug reports. Cooking uses logs and sound without process animations.
+</en-US>
+<ja-JP>
+職業・資産・料理機能を公開しました。勤務・給与・財布の設定、食品保管・冷蔵庫・本棚、建物の内装や家具写真を利用できます。行動の繰り返し・欲求回復・移動・画面の反応を改善しました。村の建物ドラッグ、英語の簡単設定、マルチの部屋編集・階追加を修正し、家・マルチのガイドとメールでの不具合報告を整えました。料理は工程アニメーションなしでログと音で進行します。
+</ja-JP>

@@ -18,7 +18,21 @@
 Chrome/WebKit 개인·멀티 방 동일 필드/저장·개인 데이터 격리·층 추가·메일 초안·건물 드래그 검사 통과. 공유 생활 200명·식사 양측·일정 경계·취소 검사 통과. 결제/중복 지급 구조 검사 통과. 200명 초기 계산은 PC 약37초로 대규모 마을의 성능 개선 완료를 의미하지 않는다.
 기존 일정 검사2건은 소스문자열/옛 버전 고정 검사 실패이며 실제 공유 일정 경계 검사는 통과.
 마을 슬롯 미지급 제보(pth1006,467)는 계정UID/주문번호 없이 개인 거래 특정 불가. 해결/추가지급 완료로 표시하지 않는다. 오류화면 제보 역시 상세 미제공.
-신규 문구 KO/EN/JA 포함. 전체 번역률은 최종 집계 예정.
+신규 문구 KO/EN/JA 포함. 전체 정적 번역 EN2255/2990(75.4%), JA2254/2990(75.4%).
 
 ## 배포
 서명 빌드·스토어 제출·서버 반영 진행 중. 완료 여부는 검증 후 기록한다.
+
+### 검증된 빌드 / 서버
+- 구현 커밋 ad402351, origin/dev 반영.
+- Android 서명 AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.444-496-public.aab
+- SHA256 E3C0BDDD63EEC2FCFF32DE970256C64479E28C2213CD8CC458F37F49BFDCD4FE
+- 준비 웹자산594개와 AAB 바이트 일치. 오프라인 시작·저장 재실행 통과. 웹 빌드 및 iOS 로컬 준비/버전/모듈 검사 통과.
+- Play 내부 release373, 9/25 12:00 KST 테스터 제공됨 확인.
+- sharedTownApi revision sharedtownapi-00132-bad, 배포 후188파일 staging일치. 기존배포 대비 runtime/autonomy-diversity.js, runtime/cooking.js, runtime/salary.js, runtime/simulation.js, shared-town.js 다섯 파일만 변경. 다른 서버 카탈로그 보존.
+- 공개496은 Android API24+ 기준. 기존 API23기기 지원을 없애지 않도록 프로덕션에467을 함께 유지.
+- Apple 서명/업로드 Actions36088338620 진행. 스토어 심사 상태는 이후 기록.
+- GitHub Pages main 루트 자동배포가 유지되는 것을 API로 확인. main에는 릴리스 문서만 반영하고, 검토 중인 앱 소스를 운영 웹에 자동배포하지 않는다.
+
+## 최신 상태 정정
+사용자 공개 범위 재검토로 프로덕션39는 저장된 미제출 초안으로 보류. Apple496 Actions36088338620 취소 확인, Apple 심사 미제출. 후속497은 내부테스트만 진행. 공개범위는 docs/release497.md 기준.

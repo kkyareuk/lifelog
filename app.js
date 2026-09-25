@@ -1,3 +1,4 @@
+import {careerAvailable} from './economy-access.js';
 import {showRoomEditor} from './room-editor-dialog.js';
 import {contextualGuide,stopContextualGuide} from './feature-tour.js';
 import {syncLifeSound} from './life-audio.js';
@@ -1397,6 +1398,7 @@ window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-discovery-dismissed',resumeAfterCommandDismissal);
 window.addEventListener('drawer-money-updated',()=>{if(!document.querySelector('[data-world-background-setting]'))render()});
 window.addEventListener('drawer-open-career-page',event=>{
+ if(!careerAvailable())return;
  const {id,groupId}=event.detail||{},s=activeShared();if((s?.activeGroupId||'')!==groupId)return;
  flushMobileCharacterDraft();mobileCharacterEditorPane='';mobileCharacterDraftDirty=false;
  document.querySelectorAll('dialog[open]').forEach(d=>d.close());
@@ -2377,7 +2379,7 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
-const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,3),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(3)];
+const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,3),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(3)].filter(page=>page!=="overview-career"||careerAvailable());
 const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-career","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
 function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;

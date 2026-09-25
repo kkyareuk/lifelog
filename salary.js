@@ -36,7 +36,7 @@ export function assignEmployment(world,c,jobId,rankId,now,addEntry,details={}){
  if(previous)list[list.indexOf(previous)]=entry;else list.push(entry);storeEmployments(c,list);return entry;
 }
 export function removeEmployment(c,id,now,addEntry){const list=[...employmentsFor(c)],entry=list.find(e=>e.id===id);if(!entry)throw Error('career-missing');settleSalary(c.wallet,entry,now,addEntry);const amount=Math.round(entry.accrued||0);if(amount)addEntry(c.wallet,amount,'salary-close:'+id,'salary',now,entry.jobName);storeEmployments(c,list.filter(e=>e!==entry))}
-export function currentDuties(world,c){return employmentsFor(c).flatMap(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId);return rank?.duties||e.duties||[]})}
+export function currentDuties(world,c){return employmentsFor(c).flatMap(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId);return (rank?.duties||e.duties||[]).filter(d=>!job?.builtin||!['업무 준비','업무 기록 정리','담당 업무 수행'].includes(d.name))})}
 
 export function salaryPreview(employment,now=Date.now()){
  if(!employment)return null;const copy=structuredClone(employment),at=nextSalaryPayout(copy,now),wallet={balance:0};settleSalary(wallet,copy,at,(w,n)=>{w.balance+=n});return {at,amount:wallet.balance};
