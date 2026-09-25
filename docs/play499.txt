@@ -1,0 +1,9 @@
+<ko-KR>
+직업별 출근·근무·퇴근 로그를 다양하게 추가했어요. 의사·간호사·교사·프로그래머 등 각 직업의 구체적인 업무와 무직 캐릭터의 일상 이야기가 나와요. 기존 회사원 직급별 업무는 유지하고, 계절과 동료 조건에 맞게 로그를 골라요. 근무 중 작은 돌발 상황 뒤에는 마음을 진정시키는 시간이 이어져요. 영어·일본어 문구도 추가했어요.
+</ko-KR>
+<en-US>
+Added varied arrival, work and closing logs for each profession, with specific tasks for doctors, nurses, teachers, programmers and more, plus daily stories for unemployed characters. Existing rank-based office tasks remain. Logs respect seasonal and colleague conditions. Brief surprises are followed by a calming-down period. English and Japanese text is included.
+</en-US>
+<ja-JP>
+職業ごとの出勤・勤務・終業ログを追加しました。医師・看護師・教師・プログラマーなどの具体的な仕事と、無職のキャラクターの日常が表示されます。会社員の役職別業務を維持し、季節や同僚の条件に合うログを選びます。小さな出来事の後には気持ちを落ち着ける時間が続きます。英語・日本語にも対応しました。
+</ja-JP>
