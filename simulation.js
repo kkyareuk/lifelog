@@ -3503,7 +3503,7 @@ function liveGapEvent(c,last,n,date){
   const moodAction=moodActions[currentMood.tone]?.[state.uiLanguage]||moodActions[currentMood.tone]?.ko;
   if(moodAction)scripts.unshift([...moodAction,null,{moodResponse:true,moodSourceTone:currentMood.tone}]);
   if(!isDeepNight(n)||nightSnackAllowed(c,date,n))scripts.push(["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"]);
-  const recent=recentNarrativeEntries(c,dayKey(date),minute,5);
+  const recent=recentNarrativeEntries(c,dayKey(date),minute,20);
   const home=state.homes[homeIdForDate(c,date)||c.homeId],full=needsAt(c,date.getTime()).hunger>=75;
   const allowed=scripts.filter(script=>{
     const scene={title:script[0],...(script[4]||{})},room=home?.rooms?.[script[2]];
@@ -4479,6 +4479,16 @@ function sameLiveLocation(first,second){
   if(first.home){
     return Boolean(first.visitHomeId||first.homeId)&&Boolean(first.room)&&(first.visitHomeId||first.homeId||"")===(second.visitHomeId||second.homeId||"")
       &&(first.room||"")===(second.room||"");
+  }
+  // Outdoor meetings have a shared arrival point, not necessarily a building.
+  // Matching the command and nearby arrival coordinates avoids treating the
+  // entire town as one room (or cancelling a valid meeting in its streets).
+  if(!first.placeId&&!second.placeId){
+    const a=first.meetingLocation?.map,b=second.meetingLocation?.map;
+    return Boolean(first.manualDirectiveId&&first.manualDirectiveId===second.manualDirectiveId
+      &&first.townId&&first.townId===second.townId&&!first.meetingWaiting&&!second.meetingWaiting
+      &&a&&b&&[a.x,a.y,b.x,b.y].every(Number.isFinite)
+      &&Math.hypot(a.x-b.x,a.y-b.y)<=4);
   }
   return Boolean(first.placeId)&&(first.placeId||"")===(second.placeId||"")
     &&(first.townId||"")===(second.townId||"");

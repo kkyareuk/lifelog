@@ -1,0 +1,97 @@
+diff --git a/autonomy-diversity.js b/autonomy-diversity.js
+index 6c6be0e7..15097d1d 100644
+--- a/autonomy-diversity.js
++++ b/autonomy-diversity.js
+@@ -16,13 +16,17 @@ export function duplicatedActivity(character,scene,peers){
+  if(['sleep','eating','hygiene','toilet','other'].includes(key))return false;
+  return peers.some(peer=>String(peer.id)<String(character.id)&&discretionary(peer.scene)&&roomActivityKey(peer.scene)===key);
+ }
+-// Choose a different kind of activity before choosing different wording.
+-// If settings leave no unused family, retain valid choices rather than ignoring settings.
++// Reject recently used scenes before balancing activity families. Otherwise a
++// small family can win the score repeatedly and starve fresh scenes in other families.
+ export function diverseHomePool(scripts,recent,peers){
+  if(!scripts.length)return scripts;
+  const kind=script=>roomActivityKey({title:script[0],...(script[4]||{})});
+- const exact=s=>peers.some(({scene})=>scene.narrativeKey===homeNarrativeKey(s)||(scene.baseTitle||scene.title)===s[0]);
+- const cost=s=>peers.filter(({scene})=>roomActivityKey(scene)===kind(s)).length*10+(recent.slice(0,2).some(e=>roomActivityKey(e)===kind(s))?3:0)+(exact(s)?100:0);
+- const min=Math.min(...scripts.map(cost));
+- return scripts.filter(s=>cost(s)===min);
++ const matches=(e,s)=>e.narrativeKey===homeNarrativeKey(s)||[e.title,e.baseTitle].includes(s[0])||[e.desc,e.baseDesc].some(v=>typeof v==='string'&&v.includes(s[1]));
++ const fresh=scripts.filter(s=>!recent.some(e=>matches(e,s)));
++ const pool=fresh.length?fresh:scripts;
++ const independent=pool.filter(s=>!peers.some(({scene})=>matches(scene,s)));
++ const available=independent.length?independent:pool;
++ const cost=s=>peers.filter(({scene})=>roomActivityKey(scene)===kind(s)).length*10+recent.slice(0,4).reduce((sum,e,i)=>sum+(roomActivityKey(e)===kind(s)?4-i:0),0);
++ const min=Math.min(...available.map(cost));
++ return available.filter(s=>cost(s)===min);
+ }
+diff --git a/cooking.js b/cooking.js
+index 5b78b2b4..319e3905 100644
+--- a/cooking.js
++++ b/cooking.js
+@@ -41,7 +41,7 @@ export function startCooking(world,c,directive,recipeId,requestId,now){
+  data.active={...(r.custom?{recipeSnapshot:structuredClone(r)}:{}),id:requestId,recipeId:r.id,recipeVersion:472,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
+  data.requests=[...(data.requests||[]),requestId].slice(-200);
+  directive.cookingId=requestId;directive.endsAt=endsAt;
+- for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만들기',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
++ for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만드는 중',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
+  return true;
+ }
+ export function finishCooking(world,c,now){
+diff --git a/functions/shared-town.js b/functions/shared-town.js
+index 23027757..177c7efb 100644
+--- a/functions/shared-town.js
++++ b/functions/shared-town.js
+@@ -57,6 +57,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
+       const clean={rooms:layout.rooms,deletedRoomKeys:Array.isArray(layout.deletedRoomKeys)?layout.deletedRoomKeys.filter(k=>typeof k==='string').slice(-100):[],floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
+       for(const [field,min] of [['canvasColumns',12],['canvasRows',16]])if(layout[field]!==undefined)clean[field]=Math.max(min,Math.min(64,Math.round(Number(layout[field])||min)));
+       if(layout.canvasFitVersion===1)clean.canvasFitVersion=1;
++      if(Array.isArray(layout.roomPresets))clean.roomPresets=layout.roomPresets.filter(p=>p&&typeof p.id==='string'&&typeof p.name==='string'&&p.room&&typeof p.room==='object').slice(-20);
+       if(typeof layout.image==='string')clean.image=layout.image.slice(0,20000);
+       const old=JSON.parse(home.layoutJson||'{}'),patch={layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()};tx.update(homeRef,patch);tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1,home:{...home,...patch,id:homeRef.id}};
+     }),
+diff --git a/salary.js b/salary.js
+index c3106e11..5f571e9d 100644
+--- a/salary.js
++++ b/salary.js
+@@ -58,3 +58,9 @@ export function todayCareerDuty(world,c,date=new Date()){
+  let hash=2166136261;for(const char of key)hash=(hash*31+char.charCodeAt(0))>>>0;
+  const duty=duties[hash%duties.length];return duty.copy?.[world.uiLanguage]||duty;
+ }
++
++export function careerHudLabel(world,c,date=new Date()){
++ const career=careerCaption(world,c),duty=todayCareerDuty(world,c,date);
++ if(!duty?.name)return career;
++ return [career,duty.name].filter(Boolean).join(' · ');
++}
+diff --git a/simulation.js b/simulation.js
+index ab727c21..a652dd55 100644
+--- a/simulation.js
++++ b/simulation.js
+@@ -3503,7 +3503,7 @@ function liveGapEvent(c,last,n,date){
+   const moodAction=moodActions[currentMood.tone]?.[state.uiLanguage]||moodActions[currentMood.tone]?.ko;
+   if(moodAction)scripts.unshift([...moodAction,null,{moodResponse:true,moodSourceTone:currentMood.tone}]);
+   if(!isDeepNight(n)||nightSnackAllowed(c,date,n))scripts.push(["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"]);
+-  const recent=recentNarrativeEntries(c,dayKey(date),minute,5);
++  const recent=recentNarrativeEntries(c,dayKey(date),minute,20);
+   const home=state.homes[homeIdForDate(c,date)||c.homeId],full=needsAt(c,date.getTime()).hunger>=75;
+   const allowed=scripts.filter(script=>{
+     const scene={title:script[0],...(script[4]||{})},room=home?.rooms?.[script[2]];
+@@ -4480,6 +4480,16 @@ function sameLiveLocation(first,second){
+     return Boolean(first.visitHomeId||first.homeId)&&Boolean(first.room)&&(first.visitHomeId||first.homeId||"")===(second.visitHomeId||second.homeId||"")
+       &&(first.room||"")===(second.room||"");
+   }
++  // Outdoor meetings have a shared arrival point, not necessarily a building.
++  // Matching the command and nearby arrival coordinates avoids treating the
++  // entire town as one room (or cancelling a valid meeting in its streets).
++  if(!first.placeId&&!second.placeId){
++    const a=first.meetingLocation?.map,b=second.meetingLocation?.map;
++    return Boolean(first.manualDirectiveId&&first.manualDirectiveId===second.manualDirectiveId
++      &&first.townId&&first.townId===second.townId&&!first.meetingWaiting&&!second.meetingWaiting
++      &&a&&b&&[a.x,a.y,b.x,b.y].every(Number.isFinite)
++      &&Math.hypot(a.x-b.x,a.y-b.y)<=4);
++  }
+   return Boolean(first.placeId)&&(first.placeId||"")===(second.placeId||"")
+     &&(first.townId||"")===(second.townId||"");
+ }

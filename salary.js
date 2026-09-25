@@ -58,3 +58,9 @@ export function todayCareerDuty(world,c,date=new Date()){
  let hash=2166136261;for(const char of key)hash=(hash*31+char.charCodeAt(0))>>>0;
  const duty=duties[hash%duties.length];return duty.copy?.[world.uiLanguage]||duty;
 }
+
+export function careerHudLabel(world,c,date=new Date()){
+ const career=careerCaption(world,c),duty=todayCareerDuty(world,c,date);
+ if(!duty?.name)return career;
+ return [career,duty.name].filter(Boolean).join(' · ');
+}

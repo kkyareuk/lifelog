@@ -14,7 +14,7 @@ export function bindSceneZoom(root=document){
   const begin=()=>{gesture={...measure(),...{pose:{...pose}}}};
   eventRoot.addEventListener('pointerdown',e=>{
    if(e.pointerType!=='touch'||!viewport.contains(e.target)&&!points.size)return;points.set(e.pointerId,{x:e.clientX,y:e.clientY});
-   if(points.size===1){consumed=false;rect=viewport.getBoundingClientRect();const blocked=e.target.closest('input,select,[data-room-drag],[data-room-resize]')||e.target.closest('.is-editing')&&e.target.closest('[data-furniture-placement]');pending=!blocked&&(pose.scale>1||scene.offsetWidth>viewport.clientWidth+1||scene.offsetHeight>viewport.clientHeight+1)?{...measure(),pose:{...pose}}:null}
+   if(points.size===1){consumed=false;rect=viewport.getBoundingClientRect();const blocked=e.target.closest('input,select,[data-room-drag],[data-room-resize]')||e.target.closest('.town-edit .place')?.onpointerdown||e.target.closest('.is-editing')&&e.target.closest('[data-furniture-placement]');pending=!blocked&&(pose.scale>1||scene.offsetWidth>viewport.clientWidth+1||scene.offsetHeight>viewport.clientHeight+1)?{...measure(),pose:{...pose}}:null}
    if(points.size===2){
     pending=null;
     consumed=true;document.documentElement.dataset.sceneGesture='1';begin();e.preventDefault();e.stopImmediatePropagation();

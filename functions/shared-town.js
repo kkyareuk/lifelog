@@ -57,6 +57,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const clean={rooms:layout.rooms,deletedRoomKeys:Array.isArray(layout.deletedRoomKeys)?layout.deletedRoomKeys.filter(k=>typeof k==='string').slice(-100):[],floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
       for(const [field,min] of [['canvasColumns',12],['canvasRows',16]])if(layout[field]!==undefined)clean[field]=Math.max(min,Math.min(64,Math.round(Number(layout[field])||min)));
       if(layout.canvasFitVersion===1)clean.canvasFitVersion=1;
+      if(Array.isArray(layout.roomPresets))clean.roomPresets=layout.roomPresets.filter(p=>p&&typeof p.id==='string'&&typeof p.name==='string'&&p.room&&typeof p.room==='object').slice(-20);
       if(typeof layout.image==='string')clean.image=layout.image.slice(0,20000);
       const old=JSON.parse(home.layoutJson||'{}'),patch={layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()};tx.update(homeRef,patch);tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1,home:{...home,...patch,id:homeRef.id}};
     }),

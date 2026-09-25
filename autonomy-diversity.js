@@ -16,13 +16,17 @@ export function duplicatedActivity(character,scene,peers){
  if(['sleep','eating','hygiene','toilet','other'].includes(key))return false;
  return peers.some(peer=>String(peer.id)<String(character.id)&&discretionary(peer.scene)&&roomActivityKey(peer.scene)===key);
 }
-// Choose a different kind of activity before choosing different wording.
-// If settings leave no unused family, retain valid choices rather than ignoring settings.
+// Reject recently used scenes before balancing activity families. Otherwise a
+// small family can win the score repeatedly and starve fresh scenes in other families.
 export function diverseHomePool(scripts,recent,peers){
  if(!scripts.length)return scripts;
  const kind=script=>roomActivityKey({title:script[0],...(script[4]||{})});
- const exact=s=>peers.some(({scene})=>scene.narrativeKey===homeNarrativeKey(s)||(scene.baseTitle||scene.title)===s[0]);
- const cost=s=>peers.filter(({scene})=>roomActivityKey(scene)===kind(s)).length*10+(recent.slice(0,2).some(e=>roomActivityKey(e)===kind(s))?3:0)+(exact(s)?100:0);
- const min=Math.min(...scripts.map(cost));
- return scripts.filter(s=>cost(s)===min);
+ const matches=(e,s)=>e.narrativeKey===homeNarrativeKey(s)||[e.title,e.baseTitle].includes(s[0])||[e.desc,e.baseDesc].some(v=>typeof v==='string'&&v.includes(s[1]));
+ const fresh=scripts.filter(s=>!recent.some(e=>matches(e,s)));
+ const pool=fresh.length?fresh:scripts;
+ const independent=pool.filter(s=>!peers.some(({scene})=>matches(scene,s)));
+ const available=independent.length?independent:pool;
+ const cost=s=>peers.filter(({scene})=>roomActivityKey(scene)===kind(s)).length*10+recent.slice(0,4).reduce((sum,e,i)=>sum+(roomActivityKey(e)===kind(s)?4-i:0),0);
+ const min=Math.min(...available.map(cost));
+ return available.filter(s=>cost(s)===min);
 }

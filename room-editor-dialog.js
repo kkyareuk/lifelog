@@ -1,0 +1,71 @@
+import {bindRoomSurfacePicker} from './room-surface-picker.js';
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from './room-permissions.js?v=20260909dev305';
+import {homeEditorCopy} from './home-editor-ui.js?v=20260909dev305';
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from './home-surfaces.js?v=20260909dev305';
+const ROOM_EDITOR_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"식당",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
+const htmlEsc=(value="")=>String(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
+export function showRoomEditor(homeId,roomKey,options){
+  const {state,updateRoom,setRoomType,save,render,openRoomImageMenu,pickImage,deleteRoom,explicitSave,showToast,translateDynamicInterface,configurePhotos}=options;
+  const openRoomEditor=(id,key)=>showRoomEditor(id,key,options);
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
+  const dialog=document.createElement("dialog");dialog.className="room-editor-dialog home-room-editor home-design-page";
+  const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
+  const currentFloorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
+  const currentWallMaterial=normalizeWallSurface(room.wallMaterial,currentFloorMaterial,room.type);
+  const surfaceOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentFloorMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
+  const wallOptions=HOME_WALL_KEYS.map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
+  const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
+  dialog.innerHTML=`<form method="dialog"><header class="home-design-head"><button class="home-design-back" value="save" aria-label="${homeEditorCopy(state.uiLanguage).back}"></button><h2>${htmlEsc(room.name||"방")}</h2></header><div class="room-editor-fields home-design-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo home-design-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-actions editor-save-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">저장</button></div></form>`;
+  const presetCopy=({ko:['방 프리셋 저장','프리셋 선택','적용','프리셋 이름'],en:['Save room preset','Choose preset','Apply','Preset name'],ja:['部屋プリセットを保存','プリセットを選択','適用','プリセット名']})[state.uiLanguage]||['방 프리셋 저장','프리셋 선택','적용','프리셋 이름'];
+  const presets=document.createElement('section');presets.className='room-preset-tools';presets.innerHTML=`<input data-preset-name maxlength="40" aria-label="${presetCopy[3]}" placeholder="${presetCopy[3]}"><button type="button" data-preset-save>${presetCopy[0]}</button><select data-preset-select aria-label="${presetCopy[1]}"></select><button type="button" data-preset-apply>${presetCopy[2]}</button>`;
+  const paintPresets=()=>{const select=presets.querySelector('select');select.replaceChildren(new Option(presetCopy[1],''));for(const entry of state.homes[homeId].roomPresets||[])select.add(new Option(entry.name,entry.id));};paintPresets();dialog.querySelector('.room-editor-fields').append(presets);
+  presets.querySelector('[data-preset-save]').onclick=()=>{sync();const home=state.homes[homeId],name=presets.querySelector('input').value.trim()||room.name,entry={id:crypto.randomUUID(),name,room:structuredClone(home.rooms[roomKey])};home.roomPresets=[...(home.roomPresets||[]),entry].slice(-20);save(true);paintPresets();};
+  presets.querySelector('[data-preset-apply]').onclick=()=>{const entry=state.homes[homeId].roomPresets?.find(p=>p.id===presets.querySelector('select').value);if(!entry)return;const patch=structuredClone(entry.room),oldIds=new Map((patch.furniturePlacements||[]).map(p=>[p.id,crypto.randomUUID()]));patch.furniturePlacements=(patch.furniturePlacements||[]).map(p=>({...p,id:oldIds.get(p.id),tableId:oldIds.get(p.tableId)||'',assignedCharacterIds:[]}));delete patch.layout;delete patch.floor;delete patch.id;delete patch.order;delete patch.allowedCharacterIds;delete patch.ownerCharacterId;updateRoom(homeId,roomKey,patch);dialog.returnValue='preset';dialog.close();render();openRoomEditor(homeId,roomKey);};
+  const usage=document.createElement("select");usage.name="usage";usage.setAttribute("aria-label","방 세부 유형");
+  usage.innerHTML=[...new Set([room.usage||"지정 안 함","지정 안 함","공용","개인용","손님용"])].map(value=>`<option value="${htmlEsc(value)}" ${value===(room.usage||"지정 안 함")?"selected":""}>${htmlEsc(value)}</option>`).join("");
+  dialog.querySelector('[name="type"]').after(usage);
+  const floorField=document.createElement("label");
+  const floorHelp={ko:"바닥 타일은 반복하며 벽을 유지하고, 방 전체 그림은 자르거나 반복하지 않고 벽을 숨겨요.",en:"Floor tiles repeat and keep the wall. A full-room illustration is not cropped or repeated and hides the wall.",ja:"床タイルは繰り返して壁を残します。部屋全体のイラストは切り抜きや繰り返しをせず、壁を非表示にします。"}[state.uiLanguage]||"";
+  floorField.innerHTML=`바닥재<select name="floorMaterial">${surfaceOptions}<option value="customTile" ${currentFloorMaterial==="customTile"?"selected":""}>${homeSurfaceLabel("customTile",state.uiLanguage)}</option><option value="custom" ${currentFloorMaterial==="custom"?"selected":""}>${homeSurfaceLabel("custom",state.uiLanguage)}</option></select><small>${floorHelp}</small>`;
+  dialog.querySelector(".room-editor-fields").insertBefore(floorField,dialog.querySelector('[name="interiorStyle"]').closest("label"));
+  const wallField=document.createElement("label");
+  wallField.innerHTML=`벽지<select name="wallMaterial">${wallOptions}</select><small>직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.</small>`;
+  floorField.after(wallField);
+  const floorButton=document.createElement("button");
+  floorButton.type="button";floorButton.className="room-editor-photo room-editor-floor";floorButton.dataset.editRoomFloor="";
+  const floorSource=()=>homeSurfaceImage(dialog.querySelector('[name="floorMaterial"]').value,room.floorImage,room.type);
+  const drawFloorButton=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value,custom=["custom","customTile"].includes(mode);floorButton.innerHTML=`<span style="background-image:url('${floorSource()}')"></span><b>${custom&&room.floorImage?(mode==="custom"?"방 전체 그림 변경":"바닥 타일 변경"):"바닥 이미지 첨부"}</b>`};
+  drawFloorButton();dialog.querySelector("[data-edit-room-photo]").before(floorButton);
+  dialog.querySelector("[data-edit-room-photo] b").textContent=room.image?"방 사진 변경":"방 사진 추가하기";
+  dialog.querySelector("[data-edit-room-photo]").setAttribute("aria-label","관찰·집 정보용 방 사진");
+  const sync=()=>{
+    if(!state.homes[homeId]?.rooms?.[roomKey])return;
+    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,hideFurniture:dialog.querySelector('[name="hideFurniture"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
+    const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType);
+  };
+  dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
+  dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close("reopen");openRoomEditor(homeId,roomKey)};
+  dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
+  floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;dialog.querySelector('[name="usePhoto"]').checked=mode==="custom";sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
+  dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
+  dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
+  dialog.onclose=()=>{if(!["photo","floor","reopen","preset"].includes(dialog.returnValue)){sync();dialog.remove();render()}dialog.remove()};
+
+  const fields=dialog.querySelector(".room-editor-fields");
+  fields.before(dialog.querySelector("[data-edit-room-photo]"));
+  fields.querySelectorAll("small").forEach(node=>node.remove());
+  const extra=document.createElement("div");
+  extra.className="room-design-extra";
+  extra.innerHTML=`<section class="room-appearance-options"><label class="room-use-photo check"><input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}>벽지·바닥 대신 사진 사용</label><label class="room-hide-furniture check"><input type="checkbox" name="hideFurniture" ${room.hideFurniture?"checked":""}>가구 숨기기</label><small>가구 그림만 숨겨요. 사용과 배치는 유지되며 편집할 때 다시 보여요.</small></section><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
+  fields.append(extra);
+  bindRoomPermissionEditor(dialog);
+  floorButton.hidden=true;
+  for(const field of ['floorMaterial','wallMaterial']){
+    const select=dialog.querySelector(`[name="${field}"]`);
+    if(field==='floorMaterial')select.onchange=()=>{drawFloorButton();dialog.querySelector('[name="usePhoto"]').checked=select.value==='custom'};
+    bindRoomSurfacePicker(select,{room,language:state.uiLanguage,floor:()=>dialog.querySelector('[name="floorMaterial"]').value,onCustom:()=>floorButton.click()});
+  }
+  configurePhotos?.(dialog,{sync,room});
+  translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
+  return dialog;
+}

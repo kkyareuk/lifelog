@@ -43,6 +43,7 @@ export function homeFurnitureDrawer(home,locale){
   return `<section class="home-furniture-drawer ${ui.collapsed?"is-collapsed":""}" data-home-furniture-drawer data-home-id="${escape(home.id)}">
     <button type="button" class="home-drawer-toggle" data-home-drawer-toggle aria-expanded="${!ui.collapsed}" aria-label="${ui.collapsed?copy.expand:copy.collapse}">${ui.collapsed?"▲":"▼"}</button>
     <div class="home-drawer-content" ${ui.collapsed?"inert":""}>
+      <button type="button" data-home-add-floor ${Number(home.floorCount)>=5?"disabled":""}>${({ko:"층 추가",en:"Add floor",ja:"階を追加"}[locale]||"층 추가")}</button>
       <div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"></div>
       <nav class="home-drawer-categories" aria-label="${copy.categoryFilter}">${['all',...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]||copy.other}</button>`).join("")}</nav>
       <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
@@ -90,7 +91,7 @@ export function homeInformationMarkup(home,photo,state,t){
 
 export {positionBedOccupants as fitCoupleBedOccupants} from './bed-occupant-layout.js';
 
-export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded,photoOptions={}}){
+export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded,addFloor,photoOptions={}}){
   bindEditorPosition(root,state.activeHomeId,state.uiLanguage);
   positionBedOccupants(root);
   const copy=homeEditorCopy(state.uiLanguage);
@@ -107,6 +108,7 @@ export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRo
   });
   const drawer=root.querySelector("[data-home-furniture-drawer]");if(!drawer)return;
   const home=state.homes[drawer.dataset.homeId];if(!home)return;
+  const floorButton=drawer.querySelector('[data-home-add-floor]');if(floorButton){floorButton.disabled=!addFloor||Number(home.floorCount)>=5;floorButton.onclick=()=>addFloor?.(home.id);}
   const ui=drawerState(home),items=drawer.querySelector("[data-home-furniture-items]"),content=drawer.querySelector(".home-drawer-content");
   drawer.querySelector('[data-furniture-photo-library]')?.remove();
   const photoButton=document.createElement('button');photoButton.type='button';photoButton.textContent=({ko:'사진 가구 추가',en:'Add photo furniture',ja:'写真家具を追加'}[state.uiLanguage]||'사진 가구 추가');photoButton.dataset.furniturePhotoLibrary='';drawer.querySelector('.home-drawer-search').append(photoButton);

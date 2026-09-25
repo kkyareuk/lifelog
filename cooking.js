@@ -41,7 +41,7 @@ export function startCooking(world,c,directive,recipeId,requestId,now){
  data.active={...(r.custom?{recipeSnapshot:structuredClone(r)}:{}),id:requestId,recipeId:r.id,recipeVersion:472,startedAt,endsAt,stepDurations,cost:amount,directiveId:directive.id,homeId:directive.homeId,room:directive.room};
  data.requests=[...(data.requests||[]),requestId].slice(-200);
  directive.cookingId=requestId;directive.endsAt=endsAt;
- for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만들기',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
+ for(const language of ['ko','en','ja']){const name=recipeName(r,language);directive.copy[language]={title:({ko:name+' 만드는 중',en:'Cooking '+name,ja:name+'を作っています'})[language],desc:({ko:'재료를 준비해 '+name+'의 조리 과정을 차례로 진행하고 있어요.',en:'They prepare the ingredients and follow each step for '+name+'.',ja:'材料を用意し、'+name+'の工程を順番に進めています。'})[language]}}
  return true;
 }
 export function finishCooking(world,c,now){
