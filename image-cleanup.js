@@ -1,3 +1,4 @@
+import {confirmSettingsDeletion} from './settings-confirm.js';
 import {accountStorage} from './account-storage.js?v=20260909dev305';
 import {ungzip} from './vendor/pako.esm.mjs';
 import {purgeLocalImageRefs} from './local-media.js?v=20260909dev305';
@@ -32,6 +33,7 @@ export function installImageDeletion(){
  const words={ko:{title:'내 이미지 전체 삭제',intro:'업로드한 사진, 클라우드 이미지 정보와 이 계정의 기기 사진을 삭제합니다. 캐릭터·관계·우편·구매 내역은 유지됩니다. 삭제한 사진은 복구할 수 없습니다. 다른 기기도 최신 버전으로 업데이트해야 이후 사진 동기화를 사용할 수 있습니다.',check:'복구할 수 없음을 확인했습니다',cancel:'닫기',confirm:'이미지 영구 삭제',loading:'이미지 확인 중…',working:'삭제 중입니다. 완료될 때까지 기다려 주세요.',done:'이미지 삭제가 완료됐어요.',error:'완료하지 못했어요. 연결과 저장 공간을 확인한 뒤 다시 시도해 주세요.',count:'누적 업로드 파일 (교체 전 사진 포함)'},en:{title:'Delete all my images',intro:'Delete uploaded photos, cloud image references and this account’s device photos. Characters, relationships, mail and purchases stay. Deleted photos cannot be recovered. Update your other devices too before syncing photos again.',check:'I understand this cannot be undone',cancel:'Close',confirm:'Permanently delete images',loading:'Checking images…',working:'Deleting images. Please wait for completion.',done:'Your images have been deleted.',error:'Could not finish. Check your connection and storage, then retry.',count:'Uploaded files (including replaced photos)'},ja:{title:'自分の画像をすべて削除',intro:'アップロードした写真、クラウドの画像情報とこのアカウントの端末写真を削除します。キャラクター・関係・メール・購入履歴は残ります。削除した写真は復元できません。他の端末も最新版に更新してから写真を同期してください。',check:'元に戻せないことを確認しました',cancel:'閉じる',confirm:'画像を完全に削除',loading:'画像を確認中…',working:'画像を削除しています。完了までお待ちください。',done:'画像の削除が完了しました。',error:'完了できませんでした。接続と空き容量を確認し、再試行してください。',count:'累積アップロード数（変更前の画像を含む）'}};
  document.addEventListener('click',async event=>{
   if(!event.target.closest?.('[data-delete-account-images]'))return;
+  if(!await confirmSettingsDeletion(window.ParallelCity?.getState?.()?.uiLanguage))return;
   const w=words[window.ParallelCity?.getState?.()?.uiLanguage]||words.ko,scope=accountStorage.scope;
   const d=document.createElement('dialog');d.className='supporter-dialog image-deletion-dialog';
   const body=document.createElement('div');body.className='supporter-body';d.append(body);

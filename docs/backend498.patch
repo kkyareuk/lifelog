@@ -1,0 +1,74 @@
+--- a/runtime/simulation.js
++++ b/runtime/simulation.js
+@@ -1,3 +1,4 @@
++import {toiletActivity} from './toilet-activity.js';
+ import {respectRoomPrivacy} from './room-privacy.js';
+ import {setFoodSceneResolver} from './prepared-food.js';
+ import {householdScene} from './household-life.js';
+@@ -4872,6 +4873,7 @@
+     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
+     if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
+     current=adaptTownActivity(state,c,current);
++    if(Math.abs(Date.now()-date.getTime())<60000){const previous=c.toiletEpisode;current=toiletActivity(c,current,date.getTime(),state.uiLanguage);if(previous!==c.toiletEpisode)save(false,false);}
+     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
+     if(Math.abs(Date.now()-date.getTime())<60000&&advancePlayerNotes(c,current,date.getTime()))save(false,false);
+     current=playerNoteScene(c,current,date.getTime(),state.uiLanguage);
+--- a/runtime/need-pacing.js
++++ b/runtime/need-pacing.js
+@@ -1,5 +1,5 @@
+ const clamp=(value,lo,hi,fallback)=>Number.isFinite(Number(value))?Math.max(lo,Math.min(hi,Number(value))):fallback;
+ export function needFrequency(c,key){return clamp(c.needSettings?.frequency?.[key],.25,2,1)}
+ export function needVariation(c,key){let n=2166136261;for(const ch of `${c.id}:${key}`)n=Math.imul(n^ch.charCodeAt(0),16777619)>>>0;return .85+(n%301)/1000}
+-export function needDuration(c,key){const seconds={toilet:10,hunger:30,hygiene:60,social:120,sleep:600}[key]||60;return seconds*1000*(['toilet','hunger'].includes(key)?1:clamp(c.needSettings?.duration,.5,2,1))}
++export function needDuration(c,key){const seconds={toilet:7+(Math.round((needVariation(c,"toilet")-.85)*1000)%9),hunger:30,hygiene:60,social:120,sleep:600}[key]||60;return seconds*1000*(['toilet','hunger'].includes(key)?1:clamp(c.needSettings?.duration,.5,2,1))}
+ export function directedNeed(task,kind){if(task==='toilet')return 'toilet';if(task==='meal'||!task&&kind==='meal')return 'hunger';if(['shower','bath','wash','face','teeth','hair_wash','hands'].includes(task)||!task&&kind==='wash')return 'hygiene';return ''}
+--- a/runtime/life-needs.js
++++ b/runtime/life-needs.js
+@@ -39,7 +39,7 @@
+ export function urgentNeed(c,now=Date.now(),{allowSleep=true}={}){
+  if(c.needsFixed)return '';
+  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
+- if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<(current==='hunger'?100:75)&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
++ if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&(current==='toilet'||values[current]<(current==='hunger'?100:75))&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
+  return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!(key==='sleep'&&now-(c.lifeNeeds?.coffeeLastAt||0)<30*60000&&(!c.lifeNeeds?.coffeeActive||now>=Number(c.lifeNeeds?.recoveryEndsAt)))&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
+ }
+ export function relationshipPolicy(characters,world={}){
+--- a/runtime/shared-world.js
++++ b/runtime/shared-world.js
+@@ -34,7 +34,7 @@
+     const profile=restoreWardrobe(recovered,r.id,catalog),life=decodeShared(r.lifeJson),schedule=decodeShared(r.scheduleJson);
+     const homeId=Array.isArray(r.residences)?(r.residences.find(item=>item.isPrimary&&homes[item.homeId])?.homeId||r.residences.find(item=>homes[item.homeId])?.homeId||''):(snapshot.homes||[]).some(h=>h.id===r.sharedHomeId)?r.sharedHomeId:(snapshot.homes||[]).find(h=>h.ownerUid===r.ownerUid&&h.sourceHomeId===(r.sourceHomeId||profile.homeId))?.id||'';
+     const remap=items=>(items||[]).map(item=>({...item,townId:towns.some(t=>t.id===item.townId)?item.townId:r.townId,homeId:homes[item.homeId]?item.homeId:homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id||((snapshot.residents||[]).some(x=>x.id===id)?id:null)).filter(Boolean)}));
+-    characters[r.id]={...profile,playerNotes:(r.playerNotes||[]).map(n=>({...n,homeId:homes[n.homeId]?n.homeId:homeId})),library:life.library||profile.library,household:life.household||profile.household,noteReceipts:life.noteReceipts||{},cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},wallet:life.wallet||profile.wallet,gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
++    characters[r.id]={...profile,playerNotes:(r.playerNotes||[]).map(n=>({...n,homeId:homes[n.homeId]?n.homeId:homeId})),toiletEpisode:life.toiletEpisode||profile.toiletEpisode,library:life.library||profile.library,household:life.household||profile.household,noteReceipts:life.noteReceipts||{},cooking:life.cooking||profile.cooking,coffeeInventory:life.coffeeInventory||profile.coffeeInventory||{},wallet:life.wallet||profile.wallet,gameMood:r.gameMood,lifeNeeds:Number(life.lifeNeeds?.updatedAt)>Number(profile.lifeNeeds?.updatedAt||0)?life.lifeNeeds:profile.lifeNeeds,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,storyLastScene:life.storyLastScene||profile.storyLastScene,id:r.id,name:r.name,job:profile.job??r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
+       residences:Array.isArray(r.residences)?r.residences.filter(item=>homes[item.homeId]):homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
+       wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};
+     if(group.courtTheme==='court'&&!options.editor){characters[r.id].job=courtJobName(profile.courtJob,language);characters[r.id].jobTitle=profile.courtJobTitle||'';}
+--- a/runtime/server-life.mjs
++++ b/runtime/server-life.mjs
+@@ -29,8 +29,8 @@
+     }
+     const lives=world.order.map(id=>{
+       const c=world.characters[id],days=Object.fromEntries(Object.entries(c.days||{}).sort(([a],[b])=>{const stamp=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getTime()};return stamp(a)-stamp(b)}).slice(-2).map(([key,day])=>[key,{...day,entries:visibleTimeline(c,new Date(Number(key.split("-")[0]),Number(key.split("-")[1])-1,Number(key.split("-")[2]),23,59)).slice(-80)}]));
+-      let json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
+-      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
++      let json=JSON.stringify({toiletEpisode:c.toiletEpisode||null,library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
++      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({toiletEpisode:c.toiletEpisode||null,library:c.library||null,household:c.household||null,noteReceipts:c.noteReceipts||{},cooking:c.cooking||null,coffeeInventory:c.coffeeInventory||{},wallet:c.wallet||null,lifeNeeds:c.lifeNeeds||null,storyMemory:c.storyMemory||[],storyDays:c.storyDays||{},storyLastScene:c.storyLastScene||"",scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
+       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
+       return {id,lifeJson:json};
+     });
+--- a/runtime/toilet-activity.js
++++ b/runtime/toilet-activity.js
+@@ -0,0 +1,12 @@
++import {roomActivityKey} from './room-activities.js?v=20260909dev305';
++import {needDuration} from './need-pacing.js';
++// Persist the episode rather than deriving its start from a render or minute boundary.
++export function toiletActivity(c,scene,now,language='ko'){
++ if(!scene||scene.transit||scene.meetingWaiting||scene.meetingJourney||roomActivityKey(scene)!=='toilet')return scene;
++ const key=scene.manualDirectiveId||[new Date(now).toDateString(),scene.visitHomeId||c.homeId,scene.placeId,scene.room,scene.recoveryStartedAt||scene.minute,scene.baseTitle||scene.title].join(':');
++ if(c.toiletEpisode?.key!==key){const duration=needDuration(c,'toilet'),end=scene.recoveryEndsAt&&scene.recoveryEndsAt<=now+duration?scene.recoveryEndsAt:now+duration;c.toiletEpisode={key,start:end-duration,end};}
++ const {start,end}=c.toiletEpisode;
++ if(now<end)return {...scene,lifeTaskId:'toilet',needKey:'toilet',activityStartedAt:start,activityEndsAt:end,recoveryStartedAt:start,recoveryEndsAt:end};
++ const texts={ko:['화장실 사용을 마친 뒤 쉬는 중','화장실 사용을 마치고 잠시 숨을 고르고 있어요.'],en:['Taking a break after using the toilet','They have finished using the toilet and are taking a brief break.'],ja:['お手洗いの後にひと休み中','お手洗いを済ませて、少しひと息ついています。']},[title,desc]=texts[language]||texts.ko;
++ return {...scene,title,desc,baseTitle:title,baseDesc:desc,lifeTaskId:undefined,lifeTask:undefined,needKey:undefined,actionKind:'rest',activityFamily:'rest',activityStartedAt:undefined,activityEndsAt:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined};
++}

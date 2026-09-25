@@ -1,0 +1,11 @@
+const words={
+ ko:{account:'내 계정',guest:'로그인하지 않음',connected:'계정 연결됨',back:'설정 메뉴로 돌아가기',danger:'되돌릴 수 없어요',rows:[['게임 플레이','관계 변화 · 홈 화면 · 마을 지도'],['화면 표시','언어 · 글자 · 단위 · 애니메이션'],['소리','배경음 · 효과음'],['알림','연락받을 캐릭터 · 시간 · 연락 종류'],['데이터와 백업','사진 저장 공간 · 내보내기 · 불러오기'],['정보와 도움말','이용 안내 · 업적 · 크레딧 · 문의']]},
+ en:{account:'My account',guest:'Not signed in',connected:'Account connected',back:'Back to settings',danger:'Cannot be undone',rows:[['Gameplay','Relationships · Home screen · Map'],['Display','Language · Text · Units · Animation'],['Sound','Music · Sound effects'],['Notifications','Characters · Time · Contact types'],['Data & backup','Photo storage · Export · Import'],['Info & help','Guides · Achievements · Credits · Feedback']]},
+ ja:{account:'マイアカウント',guest:'未ログイン',connected:'アカウント連携済み',back:'設定メニューに戻る',danger:'元に戻せない操作',rows:[['ゲームプレイ','関係の変化・ホーム画面・村の地図'],['画面表示','言語・文字・単位・アニメーション'],['サウンド','BGM・効果音'],['通知','キャラクター・時間・連絡の種類'],['データとバックアップ','写真の容量・書き出し・読み込み'],['情報とヘルプ','ガイド・実績・クレジット・お問い合わせ']]}
+};
+const ids=['gameplay','display','sound','notifications','data','support'];
+const icons=['🎮','◐','♫','♧','▣','?'];
+export function settingsLabels(language){return words[language]||words.ko}
+export function settingsMenu(language){const t=settingsLabels(language);return `<nav class="settings-category-grid" aria-label="${t.back}">${ids.map((id,i)=>`<button type="button" data-tab="settings" data-settings-pane="${id}"><span aria-hidden="true">${icons[i]}</span><b>${t.rows[i][0]}</b><small>${t.rows[i][1]}</small><i aria-hidden="true">›</i></button>`).join('')}</nav>`}
+export function settingsAccount(state,info,escape,imageEscape){const t=settingsLabels(state.uiLanguage),name=state.ownerName||info?.user?.displayName||t.account,photo=state.ownerPhoto;return `<button type="button" class="settings-account-summary" data-tab="settings" data-settings-pane="account">${photo?`<img src="${imageEscape(photo)}" alt="">`:'<img src="./assets/home-ui/profile-placeholder.png" alt="">'}<span><small>${t.account}</small><b>${escape(name)}</b><small>${info?.user?t.connected:t.guest}</small></span><i aria-hidden="true">›</i></button>`}
+export function settingsPaneName(id,language){const t=settingsLabels(language);return id==='account'?t.account:t.rows[ids.indexOf(id)]?.[0]||''}

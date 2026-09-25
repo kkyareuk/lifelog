@@ -39,7 +39,7 @@ export function needRecoveryStart(c,key,now){const old=c.lifeNeeds;return old?.a
 export function urgentNeed(c,now=Date.now(),{allowSleep=true}={}){
  if(c.needsFixed)return '';
  const values=needsAt(c,now),current=c.lifeNeeds?.activeNeed;
- if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&values[current]<(current==='hunger'?100:75)&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
+ if(current&&(current!=='sleep'||allowSleep)&&!blockedNeed(c,current)&&(current==='toilet'||values[current]<(current==='hunger'?100:75))&&Number(c.lifeNeeds.recoveryEndsAt)>now)return current;
  return Object.keys(NEEDS).filter(key=>(key!=='sleep'||allowSleep)&&!(key==='sleep'&&now-(c.lifeNeeds?.coffeeLastAt||0)<30*60000&&(!c.lifeNeeds?.coffeeActive||now>=Number(c.lifeNeeds?.recoveryEndsAt)))&&!blockedNeed(c,key)&&values[key]<30).sort((a,b)=>values[a]-values[b])[0]||'';
 }
 export function relationshipPolicy(characters,world={}){

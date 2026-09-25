@@ -1,3 +1,4 @@
+import {confirmSettingsDeletion} from './settings-confirm.js';
 import {careerAvailable} from './economy-access.js';
 import {showRoomEditor} from './room-editor-dialog.js';
 import {contextualGuide,stopContextualGuide} from './feature-tour.js';
@@ -285,7 +286,7 @@ const PAGE_GUIDES={
   town:["마을","평소에는 캐릭터 위치를 관찰하고, 편집 모드를 켠 뒤에만 건물을 옮기거나 정보를 바꿀 수 있어요. 건물을 누르면 편집 창이 열립니다."],
   groups:["멀티","내 마을 슬롯 하나를 멀티에 연결하고 초대 코드로 친구를 불러요. 멀티에서 내보내도 계정의 원본은 삭제되지 않습니다."],
   shop:["상점","캐릭터·마을 슬롯과 개발 응원을 장바구니에 담는 화면이에요. 구매하지 않아도 이미 만든 캐릭터와 데이터가 임의로 사라지지 않습니다."],
-  settings:["설정","백업 파일, 계정 동기화, 화면 표시와 피드백을 관리해요. 데이터 업로드는 여기에서 ‘동기화’를 눌렀을 때만 실행됩니다."]
+  settings:["설정","계정 카드에서 프로필과 로그인을 관리해요. 아래 6개 메뉴에서 게임, 화면, 소리, 알림, 백업과 도움말을 설정할 수 있어요."]
 };
 
 function showInstallButton(){
@@ -1002,7 +1003,7 @@ function enhanceDynamicForms(){
     const button=document.createElement("button");button.type="button";button.dataset.buildingShapeOpen=placeId;button.className="building-shape-open";button.textContent="건물 모양 선택";
     details.querySelector(".place-config")?.insertAdjacentElement("afterend",button);
   });
-  const sync=document.querySelector(".sync-panel");
+  const sync=document.querySelector("[data-settings-storage]");
   if(sync&&!sync.querySelector(".storage-meter")){
     const storageCopy={
       en:{title:"Photo storage",usage:"Checking this device…",summary:"Originals stay on this device, while optimized uncropped copies sync with your Google account."},
@@ -4100,7 +4101,7 @@ function bind(){
     $$("button[data-color-mode]").forEach(option=>option.classList.toggle("on",option.dataset.colorMode===state.colorMode));
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
-  $("[data-delete-own-account]")?.addEventListener("click",async event=>{const button=event.currentTarget;button.disabled=true;try{await window.ParallelCityAuth?.deleteOwnAccount()}catch(error){showToast(error.message)}finally{button.disabled=false}});
+  $("[data-delete-own-account]")?.addEventListener("click",async event=>{const button=event.currentTarget;if(!await confirmSettingsDeletion(state.uiLanguage))return;button.disabled=true;try{await window.ParallelCityAuth?.deleteOwnAccount()}catch(error){showToast(error.message)}finally{button.disabled=false}});
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
   $("[data-link-apple]")?.addEventListener("click",()=>window.ParallelCityAuth?.linkApple?.());
   $("[data-auth]")?.addEventListener("click",async event=>{
@@ -4548,7 +4549,7 @@ function bind(){
     showToast("페이지 안내를 다시 볼 수 있게 했어요");
     maybeShowPageGuide();
   });
-  $("[data-reset]")?.addEventListener("click",()=>{if(confirm(translateText("현재 계정의 기기 저장 데이터를 초기화할까요? 다른 계정의 데이터는 유지됩니다."))){resetAll();render()}});
+  $("[data-reset]")?.addEventListener("click",async()=>{if(!await confirmSettingsDeletion(state.uiLanguage))return;if(confirm(translateText("현재 계정의 기기 저장 데이터를 초기화할까요? 다른 계정의 데이터는 유지됩니다."))){resetAll();render()}});
   if(state.activeTab==="town"){
     bindTownBuildingHold();
     bindPlaceDrag();

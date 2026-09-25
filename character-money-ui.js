@@ -83,7 +83,7 @@ export function bindCharacterMoney(){
   const nav=document.createElement('nav');nav.className='character-money-shortcuts';
   const visual=document.createElement('button');visual.type='button';visual.className='home-visual-shortcut';visual.dataset.homeVisualToggle='';
   const mode=state.homeVisualMode==='ld'?'ld':'sd',next=mode==='sd'?'ld':'sd';
-  visual.innerHTML='<span><b'+(mode==='sd'?' aria-current="true"':'')+'>SD</b><i aria-hidden="true">↔</i><b'+(mode==='ld'?' aria-current="true"':'')+'>LD</b></span>';
+  visual.innerHTML='<span>'+mode.toUpperCase()+'</span>';
   visual.setAttribute('aria-label',words(world.uiLanguage,next.toUpperCase()+'로 전환','Switch to '+next.toUpperCase(),next.toUpperCase()+'に切替'));
   visual.onclick=()=>{state.homeVisualMode=next;save(true);window.dispatchEvent(new Event('drawer-money-updated'))};nav.append(visual);
   for(const [key,ko,en,ja] of [['wallet','재산','Wealth','資産'],['work','직업','Career','職業']].filter(([key])=>key!=='work'||careerAvailable())){const b=document.createElement('button');b.type='button';b.dataset.moneyShortcut=key;const art=document.createElement('span'),label=document.createElement('small');art.setAttribute('aria-hidden','true');const img=document.createElement('img');img.src='./assets/home-ui/profile-placeholder.png';img.alt='';art.append(img);label.textContent=words(world.uiLanguage,ko,en,ja);b.append(art,label);b.setAttribute('aria-label',label.textContent);b.onclick=()=>openCharacterMoney(key);nav.append(b)}hud.append(nav);
