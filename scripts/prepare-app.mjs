@@ -61,7 +61,11 @@ async function copyPortable(source,target){
     if(entry.isDirectory())await copyPortable(from,to);
     else{
       const relativePath=relative(fileURLToPath(root),fileURLToPath(from)).replaceAll("\\","/");
-      if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix)))continue;
+      if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix))){
+        // OneDrive staging is incremental: remove previously included optional
+        // assets when the current build excludes them.
+        await rm(to,{force:true,maxRetries:4,retryDelay:100});continue;
+      }
       if(process.env.DRAWER_BUILD_TRACE)console.log(`Android 자산 준비: ${relativePath}`);
       const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
       try{await writeFile(to,await readFile(from));}
