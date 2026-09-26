@@ -1,3 +1,4 @@
+import {bindSecrets} from './character-secrets-ui.js';
 import {confirmSettingsDeletion} from './settings-confirm.js';
 import {careerAvailable} from './economy-access.js';
 import {showRoomEditor} from './room-editor-dialog.js';
@@ -4559,6 +4560,8 @@ function bind(){
   bindMailbox(render,showToast);
   if(!activeShared()?.activeGroupId)document.querySelectorAll('[data-home-floor-select]').forEach(select=>select.addEventListener('change',()=>{setActiveHomeFloor(select.dataset.homeId,Number(select.value));render()}));
   bindCharacterMoney();
+  bindSecrets({world:state,character:active(),save,render});
+  $$("[data-open-secret-settings]").forEach(button=>button.onclick=()=>{mobileCharacterEditorPane="";mobileCharacterDraftDirty=false;document.querySelectorAll("dialog[open]").forEach(d=>d.close());state.characterProfileBook=false;state.characterSettingsView="full";setCharacterPane("secrets");save(true);render();});
   syncCookingUI();
   syncLifeSound(state);
   bindSharedUi({prepareImage:cropImage,bindRoomGeometry:bindRoomGeometryHandle,render,toast:showToast,setMode:setMobileTownMode,setPanel:setMobileTownPanel,setPlacement:setMobileTownPlacement,openMap:openRelationshipMap,openShape:openBuildingShapeDialog,openRelation:openRelationDialog,openGroup:openCharacterGroupDialog,openRoutine:openRoutineDialog,openMonthly:openMonthlyRoutineDialog,newRoutine:newRoutineDraft,newMonthly:newMonthlyRoutineDraft});

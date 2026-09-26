@@ -1,3 +1,4 @@
+import {recipeDurations} from './cooking-timing.js';
 import {isHomeSleepScene} from './home-simulation.js?v=20260909dev305';
 import {scheduledSleeping} from './sleep-clock.js';
 import {RECIPES} from './recipes.js';
@@ -21,7 +22,8 @@ export function automaticMeal(world,c,scene,now,start){
  const existing=preparedFoods(world).find(({dish})=>dish.homeId===c.homeId&&!foodSpoiled(dish,now));if(existing){try{actOnFood(world,c.id,existing.dish.id,'eat',{},now);c.cooking??={};c.cooking.lastAutomaticMeal=window.key;return true}catch{return false}}
  const available=RECIPES.filter(r=>recipeUnlocked(world,c,r)&&r.level<=cookingLevel(c)&&r.cuisine!=='gourmet'&&!canStartCooking(world,c,r.id,now));
  const suitable=available.filter(r=>window.slot==='breakfast'?/죽|수프|국|빵|토스트|오트|달걀|오니기리|요거트|샌드위치/.test(r.name):window.slot==='lunch'?/밥|면|파스타|김밥|샌드위치|덮밥|스튜/.test(r.name):!/케이크|디저트|아이스크림|푸딩/.test(r.name));
- const pool=suitable.length?suitable:available,recipe=pool[window.seed%pool.length];if(!recipe)return false;
+ const candidates=suitable.length?suitable:available,quick=candidates.filter(r=>recipeDurations(r).reduce((a,b)=>a+b,0)<=5*60000);
+ const pool=quick.length?quick:candidates,recipe=pool[window.seed%pool.length];if(!recipe)return false;
  const requestId=`auto-${c.id.slice(0,45)}-${window.key.replace(/[^a-zA-Z0-9_-]/g,'-')}`;
  if(!start(c.id,'meal',{recipeId:recipe.id,cookingRequestId:requestId,lifeTask:'simple_cook',now,scenes:{[c.id]:scene}}))return false;
  c.cooking.lastAutomaticMeal=window.key;return true;

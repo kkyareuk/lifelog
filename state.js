@@ -1,3 +1,5 @@
+import {rememberContact} from './contact-variations.js';
+import {normalizeSecrets,nextSecret,shareSecret,knownSecrets,followupSecret,rememberSecretFollowup} from './character-secrets.js';
 import {initialLanguage} from './initial-language.js';
 import {COFFEE_DRINK_MS,COFFEE_BREW_MS} from './coffee-needs.js';
 import {directedNeed,needDuration} from './need-pacing.js';
@@ -357,7 +359,7 @@ function normalizeHomes(x){
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   if(x.characterPane==="traits")x.characterPane="personality";
   if(x.characterPane==="worldTaste")x.characterPane="taste";
-  x.characterPane=["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
+  x.characterPane=["visual","profile","body","wardrobe","personality","taste","secrets","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
   x.characterOverviewPane=["basic","career","court","life"].includes(x.characterOverviewPane)?x.characterOverviewPane:"basic";
   x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
   x.characterPersonalityPane=["core","emotion","details","abilities"].includes(x.characterPersonalityPane)?x.characterPersonalityPane:"core";
@@ -853,6 +855,7 @@ function normalizeHomes(x){
       itemIds:Array.isArray(outfit.itemIds)?outfit.itemIds:[],
       tags:Array.isArray(outfit.tags)?outfit.tags:[]
     })):[];
+    c.secrets=normalizeSecrets(c.secrets);
     c.catalogPreferences=Array.isArray(c.catalogPreferences)?[...c.catalogPreferences]:[];
     c.favoriteScentNotes=Array.isArray(c.favoriteScentNotes)?[...c.favoriteScentNotes]:[];
     c.favoriteVideoGenres=Array.isArray(c.favoriteVideoGenres)?[...c.favoriteVideoGenres]:[];
@@ -1006,7 +1009,7 @@ function load(){
 export let state=load();
 // View selection is tiny device-local UI state, not a game-world mutation.
 function saveNavigationSelection(){try{localStorage.setItem('drawer-navigation-v1',JSON.stringify({activeId:state.activeId,activeHomeId:state.activeHomeId,characterPane:state.characterPane}))}catch{}}
-try{const nav=JSON.parse(localStorage.getItem('drawer-navigation-v1')||'null');if(nav){if(state.characters[nav.activeId])state.activeId=nav.activeId;if(state.homes[nav.activeHomeId])state.activeHomeId=nav.activeHomeId;if(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(nav.characterPane))state.characterPane=nav.characterPane;}}catch{}
+try{const nav=JSON.parse(localStorage.getItem('drawer-navigation-v1')||'null');if(nav){if(state.characters[nav.activeId])state.activeId=nav.activeId;if(state.homes[nav.activeHomeId])state.activeHomeId=nav.activeHomeId;if(["visual","profile","body","wardrobe","personality","taste","secrets","closet","manage"].includes(nav.characterPane))state.characterPane=nav.characterPane;}}catch{}
 
 let editorPersonalState=null;
 let pendingPersonalTransferSave=false;
@@ -1224,7 +1227,7 @@ export function createCharacter(limit=5){
   state.activeId=id;state.activeTab="character";state.characterSettingsView="hub";save(true);return id;
 }
 export function setActive(id){if(state.characters[id]&&state.activeId!==id){state.activeId=id;saveNavigationSelection()}}
-export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");saveNavigationSelection()}
+export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","secrets","closet","manage"].includes(value)?value:"profile");saveNavigationSelection()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;
@@ -1276,6 +1279,7 @@ export function saveDiscoveryPatch(id,patch){
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
+  if(Object.hasOwn(patch,"secrets"))c.secrets=normalizeSecrets(c.secrets);
   normalizeLanguageFields(c);
   if(Object.hasOwn(patch,"accessories"))c.accessoryUse=c.accessories?.length?"착용함":"착용하지 않음";
   if(patch.homeId&&state.homes[patch.homeId]){
@@ -1523,6 +1527,7 @@ const DIRECTIVE_COPY={
 DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
 for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
+for(const [kind,minutes] of Object.entries({wake:3,wash:3,meal:4,hug:1,kiss:1,kiss_cautious:1,kiss_reconcile:1,talk:3,compliment:1,comfort:5,handhold:2,lean:3}))if(DIRECTIVE_COPY[kind])DIRECTIVE_COPY[kind].minutes=minutes;
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   const memory=[...(actor.storyResponses||[])].reverse().find(r=>r.targetId===target?.id&&Date.now()-r.at<7*86400000);
   if(memory&&['talk','hangout','comfort'].includes(kind)){
@@ -1600,7 +1605,8 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(!townActivityAllowed(characterTown(state,character),task||{kind,lifeTask:options.lifeTask}))return false;
   if(coffeeRecipe(task?.id)&&(!canCraftCoffee(character,task.id)||options.contextTarget?.type!=='furniture'||!canUseCoffeeTool(contextHome(state,options.contextTarget)?.rooms?.[options.contextTarget.room]?.furniturePlacements?.find(p=>p.id===options.contextTarget.id)?.item,task.id)))return false;
   if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
-  if(!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
+  if(kind==='talk'&&!options.topic&&!options.companionIds?.length&&state.characters[options.targetId]){const secret=nextSecret(state,character,state.characters[options.targetId],cookingNow)||followupSecret(character,state.characters[options.targetId],cookingNow,state);if(secret)options={...options,secretId:secret.id};}
+  if(!options.secretId&&!options.companionIds?.length&&['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
@@ -1665,6 +1671,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const sharedHomeId=journey?.to.homeId||"";
   const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
   const recoveryNeed=directedNeed(task?.id,kind);if(recoveryNeed&&!target&&!options.recipeId)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+needDuration(character,recoveryNeed);
+  if(!options.recipeId&&['wake','wash','hug','kiss','kiss_cautious','kiss_reconcile','talk','compliment','comfort','handhold','lean'].includes(kind)&&!task)directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+(contactRejected?1:definition.minutes)*60000;
   if(task?.id==='coffee'||coffeeRecipe(task?.id))directive.endsAt=Math.max(startedAt,journey?.arrivesAt||startedAt)+(task.id==='coffee'?COFFEE_DRINK_MS:COFFEE_BREW_MS);
   const expensePlace=state.towns.flatMap(t=>t.places||[]).find(p=>p.id===directive.placeId);
   const expense=activityPrice(expensePlace,{kind,lifeTask:task?.id,home:destination?.home});
@@ -1673,15 +1680,21 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const replacing=new Set([characterId,target?.id,...extraMembers.map(m=>m.character.id)].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}
   for(const [id,old] of Object.entries(state.characterDirectives)){if(oldIds.has(old.id)){delete state.characterDirectives[id];if(state.characters[id]){state.characters[id].timelineResetAt=startedAt;delete state.dailyPlans?.[id]}}}
+  if(target&&kind==='talk'&&!options.companionIds?.length){
+    const secret=options.secretId?knownSecrets(character).find(s=>s.id===options.secretId):nextSecret(state,character,target,startedAt);
+    if(secret){const followup=followupSecret(character,target,startedAt,state),secretCopy=shareSecret(state,character,target,secret.id,startedAt)||(followup?.id===secret.id?rememberSecretFollowup(state,character,target,secret,startedAt):null);if(secretCopy){directive.copy=secretCopy;directive.secretSharing=true;directive.endsAt=Math.max(startedAt,journey.arrivesAt||startedAt)+5*60000;}}
+  }
   reserveCoffee(character,directive);
   state.characterDirectives[characterId]=directive;
   character.timelineResetAt=startedAt;
   delete state.dailyPlans?.[characterId];
   if(target){
     state.characterDirectives[target.id]={...directive,journey:otherJourney||journey,targetId:character.id,copy:options.giftSource&&giftCopyResolver?giftCopyResolver(target,options.giftSource,new Date(startedAt)):socialDirectiveCopy(kind,target,character,subject,options.topic,options)};
+    if(directive.secretSharing)state.characterDirectives[target.id].copy=Object.fromEntries(['ko','en','ja'].map(lang=>[lang,{...directive.copy[lang],title:({ko:`${character.name}의 비밀을 듣는 중`,en:`Listening to ${character.name}'s secret`,ja:`${character.name}の秘密を聞くところ`})[lang]}]));
     if(kind==="gift"&&!options.giftSource)state.characterDirectives[target.id].copy={ko:{title:`${character.name}에게 선물을 받는 중`,desc:`${options.topic||"선물"}을 받고 고마운 마음을 전하고 있어요.`},en:{title:`Receiving a gift from ${character.name}`,desc:"They are accepting the gift and saying thanks."},ja:{title:`${character.name}から贈り物を受け取るところ`,desc:"贈り物を受け取り、お礼を伝えています。"}};
     target.timelineResetAt=startedAt;
     delete state.dailyPlans?.[target.id];
+    if(!contactRejected){rememberContact(character,target.id,kind);rememberContact(target,character.id,kind);}
     if(!contactRejected)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,SOCIAL_ACTIVITIES[kind]?.negative?-1:1,false,kind);
   }
 

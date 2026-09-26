@@ -35,6 +35,10 @@ body #app .character-book-v8 .character-book-v8-save{position:absolute!important
 html body #app .character-book-v8 .character-book-v8-page{position:absolute!important;z-index:8!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;background:transparent!important;background-image:none!important;color:#17120f!important;transform:none!important;transform-origin:0 0!important}
 .character-book-v8-page[data-book-page="visual"] :is(button,label,input),.character-book-v8-page[data-book-page="profile"] :is(button,label,input,select,fieldset),.character-book-v8-page[data-book-page="body"] :is(button,label,input,select,fieldset){pointer-events:auto!important}
 
+/* Secrets use the same scrollable paper bounds as the career page. */
+.character-book-v8-page .secret-settings{position:absolute;left:10.2cqw;right:9.2cqw;top:31.5cqw;bottom:45cqw;overflow-y:auto;overscroll-behavior:contain;min-height:0;pointer-events:auto!important;padding:0 3px 16px;box-sizing:border-box}
+.character-book-v8-page .secret-settings :is(button,input,select,textarea,summary,label){pointer-events:auto!important}
+
 /* Page 1: photo, colour and placement — exact rectangles from 캐릭터-전체설정.svg. */
 .character-full-svg-overview{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;pointer-events:none!important}
 .character-full-content-group{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;transform:none!important;pointer-events:none!important}

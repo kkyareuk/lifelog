@@ -1,3 +1,4 @@
+import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
 import {unemployedHomeLog} from './job-log-runtime.js';
 import {toiletActivity} from './toilet-activity.js';
 import {respectRoomPrivacy} from './room-privacy.js';
@@ -4888,6 +4889,15 @@ export function eventFor(c,date=new Date()){
     current=respectRoomPrivacy(state,c,current,other=>baseEventFor(other,date),room=>roomEntryAllowed(c,state.homes[current.visitHomeId||c.homeId],room));
     if(Math.abs(Date.now()-date.getTime())<60000&&automaticMeal(state,c,current,date.getTime(),directCharacterActivity)){current=calculateEventFor(c,date);save(false,false);}
     if(Math.abs(Date.now()-date.getTime())<60000){const before=JSON.stringify([c.household,c.library]);current=householdScene(state,c,current,date.getTime());current=libraryScene(state,c,current,date.getTime());if(before!==JSON.stringify([c.household,c.library]))save(false,false);}
+    if(Math.abs(Date.now()-date.getTime())<60000){
+      const target=state.characters[current.withId],other=target&&baseEventFor(target,date),now=date.getTime();
+      if(target&&!current.manualDirective&&!current.routineId&&!current.transit&&!current.sleeping&&!current.dateGroup&&(current.withIds||[]).length<=1&&/talk|chat|대화|이야기|話/.test([current.kind,current.title].join(' '))&&other&&!other.sleeping&&!other.transit&&(other.withId===c.id||other.withIds?.includes(c.id))){
+        const secret=nextSecret(state,c,target,now)||followupSecret(c,target,now,state);
+        if(secret&&directCharacterActivity(c.id,'talk',{targetId:target.id,secretId:secret.id,now,scenes:{[c.id]:current,[target.id]:other}}))current=calculateEventFor(c,date);
+      }
+      const before=c.secretLife;current=traumaScene(c,current,now,state.uiLanguage);if(before!==c.secretLife)save(false,false);
+      if(current.traumaReaction)current=commitLiveEntry(c,date,current);
+    }
     current=adaptTownActivity(state,c,current);
     if(Math.abs(Date.now()-date.getTime())<60000){const previous=c.toiletEpisode;current=toiletActivity(c,current,date.getTime(),state.uiLanguage);if(previous!==c.toiletEpisode)save(false,false);}
     if(Math.abs(Date.now()-date.getTime())<60000){const moneyRevision=c.wallet?.revision||0;current=settleMoneyScene(state,c,current,date.getTime());if(advanceNeeds(c,current,date.getTime())||(c.wallet?.revision||0)!==moneyRevision)save(false,false);}
