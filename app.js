@@ -2382,7 +2382,7 @@ function bindNativeObserveCharacterSwipe(){
 }
 
 const characterBookPages=()=>[...CHARACTER_BOOK_PAGES.slice(0,3),...(isCourtWorld()?["overview-court"]:[]),...CHARACTER_BOOK_PAGES.slice(3)].filter(page=>page!=="overview-career"||careerAvailable());
-const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-career","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","taste","closet"];
+const CHARACTER_BOOK_PAGES=["visual","overview-basic","overview-career","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","personality-abilities","secrets","taste","closet"];
 function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
 }

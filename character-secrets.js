@@ -1,29 +1,32 @@
 import {SECRET_TYPES,SECRET_TRIGGERS,TRAUMA_EVENTS,SECRET_ROLES,SECRET_RELATIONS,SECRET_GOALS,SECRET_TASTES,label,words} from './secret-catalog.js';
 import {relationMetrics} from './relationship-metrics.js';
 const find=(pool,id)=>pool.find(x=>x.id===id),pick=(pool,id)=>find(pool,id)?.id||pool[0].id;
+const custom=value=>typeof value==='string'&&value.startsWith('custom:');
+const choice=(pool,value)=>custom(value)?value.slice(0,2007):pick(pool,value);
+const choiceLabel=(pool,value,lang)=>custom(value)?value.slice(7):label(find(pool,value),lang);
 const text=value=>typeof value==='string'?value.slice(0,2000):'';
 const particle=(name,pair)=>{const code=String(name).charCodeAt(String(name).length-1)-44032;return name+(code>=0&&code<11172?(code%28?pair[0]:pair[1]):pair[0]);};
 export function normalizeSecrets(value){
  if(!Array.isArray(value))return [];
  const seen=new Set();return value.filter(s=>s&&typeof s==='object'&&typeof s.id==='string'&&s.id&&!seen.has(s.id)&&seen.add(s.id)).slice(0,100).map(s=>({
-  id:s.id.slice(0,100),kind:pick(SECRET_TYPES,s.kind),text:text(s.text),event:pick(TRAUMA_EVENTS,s.event),triggers:[...new Set((Array.isArray(s.triggers)?s.triggers:[]).filter(id=>find(SECRET_TRIGGERS,id)))],intensity:['mild','moderate','strong'].includes(s.intensity)?s.intensity:'moderate',
-  frame:['past','memory','aftermath'].includes(s.frame)?s.frame:'past',target:text(s.target),relation:pick(SECRET_RELATIONS,s.relation),role:pick(SECRET_ROLES,s.role),goal:pick(SECRET_GOALS,s.goal),taste:text(s.taste),tasteLabel:text(s.tasteLabel),preference:s.preference==='dislike'?'dislike':'like',
+  id:s.id.slice(0,100),kind:pick(SECRET_TYPES,s.kind),text:text(s.text),event:choice(TRAUMA_EVENTS,s.event),triggers:[...new Set((Array.isArray(s.triggers)?s.triggers:[]).filter(id=>find(SECRET_TRIGGERS,id)))],intensity:['mild','moderate','strong'].includes(s.intensity)?s.intensity:'moderate',
+  frame:'past',target:custom(s.target)?s.target.slice(0,2007):text(s.target),relation:choice(SECRET_RELATIONS,s.relation),role:choice(SECRET_ROLES,s.role),goal:choice(SECRET_GOALS,s.goal),taste:text(s.taste),tasteLabel:text(s.tasteLabel),preference:s.preference==='dislike'?'dislike':'like',
   disclosure:['never','trusted','easy'].includes(s.disclosure)?s.disclosure:'trusted',knowledgeVersion:Number.isSafeInteger(s.knowledgeVersion)?Math.max(0,s.knowledgeVersion):0,knownBy:[...new Set((Array.isArray(s.knownBy)?s.knownBy:[]).filter(x=>typeof x==='string'))].slice(0,300)
  }));
 }
 export function secretSentence(world,c,s,lang='ko'){
- const tr=(ko,en,ja)=>words(ko,en,ja)[lang]||ko,who=c.name||'',name=world.characters?.[s.target]?.name||label(find(SECRET_ROLES,s.target.replace(/^role:/,'')),lang)||tr('알 수 없는 인물','an unknown person','不明な人物');
+ const tr=(ko,en,ja)=>words(ko,en,ja)[lang]||ko,who=c.name||'',name=custom(s.target)?s.target.slice(7):world.characters?.[s.target]?.name||label(find(SECRET_ROLES,s.target.replace(/^role:/,'')),lang)||tr('알 수 없는 인물','an unknown person','不明な人物');
  if(s.kind==='custom')return s.text.trim();
- if(s.kind==='relationship'){const rel=label(find(SECRET_RELATIONS,s.relation),lang);return tr(`${particle(who,['은','는'])} 사실 ${name}의 ${rel}이다.`,`${who} is secretly ${name}'s ${rel.toLowerCase()}.`,`${who}は実は${name}の${rel}だ。`)}
- if(s.kind==='identity'){const role=label(find(SECRET_ROLES,s.role),lang);return tr(`${who}의 숨겨진 정체는 ${role}이다.`,`${who}'s hidden identity is: ${role}.`,`${who}の隠された正体は${role}だ。`)}
- if(s.kind==='goal'){const goal=label(find(SECRET_GOALS,s.goal),lang);return tr(`${particle(who,['은','는'])} 속으로 ${goal}.`,`${who}: ${goal}.`,`${who}は密かに${goal}。`)}
+ if(s.kind==='relationship'){const rel=choiceLabel(SECRET_RELATIONS,s.relation,lang);return tr(`${particle(who,['은','는'])} 사실 ${name}의 ${rel}이다.`,`${who} is secretly ${name}'s ${custom(s.relation)?rel:rel.toLowerCase()}.`,`${who}は実は${name}の${rel}だ。`)}
+ if(s.kind==='identity'){const role=choiceLabel(SECRET_ROLES,s.role,lang);return tr(`${who}의 숨겨진 정체는 ${role}이다.`,`${who}'s hidden identity is: ${role}.`,`${who}の隠された正体は${role}だ。`)}
+ if(s.kind==='goal'){const goal=choiceLabel(SECRET_GOALS,s.goal,lang);return tr(`${particle(who,['은','는'])} 속으로 ${goal}.`,`${who}: ${goal}.`,`${who}は密かに${goal}。`)}
  if(s.kind==='preference'){
   const item=s.taste.startsWith('catalog:')?Object.values(world.catalog||{}).flat().find(x=>'catalog:'+x.id===s.taste):null;
   const taste=item?.name||label(find(SECRET_TASTES,s.taste),lang)||s.tasteLabel||tr('아직 고르지 않은 대상','an unselected subject','未選択の対象');
   return s.preference==='dislike'?tr(`${particle(who,['은','는'])} 사실 ${particle(taste,['을','를'])} 좋아하지 않는다.`,`${who} secretly dislikes ${taste}.`,`${who}は実は${taste}が苦手だ。`):tr(`${particle(who,['은','는'])} 사실 ${particle(taste,['을','를'])} 좋아한다.`,`${who} secretly likes ${taste}.`,`${who}は実は${taste}が好きだ。`);
  }
- const event=label(find(TRAUMA_EVENTS,s.event),lang),triggers=s.triggers.map(id=>label(find(SECRET_TRIGGERS,id),lang)).join(', ');
- const first=s.frame==='memory'?tr(`${who}에게는 ${event}의 기억이 남아 있다.`,`${who} carries memories of ${event.toLowerCase()}.`,`${who}には${event}の記憶が残っている。`):s.frame==='aftermath'?tr(`${particle(who,['은','는'])} ${event} 이후 조심스러워졌다.`,`${who} became cautious after ${event.toLowerCase()}.`,`${who}は${event}の後、慎重になった。`):tr(`${particle(who,['은','는'])} 예전에 ${particle(event,['을','를'])} 겪었다.`,`${who} once experienced ${event.toLowerCase()}.`,`${who}は過去に${event}を経験した。`);
+ const event=choiceLabel(TRAUMA_EVENTS,s.event,lang),triggers=s.triggers.map(id=>label(find(SECRET_TRIGGERS,id),lang)).join(', ');
+ const first=tr(`${particle(who,['은','는'])} 예전에 ${particle(event,['을','를'])} 겪었다.`,`${who} once experienced ${event}.`,`${who}は過去に${event}を経験した。`);
  return first+(triggers?tr(` 그래서 ${triggers} 상황을 꺼린다.`,` They therefore avoid: ${triggers}.`,` そのため、${triggers}を避けている。`):'');
 }
 export function canShareSecret(world,c,target,s){
@@ -80,7 +83,7 @@ export function traumaScene(c,scene,now,lang='ko'){
  if(scene.traumaReaction)scene={...scene,desc:scene.traumaBaseDesc??scene.desc,traumaReaction:false};
  if(!c.secrets?.length||scene.sleeping||scene.secretSharing)return scene;
  const life=c.secretLife||{},active=life.reaction;
- if(active&&now>=active.at&&now<active.until&&sceneTriggers(scene).has(active.trigger))return {...scene,traumaBaseDesc:scene.desc,desc:scene.desc+' '+active.copy[lang],traumaReaction:true};
+ if(active&&knownSecrets(c).some(s=>s.id===active.secretId&&s.kind==='trauma'&&s.triggers.includes(active.trigger))&&now>=active.at&&now<active.until&&sceneTriggers(scene).has(active.trigger))return {...scene,traumaBaseDesc:scene.desc,desc:scene.desc+' '+active.copy[lang],traumaReaction:true};
  if(now-(life.lastReactionAt||0)<90*60000)return scene;
  const triggers=sceneTriggers(scene),s=knownSecrets(c).find(s=>s.kind==='trauma'&&s.triggers.some(id=>triggers.has(id)));if(!s)return scene;
  const id=s.triggers.find(id=>triggers.has(id)),count=Number(life.reactionCount)||0;
