@@ -1,0 +1,18 @@
+<ko-KR>
+비밀 설정을 전체 설정 12페이지로 옮겼어요.
+트라우마 문장을 ‘예전에 …을 겪었다’로 통일했어요.
+사건·숨겨진 관계·정체·목표·취향에 직접 입력을 추가했어요.
+트리거 없이도 트라우마를 저장할 수 있고, ‘트리거 없음’으로 선택을 지울 수 있어요.
+</ko-KR>
+<en-US>
+Secrets now appear on page 12 of full settings.
+Trauma descriptions use “Once experienced …”.
+Enter your own experiences, hidden relationships, identities, wishes, and preferences.
+Trauma can be saved without triggers. Choose “No triggers” to clear selected triggers.
+</en-US>
+<ja-JP>
+秘密の設定を全体設定の12ページに移動しました。
+トラウマの文章を「過去に…を経験した」に統一しました。
+出来事・隠された関係・正体・願い・好みを自由入力できるようになりました。
+きっかけなしでも保存でき、「きっかけなし」で選択を解除できます。
+</ja-JP>
