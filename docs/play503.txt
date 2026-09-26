@@ -1,0 +1,9 @@
+<ko-KR>
+캐릭터에게 여러 비밀을 설정할 수 있어요. 직접 입력하거나 트라우마·숨겨진 관계·취향·정체·목표를 문장으로 조합해 보세요. 트라우마 사건에 맞는 트리거 추천과 반응 강도, 비밀을 아는 상대와 공개 성향을 정할 수 있어요. 믿는 상대에게 비밀을 털어놓고 지난 대화를 이어 가요. 키스·포옹의 성격별 표현을 늘리고 짧은 행동 시간을 조정했어요.
+</ko-KR>
+<en-US>
+Give characters multiple secrets: write your own or build sentences about past experiences, hidden relationships, preferences, identities and goals. Choose recommended triggers, reaction intensity, who knows and when to share. Characters can confide in trusted companions and revisit past conversations. Added personality-based kiss and hug variations and adjusted short activity durations.
+</en-US>
+<ja-JP>
+キャラクターに複数の秘密を設定できます。自由入力のほか、トラウマ・隠された関係・好み・正体・目標を文章で組み合わせられます。出来事に合うきっかけの候補、反応の強さ、秘密を知る相手、打ち明けやすさを設定できます。信頼する相手に秘密を話し、以前の会話を振り返ることもあります。性格に応じたキス・抱擁の表現を増やし、短い行動の時間を調整しました。
+</ja-JP>
