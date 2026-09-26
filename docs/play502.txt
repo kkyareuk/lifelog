@@ -1,0 +1,9 @@
+<ko-KR>
+저장 데이터를 불러오지 못하는 상황에 대비한 복구를 개선했습니다. 상대는 혼자 있는데 교류 중으로 표시되거나, 설정한 수면 시간 밖에 잠든 상태가 남는 문제를 수정했습니다. 지갑 설정에서 캐릭터별 재산 금액을 따로 지정할 수 있습니다.
+</ko-KR>
+<en-US>
+Improved recovery when saved data cannot be read. Fixed interactions appearing with a companion who is acting alone and stale sleep outside the configured sleep schedule. You can now set each character’s balance separately in wallet settings.
+</en-US>
+<ja-JP>
+保存データを読み込めない場合の復旧を改善しました。相手がひとりで行動中なのに交流中と表示される問題と、設定した睡眠時間外に睡眠状態が残る問題を修正しました。財布の設定でキャラクターごとの所持金を個別に設定できます。
+</ja-JP>
