@@ -3563,11 +3563,21 @@ export function withSimulationBatch(run){
 function baseEventFor(c,date=new Date()){
   try{return cachedBaseEventFor(c,date)}catch(error){return sceneFailure(c,date,error)}
 }
+function awakeTimetableScene(c,scene,date){
+  if(!isHomeSleepScene(scene)||sleepingNow(c,date)||scene.manualDirective||scene.routineId)return scene;
+  const copy={ko:['깨어서 쉬는 중','정해 둔 수면 시간이 아니어서 잠시 쉬며 다음 활동을 준비하고 있어요.'],en:['Resting while awake','It is outside their sleep schedule, so they are resting before the next activity.'],ja:['起きて休んでいるところ','設定した睡眠時間外なので、少し休んで次の活動に備えています。']}[state.uiLanguage]||['깨어서 쉬는 중','다음 활동을 준비하고 있어요.'];
+  return {...soloSceneFrom(scene),title:copy[0],desc:copy[1],baseTitle:copy[0],baseDesc:copy[1],sleeping:false,needKey:undefined,actionKind:'rest',activityFamily:'rest',lifeTaskId:undefined,recoveryStartedAt:undefined,recoveryEndsAt:undefined};
+}
+function hasSoloNeed(c,scene,date){
+  if(!scene?.home||scene.manualDirective||scene.routineId||scene.transit||scene.giftExchange||scene.dateGroup&&scene.datePurpose)return false;
+  const need=urgentNeed(c,date.getTime(),{allowSleep:true});
+  return !!need&&need!=='social';
+}
 function cachedBaseEventFor(c,date=new Date()){
-  if(!sceneBatch)return calculateBaseEvent(c,date);
+  if(!sceneBatch)return awakeTimetableScene(c,calculateBaseEvent(c,date),date);
   const day=c.days?.[dayKey(date)],cached=sceneBatch.get(c),time=date.getTime();
   if(cached&&cached.worldRevision===sceneBatch.revision&&cached.time===time&&cached.revision===c.timelineResetAt&&cached.day===day&&cached.entries===day?.entries&&cached.length===day?.entries?.length)return cached.value;
-  const value=calculateBaseEvent(c,date),nextDay=c.days?.[dayKey(date)];
+  const value=awakeTimetableScene(c,calculateBaseEvent(c,date),date),nextDay=c.days?.[dayKey(date)];
   sceneBatch.set(c,{time,worldRevision:sceneBatch.revision,revision:c.timelineResetAt,day:nextDay,entries:nextDay?.entries,length:nextDay?.entries?.length,value});
   return value;
 }
@@ -3610,7 +3620,7 @@ function calculateBaseEvent(c,date=new Date()){
   }
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   const sources=giftSources(date);
-  const past=list.filter(x=>(!x.needKey||!x.recoveryEndsAt||date.getTime()<x.recoveryEndsAt)&&(!isHomeSleepScene(x)||x.activityFamily==='nap'&&n-x.minute<20)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>(!x.needKey||!x.recoveryEndsAt||date.getTime()<x.recoveryEndsAt)&&!isHomeSleepScene(x)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
@@ -4685,7 +4695,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       // 이미 잘못 만들어진 공동 장면이라도 baseTitle/baseDesc에는 원래의
       // 연구·업무·집중 행동이 남는다. 그것까지 확인해야 다른 인물이 그
       // 캐릭터를 대화 상대라고 다시 끌어오는 순환이 끊긴다.
-      if(isProtectedSoloActivity(otherEvent)||isProtectedSoloActivity(baseSceneFrom(otherEvent)))return false;
+      if(hasSoloNeed(other,otherEvent,date)||isProtectedSoloActivity(otherEvent)||isProtectedSoloActivity(baseSceneFrom(otherEvent)))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);
       if(reservedScene){
         const reservedIds=[other.id,...(reservedScene.participantOrder||[]),...(reservedScene.withIds||[]),reservedScene.withId].filter(Boolean);
@@ -4999,7 +5009,7 @@ function calculateEventFor(c,date){
     const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
       const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
       const soloBase=baseSceneFrom(live);
-      return (scheduledInteraction?live?.routineId===current.routineId:!activeScheduledRoutine(other,date)&&!isProtectedSoloActivity(soloBase))
+      return (scheduledInteraction?live?.routineId===current.routineId:!activeScheduledRoutine(other,date)&&!hasSoloNeed(other,live,date)&&!isProtectedSoloActivity(soloBase))
         &&sameLiveLocation(current,live)
         &&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
     });

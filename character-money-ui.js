@@ -13,7 +13,10 @@ import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
 const walletLoads=new Map();
 const words=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
 function context(){const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),shared=snapshot?.activeGroupId&&snapshot.group,world=shared&&state.activeTab!=='character'?buildSharedWorld(snapshot,state.uiLanguage):state;const id=document.querySelector('[data-observed-character]')?.dataset.observedCharacter||world.activeId;return {world,c:world.characters[id],snapshot:shared?snapshot:null}}
-const errorText=(error,lang)=>error.message==='money-insufficient'?words(lang,'잔액이 부족해요.','Insufficient funds.','残高が不足しています。'):error.message;
+const errorText=(error,lang)=>{
+ const copy={'money-insufficient':['잔액이 부족해요.','Insufficient funds.','残高が不足しています。'],'money-invalid-amount':['올바른 재산 금액을 입력해 주세요.','Enter a valid balance.','正しい金額を入力してください。'],'money-unshare-first':['재산 공유를 해제한 뒤 금액을 변경해 주세요.','End wallet sharing before changing the balance.','資産の共有を解除してから金額を変更してください。']}[error.message];
+ return copy?words(lang,...copy):error.message;
+};
 export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
  const info=context(),{world,snapshot}=info,c=characterId?world.characters[characterId]:info.c;if(!c)return;
  if(!economyAvailable()){
@@ -42,6 +45,9 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
   const field=(label,type,value)=>{const l=document.createElement('label');l.append(document.createTextNode(label));const input=document.createElement('input');input.type=type;input.value=value;input.disabled=!canEdit;l.append(input);content.append(l);return input};
   const action=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.disabled=!canEdit;b.onclick=fn;content.append(b);return b};
   if(page==='settings'){
+   const amount=field(tr('이 캐릭터의 재산 금액','This character’s balance','このキャラクターの所持金'),'number',walletBalance(c.wallet)/10000*moneySettings(c).mealPrice);amount.min='0';amount.step='any';amount.disabled=!canEdit||!!c.wallet?.poolId;
+   const amountHelp=document.createElement('p');amountHelp.textContent=tr('이 캐릭터에게만 적용됩니다. 이후 수입과 지출에 따라 변하며, 세계관 화폐 설정과는 별개입니다.','Applies only to this character. Income and expenses still change the balance. This is separate from world currency settings.','このキャラクターだけに適用されます。その後の収入や支出で変動し、世界の通貨設定とは別です。');content.append(amountHelp);
+   action(tr('재산 금액 적용','Apply balance','所持金を適用'),()=>{try{if(!amount.value.trim())throw Error('money-invalid-amount');const balance=moneyFromDisplay(amount.value,c);if(!window.confirm(tr('이 캐릭터의 재산을 입력한 금액으로 변경할까요?','Replace this character’s balance with the entered amount?','このキャラクターの所持金を入力した金額に変更しますか？')))return;void mutate('settings',{patch:{balance,confirmBalanceReset:true}})}catch(error){d.querySelector('[role=status]').textContent=errorText(error,world.uiLanguage)}}).disabled=amount.disabled;
    const s=moneySettings(c);action(tr('세계관 화폐 설정 열기','Open world currency settings','世界の通貨設定を開く'),()=>{d.close();openCareerWorld('currency')});
    const payment=document.createElement('select');payment.disabled=!canEdit;payment.setAttribute('aria-label',tr('데이트 계산 방식','Date payment preference','デートの支払い方'));for(const [v,ko,en,ja] of [['split','각자 계산','Split','割り勘'],['treat','내가 계산','My treat','自分が払う'],['request','상대에게 부탁','Ask companion','相手にお願いする']])payment.add(new Option(tr(ko,en,ja),v,false,s.datePayment===v));content.append(payment);
    const frequency=field(tr('데이트에서 내가 계산하는 빈도 (%)','How often I pay on dates (%)','デートで自分が払う頻度（%）'),'number',s.datePayFrequency);frequency.min='0';frequency.max='100';
@@ -57,7 +63,7 @@ export function openCharacterMoney(pane='wallet',characterId=null,homeId=null){
     const amount=document.createElement('p');amount.textContent=tr('공동지갑: ','Shared wallet: ','共同財布：')+displayMoney(home.commonWallet?.balance||0,c,world.uiLanguage);content.append(amount);
     {const input=field(tr('입금 / 출금 금액','Deposit / withdraw amount','入金・出金額'),'number','');input.min='0';input.step='any';for(const [kind,ko,en,ja] of [['withdraw','꺼내기','Withdraw','出金']])action(tr(ko,en,ja),()=>{try{void mutate(kind,{homeId:home.id,amount:moneyFromDisplay(input.value,c),requestId:crypto.randomUUID()})}catch(e){d.querySelector('[role=status]').textContent=errorText(e,world.uiLanguage)}})}
    }
-   const history=document.createElement('ol');for(const entry of c.wallet?.entries||[]){const li=document.createElement('li');const label=entry.kind==='wealth-reset'?tr('재산 유형 변경','Wealth type change','資産の種類変更'):['wage','salary'].includes(entry.kind)?tr('급여','Wages','給与'):entry.kind==='expense'?tr('이용료','Expense','利用料'):tr('공동지갑 이체','Shared-wallet transfer','共同財布への振替');li.textContent=label+' · '+displayMoney(entry.amount,c,world.uiLanguage);history.append(li)}content.append(history);
+   const history=document.createElement('ol');for(const entry of c.wallet?.entries||[]){const li=document.createElement('li');const label=entry.kind==='balance-reset'?tr('재산 금액 변경','Balance adjustment','所持金の変更'):entry.kind==='wealth-reset'?tr('재산 유형 변경','Wealth type change','資産の種類変更'):['wage','salary'].includes(entry.kind)?tr('급여','Wages','給与'):entry.kind==='expense'?tr('이용료','Expense','利用料'):tr('공동지갑 이체','Shared-wallet transfer','共同財布への振替');li.textContent=label+' · '+displayMoney(entry.amount,c,world.uiLanguage);history.append(li)}content.append(history);
   }
   const status=document.createElement('p');status.setAttribute('role','status');d.append(status);
  }

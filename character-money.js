@@ -14,6 +14,11 @@ export function displayMoney(amount,character,language='ko'){
 }
 export function moneyFromDisplay(value,character){const n=Math.round(Number(value)*BASE_MEAL/moneySettings(character).mealPrice);if(!integer(n)||n>1e12)throw Error('money-invalid-amount');return n}
 export function updateMoneySettings(character,patch,now=Date.now()){
+ if(patch.balance!==undefined){
+  if(!integer(patch.balance)||patch.balance>1e12)throw Error('money-invalid-amount');
+  if(character.wallet?.poolId)throw Error('money-unshare-first');
+  if(patch.confirmBalanceReset!==true)throw Error('money-confirm-reset');
+ }
  if(character.wallet?.poolId&&patch.wealth!==undefined&&patch.wealth!==character.wealth)throw Error('money-unshare-first');
  if(patch.wealth!==undefined&&patch.wealth!==character.wealth&&patch.confirmWealthReset!==true)throw Error('money-confirm-reset');
  const wallet=ensureWallet(character,now),next={...moneySettings(character),...patch};
@@ -22,6 +27,7 @@ export function updateMoneySettings(character,patch,now=Date.now()){
  if(patch.income!==undefined&&!["절약 우선","필요한 만큼 소비","취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"].includes(patch.income))throw Error('money-invalid-settings');
  wallet.settings={unit:next.unit.trim(),mealPrice:next.mealPrice,wage:next.wage,datePayment:next.datePayment,datePayFrequency:next.datePayFrequency};
  if(patch.wealth!==undefined&&patch.wealth!==character.wealth){if(patch.confirmWealthReset!==true)throw Error('money-confirm-reset');moneyEntry(wallet,INITIAL_MONEY[patch.wealth]-wallet.balance,'wealth:'+now+':'+wallet.revision,'wealth-reset',now,patch.wealth);character.wealth=patch.wealth;}
+ if(patch.balance!==undefined)moneyEntry(wallet,patch.balance-wallet.balance,'balance:'+now+':'+wallet.revision,'balance-reset',now);
  if(patch.income!==undefined)character.income=patch.income;
  wallet.updatedAt=now;wallet.revision=(wallet.revision||0)+1;
 }

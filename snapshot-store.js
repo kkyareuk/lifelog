@@ -13,14 +13,10 @@ export async function openSnapshotStore(storage){
  await Promise.all([...new Set(refs)].map(async pointer=>{try{const value=await read(pointer.slice(SNAPSHOT_REF.length));if(typeof value==='string')cache.set(pointer,value)}catch{/* Keep the pointer and original database untouched for retry/recovery. */}}));
  const store={
   get:pointer=>{if(!cache.has(pointer))throw Error('Saved snapshot is unavailable');return cache.get(pointer)},
-  async put(value){const id=crypto.randomUUID(),pointer=SNAPSHOT_REF+id;await new Promise((resolve,reject)=>{const tx=db.transaction('snapshots','readwrite');tx.objectStore('snapshots').put(value,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Snapshot transaction aborted'))});if(await read(id)!==value)throw Error('Snapshot verification failed');cache.set(pointer,value);return pointer},
-  release(pointer){if(!pointer?.startsWith(SNAPSHOT_REF))return;for(let i=0;i<storage.length;i++)if(storage.getItem(storage.key(i))===pointer)return;cache.delete(pointer);const tx=db.transaction('snapshots','readwrite');tx.objectStore('snapshots').delete(pointer.slice(SNAPSHOT_REF.length));tx.onerror=()=>{};}
+  async put(value){const id=crypto.randomUUID(),pointer=SNAPSHOT_REF+id;await new Promise((resolve,reject)=>{const tx=db.transaction('snapshots','readwrite',{durability:'strict'});tx.objectStore('snapshots').put(value,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Snapshot transaction aborted'))});if(await read(id)!==value)throw Error('Snapshot verification failed');cache.set(pointer,value);return pointer},
+  release(pointer){if(!pointer?.startsWith(SNAPSHOT_REF))return;for(let i=0;i<storage.length;i++)if(storage.getItem(storage.key(i))===pointer)return;cache.delete(pointer);try{const tx=db.transaction('snapshots','readwrite');tx.objectStore('snapshots').delete(pointer.slice(SNAPSHOT_REF.length));tx.onerror=()=>{}}catch{/* Cleanup must not turn a committed write into a reported failure. */}}
  };
- // Move only verified game snapshots, before synchronous state loading. Keeping
- // the same encoded bytes preserves recovery and account ownership exactly.
- for(const key of keys){const value=storage.getItem(key);if(!names.has(key.replace(/^drawer-account:[^:]+:/,''))||!value||value.startsWith(SNAPSHOT_REF)||value.length<131072)continue;
-  let pointer;try{pointer=await store.put(value);if(storage.getItem(key)===value)storage.setItem(key,pointer);else store.release(pointer)}catch{store.release(pointer);/* The original storage entry is still intact. */}
- }
+ // Inline saves (including the independent recovery mirror) stay inline.
+ // Large writes move to IndexedDB only after the account writer exhausts quota.
  return store;
 }
-

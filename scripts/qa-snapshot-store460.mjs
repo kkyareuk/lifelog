@@ -12,7 +12,7 @@ try{const page=await browser.newPage();await page.goto(origin+'/fixture'); const
  const main='drawer-village-game-v1',backup='drawer-village-last-nonempty-state-v1',value=JSON.stringify({photo:'x'.repeat(250000),name:'original'}),data=new Map([[main,value],['unrelated','keep']]);
  const storage={get length(){return data.size},key:i=>[...data.keys()][i],getItem:k=>data.get(k)??null,setItem(k,v){if([...data].filter(([key])=>key!==k).reduce((n,[,v])=>n+v.length,0)+v.length>2000)throw new DOMException('full','QuotaExceededError');data.set(k,String(v))},removeItem:k=>data.delete(k)};
  const persistent=await openSnapshotStore(storage),account=createAccountStorage(storage,async x=>x,persistent);
- if(account.getItem(main)!==value||!data.get(main).startsWith(SNAPSHOT_REF))throw Error('Migration lost data');
+ if(account.getItem(main)!==value||data.get(main)!==value)throw Error('Startup changed inline data');await account.setItemAsync(main,value);if(!data.get(main).startsWith(SNAPSHOT_REF))throw Error('Quota fallback missing');
  account.copyItem(main,backup);const next=JSON.stringify({photo:'y'.repeat(260000),name:'updated'});await account.setItemAsync(main,next);
  if(account.getItem(backup)!==value)throw Error('Recovery copy overwritten');
  const reloaded=createAccountStorage(storage,async x=>x,await openSnapshotStore(storage));if(reloaded.getItem(main)!==next||reloaded.getItem(backup)!==value)throw Error('Reload lost snapshots');

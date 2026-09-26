@@ -1082,7 +1082,7 @@ function preserveLastNonempty(value,serialized="",force=false,copyPrimary=false)
         // Keep only missing building records, not another full photo-heavy save.
         localStorage.setItem(BUILDING_RECOVERY_KEY,JSON.stringify({towns,lastSaved:now}));
       }
-      if(copyPrimary)localStorage.copyItem(KEY,LAST_NONEMPTY_KEY);else localStorage.setItem(LAST_NONEMPTY_KEY,payload);
+      if(copyPrimary){if(!localStorage.copySnapshotBackup(KEY,LAST_NONEMPTY_KEY))return false;}else localStorage.setItem(LAST_NONEMPTY_KEY,payload);
     }
     lastRecoveryBackupSerialized=payload;
     lastRecoveryBackupAt=now;

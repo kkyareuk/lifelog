@@ -62,7 +62,7 @@ export function createAccountStorage(storage,encode=encodeSnapshot,persistent=nu
       const encoded=isSnapshot(name)?await encode(raw):raw;
       if(!valid())return false;
       const previous=storage.getItem(target);
-      if(!previous?.startsWith(SNAPSHOT_REF)){try{storage.setItem(target,encoded);return true}catch(error){if(!quotaError(error))throw error}}
+      try{storage.setItem(target,encoded);persistent?.release(previous);return true}catch(error){if(!quotaError(error))throw error}
       if(isSnapshot(name)&&persistent){
         const pointer=await persistent.put(encoded);
         if(!valid()){persistent.release(pointer);return false}
@@ -83,6 +83,21 @@ export function createAccountStorage(storage,encode=encodeSnapshot,persistent=nu
       const packed=isSnapshot(name)?await encode(raw,9):raw;
       if(!valid())return false;
       storage.setItem(target,packed);return true;
+    },
+    copySnapshotBackup(source,destination){
+      const target=key(destination),stored=storage.getItem(key(source));if(stored===null)return false;
+      // A pointer alias is not an independent recovery copy. Keep encoded bytes
+      // outside IndexedDB whenever quota allows, and retain an existing backup
+      // if making a new independent copy fails.
+      const value=stored.startsWith(SNAPSHOT_REF)?persistent?.get(stored):stored;
+      if(value==null)throw Error('Saved snapshot is unavailable');
+      const previous=storage.getItem(target);
+      try{storage.setItem(target,value)}catch(error){
+        if(!quotaError(error))throw error;
+        if(previous!==null)return false;
+        storage.setItem(target,stored);
+      }
+      changed(target);persistent?.release(previous);return true;
     },
     copyItem(source,destination){const value=storage.getItem(key(source));if(value===null)return false;const previous=storage.getItem(key(destination));changed(key(destination));storage.setItem(key(destination),value);persistent?.release(previous);return true},
     removeItem:name=>{const target=key(name),previous=storage.getItem(target);changed(target);storage.removeItem(target);persistent?.release(previous)},
