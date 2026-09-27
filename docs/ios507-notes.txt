@@ -1,0 +1,9 @@
+<ko-KR>
+iPhone에서 광고가 표시될 때 화면 아래쪽 버튼과 내용이 가려지는 문제를 수정했어요. 광고 크기 변경과 화면 회전 후에도 게임 화면을 알맞게 조정하며, 광고가 사라지면 전체 화면으로 돌아와요.
+</ko-KR>
+<en-US>
+Fixed an issue where banner ads could push bottom buttons and content off screen on iPhone. The game now adjusts to banner size changes and device rotation, and restores the full view when the banner disappears.
+</en-US>
+<ja-JP>
+iPhoneで広告の表示中に画面下部のボタンや内容が隠れる問題を修正しました。広告サイズの変更や画面の回転に合わせて表示領域を調整し、広告が消えると全画面に戻ります。
+</ja-JP>
