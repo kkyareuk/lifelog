@@ -1,6 +1,6 @@
 // CI-only diagnostics; never used by the App Store archive workflow.
 import {readFileSync,writeFileSync} from 'node:fs';
-const file='ios/App/App/AppleBillingPlugin.swift';
+const file='ios/App/App/AdViewportPlugin.swift';
 let source=readFileSync(file,'utf8');
 const anchor='class DrawerBridgeViewController: CAPBridgeViewController {';
 if(!source.includes(anchor))throw Error('Missing bridge controller');
@@ -8,10 +8,7 @@ source=source.replace('import UIKit','import UIKit\nimport WebKit');
 source=source.replace(anchor,anchor+`
     #if DEBUG
     private var startupChecks = 0
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        inspectStartup()
-    }
+
     private func inspectStartup() {
         startupChecks += 1
         guard startupChecks <= 45 else { return }
@@ -27,4 +24,5 @@ source=source.replace(anchor,anchor+`
     }
     #endif
 `);
+source=source.replace('super.viewDidAppear(animated)', 'super.viewDidAppear(animated)\n        inspectStartup()');
 writeFileSync(file,source);
