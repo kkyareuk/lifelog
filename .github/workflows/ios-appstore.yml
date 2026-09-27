@@ -13,7 +13,7 @@ on:
         type: choice
         required: true
         options:
-          - fe9f21f4df7fd31bc3f0b096f24c09e06d1beb00
+          - 3afa526cb017946bb155c5913fe07fcd7f140852
 
 permissions:
   contents: read
@@ -40,7 +40,7 @@ jobs:
         env:
           REQUESTED_SOURCE: ${{ inputs.source_ref }}
         run: |
-          test "$REQUESTED_SOURCE" = "fe9f21f4df7fd31bc3f0b096f24c09e06d1beb00"
+          test "$REQUESTED_SOURCE" = "3afa526cb017946bb155c5913fe07fcd7f140852"
           test "$(git rev-parse HEAD)" = "$REQUESTED_SOURCE"
       - uses: actions/setup-node@v4
         with:
