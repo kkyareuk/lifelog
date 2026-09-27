@@ -25,12 +25,17 @@ if(mode!=='status'){
  }
  if(mode==='submit'){
   assert.equal(v.attributes.versionString,expectedVersion);
+  if(build.attributes.usesNonExemptEncryption==null){
+   const previous=(await appleGet('/v1/appStoreVersions/8f4cac0b-8818-4487-9ec3-43c042da230c/build')).data;
+   assert.equal(previous.attributes.usesNonExemptEncryption,false,'Only carry forward the existing released469 declaration; never guess it');
+   await write('/v1/builds/'+build.id,'PATCH',{type:'builds',id:build.id,attributes:{usesNonExemptEncryption:false}});
+  }
   const attached=await appleGet(`/v1/appStoreVersions/${v.id}/build`);assert.equal(attached.data.id,build.id);
   const submissions=(await appleGet(`/v1/apps/${appId}/reviewSubmissions?limit=100`)).data;
   let submission,emptyDraft;
   for(const sub of submissions.filter(s=>s.attributes.state==='READY_FOR_REVIEW')){
    const items=(await appleGet(`/v1/reviewSubmissions/${sub.id}/items?include=appStoreVersion&limit=100`)).data;
-   if(items.length===0 && sub.attributes.platform==='IOS' && sub.attributes.createdDate>='2026-09-27T09:09:00Z')emptyDraft=sub;
+   if(items.length===0 && sub.attributes.platform==='IOS')emptyDraft??=sub;
    if(items.some(i=>i.relationships?.appStoreVersion?.data?.id===v.id)){assert.equal(items.length,1,'Do not submit unrelated items');submission=sub;break;}
   }
   if(!submission){submission=emptyDraft||(await write('/v1/reviewSubmissions','POST',{type:'reviewSubmissions',attributes:{platform:'IOS'},relationships:{app:{data:{type:'apps',id:appId}}}})).data;await write('/v1/reviewSubmissionItems','POST',{type:'reviewSubmissionItems',relationships:{reviewSubmission:{data:{type:'reviewSubmissions',id:submission.id}},appStoreVersion:{data:{type:'appStoreVersions',id:v.id}}}});}
