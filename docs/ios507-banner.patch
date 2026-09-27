@@ -1,0 +1,197 @@
+diff --git a/ios/App/App.xcodeproj/project.pbxproj b/ios/App/App.xcodeproj/project.pbxproj
+index c1587c44..051b405c 100644
+--- a/ios/App/App.xcodeproj/project.pbxproj
++++ b/ios/App/App.xcodeproj/project.pbxproj
+@@ -7,6 +7,7 @@
+ 	objects = {
+ 
+ /* Begin PBXBuildFile section */
++		D50700000000000000000001 /* AdViewportPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D50700000000000000000002; };
+ 		D26200000000000000000003 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = D26200000000000000000004; };
+ 		D26200000000000000000001 /* AppleBillingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26200000000000000000002; };
+ 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+@@ -20,6 +21,7 @@
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXFileReference section */
++		D50700000000000000000002 /* AdViewportPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdViewportPlugin.swift; sourceTree = "<group>"; };
+ 		D26200000000000000000004 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+ 		D26200000000000000000002 /* AppleBillingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleBillingPlugin.swift; sourceTree = "<group>"; };
+ 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+@@ -81,6 +83,7 @@
+ 				504EC3071FED79650016851F /* AppDelegate.swift */,
+ 				D26200000000000000000004 /* GoogleService-Info.plist */,
+ 				D26200000000000000000002 /* AppleBillingPlugin.swift */,
++				D50700000000000000000002 /* AdViewportPlugin.swift */,
+ 				504EC30B1FED79650016851F /* Main.storyboard */,
+ 				504EC30E1FED79650016851F /* Assets.xcassets */,
+ 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
+@@ -218,6 +221,7 @@
+ 			files = (
+ 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+ 				D26200000000000000000001 /* AppleBillingPlugin.swift in Sources */,
++				D50700000000000000000001 /* AdViewportPlugin.swift in Sources */,
+ 			);
+ 			runOnlyForDeploymentPostprocessing = 0;
+ 		};
+@@ -357,11 +361,11 @@
+ 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+-				CURRENT_PROJECT_VERSION = 469;
++				CURRENT_PROJECT_VERSION = 507;
+ 				INFOPLIST_FILE = App/Info.plist;
+ 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+-				MARKETING_VERSION = 1.0.417;
++				MARKETING_VERSION = 1.0.455;
+ 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.drawervillage.app;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+@@ -378,11 +382,11 @@
+ 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+ 				CODE_SIGN_STYLE = Automatic;
+ 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
+-				CURRENT_PROJECT_VERSION = 469;
++				CURRENT_PROJECT_VERSION = 507;
+ 				INFOPLIST_FILE = App/Info.plist;
+ 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+ 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+-				MARKETING_VERSION = 1.0.417;
++				MARKETING_VERSION = 1.0.455;
+ 				PRODUCT_BUNDLE_IDENTIFIER = com.drawervillage.app;
+ 				PRODUCT_NAME = "$(TARGET_NAME)";
+ 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
+diff --git a/ios/App/App/AdViewportPlugin.swift b/ios/App/App/AdViewportPlugin.swift
+new file mode 100644
+index 00000000..aabdfc19
+--- /dev/null
++++ b/ios/App/App/AdViewportPlugin.swift
+@@ -0,0 +1,109 @@
++import UIKit
++import Capacitor
++
++// Keep the banner in the root view and resize the actual WKWebView. A CSS
++// translation cannot change dvh, native safe areas, or fixed-position controls.
++@objc(DrawerBridgeViewController)
++class DrawerBridgeViewController: CAPBridgeViewController {
++    private var bannerHeight: CGFloat = 0
++    private let bannerStatus = UIButton(type: .system)
++
++    override func capacitorDidLoad() {
++        if let web = webView {
++            let host = UIView(frame: web.frame)
++            host.backgroundColor = .black
++            view = host
++            web.autoresizingMask = []
++            host.addSubview(web)
++            bannerStatus.backgroundColor = UIColor(red: 245/255, green: 239/255, blue: 223/255, alpha: 1)
++            bannerStatus.setTitleColor(UIColor(red: 85/255, green: 67/255, blue: 46/255, alpha: 1), for: .normal)
++            bannerStatus.titleLabel?.font = .systemFont(ofSize: 12)
++            bannerStatus.titleLabel?.numberOfLines = 3
++            bannerStatus.titleLabel?.textAlignment = .center
++            bannerStatus.addTarget(self, action: #selector(retryBanner), for: .touchUpInside)
++            bannerStatus.isHidden = true
++            host.addSubview(bannerStatus)
++        }
++        bridge?.registerPluginInstance(AdViewportPlugin())
++        bridge?.registerPluginInstance(IOSProfileExportPlugin())
++        if #available(iOS 15.0, *) { bridge?.registerPluginInstance(AppleBillingPlugin()) }
++    }
++
++    #if DEBUG
++    private var checkedBannerViewport = false
++    override func viewDidAppear(_ animated: Bool) {
++        super.viewDidAppear(animated)
++        guard !checkedBannerViewport, ProcessInfo.processInfo.arguments.contains("--check-ad-viewport") else { return }
++        checkedBannerViewport = true
++        var samples: [[String: Any]] = []
++        for height in [CGFloat(56), CGFloat(90), CGFloat(0)] {
++            reserveBanner(height: height, message: "Banner viewport check")
++            guard let web = webView else { continue }
++            samples.append(["height": height, "safeTop": view.safeAreaInsets.top,
++                "rootHeight": view.bounds.height, "webTop": web.frame.minY,
++                "webBottom": web.frame.maxY, "webHeight": web.frame.height,
++                "separateRoot": view !== web, "statusHidden": bannerStatus.isHidden])
++        }
++        let report: [String: Any] = ["samples": samples]
++        if let data = try? JSONSerialization.data(withJSONObject: report),
++           let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
++            try? data.write(to: documents.appendingPathComponent("drawer-ad-viewport-check.json"))
++        }
++    }
++    #endif
++
++    func reserveBanner(height: CGFloat, message: String) {
++        bannerHeight = height.isFinite ? max(0, min(240, height)) : 0
++        bannerStatus.setTitle(message, for: .normal)
++        bannerStatus.isHidden = bannerHeight == 0
++        view.setNeedsLayout()
++        view.layoutIfNeeded()
++    }
++
++    override func viewDidLayoutSubviews() {
++        super.viewDidLayoutSubviews()
++        layoutBannerViewport()
++    }
++
++    override func viewSafeAreaInsetsDidChange() {
++        super.viewSafeAreaInsetsDidChange()
++        view.setNeedsLayout()
++    }
++
++    private func layoutBannerViewport() {
++        guard let web = webView else { return }
++        let bounds = view.bounds
++        let top = bannerHeight > 0 ? view.safeAreaInsets.top : 0
++        let reserved = min(bounds.height, top + bannerHeight)
++        let frame = CGRect(x: 0, y: reserved, width: bounds.width, height: max(0, bounds.height - reserved))
++        if web.frame != frame { web.frame = frame }
++        bannerStatus.frame = CGRect(x: view.safeAreaInsets.left, y: top,
++            width: max(0, bounds.width - view.safeAreaInsets.left - view.safeAreaInsets.right), height: bannerHeight)
++    }
++
++    @objc private func retryBanner() {
++        webView?.evaluateJavaScript("window.dispatchEvent(new Event('drawer-ad-retry'))", completionHandler: nil)
++    }
++}
++
++@objc(AdViewportPlugin)
++public class AdViewportPlugin: CAPPlugin, CAPBridgedPlugin {
++    public let identifier = "AdViewportPlugin"
++    public let jsName = "AdViewport"
++    public let pluginMethods: [CAPPluginMethod] = [CAPPluginMethod(name: "reserve", returnType: CAPPluginReturnPromise)]
++
++    @objc func reserve(_ call: CAPPluginCall) {
++        let height = CGFloat(call.getDouble("height") ?? 0)
++        let message = call.getString("message") ?? ""
++        DispatchQueue.main.async {
++            guard let controller = self.bridge?.viewController as? DrawerBridgeViewController else {
++                call.reject("Banner viewport is unavailable")
++                return
++            }
++            controller.reserveBanner(height: height, message: message)
++            call.resolve()
++        }
++    }
++}
++
++
+diff --git a/ios/App/App/AppleBillingPlugin.swift b/ios/App/App/AppleBillingPlugin.swift
+index 868e6af3..0bce553d 100644
+--- a/ios/App/App/AppleBillingPlugin.swift
++++ b/ios/App/App/AppleBillingPlugin.swift
+@@ -119,13 +119,6 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
+     }
+ }
+ 
+-@objc(DrawerBridgeViewController)
+-class DrawerBridgeViewController: CAPBridgeViewController {
+-    override func capacitorDidLoad() {
+-        bridge?.registerPluginInstance(IOSProfileExportPlugin())
+-        if #available(iOS 15.0, *) { bridge?.registerPluginInstance(AppleBillingPlugin()) }
+-    }
+-}
+ 
+ // File export uses the system share sheet on both iPhone and iPad. Bounded
+ // chunks avoid retaining a full document in a single Capacitor call.
