@@ -45,6 +45,8 @@ export function discoveryEligible(c,q,answered=new Set(discoveryAnswered(c))){
 export function discoveryChoices(c,q,random=Math.random){
  const available=q.choices.map((choice,index)=>({choice,index})).filter(({choice})=>(!choice.append||!discoveryLocked(c,choice.append.field)&&!(choice.append.opposite&&discoveryLocked(c,choice.append.opposite)&&(c[choice.append.opposite]||[]).includes(choice.append.value)))&&(!choice.tattoo||!discoveryLocked(c,'bodyProfile.tattoos'))&&(!choice.preference||!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits')));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
+ const required=available.filter(o=>o.choice.alwaysOffer);
+ if(required.length)return [...required,...available.filter(o=>!o.choice.alwaysOffer).slice(0,Math.max(0,5-required.length))].sort((a,b)=>available.indexOf(a)-available.indexOf(b));
  if(q.choices.length>=8&&available.filter(o=>o.choice.stance).length>=2&&available.filter(o=>!o.choice.stance).length>=3){const mixed=[...available.filter(o=>o.choice.stance).slice(0,2),...available.filter(o=>!o.choice.stance).slice(0,3)];for(let i=mixed.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[mixed[i],mixed[j]]=[mixed[j],mixed[i]];}return mixed;}
  return available.slice(0,5);
 }

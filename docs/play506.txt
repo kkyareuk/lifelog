@@ -1,0 +1,9 @@
+<ko-KR>
+주간 의견을 반영해 질문 17종의 겹치는 답변을 정리하고, 무관심·휴식 등 다양한 반응을 보강했어요. 직업 설정과 건물 내부 기능을 공개했어요. 비밀·트라우마·숨겨진 관계와 직접 입력, 비밀 공유 대화를 추가했어요. 키스·포옹 표현과 행동 시간을 개선했어요. 저장 복구, 교류 상태 불일치, 시간 밖 수면, 캐릭터별 재산 설정 오류를 수정했어요.
+</ko-KR>
+<en-US>
+Refined 17 questions using player feedback, merging similar answers and adding neutral and restful responses. Career settings and building interiors are now available. Added secrets, trauma, hidden relationships, custom text and secret-sharing conversations. Improved kiss/hug variety and activity timing. Fixed save recovery, mismatched interactions, out-of-schedule sleep and individual balance settings.
+</en-US>
+<ja-JP>
+ご意見をもとに17種類の質問で似た回答を整理し、気にしない・休むなどの反応を追加しました。職業設定と建物内部を公開しました。秘密・トラウマ・隠された関係・自由入力・秘密を打ち明ける会話を追加しました。キスやハグの表現と行動時間を改善しました。セーブ復旧、交流状態の不一致、予定外の睡眠、人物ごとの所持金設定を修正しました。
+</ja-JP>

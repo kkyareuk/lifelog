@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {readFile} from 'node:fs/promises';
+const root=resolve(process.argv[2]);
+const state=await readFile(resolve(root,'runtime/state.js'),'utf8');assert(state.includes("from './character-secrets.js'"));
+const model=await import(pathToFileURL(resolve(root,'runtime/character-secrets.js')));
+const [s]=model.normalizeSecrets([{id:'verify',kind:'trauma',event:'custom:달의 붕괴',triggers:[],frame:'memory'}]);
+assert.equal(s.event,'custom:달의 붕괴');assert.equal(s.frame,'past');assert.deepEqual(s.triggers,[]);assert.equal(model.secretSentence({}, {name:'가람'},s),'가람은 예전에 달의 붕괴를 겪었다.');
+assert.deepEqual(await readFile(resolve(root,'runtime/character-secrets.js')),await readFile(new URL('../character-secrets.js',import.meta.url)));
+console.log('PASS506 actual deployed runtime import path, custom secret and empty triggers; source byte identity');

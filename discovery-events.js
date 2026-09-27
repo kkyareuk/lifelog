@@ -1,3 +1,4 @@
+import {refineDiscoveryChoices} from './discovery-revisions.js';
 import {LIFESTYLE_EVENTS} from './discovery-lifestyle.js?v=20260909dev305';
 import {expandDiscovery,calibrateDiscovery} from './discovery-extra.js?v=20260909dev305';
 import {PROFILE_EVENTS} from './discovery-profile.js?v=20260909dev305';
@@ -206,5 +207,6 @@ const dilemmas=[
 for(const [id,icon,ko,en,ja,answers] of dilemmas)DISCOVERY_EVENTS.push({id:'dilemma-'+id,icon,animation:'ponder',question:tri(ko,en,ja),choices:answers.map(([ko,en,ja,targets])=>({text:tri(ko,en,ja),effects:{},targets}))});
 
 calibrateDiscovery(DISCOVERY_EVENTS);
+refineDiscoveryChoices(DISCOVERY_EVENTS);
 
 DISCOVERY_EVENTS.push(...LIFESTYLE_EVENTS);
