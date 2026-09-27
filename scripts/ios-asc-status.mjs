@@ -56,8 +56,9 @@ if (process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
     if (process.argv[2]==='preflight') await preflight();
     else {
       const appId=await findApp(), build=await findBuild(appId);
-      saveStatus('apple-build',{appId,build});
-      console.log(JSON.stringify({appId,build}));
+      const versions=(await appleGet(`/v1/apps/${appId}/appStoreVersions?limit=10`)).data.map(v=>({id:v.id,version:v.attributes.versionString,state:v.attributes.appStoreState,releaseType:v.attributes.releaseType}));
+      saveStatus('apple-build',{appId,build,versions});
+      console.log(JSON.stringify({appId,build,versions}));
     }
   } catch(error) { console.error(error.message); process.exitCode=1; }
 }
