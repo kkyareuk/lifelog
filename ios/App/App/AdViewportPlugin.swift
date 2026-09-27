@@ -36,7 +36,7 @@ class DrawerBridgeViewController: CAPBridgeViewController {
         guard !checkedBannerViewport, ProcessInfo.processInfo.arguments.contains("--check-ad-viewport") else { return }
         checkedBannerViewport = true
         var samples: [[String: Any]] = []
-        for height: CGFloat in [56, 90, 0] {
+        for height in [CGFloat(56), CGFloat(90), CGFloat(0)] {
             reserveBanner(height: height, message: "Banner viewport check")
             guard let web = webView else { continue }
             samples.append(["height": height, "safeTop": view.safeAreaInsets.top,
@@ -105,3 +105,4 @@ public class AdViewportPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 }
+

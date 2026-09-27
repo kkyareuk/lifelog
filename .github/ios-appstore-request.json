@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-21-public469-multiplayer-coffee-advertising-review",
-  "version": "1.0.417",
-  "build": 469,
+  "request": "2026-09-27-ios507-banner-viewport-hotfix",
+  "version": "1.0.455",
+  "build": 507,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
