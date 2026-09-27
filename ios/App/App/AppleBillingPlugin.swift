@@ -119,13 +119,6 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 }
 
-@objc(DrawerBridgeViewController)
-class DrawerBridgeViewController: CAPBridgeViewController {
-    override func capacitorDidLoad() {
-        bridge?.registerPluginInstance(IOSProfileExportPlugin())
-        if #available(iOS 15.0, *) { bridge?.registerPluginInstance(AppleBillingPlugin()) }
-    }
-}
 
 // File export uses the system share sheet on both iPhone and iPad. Bounded
 // chunks avoid retaining a full document in a single Capacitor call.

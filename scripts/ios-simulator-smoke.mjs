@@ -39,7 +39,7 @@ async function main() {
       simctl(['boot', device.udid]);
       simctl(['bootstatus', device.udid, '-b']);
       simctl(['install', device.udid, app]);
-      const launch = simctl(['launch', device.udid, 'com.drawervillage.app']);
+      const launch = simctl(['launch', device.udid, 'com.drawervillage.app', '--check-ad-viewport']);
       if (!/com\.drawervillage\.app:\s*\d+/.test(launch)) throw new Error(`Unexpected launch: ${launch}`);
       const container = simctl(['get_app_container',device.udid,'com.drawervillage.app','data']);
       const probe = `${container}/Documents/drawer-startup-check.json`;
@@ -50,6 +50,9 @@ async function main() {
         if(startup?.dom?.appChildren>0&&startup.dom.textLength>50&&startup.dom.buttons>0)break;
       }
       writeFileSync(`${reports}/${device.family}-startup.json`,JSON.stringify(startup,null,2));
+      const viewport = JSON.parse(readFileSync(container+'/Documents/drawer-ad-viewport-check.json','utf8'));
+      writeFileSync(reports+'/'+device.family+'-ad-viewport.json',JSON.stringify(viewport,null,2));
+      if(viewport.samples.length!==3 || !viewport.samples.every(s=>s.separateRoot && s.webHeight>0 && Math.abs(s.webBottom-s.rootHeight)<1 && Math.abs(s.webTop-(s.height ? s.height+s.safeTop : 0))<1 && s.statusHidden===(s.height===0)))throw Error('Native banner viewport overlaps or clips the game');
       const scene=`${container}/Documents/drawer-scene-check.json`;
       if(existsSync(scene))copyFileSync(scene,`${reports}/${device.family}-scene.json`);
 
