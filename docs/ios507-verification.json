@@ -1,0 +1,61 @@
+{
+  "version": "1.0.455",
+  "build": 507,
+  "source": "03b13a1ea285cb9ef0ca974aa21a99787f469524",
+  "simulatorRun": "https://github.com/kkyareuk/lifelog/actions/runs/36307413132",
+  "device": "iPhone 17 Pro",
+  "runtime": "26.2",
+  "processRunning": true,
+  "gameRendered": "1",
+  "bootError": null,
+  "nativeViewport": {
+    "samples": [
+      {
+        "safeTop": 62,
+        "rootHeight": 874,
+        "webTop": 118,
+        "separateRoot": true,
+        "height": 56,
+        "statusHidden": false,
+        "webBottom": 874,
+        "webHeight": 756
+      },
+      {
+        "webBottom": 874,
+        "safeTop": 62,
+        "webHeight": 722,
+        "separateRoot": true,
+        "statusHidden": false,
+        "rootHeight": 874,
+        "height": 90,
+        "webTop": 152
+      },
+      {
+        "webBottom": 874,
+        "height": 0,
+        "rootHeight": 874,
+        "webTop": 0,
+        "separateRoot": true,
+        "webHeight": 874,
+        "safeTop": 62,
+        "statusHidden": true
+      }
+    ]
+  },
+  "webUI": {
+    "viewport": "393x798",
+    "engines": [
+      "WebKit",
+      "Chrome"
+    ],
+    "adSDK": "mock",
+    "checks": [
+      "adaptive 64/90px",
+      "footer within viewport",
+      "screen hide/restore",
+      "landscape",
+      "paid ad removal"
+    ]
+  },
+  "physicalDeviceTested": false
+}
