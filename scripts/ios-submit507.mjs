@@ -7,7 +7,7 @@ const mode=process.argv[2]||'status';assert(['status','prepare','submit'].includ
 const expectedVersion='1.0.455',expectedBuild='507',draftId='169ef378-ddb7-4f4e-b0f4-486ed14f12db';
 async function write(path,method,data){
  assert(path.startsWith('/v1/'));const r=await fetch('https://api.appstoreconnect.apple.com'+path,{method,headers:{Authorization:'Bearer '+makeToken(),'Content-Type':'application/json'},body:JSON.stringify({data}),redirect:'error',signal:AbortSignal.timeout(45000)});
- const body=r.status===204?{}:await r.json();if(!r.ok)throw Error('Apple '+r.status+': '+JSON.stringify(body.errors?.map(e=>({code:e.code,title:e.title,source:e.source,detail:e.detail}))));return body;
+ const body=r.status===204?{}:await r.json();if(!r.ok)throw Error('Apple '+r.status+': '+JSON.stringify(body.errors?.map(e=>({code:e.code,title:e.title,source:e.source,detail:e.detail,associated:e.meta?.associatedErrors}))));return body;
 }
 const versions=(await appleGet(`/v1/apps/${appId}/appStoreVersions?limit=20`)).data;
 const v=versions.find(v=>v.attributes.versionString===expectedVersion)||versions.find(v=>v.id===draftId);
@@ -27,12 +27,13 @@ if(mode!=='status'){
   assert.equal(v.attributes.versionString,expectedVersion);
   const attached=await appleGet(`/v1/appStoreVersions/${v.id}/build`);assert.equal(attached.data.id,build.id);
   const submissions=(await appleGet(`/v1/apps/${appId}/reviewSubmissions?limit=100`)).data;
-  let submission;
+  let submission,emptyDraft;
   for(const sub of submissions.filter(s=>s.attributes.state==='READY_FOR_REVIEW')){
    const items=(await appleGet(`/v1/reviewSubmissions/${sub.id}/items?include=appStoreVersion&limit=100`)).data;
+   if(items.length===0 && sub.attributes.platform==='IOS' && sub.attributes.createdDate>='2026-09-27T09:09:00Z')emptyDraft=sub;
    if(items.some(i=>i.relationships?.appStoreVersion?.data?.id===v.id)){assert.equal(items.length,1,'Do not submit unrelated items');submission=sub;break;}
   }
-  if(!submission){submission=(await write('/v1/reviewSubmissions','POST',{type:'reviewSubmissions',attributes:{platform:'IOS'},relationships:{app:{data:{type:'apps',id:appId}}}})).data;await write('/v1/reviewSubmissionItems','POST',{type:'reviewSubmissionItems',relationships:{reviewSubmission:{data:{type:'reviewSubmissions',id:submission.id}},appStoreVersion:{data:{type:'appStoreVersions',id:v.id}}}});}
+  if(!submission){submission=emptyDraft||(await write('/v1/reviewSubmissions','POST',{type:'reviewSubmissions',attributes:{platform:'IOS'},relationships:{app:{data:{type:'apps',id:appId}}}})).data;await write('/v1/reviewSubmissionItems','POST',{type:'reviewSubmissionItems',relationships:{reviewSubmission:{data:{type:'reviewSubmissions',id:submission.id}},appStoreVersion:{data:{type:'appStoreVersions',id:v.id}}}});}
   await write('/v1/reviewSubmissions/'+submission.id,'PATCH',{type:'reviewSubmissions',id:submission.id,attributes:{submitted:true}});
  }
 }
