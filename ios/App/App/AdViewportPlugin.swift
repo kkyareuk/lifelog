@@ -90,7 +90,7 @@ class DrawerBridgeViewController: CAPBridgeViewController {
 public class AdViewportPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "AdViewportPlugin"
     public let jsName = "AdViewport"
-    public let pluginMethods = [CAPPluginMethod(name: "reserve", returnType: CAPPluginReturnPromise)]
+    public let pluginMethods: [CAPPluginMethod] = [CAPPluginMethod(name: "reserve", returnType: CAPPluginReturnPromise)]
 
     @objc func reserve(_ call: CAPPluginCall) {
         let height = CGFloat(call.getDouble("height") ?? 0)
@@ -105,3 +105,5 @@ public class AdViewportPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 }
+
+
