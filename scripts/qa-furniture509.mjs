@@ -41,4 +41,3 @@ try{
  await page.screenshot({path:out+'/'+(wk?'webkit':'chrome')+'-furniture.png',fullPage:true});
  assert.deepEqual(errors,[]);console.log('PASS UI509 '+(wk?'WebKit':'Chrome')+': surface selection saves, wallpaper upload visible, counter edge drag and tub layer order');
 }finally{await browser.close();server.closeAllConnections();server.close()}
-

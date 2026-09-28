@@ -24,3 +24,6 @@
 - SHA256: 2EA8B23FE03F3571EA3D989EE1DE97379C04AAD9B338EC526805C3CC3C8031F4
 - 621개 준비 웹 자산과 AAB 바이트 일치. jarsigner 서명 검증 통과.
 - iOS509 공통 자산 동기화 및 프로젝트 검사 통과. Mac 서명 빌드·스토어 제출 미실행.
+- 2026-09-28 15:36 KST: Play 내부 release382, 509(1.0.457) ‘내부 테스터에게 제공됨’ 확인. 번들509 하나, 이전508 제외, 지원 기기 감소0.
+- 가독화 파일 미첨부 경고1건 외 출시 차단 오류 없음. 프로덕션 승격·Apple 제출·운영자 공지 발송 미실행.
+- 코드 ca77986d origin/dev 반영. 제공 증빙 C:/Users/Public/drawer-releases/play-internal509.png.
