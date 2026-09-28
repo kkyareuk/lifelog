@@ -26,9 +26,16 @@ if(isNative){
   const consumableProducts=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","town_slots_5","green_tea"]);
   const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
   let purchaseInFlight=false;
+  const billingText=(ko,en,ja)=>{const l=String(document.documentElement.lang||navigator.language||'ko');return l.startsWith('ja')?ja:l.startsWith('en')?en:ko};
+  const pendingError=()=>new Error(billingText('이전 구매를 확인하지 못했어요. 다시 결제하지 말고 구매 내역 복원을 눌러 주세요.','An earlier purchase could not be verified. Restore purchases instead of paying again.','以前の購入を確認できません。再購入せず購入の復元をお試しください。'));
+  const bounded=async(operation,ms=25000)=>{let timer;try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(billingText('구매 확인 시간이 초과됐어요. 연결을 확인하고 구매 내역 복원을 눌러 주세요.','Purchase checking timed out. Check your connection and restore purchases.','購入確認がタイムアウトしました。接続を確認し購入を復元してください。'))),ms)})])}finally{clearTimeout(timer)}};
+  const refreshPurchaseAccess=async()=>{try{await bounded(()=>window.ParallelCityAuth?.refreshEntitlements?.())}catch{ /* The server grant is already committed; do not report a failed payment. */ }};
   const localizedBillingError=error=>{
     const code=String(error?.code||"");
     const messages={
+      PREPARATION_TIMEOUT:{ko:'Google Play 결제창을 열지 못했어요. 연결을 확인하고 다시 시도해 주세요.',en:'Google Play checkout did not open. Check your connection and try again.',ja:'Google Playの購入画面が開きませんでした。接続を確認して再試行してください。'},
+      ACTIVITY_UNAVAILABLE:{ko:'결제 화면을 열 수 없어요. 앱을 다시 열어 주세요.',en:'Checkout is unavailable. Reopen the app.',ja:'購入画面を開けません。アプリを開き直してください。'},
+      LAUNCH_FAILED:{ko:'Google Play 결제창을 열지 못했어요. 다시 시도해 주세요.',en:'Google Play checkout could not open. Please try again.',ja:'Google Playの購入画面を開けませんでした。再試行してください。'},
       NO_REGULAR_PAID_OFFER:{ko:"정상 유료 가격을 확인할 수 없어 결제를 시작하지 않았습니다. 앱을 업데이트하거나 고객센터에 문의해 주세요.",en:"The purchase was not started because a regular paid price could not be verified. Please update the app or contact support.",ja:"通常の有料価格を確認できなかったため、購入を開始しませんでした。アプリを更新するか、サポートへお問い合わせください。"},
       PURCHASE_PENDING:{ko:"결제가 승인 대기 중입니다. Google Play에서 완료된 뒤 구매 내역을 확인해 주세요.",en:"This purchase is pending. Check your purchases after Google Play completes it.",ja:"購入は保留中です。Google Playで完了した後、購入履歴を確認してください。"},
       PURCHASE_NOT_COMPLETED:{ko:"Google Play에서 완료된 구매로 확인되지 않았습니다.",en:"Google Play did not confirm this as a completed purchase.",ja:"Google Playで完了済みの購入として確認できませんでした。"},
@@ -55,11 +62,12 @@ if(isNative){
   const writePendingPurchases=items=>{
     try{localStorage.setItem(pendingPurchaseKey,JSON.stringify(items.slice(-20)))}catch{}
   };
-  const rememberPurchase=(purchase,storeProductId=purchase?.products?.[0]||"")=>{
+  const rememberPurchase=(purchase,storeProductId=purchase?.products?.[0]||"",ownerUid=purchase?.ownerUid||window.ParallelCityAuth?.getInfo?.().user?.uid)=>{
     const purchaseToken=String(purchase?.purchaseToken||"").trim();
     if(!purchaseToken)return;
     const saved={
       purchaseToken,
+      ownerUid:String(ownerUid||""),
       orderId:String(purchase?.orderId||""),
       products:[String(storeProductId||"")].filter(Boolean),
       purchaseState:Number(purchase?.purchaseState)||1,
@@ -97,7 +105,7 @@ if(isNative){
 
   const loadProducts=async()=>{
     if(!playConfig().enabled||!PlayBilling)return [];
-    const result=await PlayBilling.getProducts({productIds:productIds()});
+    const result=await bounded(()=>PlayBilling.getProducts({productIds:productIds()}));
     return {
       products:(Array.isArray(result?.products)?result.products:[]).map(product=>({
         ...product,
@@ -113,8 +121,11 @@ if(isNative){
   };
 
   const verifyPurchase=async purchase=>{
-    const token=await window.ParallelCityAuth?.getIdToken?.();
+    const expectedUid=purchase.ownerUid||window.ParallelCityAuth?.getInfo?.().user?.uid;
+    if(!expectedUid||window.ParallelCityAuth?.getInfo?.().user?.uid!==expectedUid)throw pendingError();
+    const token=await bounded(()=>window.ParallelCityAuth?.getIdToken?.());
     if(!token)throw new Error("Google 로그인 후 구매해 주세요.");
+    if(window.ParallelCityAuth?.getInfo?.().user?.uid!==expectedUid)throw pendingError();
     const backend=String(playConfig().backendUrl||"").replace(/\/$/,"");
     const response=await fetch(`${backend}/play-billing/verify`,{
       method:"POST",
@@ -125,7 +136,8 @@ if(isNative){
         purchaseToken:purchase.purchaseToken||"",
         orderId:purchase.orderId||"",
         quantity:Number(purchase.quantity)||1
-      })
+      }),
+      signal:AbortSignal.timeout(25000)
     });
     const result=await response.json().catch(()=>({}));
     if(!response.ok||result.verified!==true||result.entitlementApplied!==true){
@@ -149,13 +161,18 @@ if(isNative){
     if(!window.ParallelCityAuth?.getInfo?.().user)throw new Error("Google 로그인 후 구매해 주세요.");
     purchaseInFlight=true;
     const storeProductId=playConfig().products?.[productId]||productId;
+    const startingUid=window.ParallelCityAuth.getInfo().user.uid;
     try{
+      const outstanding=await restoreCore();
+      if(outstanding.failed)throw pendingError();
+      if(outstanding.recoveredCharge)return {restored:true};
+      if(window.ParallelCityAuth?.getInfo?.().user?.uid!==startingUid)throw pendingError();
       let purchaseResult;
       try{
         purchaseResult=await PlayBilling.purchase({productId:storeProductId});
       }catch(error){
         if(String(error?.code||"")==="7"){
-          const restored=await restorePurchases();
+          const restored=await restoreCore();
           if(restored.restored)return {restored:true};
         }
         throw localizedBillingError(error);
@@ -164,26 +181,30 @@ if(isNative){
         if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");
         throw new Error("결제가 완료되지 않았습니다.");
       }
-      rememberPurchase(purchaseResult,storeProductId);
-      const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
+      rememberPurchase(purchaseResult,storeProductId,startingUid);
+      if(window.ParallelCityAuth?.getInfo?.().user?.uid!==startingUid)throw pendingError();
+      const verification=await verifyPurchase({...purchaseResult,ownerUid:startingUid,products:[storeProductId]});
       if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
       forgetPurchase(purchaseResult.purchaseToken);
-      await window.ParallelCityAuth?.download?.({automatic:false});
+      await refreshPurchaseAccess();
       return purchaseResult;
     }finally{
       purchaseInFlight=false;
     }
   };
 
-  const restorePurchases=async()=>{
+  const restoreCore=async()=>{
     requireBilling();
     if(!window.ParallelCityAuth?.getInfo?.().user)throw new Error("Google 로그인 후 구매를 복원해 주세요.");
-    const result=await PlayBilling.restorePurchases();
+    const restoreUid=window.ParallelCityAuth.getInfo().user.uid;
+    const result=await bounded(()=>PlayBilling.restorePurchases());
+    if(window.ParallelCityAuth?.getInfo?.().user?.uid!==restoreUid)throw pendingError();
     const purchases=mergePurchases(
       Array.isArray(result?.purchases)?result.purchases:[],
       readPendingPurchases()
     );
-    let restored=0;
+    if(purchases.some(p=>productIds().includes(p.products?.[0])&&Number(p.purchaseState)===2))throw pendingError();
+    let restored=0,recoveredCharge=0;
     const failures=[];
     for(const purchaseResult of purchases){
       if(Number(purchaseResult?.purchaseState)!==1)continue;
@@ -192,15 +213,23 @@ if(isNative){
       const productId=logicalProductId(storeProductId);
       rememberPurchase(purchaseResult,storeProductId);
       try{
+        if(window.ParallelCityAuth?.getInfo?.().user?.uid!==restoreUid)throw pendingError();
         const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
         if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
         forgetPurchase(purchaseResult.purchaseToken);
         restored+=1;
+        if(consumableProducts.has(productId)||!purchaseResult.acknowledged)recoveredCharge+=1;
       }catch(error){failures.push(error)}
     }
-    if(restored)await window.ParallelCityAuth?.download?.({automatic:false});
+    if(restored)await refreshPurchaseAccess();
     if(!restored&&failures.length)throw failures[0];
-    return {purchases,restored,failed:failures.length};
+    return {purchases,restored,recoveredCharge,failed:failures.length};
+  };
+
+  const restorePurchases=async()=>{
+    if(purchaseInFlight)throw pendingError();
+    purchaseInFlight=true;
+    try{return await restoreCore()}finally{purchaseInFlight=false}
   };
 
   window.DrawerVillagePlayBilling={
@@ -212,10 +241,10 @@ if(isNative){
   };
 
   // 결제 직후 앱이 닫히거나 서버 권한 반영이 늦었던 경우, 다음 로그인
-  // 완료 시 보관 중인 영수증만 조용히 한 번 더 확인한다.
+  // 완료 시 Google Play 미처리 구매와 기기에 보관된 영수증을 함께 확인한다.
   let pendingRetryRunning=false;
   window.addEventListener("drawer-village-cloud-loaded",()=>{
-    if(pendingRetryRunning||!readPendingPurchases().length)return;
+    if(pendingRetryRunning||purchaseInFlight||!isAndroid||!playConfig().enabled||!window.ParallelCityAuth?.getInfo?.().user)return;
     pendingRetryRunning=true;
     setTimeout(()=>restorePurchases().catch(error=>console.warn("보류 중인 Google Play 구매 재확인 대기",error)).finally(()=>{pendingRetryRunning=false}),1200);
   });

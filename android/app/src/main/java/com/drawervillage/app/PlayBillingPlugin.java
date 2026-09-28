@@ -1,6 +1,8 @@
 package com.drawervillage.app;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
@@ -30,6 +32,8 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     private BillingClient billingClient;
     private PluginCall pendingPurchaseCall;
     private String pendingProductId;
+    private final Handler purchaseHandler = new Handler(Looper.getMainLooper());
+    private Runnable preparationTimeout;
 
     /** Select a normal, immediate, positive-price purchase option deterministically. */
     private ProductDetails.OneTimePurchaseOfferDetails regularPaidOffer(ProductDetails details) {
@@ -47,6 +51,8 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
     }
 
     private void clearPendingPurchase() {
+        if (preparationTimeout != null) purchaseHandler.removeCallbacks(preparationTimeout);
+        preparationTimeout = null;
         pendingPurchaseCall = null;
         pendingProductId = null;
     }
@@ -223,7 +229,14 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
         }
         pendingPurchaseCall = call;
         pendingProductId = productId;
+        preparationTimeout = () -> {
+            if (pendingPurchaseCall != call) return;
+            clearPendingPurchase();
+            call.reject("Google Play 결제창을 열지 못했습니다. 연결을 확인하고 다시 시도해 주세요.", "PREPARATION_TIMEOUT");
+        };
+        purchaseHandler.postDelayed(preparationTimeout, 25000);
         withBilling(call, () -> {
+            if (pendingPurchaseCall != call) return;
             QueryProductDetailsParams.Product query = QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(productId)
                 .setProductType(BillingClient.ProductType.INAPP)
@@ -231,6 +244,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             billingClient.queryProductDetailsAsync(
                 QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(query)).build(),
                 (result, queryResult) -> {
+                    if (pendingPurchaseCall != call) return;
                     if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                         clearPendingPurchase();
                         call.reject(billingError("상품을 불러오지 못했습니다.", result), String.valueOf(result.getResponseCode()));
@@ -252,7 +266,17 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                     }
                     if (offer.getOfferToken() != null) detailParams.setOfferToken(offer.getOfferToken());
                     Activity activity = getActivity();
+                    if (activity == null || activity.isFinishing()) {
+                        clearPendingPurchase();
+                        call.reject("결제 화면을 열 수 없습니다. 앱을 다시 열어 주세요.", "ACTIVITY_UNAVAILABLE");
+                        return;
+                    }
                     activity.runOnUiThread(() -> {
+                        if (pendingPurchaseCall != call) return;
+                        // Only pre-launch work expires. Never unlock a live Google payment window.
+                        if (preparationTimeout != null) purchaseHandler.removeCallbacks(preparationTimeout);
+                        preparationTimeout = null;
+                        try {
                         BillingResult launch = billingClient.launchBillingFlow(
                             activity,
                             BillingFlowParams.newBuilder()
@@ -262,6 +286,10 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                         if (launch.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                             clearPendingPurchase();
                             call.reject(billingError("결제창을 열지 못했습니다.", launch), String.valueOf(launch.getResponseCode()));
+                        }
+                        } catch (Exception error) {
+                            clearPendingPurchase();
+                            call.reject("Google Play 결제창을 열지 못했습니다.", "LAUNCH_FAILED");
                         }
                     });
                 }

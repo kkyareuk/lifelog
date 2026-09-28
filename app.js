@@ -2848,7 +2848,10 @@ function bind(){
     if(!saleAllows(productId)){showToast(saleChangedMessage(state.uiLanguage));render();return;}
     setPlayButtonState(button,"opening","결제창 여는 중…",true);
     try{
-      const purchaseResult=await window.DrawerVillagePlayBilling?.purchase?.(productId);
+      const billing=window.DrawerVillagePlayBilling;
+      if(typeof billing?.purchase!=='function')throw new Error(({ko:'결제 기능을 불러오지 못했어요. 앱을 다시 열어 주세요.',en:'Billing could not load. Please reopen the app.',ja:'購入機能を読み込めません。アプリを開き直してください。'})[state.uiLanguage]||'Billing unavailable');
+      const purchaseResult=await billing.purchase(productId);
+      if(!purchaseResult)throw new Error(({ko:'구매 완료를 확인하지 못했어요. 구매 내역 복원을 눌러 주세요.',en:'Purchase completion could not be confirmed. Please restore purchases.',ja:'購入完了を確認できません。購入の復元をお試しください。'})[state.uiLanguage]||'Purchase not confirmed');
       if(productId==="diamonds_100")window.dispatchEvent(new CustomEvent("drawer-village-diamonds-charged",{detail:purchaseResult||{}}));
       showToast(playText("구매가 완료되어 상품을 지급했습니다"));
       render();
