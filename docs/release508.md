@@ -28,3 +28,9 @@
 - SHA256: 380B7E76AEA24AD8E53C356CDBAF28BFB05DEC29393E337A5865FC9FEC07D28F
 - Gradle release 빌드, jarsigner 검증, 준비된605개 웹 자산과 AAB 내부 파일 바이트 일치 확인.
 
+## 내부 테스트 제공 완료
+- 2026-09-28 12:39 KST, Play 내부 release381 / 508(1.0.456) ‘내부 테스터에게 제공됨’ 확인.
+- 포함 번들은508 하나. 이전506 제외, 지원 기기 감소0. 기존 가독화 파일 미첨부 경고1개 외 출시 차단 오류 없음.
+- 코드2178c2f6을 origin/dev에 반영. 프로덕션 승격·Apple508 제출·운영자 공지/이메일 발송 없음.
+- 증빙: C:/Users/Public/drawer-releases/play-internal508.png
+
