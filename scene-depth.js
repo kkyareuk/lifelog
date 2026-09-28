@@ -1,3 +1,5 @@
+import {positionDeskUsers} from './desk-composite.js';
+import {positionBathUsers} from './bath-composite.js';
 import {positionStandingOccupants} from './scene-collision.js';
 import {orderAttachedFurniture} from './furniture-depth.js';
 import {positionBedOccupants} from './bed-occupant-layout.js';
@@ -34,7 +36,7 @@ export function scheduleSceneDepth(){
   frame=requestAnimationFrame(()=>{
     frame=0;if(!root?.isConnected)return;
     const updates=[],seats=[],pulls=[],meals=[],labels=[];
-    for(const scene of root.querySelectorAll('.room')){positionSurfaceFurniture(scene);positionWorktopUsers(scene);positionBedOccupants(scene)}
+    for(const scene of root.querySelectorAll('.room')){positionSurfaceFurniture(scene);positionWorktopUsers(scene);positionBedOccupants(scene);positionBathUsers(scene)}
     for(const scene of root.querySelectorAll('.room,.world.town-environment')){
       const items=[...scene.querySelectorAll(scene.matches('.room')?actors:'.map-art-button,.person:not(.place-people),.meeting-walker')];
       const bounds=items.map(element=>{
@@ -192,6 +194,7 @@ export function scheduleSceneDepth(){
     for(const scene of root.querySelectorAll('.room')){
       const top=Math.max(10,...[...scene.querySelectorAll('[data-furniture-placement]')].map(e=>Number(e.style.zIndex)||0));
       for(const person of scene.querySelectorAll('.home-person:not([data-seat-id]:not([data-seat-id=""])):not([data-couple-bed-id]:not([data-couple-bed-id=""])),.room-pet'))person.style.zIndex=String(top+2);
+      positionBathUsers(scene);positionDeskUsers(scene);
     }
   });
 }

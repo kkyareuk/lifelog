@@ -712,6 +712,7 @@ function normalizeHomes(x){
       room.name=String(room.name||"이름 없는 방");if(["다이닝룸","다이닝 룸"].includes(room.name))room.name="식당";room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
       room.image=String(room.image||"");
       room.floorImage=String(room.floorImage||"");
+      room.wallImage=String(room.wallImage||"");
       room.hideFurniture=room.hideFurniture===true;
       room.floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
       room.wallMaterial=normalizeWallSurface(room.wallMaterial,room.floorMaterial,room.type);
@@ -1410,6 +1411,7 @@ export function updateHome(homeId,patch,persist=true){
 export function setRoomFloorImage(homeId,room,data,mode="custom"){
   const h=state.homes[homeId];if(!h?.rooms?.[room])return;
   h.rooms[room].floorImage=data;
+  h.rooms[room].usePhoto=mode!=="customTile";
   h.rooms[room].floorMaterial=data?(mode==="customTile"?"customTile":"custom"):defaultHomeSurfaceForRoom(h.rooms[room].type);
   save(true);
 }

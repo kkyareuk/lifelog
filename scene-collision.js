@@ -25,6 +25,7 @@ export function positionStandingOccupants(scene,rectForFurniture,paintedRect){
  const people=[...scene.querySelectorAll('.home-person,.room-pet')].sort((a,b)=>Number(!!b.dataset.usingFurniture)-Number(!!a.dataset.usingFurniture)||(a.dataset.characterId||a.dataset.petId||'').localeCompare(b.dataset.characterId||b.dataset.petId||''));
  const occupied=[...scene.querySelectorAll('.home-life-interaction')].map(e=>box(e.getBoundingClientRect()));
  for(const person of people){
+  if(person.classList.contains('is-bathing'))continue;
   const pet=person.classList.contains('room-pet');if(pet)person.style.animation='none';
   const visual=person.querySelector('.home-person-visual .avatar,.home-person-visual .sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji')||person.querySelector('.home-person-visual')||person;
   const r=box(visual.tagName==='IMG'?paintedRect(visual):visual.getBoundingClientRect());if(!r.width||!r.height)continue;

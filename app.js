@@ -1,3 +1,4 @@
+import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {CHARACTER_CONTACT_PHRASES} from './features/mail/contact-phrases.js';
 import {chooseStarterPresets} from './features/characters/starter-presets.js';
 import {bindContactPicker} from './features/settings/contact-picker.js';
@@ -1176,6 +1177,11 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
 }
 
 function setRoomLayoutStyle(room,layout){
+  const {columns,rows}=furnitureDisplayGrid(layout);
+  room.style.setProperty('--furniture-cell-w',`${100/columns}%`);
+  room.style.setProperty('--furniture-cell-h',`${100/rows}%`);
+  room.style.setProperty('--furniture-grid-cols',columns);
+  room.style.setProperty('--furniture-grid-rows',rows);
   room.style.setProperty("--mobile-room-x",`${layout.x}%`);
   room.style.setProperty("--mobile-room-y",`${layout.y}%`);
   room.style.setProperty("--mobile-room-w",`${layout.w}%`);
@@ -4578,6 +4584,7 @@ async function applyImage(type,id,room,data,targetWorld=state){
   data=await persistLocalImage(data);
   const apply=()=>{
   if(type==="room")setHomeImage(id,room,data);
+  else if(type==="roomWall")updateRoom(id,room,{wallImage:data,wallMaterial:"customWall",usePhoto:false});
   else if(type==="roomFloor")setRoomFloorImage(id,room,data,"customTile");
   else if(type==="roomScene")setRoomFloorImage(id,room,data,"custom");
   else if(type==="home")setHomeBackground(id,data);
@@ -5207,7 +5214,7 @@ function cropImage(file,type){
   // User photos use the square crop editor; in-game art keeps its full silhouette.
   if(type==="icon"||type==="petIcon"||type==="sceneVariantIcon")return prepareTransparentIcon(file);
   if(type==="ldImage"||type==="sceneVariantLd"||/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return prepareLargeArt(file);
-  if(type==="roomScene")return prepareLargeArt(file);
+  if(["roomScene","roomWall","roomFloor"].includes(type))return prepareLargeArt(file);
   const ratios={groupPhoto:1,userProfile:1,photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:1,room:16/9,roomFloor:1,home:16/9,place:1,placeInterior:16/9,townPhoto:4/3};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;

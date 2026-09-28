@@ -1,3 +1,5 @@
+import {prepareFurniturePhoto} from './furniture-photos.js';
+import {persistLocalImage} from './local-media.js';
 import {showRoomEditor} from './room-editor-dialog.js';
 import {translateDynamicInterface} from './views.js?v=20260909dev305';
 import {canEditSharedHome} from './shared-home-access.js';
@@ -76,11 +78,19 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry,space=null,p
    deleteRoom:(...args)=>change(()=>deleteRoom(...args)),save:commit,explicitSave:()=>{commit();render()},
    configurePhotos:(d,{sync,room})=>{
     const apply=async patch=>{Object.assign(room,patch);await commit();d.close('reopen');roomDialog(roomKey)};
-    const photo=d.querySelector('[data-edit-room-photo]'),floor=d.querySelector('[data-edit-room-floor]');
+    const photo=d.querySelector('[data-edit-room-photo]'),floor=d.querySelector('[data-edit-room-floor]'),wall=d.querySelector('[data-edit-room-wall]');
     const choose=async()=>{sync();try{const image=await space.choosePhoto();if(image&&d.isConnected)await apply({image,floorImage:image,usePhoto:true,floorMaterial:'custom'})}catch(e){toast(e.message)}};
-    if(space){photo.onclick=choose;floor.onclick=choose;photo.disabled=!space.choosePhoto;if(space.allowRoomPhotos===false){d.querySelector('[name="usePhoto"]').disabled=true;floor.disabled=true;for(const o of d.querySelectorAll('[name="floorMaterial"] option'))if(['custom','customTile'].includes(o.value))o.disabled=true;}}
-    else if(prepareImage){const uploads=document.createElement('div');uploads.hidden=true;d.append(uploads);addSharedRoomPhotos(uploads,{room,prepareImage,language:world.uiLanguage,toast,apply});photo.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="image"]').click()};floor.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="floorImage"]').click()};}
-    else{photo.disabled=true;floor.disabled=true;}
+    if(space){photo.onclick=choose;floor.onclick=choose;wall.disabled=true;photo.disabled=!space.choosePhoto;if(space.allowRoomPhotos===false){d.querySelector('[name="usePhoto"]').disabled=true;floor.disabled=true;for(const o of d.querySelectorAll('[name="floorMaterial"] option'))if(['custom','customTile'].includes(o.value))o.disabled=true;}}
+    else if(prepareImage){const uploads=document.createElement('div');uploads.hidden=true;d.append(uploads);addSharedRoomPhotos(uploads,{room,prepareImage,language:world.uiLanguage,toast,apply});photo.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="image"]').click()};floor.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="floorImage"]').click()};wall.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="wallImage"]').click()};}
+    else{photo.disabled=true;floor.disabled=true;wall.disabled=true;}
+    if(space){
+     const uploads=document.createElement('div');uploads.hidden=true;d.append(uploads);
+     const assertCurrent=()=>{if(space.valid&&!space.valid())throw Error('image-target-changed')};
+     addSharedRoomPhotos(uploads,{room,prepareImage:async file=>(await prepareFurniturePhoto(file,1800)).image,language:world.uiLanguage,toast,apply,mediaSession:s.activeGroupId?sharedImageSession():{assertCurrent,upload:persistLocalImage}});
+     floor.disabled=false;wall.disabled=false;
+     for(const o of d.querySelectorAll('[name="floorMaterial"] option'))if(o.value==='customTile')o.disabled=false;
+     floor.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="floorImage"]').click()};wall.onclick=()=>{sync();uploads.querySelector('[data-shared-room-photo="wallImage"]').click()};
+    }
     const close=d.onclose;d.onclose=()=>{close();commit()};
    }
   });

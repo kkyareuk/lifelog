@@ -13,7 +13,7 @@ export function showRoomEditor(homeId,roomKey,options){
   const currentFloorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
   const currentWallMaterial=normalizeWallSurface(room.wallMaterial,currentFloorMaterial,room.type);
   const surfaceOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentFloorMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
-  const wallOptions=HOME_WALL_KEYS.map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
+  const wallOptions=[...HOME_WALL_KEYS,"customWall"].map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
   dialog.innerHTML=`<form method="dialog"><header class="home-design-head"><button class="home-design-back" value="save" aria-label="${homeEditorCopy(state.uiLanguage).back}"></button><h2>${htmlEsc(room.name||"방")}</h2></header><div class="room-editor-fields home-design-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo home-design-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-actions editor-save-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">저장</button></div></form>`;
   const presetCopy=({ko:['방 프리셋 저장','프리셋 선택','적용','프리셋 이름'],en:['Save room preset','Choose preset','Apply','Preset name'],ja:['部屋プリセットを保存','プリセットを選択','適用','プリセット名']})[state.uiLanguage]||['방 프리셋 저장','프리셋 선택','적용','프리셋 이름'];
@@ -46,7 +46,7 @@ export function showRoomEditor(homeId,roomKey,options){
   dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close("reopen");openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
-  floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;dialog.querySelector('[name="usePhoto"]').checked=mode==="custom";sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
+  floorButton.onclick=()=>{const mode="customTile";dialog.querySelector('[name="floorMaterial"]').value=mode;dialog.querySelector('[name="usePhoto"]').checked=mode==="custom";sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
   dialog.onclose=()=>{if(!["photo","floor","reopen","preset"].includes(dialog.returnValue)){sync();dialog.remove();render()}dialog.remove()};
@@ -60,10 +60,13 @@ export function showRoomEditor(homeId,roomKey,options){
   fields.append(extra);
   bindRoomPermissionEditor(dialog);
   floorButton.hidden=true;
+  const wallButton=document.createElement('button');wallButton.type='button';wallButton.hidden=true;wallButton.dataset.editRoomWall='';dialog.append(wallButton);
+  wallButton.onclick=()=>{sync();dialog.close('photo');pickImage('roomWall',homeId,roomKey)};
   for(const field of ['floorMaterial','wallMaterial']){
     const select=dialog.querySelector(`[name="${field}"]`);
+    if(field==='wallMaterial')select.onchange=()=>{dialog.querySelector('[name="usePhoto"]').checked=false};
     if(field==='floorMaterial')select.onchange=()=>{drawFloorButton();dialog.querySelector('[name="usePhoto"]').checked=select.value==='custom'};
-    bindRoomSurfacePicker(select,{room,language:state.uiLanguage,floor:()=>dialog.querySelector('[name="floorMaterial"]').value,onCustom:()=>floorButton.click()});
+    bindRoomSurfacePicker(select,{room,language:state.uiLanguage,floor:()=>dialog.querySelector('[name="floorMaterial"]').value,canUpload:()=>!(field==='wallMaterial'?wallButton:floorButton).disabled,onCustom:()=>field==='wallMaterial'?wallButton.click():floorButton.click()});
   }
   configurePhotos?.(dialog,{sync,room});
   translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();

@@ -1,0 +1,9 @@
+<ko-KR>
+벽지와 바닥에 사진을 따로 추가할 수 있어요. 새 체크 타일을 추가했어요. 새 카운터의 가장자리를 끌어 상판 가운데를 늘려 보세요. 조합형 책상과 욕조를 추가하고, 목욕 중 물과 캐릭터의 겹침을 자연스럽게 바꿨어요. 씻는 거품의 위치와 움직임을 다양하게 하고 방 크기 조절 중 가구 크기가 변하던 문제를 수정했어요.
+</ko-KR>
+<en-US>
+Add separate photos for wallpaper and flooring, and try the new checker tiles. Drag a counter edge to extend its center while keeping its trim. Added layered desks and bathtubs with water and characters drawn in the correct order. Washing bubbles now vary in position and motion. Fixed furniture changing size while resizing a room.
+</en-US>
+<ja-JP>
+壁紙と床にそれぞれ写真を追加できるようになり、新しいチェックタイルも加わりました。カウンターの端をドラッグすると縁を保ちながら中央を伸ばせます。組み合わせ式の机と浴槽を追加し、入浴中の水とキャラクターの重なりを改善しました。洗う時の泡の位置や動きを多様にし、部屋のサイズ変更中に家具まで伸縮する問題を修正しました。
+</ja-JP>

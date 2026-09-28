@@ -1,9 +1,9 @@
 import {personalState,save} from './state.js?v=20260909dev305';
 import {FURNITURE_CATALOG,furnitureImage,furnitureLabel} from './furniture-layout.js?v=20260909dev305';
-export async function prepareFurniturePhoto(file){
+export async function prepareFurniturePhoto(file,maxSide=640){
  if(!file?.type?.startsWith('image/')||file.size>12*1024*1024)throw Error('image');
  const url=URL.createObjectURL(file);
- try{const img=new Image();img.src=url;await img.decode();const scale=Math.min(1,640/Math.max(img.naturalWidth,img.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return {image:canvas.toDataURL('image/webp',.88),imageWidth:canvas.width,imageHeight:canvas.height};}finally{URL.revokeObjectURL(url)}
+ try{const img=new Image();img.src=url;await img.decode();const scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);return {image:canvas.toDataURL('image/webp',.88),imageWidth:canvas.width,imageHeight:canvas.height};}finally{URL.revokeObjectURL(url)}
 }
 export function furniturePhotoLibrary(world){
  const personal=personalState(),all=[...(personal.furniturePhotos||[])];

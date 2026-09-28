@@ -118,6 +118,7 @@ export function normalizeFurniturePlacement(value,index=0){
     layer:Math.round(clamp(value.layer??index,0,20)),
     rotation:legacyItem==="카운터 상판"?90:legacyItem==="카운터 연결형"?180:Number(rotation.toFixed(2)),
     counterSpan:clamp(value.counterSpan||1,1,6),
+    counterDepth:clamp(value.counterDepth||1,1,6),
     surfaceId:String(value.surfaceId||"").slice(0,120),surfaceU:clamp(value.surfaceU??.5,0,1),surfaceV:clamp(value.surfaceV??.5,0,1),
     facing:["front","left","right"].includes(value.facing)?value.facing:"front",
     flipped:value.flipped===true,

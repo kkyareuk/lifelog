@@ -1,3 +1,4 @@
+import {counterArt} from './counter-art.js';
 import {openFurniturePhotos} from './furniture-photos.js';
 import {bindFurnitureDrag} from './furniture-drag.js';
 import {furnitureSprite} from './furniture-sprites.js';
@@ -20,7 +21,7 @@ function setFurniturePlacementStyle(element,placement){
   if(sprite){
     element.style.setProperty("--sprite-width",String(sprite.width/527*2*sprite.scale/furnitureFootprint(placement.item).columns));
     element.style.setProperty("--sprite-ratio",String(sprite.width/sprite.height));
-    const art=element.querySelector('.furniture-sprite');if(sprite.kind==='counter')art.style.borderImageSource=`url(${sprite.src})`;else art.src=sprite.src;
+    const art=element.querySelector('.furniture-sprite');if(sprite.kind==='counter')art.outerHTML=counterArt(sprite,placement.counterSpan,placement.counterDepth);else art.src=sprite.src;
     element.dataset.surfaceRotation=placement.rotation;element.dataset.seatDirection=sprite.direction;const grid=element.querySelector('.furniture-surface-grid');if(grid)grid.dataset.surfaceSide=String(['left','right'].includes(sprite.direction));
     const layer=element.closest('.room-furniture-layer');
     let overlay=[...layer.querySelectorAll('[data-chair-frame]')].find(el=>el.dataset.chairFrame===placement.id);
@@ -71,7 +72,7 @@ export function bindFurnitureEditor(root,{state,updateFurniturePlacement,moveFur
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
     positionToolbar();element.dispatchEvent(new CustomEvent('furniture-selection',{bubbles:true}));
   };
-  bindFurnitureDrag(root,{resize:(el,span)=>{updateFurniturePlacement(el.dataset.homeId,el.dataset.roomKey,el.dataset.furniturePlacement,{counterSpan:span});pendingFurnitureSelection={homeId:el.dataset.homeId,roomKey:el.dataset.roomKey,placementId:el.dataset.furniturePlacement};rerender()},getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
+  bindFurnitureDrag(root,{resize:(el,patch)=>{updateFurniturePlacement(el.dataset.homeId,el.dataset.roomKey,el.dataset.furniturePlacement,patch);pendingFurnitureSelection={homeId:el.dataset.homeId,roomKey:el.dataset.roomKey,placementId:el.dataset.furniturePlacement};rerender()},getHome:id=>state.homes[id],select:selectFurniture,language:state.uiLanguage,move:(element,position)=>{
     const {homeId,roomKey,furniturePlacement:id}=element.dataset;
     if(moveFurniturePlacement(homeId,roomKey,position.roomKey,id,position)){pendingFurnitureSelection={homeId,roomKey:position.roomKey,placementId:id};rerender()}
   }});

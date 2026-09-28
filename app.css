@@ -1416,12 +1416,14 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .furniture-surface-grid[data-surface-kind="counter"][data-surface-side="true"]{left:12%;top:12%;width:76%;height:76%}
 .is-editing .furniture-surface-grid{display:block}
 .surface-drop-target .room-furniture-art{outline:2px solid #d5ae52;outline-offset:2px}
-.furniture-sprite.counter-stretch{display:grid;grid-template-columns:var(--counter-cap) minmax(0,1fr) var(--counter-cap);height:auto;aspect-ratio:var(--sprite-ratio)}
+.bath-composite-layer{position:absolute;pointer-events:none}.bath-composite-layer img{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(var(--bath-flip,1))}.home.is-editing .bath-composite-layer{display:none}
+.furniture-sprite.counter-stretch{display:grid;grid-template-columns:var(--counter-cap) minmax(0,1fr) var(--counter-cap);grid-template-rows:var(--counter-top) minmax(0,1fr) var(--counter-bottom);height:auto;aspect-ratio:var(--sprite-ratio)}
+.counter-edge-controls{position:fixed;z-index:2147483000;pointer-events:none}.counter-edge-controls[hidden]{display:none}.counter-edge-controls button{position:absolute;width:26px;height:26px;min-height:0;padding:0;border:2px solid #604832;border-radius:50%;background:#fff2c9;pointer-events:auto;touch-action:none}.counter-edge-controls [data-counter-edge=left]{left:-13px;top:calc(50% - 13px);cursor:ew-resize}.counter-edge-controls [data-counter-edge=right]{right:-13px;top:calc(50% - 13px);cursor:ew-resize}.counter-edge-controls [data-counter-edge=top]{top:-13px;left:calc(50% - 13px);cursor:ns-resize}.counter-edge-controls [data-counter-edge=bottom]{bottom:-13px;left:calc(50% - 13px);cursor:ns-resize}
 .counter-slice{display:block;position:relative;overflow:hidden;height:100%}
 .counter-slice img{position:absolute;top:0;height:100%;max-width:none;object-fit:fill;pointer-events:none}
-.counter-left img{left:0;width:833.333333%}
-.counter-middle img{left:-15.789474%;width:131.578947%}
-.counter-right img{right:0;width:833.333333%}
+
+
+
 .furniture-sprite{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
 .chair-frame-overlay{display:grid;place-items:center;position:absolute;left:var(--furniture-x);top:var(--furniture-y);width:calc(var(--furniture-cell-w,25%)*var(--furniture-grid-width,1));height:calc(var(--furniture-cell-h,25%)*var(--furniture-grid-height,1));padding:3px;box-sizing:border-box;pointer-events:none;transform:translate(-50%,-50%) scale(var(--furniture-scale));transform-origin:50% 70%}
 .room-furniture-art:has(.furniture-sprite){width:calc(100% * var(--sprite-width,1));height:auto;aspect-ratio:var(--sprite-ratio)}
