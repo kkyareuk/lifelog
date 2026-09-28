@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-25-public496-reports-careers-cooking",
-  "version": "1.0.444",
-  "build": 496,
+  "request": "2026-09-29-public511-user-approved-ios",
+  "version": "1.0.459",
+  "build": 511,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
