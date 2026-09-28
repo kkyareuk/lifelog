@@ -19,9 +19,10 @@
 - 전체 정적 번역 EN2250/2983(75.4%), JA2249/2983(75.4%). 이번 추가 안내는 EN/JA 모두 제공.
 
 ## 배포
-최종 빌드 및 Play 제공 결과는 검증 후 기록한다. 프로덕션 승격 및 공지 발송 없음.
+프로덕션 승격 및 공지 발송 없음.
 - Android 서명 AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.459-511-internal.aab
 - SHA256: 1DDD11A80E6E43DCD984CAB5DD708620722205694FA2FD6C07976DC4ACE6F8AE
 - jarsigner 검증, 623개 준비 자산 바이트 일치 확인. Java release 컴파일 및 최종 bundleRelease 성공.
 - iOS511 공통 자산 동기화·프로젝트 검사 통과. Mac 서명·실기기·Apple 업로드는 미실행.
-- Play 내부 release384 초안에511 업로드 및 3언어 노트 입력. 최종 제공 상태 확인 중.
+- 2026-09-29 01:20 KST: Play 내부 release384, 511(1.0.459) 내부 테스터에게 제공됨 확인. 510 제외·511 단독 포함, 지원기기 감소0. 가독화 파일 미첨부 경고1건, 출시 차단 오류 없음.
+- 증빙 C:/Users/Public/drawer-releases/play-internal511.png. 코드 a52b9610 origin/dev 반영.
