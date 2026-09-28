@@ -1,61 +1,4 @@
---- a/runtime/shared-bath.js
-+++ b/runtime/shared-bath.js
-@@ -1,4 +1,4 @@
--import {hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
-+import {bathPairKind} from './bath-permissions.js';
- 
- // Only actual bath scenes may share a tub. Washing at a sink or in a shower
- // never becomes a bath just because a bathtub is present in the same room.
-@@ -25,7 +25,7 @@
-     const tub=tubs.find(p=>!claimed.has(p.id)&&(!pinned||p.id===pinned));
-     if(!tub)continue;
-     claimed.add(tub.id);used.add(person.id);
--    const partner=bathers.find(other=>!used.has(other.id)&&hasRomanticRelationship(world.relationships,person.id,other.id)&&
-+    const partner=bathers.find(other=>!used.has(other.id)&&bathPairKind(world,person,other)&&
-       (!scenes.get(other.id).furniture?.id||scenes.get(other.id).furniture.id===tub.id));
-     if(!partner)continue;
-     used.add(partner.id);
---- a/runtime/context-actions.js
-+++ b/runtime/context-actions.js
-@@ -1,3 +1,4 @@
-+import {bathPairKind} from './bath-permissions.js';
- import {PERFORMANCE_TASKS} from './performance-tasks.js';
- import {buildingInterior} from './building-interior-model.js';
- import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
-@@ -60,7 +61,7 @@
-    if(!furniture)return null;
-   }
-   const users=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id);
--  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&hasRomanticRelationship(world.relationships,c.id,users[0][0]);
-+  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&bathPairKind(world,c,world.characters?.[users[0][0]]);
-   const capacity=coupleBath||/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
-   const used=users.length;
-   if(used>=(kind==='affection'?1:capacity))return null;
---- a/runtime/job-log-runtime.js
-+++ b/runtime/job-log-runtime.js
-@@ -1,3 +1,4 @@
-+import {pirateHomeDuty} from './pirate-home-duty.js';
- import {JOB_LOGS,COMMON_LOGS,CALM_LOG} from './job-log-data.js';
- import {JOB_LOG_COPY} from './job-log-copy.js';
- const hash=s=>[...String(s)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
-@@ -31,6 +32,7 @@
-  const identity=jobLogIdentity(c,employmentId);if(!identity||identity.key==='unemployed')return null;
-  const {key}=identity,job=JOB_LOGS[key],minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60+date.getMilliseconds()/60000;
-  if(minute<start||minute>=end||end<=start)return null;
-+ if(key==='pirate'&&context.home)return pirateHomeDuty(c,date,start,end,language);
-  const day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),seed=c.id+':'+identity.employment.id+':'+day;
-  const opening=Math.min(10+hash(seed)%6,(end-start)/4),closing=Math.min(10+hash(seed+':close')%6,(end-start)/4);
-  let phase='work',index,from=start,to=end,poolKey=key;
-@@ -62,7 +64,7 @@
- export function jobLogContext(world,c,scene,now){
-  const people=Object.values(world.characters||{});
-  const partner=scene.placeId&&people.find(p=>{const e=p.sharedScene;return p.id!==c.id&&e?.placeId===scene.placeId&&e.townId===scene.townId&&!e.transit&&!e.home&&e.jobLogStartsAt<=now&&e.jobLogEndsAt>now;});
-- return {partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
-+ return {home:scene.home===true,partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
- }
- export function unemployedHomeLog(c,date,language='ko',slot=0){
-  if(jobLogIdentity(c)?.key!=='unemployed')return null;
---- /dev/null
+--- a/runtime/bath-permissions.js
 +++ b/runtime/bath-permissions.js
 @@ -0,0 +1,21 @@
 +import {isAdultAge} from './age-groups.js';
@@ -79,7 +22,23 @@
 + };
 + return allowed(a,b)&&allowed(b,a)?'adults':'';
 +}
---- /dev/null
+--- a/runtime/context-actions.js
++++ b/runtime/context-actions.js
+@@ -0,0 +1 @@
++import {bathPairKind} from './bath-permissions.js';
+@@ -63 +64 @@
+-  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&hasRomanticRelationship(world.relationships,c.id,users[0][0]);
++  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&bathPairKind(world,c,world.characters?.[users[0][0]]);
+--- a/runtime/job-log-runtime.js
++++ b/runtime/job-log-runtime.js
+@@ -0,0 +1 @@
++import {pirateHomeDuty} from './pirate-home-duty.js';
+@@ -33,0 +35 @@
++ if(key==='pirate'&&context.home)return pirateHomeDuty(c,date,start,end,language);
+@@ -65 +67 @@
+- return {partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
++ return {home:scene.home===true,partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
+--- a/runtime/pirate-home-duty.js
 +++ b/runtime/pirate-home-duty.js
 @@ -0,0 +1,14 @@
 +const duties=[
@@ -96,3 +55,11 @@
 + const localizedCopy=Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:row[i*2],desc:row[i*2+1]}]));
 + return {...(localizedCopy[language]||localizedCopy.ko),localizedCopy,jobLogId:`pirate:home:${index}`,jobLogPhase:'work',jobLogStartsAt:day+(start+slot*30)*60000,jobLogEndsAt:day+Math.min(end,start+(slot+1)*30)*60000,officeTaskId:`job:pirate:home:${index}`,officeRole:'builtin-pirate',officeRoom:'workspace',economyWork:true};
 +}
+--- a/runtime/shared-bath.js
++++ b/runtime/shared-bath.js
+@@ -1 +1 @@
+-import {hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
++import {bathPairKind} from './bath-permissions.js';
+@@ -28 +28 @@
+-    const partner=bathers.find(other=>!used.has(other.id)&&hasRomanticRelationship(world.relationships,person.id,other.id)&&
++    const partner=bathers.find(other=>!used.has(other.id)&&bathPairKind(world,person,other)&&

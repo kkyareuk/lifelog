@@ -49,5 +49,3 @@ try{
  const depth=await page.evaluate(()=>({roaming:+document.querySelector('.home-life-roaming-layer').style.zIndex,furniture:Math.max(...[...document.querySelectorAll('[data-furniture-placement]')].map(e=>+e.style.zIndex))}));assert(depth.roaming>depth.furniture,'directed interaction captions remain above TV in crowded rooms');
  assert.deepEqual(errors,[]);console.log('PASS actual home: two bath users, small avatars, visible water, layer/label order, desktop computer, bath exit cleanup');
 }finally{await browser.close();server.closeAllConnections();server.close()}
-
-

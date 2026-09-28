@@ -18,3 +18,12 @@
 
 ## 제공 결과
 검증된 빌드·서버 리비전·Play 제공 상태를 아래에 기록한다.
+
+- Android: C:/Users/Public/drawer-releases/drawervillage-1.0.458-510-internal.aab
+- SHA256: 7552EA54DED21B92A4A8003A211F8FBBCEEA6F65983CF5067410EBF9407D849B
+- 623개 준비 자산과 AAB 바이트 일치, jarsigner 서명 검증 통과.
+- iOS510 공통 자산 동기화·프로젝트 검사 통과. Mac 서명·기기·TestFlight/App Store 제출 미실행.
+- sharedTownApi sharedtownapi-00143-vub, 2026-09-28T07:51:00.323129173Z ACTIVE. 실제 배포 소스 ZIP을 다시 내려받아 검증한 준비판과 5개 변경 파일 바이트 일치 및 다른 소스 보존 확인. 초기 함수 분석10초 시간 초과는60초로 재시도해 배포 완료.
+- 게임 코드 4e894552 origin/dev 반영.
+- 2026-09-28 16:52 KST: Play 내부 release383, 510(1.0.458) ‘내부 테스터에게 제공됨’ 확인. 이전509 제외, 지원기기 감소0. 가독화 파일 미첨부 경고1건 외 차단 오류 없음.
+- 제공 증빙: C:/Users/Public/drawer-releases/play-internal510.png. 프로덕션 승격·Apple 제출·운영자 공지 발송 미실행.
