@@ -10,8 +10,13 @@ async function write(path,method,data){
  const body=r.status===204?{}:await r.json();if(!r.ok)throw Error('Apple '+r.status+': '+JSON.stringify(body.errors?.map(e=>({code:e.code,title:e.title,source:e.source,detail:e.detail,associated:e.meta?.associatedErrors}))));return body;
 }
 const versions=(await appleGet(`/v1/apps/${appId}/appStoreVersions?limit=20`)).data;
-const v=versions.find(v=>v.attributes.versionString===expectedVersion)||versions.find(v=>v.id===draftId);
-assert(v,'Known draft missing');assert(['1.0.444',expectedVersion].includes(v.attributes.versionString));
+let v=versions.find(v=>v.attributes.versionString===expectedVersion);
+if(!v && mode==='prepare'){
+ assert(!versions.some(x=>x.attributes.platform==='IOS'&&['PREPARE_FOR_SUBMISSION','READY_FOR_REVIEW','WAITING_FOR_REVIEW','IN_REVIEW','PENDING_DEVELOPER_RELEASE','PENDING_APPLE_RELEASE'].includes(x.attributes.appStoreState)),'An existing iOS draft or review must be checked first');
+ v=(await write('/v1/appStoreVersions','POST',{type:'appStoreVersions',attributes:{platform:'IOS',versionString:expectedVersion,releaseType:'AFTER_APPROVAL'},relationships:{app:{data:{type:'apps',id:appId}}}})).data;
+}
+if(!v){assert.equal(mode,'status');console.log(JSON.stringify({appId,version:expectedVersion,state:'NOT_CREATED'}));process.exit(0);}
+assert.equal(v.attributes.versionString,expectedVersion);
 const query=new URLSearchParams({'filter[app]':appId,'filter[version]':expectedBuild,'filter[buildAudienceType]':'APP_STORE_ELIGIBLE',include:'preReleaseVersion',limit:'100'});
 const builds=await appleGet('/v1/builds?'+query);const build=builds.data.find(b=>builds.included?.some(p=>p.id===b.relationships.preReleaseVersion.data.id&&p.attributes.version===expectedVersion));
 if(mode!=='status'){
