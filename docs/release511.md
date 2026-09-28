@@ -1,4 +1,4 @@
-# 내부 1.0.459 (511) — Google Play 구매 시작과 복구
+# 1.0.459 (511) — Google Play 구매 시작과 복구
 
 기준 dev 3c32381c. codex/billing511 → dev. Play 공개506 / 내부510을 2026-09-29에 확인. 운영 main은 앱 소스 병합 없이 릴리스 기록만 반영.
 
@@ -19,10 +19,19 @@
 - 전체 정적 번역 EN2250/2983(75.4%), JA2249/2983(75.4%). 이번 추가 안내는 EN/JA 모두 제공.
 
 ## 배포
-프로덕션 승격 및 공지 발송 없음.
+내부 제공 후 사용자 명시 요청에 따라 동일 번들을 프로덕션으로 승격. 별도 공지 발송 없음.
 - Android 서명 AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.459-511-internal.aab
 - SHA256: 1DDD11A80E6E43DCD984CAB5DD708620722205694FA2FD6C07976DC4ACE6F8AE
 - jarsigner 검증, 623개 준비 자산 바이트 일치 확인. Java release 컴파일 및 최종 bundleRelease 성공.
 - iOS511 공통 자산 동기화·프로젝트 검사 통과. Mac 서명·실기기·Apple 업로드는 미실행.
 - 2026-09-29 01:20 KST: Play 내부 release384, 511(1.0.459) 내부 테스터에게 제공됨 확인. 510 제외·511 단독 포함, 지원기기 감소0. 가독화 파일 미첨부 경고1건, 출시 차단 오류 없음.
 - 증빙 C:/Users/Public/drawer-releases/play-internal511.png. 코드 a52b9610 origin/dev 반영.
+
+## 프로덕션 승격 — 2026-09-29 01:28 KST
+- 사용자 요청: “그냥 이대로 고친대로 프로덕션 올리자”. 내부 release384의 동일511 번들을 프로덕션 release42로 승격. 재빌드·버전 증분 없음.
+- 출시율100%, 기존 모든 대상 국가. Android API23 지원용 기존467 유지,506 제외, 새511 포함. 지원 제외 기기0.
+- 검증 경고2건은511/467 가독화 파일 없음이며 차단 오류 없음. KO/EN/JA 출시노트3개 유지.
+- 게시 개요에서 변경사항1개 전송 후 “검토 중인 변경사항 / 프로덕션 / 511 (1.0.459) / 전체 출시 시작” 확인. 자동 사전 검사 진행 중이며 성공 후 심사로 넘어감. 아직 사용자 공개 완료 상태는 아님.
+- 관리형 게시 사용 중지 상태이므로 Google 승인 후 자동 게시. iOS 및 운영 웹 배포는 이번 요청에서 실행하지 않음.
+- 증빙: C:/Users/Public/drawer-releases/play-production511.png
+- Play: https://play.google.com/console/u/0/developers/8991176563921452894/app/4975654600304836532/publishing
