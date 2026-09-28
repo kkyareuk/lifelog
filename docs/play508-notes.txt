@@ -1,0 +1,9 @@
+<ko-KR>
+성격·생활 프리셋을 골라 새 캐릭터를 만들 수 있어요. 작은 방 침대 위 아이콘의 최소 크기를 설정할 수 있어요. 먹는 소리는 캐릭터 화면에 들어올 때 한 번만 나며, 다른 캐릭터를 봤다가 돌아오면 다시 한 번 재생돼요. 편지 이야기를 늘리고 반복과 사진 대체 표시를 개선했어요. 연락 캐릭터·편지 상대는 선택창에서 고르고, 설정에 오류 제보 메뉴를 추가했어요.
+</ko-KR>
+<en-US>
+Create characters with personality and daily-rhythm presets. Set a minimum bedside icon size in small rooms. Eating audio plays once per character-screen visit, and once again when you return after viewing another character. Added letter stories, reduced repetition and improved portrait fallbacks. Choose contacts and mail recipients in selection panels. Added a separate bug-report menu in Settings.
+</en-US>
+<ja-JP>
+性格と生活リズムのプリセットで新しいキャラクターを作成できます。小さな部屋のベッド上アイコンに最小サイズを設定できます。食事音はキャラクター画面を開いたときに一度だけ鳴り、別のキャラクターから戻ると再び一度鳴ります。手紙の話題を増やし、繰り返しと画像の代替表示を改善しました。連絡相手や手紙の宛先を選択画面から選べます。設定に不具合報告メニューを追加しました。
+</ja-JP>
