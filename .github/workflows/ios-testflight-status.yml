@@ -9,7 +9,7 @@ on:
         description: Read status or perform the explicitly authorized iOS 507 hotfix action
         type: choice
         default: status
-        options: [status, hotfix507-status, hotfix507-prepare, hotfix507-submit]
+        options: [status, hotfix507-status, hotfix507-prepare, hotfix507-submit, production511-status, production511-prepare, production511-submit]
 permissions:
   contents: read
 jobs:
@@ -36,6 +36,9 @@ jobs:
             hotfix507-status) node scripts/ios-submit507.mjs status ;;
             hotfix507-prepare) node scripts/ios-submit507.mjs prepare ;;
             hotfix507-submit) node scripts/ios-submit507.mjs submit ;;
+            production511-status) node scripts/ios-submit511.mjs status ;;
+            production511-prepare) node scripts/ios-submit511.mjs prepare ;;
+            production511-submit) node scripts/ios-submit511.mjs submit ;;
             *) exit 1 ;;
           esac
       - uses: actions/upload-artifact@v4
