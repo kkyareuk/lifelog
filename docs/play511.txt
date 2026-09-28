@@ -1,0 +1,18 @@
+<ko-KR>
+• Google Play 결제창을 준비하다 멈추면 다시 시도할 수 있도록 안내해요.
+• 구매 전 미처리 결제를 먼저 확인하고 복구해 중복 결제를 예방해요.
+• 앱을 다시 열었을 때 이전 구매를 확인하는 과정을 개선했어요.
+• 결제 기능을 불러오지 못했는데 구매 완료로 안내되던 경우를 막았어요.
+</ko-KR>
+<en-US>
+• Added retry guidance when Google Play checkout preparation stalls.
+• Check and recover unfinished purchases before starting another payment.
+• Improved purchase recovery after reopening the app.
+• Prevented success messages when billing could not load.
+</en-US>
+<ja-JP>
+• Google Playの購入画面の準備が止まった場合に再試行を案内します。
+• 新しい決済の前に未処理の購入を確認・復元し、重複購入を防ぎます。
+• アプリを開き直した際の購入確認を改善しました。
+• 購入機能が読み込めない場合に完了と表示される問題を防ぎました。
+</ja-JP>
