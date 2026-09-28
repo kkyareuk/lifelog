@@ -1,3 +1,4 @@
+import {pirateHomeDuty} from './pirate-home-duty.js';
 import {JOB_LOGS,COMMON_LOGS,CALM_LOG} from './job-log-data.js';
 import {JOB_LOG_COPY} from './job-log-copy.js';
 const hash=s=>[...String(s)].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
@@ -31,6 +32,7 @@ export function jobLogDuty(c,date,start,end,language='ko',employmentId='',contex
  const identity=jobLogIdentity(c,employmentId);if(!identity||identity.key==='unemployed')return null;
  const {key}=identity,job=JOB_LOGS[key],minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60+date.getMilliseconds()/60000;
  if(minute<start||minute>=end||end<=start)return null;
+ if(key==='pirate'&&context.home)return pirateHomeDuty(c,date,start,end,language);
  const day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),seed=c.id+':'+identity.employment.id+':'+day;
  const opening=Math.min(10+hash(seed)%6,(end-start)/4),closing=Math.min(10+hash(seed+':close')%6,(end-start)/4);
  let phase='work',index,from=start,to=end,poolKey=key;
@@ -62,7 +64,7 @@ export function jobLogDuty(c,date,start,end,language='ko',employmentId='',contex
 export function jobLogContext(world,c,scene,now){
  const people=Object.values(world.characters||{});
  const partner=scene.placeId&&people.find(p=>{const e=p.sharedScene;return p.id!==c.id&&e?.placeId===scene.placeId&&e.townId===scene.townId&&!e.transit&&!e.home&&e.jobLogStartsAt<=now&&e.jobLogEndsAt>now;});
- return {partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
+ return {home:scene.home===true,partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
 }
 export function unemployedHomeLog(c,date,language='ko',slot=0){
  if(jobLogIdentity(c)?.key!=='unemployed')return null;

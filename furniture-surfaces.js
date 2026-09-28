@@ -1,9 +1,9 @@
 // Shared geometry for drag snapping, persisted attachments and scene depth.
-export const isSurface=p=>p?.item==='카운터'||p?.item==='협탁'||p?.item==='식탁';
+export const isSurface=p=>p?.item==='카운터'||p?.item==='협탁'||p?.item==='식탁'||/책상/.test(p?.item||'');
 export const canPlaceOnSurface=p=>!isSurface(p)&&!/침대|소파|의자|냉장고|옷장|책장|식탁|테이블|세탁|욕조|변기|샤워/.test(p?.item||'');
 export function surfaceArea(p,box){
  const side=Math.abs(Number(p.rotation)||0)%180===90;
- const area=p.item==='협탁'?[.17,.12,.66,.27]:p.item==='식탁'?[.10,.08,.80,.65]:side?[.12,.12,.76,.76]:[.05,.04,.90,.56];
+ const area=p.item==='협탁'?[.17,.12,.66,.27]:p.item==='식탁'?[.10,.08,.80,.65]:/책상/.test(p.item)?(side?[.18,.16,.64,.48]:[.10,.24,.80,.34]):side?[.12,.12,.76,.76]:[.05,.04,.90,.56];
  return {left:box.left+box.width*area[0],top:box.top+box.height*area[1],width:box.width*area[2],height:box.height*area[3]};
 }
 export function snapToSurface(point,item,surfaces,placements){
@@ -26,7 +26,7 @@ export function positionSurfaceFurniture(scene){
  for(const el of elements){
   const parent=byId.get(el.dataset.surfaceId);if(!parent||parent===el)continue;
   const art=parent.querySelector('.furniture-sprite')||parent,box=art.getBoundingClientRect(),layer=el.offsetParent?.getBoundingClientRect();if(!layer?.width)continue;
-  const area=surfaceArea({item:parent.dataset.furnitureKind==='nightstand'?'협탁':parent.dataset.furnitureKind==='table'?'식탁':'카운터',rotation:parent.dataset.surfaceRotation},box);
+  const area=surfaceArea({item:parent.dataset.furnitureKind==='nightstand'?'협탁':parent.dataset.furnitureKind==='table'?'식탁':parent.dataset.furnitureKind==='desk'?'책상':'카운터',rotation:parent.dataset.surfaceRotation},box);
   const own=(el.querySelector('.room-furniture-art')||el).getBoundingClientRect();
   // Persist a base contact point; the whole image grows upward from the surface.
   const x=area.left+area.width*Number(el.dataset.surfaceU),y=area.top+area.height*Number(el.dataset.surfaceV);

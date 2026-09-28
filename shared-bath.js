@@ -1,4 +1,4 @@
-import {hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
+import {bathPairKind} from './bath-permissions.js';
 
 // Only actual bath scenes may share a tub. Washing at a sink or in a shower
 // never becomes a bath just because a bathtub is present in the same room.
@@ -25,7 +25,7 @@ export function sharedBathScene(world,character,current,readScene,now=Date.now()
     const tub=tubs.find(p=>!claimed.has(p.id)&&(!pinned||p.id===pinned));
     if(!tub)continue;
     claimed.add(tub.id);used.add(person.id);
-    const partner=bathers.find(other=>!used.has(other.id)&&hasRomanticRelationship(world.relationships,person.id,other.id)&&
+    const partner=bathers.find(other=>!used.has(other.id)&&bathPairKind(world,person,other)&&
       (!scenes.get(other.id).furniture?.id||scenes.get(other.id).furniture.id===tub.id));
     if(!partner)continue;
     used.add(partner.id);

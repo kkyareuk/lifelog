@@ -159,7 +159,7 @@ export function scheduleSceneDepth(){
       const peers=key?labels.filter(l=>l.scene===scene&&l.groupKey===key):[label];
       if(peers[0]!==label){status.hidden=true;if(person)person.sceneStatus=status;status.remove();continue}status.hidden=false;
       if(key&&status.querySelector('b'))status.querySelector('b').textContent=[...new Set(peers.map(l=>l.status.dataset.personName).filter(Boolean))].join(' * ');
-      const activity=status.querySelector('small');if(activity){status.dataset.soloActivity??=activity.textContent;const lang=document.documentElement.lang?.slice(0,2)||'ko',talking=peers.length>1&&peers.every(p=>p.status.dataset.interactionId&&p.status.dataset.interactionId===status.dataset.interactionId);activity.textContent=peers.length>1&&talking?sharedSeatActivity(peers,lang):peers.length>1?({ko:talking?'함께 앉아 대화하는 중':'함께 앉아 각자 할 일을 하는 중',en:talking?'Sitting and talking together':'Sitting together, each doing their own thing',ja:talking?'一緒に座って話している':'一緒に座って、それぞれのことをしている'}[lang]||'함께 앉아 각자 할 일을 하는 중'):status.dataset.soloActivity;}
+      const activity=status.querySelector('small');if(activity){status.dataset.soloActivity??=activity.textContent;const lang=document.documentElement.lang?.slice(0,2)||'ko',talking=peers.length>1&&peers.every(p=>p.status.dataset.interactionId&&p.status.dataset.interactionId===status.dataset.interactionId);activity.textContent=peers.length>1&&peers.every(p=>p.person?.classList.contains('is-bathing'))?({ko:'함께 목욕하는 중',en:'Taking a bath together',ja:'一緒に入浴中'}[lang]||'함께 목욕하는 중'):peers.length>1&&talking?sharedSeatActivity(peers,lang):peers.length>1?({ko:talking?'함께 앉아 대화하는 중':'함께 앉아 각자 할 일을 하는 중',en:talking?'Sitting and talking together':'Sitting together, each doing their own thing',ja:talking?'一緒に座って話している':'一緒に座って、それぞれのことをしている'}[lang]||'함께 앉아 각자 할 일을 하는 중'):status.dataset.soloActivity;}
       let layer=scene.querySelector(':scope > .room-activity-labels');
       if(!layer){layer=document.createElement('div');layer.className='room-activity-labels';scene.append(layer)}
       layer.style.zIndex=String(z);
@@ -195,7 +195,13 @@ export function scheduleSceneDepth(){
       const top=Math.max(10,...[...scene.querySelectorAll('[data-furniture-placement]')].map(e=>Number(e.style.zIndex)||0));
       for(const person of scene.querySelectorAll('.home-person:not([data-seat-id]:not([data-seat-id=""])):not([data-couple-bed-id]:not([data-couple-bed-id=""])),.room-pet'))person.style.zIndex=String(top+2);
       positionBathUsers(scene);positionDeskUsers(scene);
+      const overlayTop=Math.max(top+8,...[...scene.querySelectorAll('[data-bath-layer],.chair-frame-overlay,.home-person')].map(e=>Number(e.style.zIndex)||0))+1;
+      const labels=scene.querySelector(':scope > .room-activity-labels');if(labels)labels.style.zIndex=String(overlayTop);
     }
+    // Arrived directed interactions still use the shared walking layer. Its
+    // fixed z=30 used to fall behind furniture in densely furnished rooms.
+    const roamingZ=Math.max(30,...updates.map(([,z])=>z))+20;
+    for(const layer of root.querySelectorAll('.home-life-roaming-layer'))layer.style.zIndex=String(roamingZ);
   });
 }
 export function bindSceneDepth(nextRoot){

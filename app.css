@@ -1413,10 +1413,17 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .furniture-surface-grid{display:none;position:absolute;left:5%;top:4%;width:90%;height:56%;pointer-events:none;background-image:linear-gradient(to right,#a0793855 1px,transparent 1px),linear-gradient(to bottom,#a0793855 1px,transparent 1px);background-size:calc(100% / var(--surface-columns)) calc(100% / 3);outline:1px dashed #a0793888}
 .furniture-surface-grid[data-surface-kind="nightstand"]{left:17%;top:12%;width:66%;height:27%;background-size:100% 100%}
 .furniture-surface-grid[data-surface-kind="table"]{left:10%;top:8%;width:80%;height:65%}
+.furniture-surface-grid[data-surface-kind="desk"]{left:10%;top:24%;width:80%;height:34%}
+.furniture-surface-grid[data-surface-kind="desk"][data-surface-side="true"]{left:18%;top:16%;width:64%;height:48%}
 .furniture-surface-grid[data-surface-kind="counter"][data-surface-side="true"]{left:12%;top:12%;width:76%;height:76%}
 .is-editing .furniture-surface-grid{display:block}
 .surface-drop-target .room-furniture-art{outline:2px solid #d5ae52;outline-offset:2px}
 .bath-composite-layer{position:absolute;pointer-events:none}.bath-composite-layer img{position:absolute;inset:0;width:100%;height:100%;transform:scaleX(var(--bath-flip,1))}.home.is-editing .bath-composite-layer{display:none}
+.home-life-person.is-bathing .home-person-visual{width:var(--bath-face-size);height:var(--bath-face-size);animation:none!important;translate:none;rotate:none}
+.home-life-person.is-bathing .home-person-visual :is(.avatar,.sprite){width:var(--bath-face-size)!important;height:var(--bath-face-size)!important;min-width:0!important;max-width:none!important;object-fit:contain}
+@media(prefers-reduced-motion:no-preference){html:not([data-animation-intensity="off"]) .bath-composite-layer[data-bath-layer^="water"] img{animation:bath-water-ripple 3.7s ease-in-out infinite}.bath-composite-layer[data-bath-layer="water-front"] img{animation-delay:-1.4s!important;animation-duration:4.3s!important}}
+@keyframes bath-water-ripple{0%,100%{translate:0 0;opacity:.92}50%{translate:0 -1px;opacity:1}}
+
 .furniture-sprite.counter-stretch{display:grid;grid-template-columns:var(--counter-cap) minmax(0,1fr) var(--counter-cap);grid-template-rows:var(--counter-top) minmax(0,1fr) var(--counter-bottom);height:auto;aspect-ratio:var(--sprite-ratio)}
 .counter-edge-controls{position:fixed;z-index:2147483000;pointer-events:none}.counter-edge-controls[hidden]{display:none}.counter-edge-controls button{position:absolute;width:26px;height:26px;min-height:0;padding:0;border:2px solid #604832;border-radius:50%;background:#fff2c9;pointer-events:auto;touch-action:none}.counter-edge-controls [data-counter-edge=left]{left:-13px;top:calc(50% - 13px);cursor:ew-resize}.counter-edge-controls [data-counter-edge=right]{right:-13px;top:calc(50% - 13px);cursor:ew-resize}.counter-edge-controls [data-counter-edge=top]{top:-13px;left:calc(50% - 13px);cursor:ns-resize}.counter-edge-controls [data-counter-edge=bottom]{bottom:-13px;left:calc(50% - 13px);cursor:ns-resize}
 .counter-slice{display:block;position:relative;overflow:hidden;height:100%}
@@ -3450,8 +3457,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .room-heading .room-edit-hint{font-size:8px}
   html.native-app[data-active-tab="home"] :is(.room-drag-handle,.room-resize-handle){width:28px;min-width:28px;height:28px;min-height:28px;font-size:15px}
   html.native-app[data-active-tab="home"] .home-person{max-width:86%}
-  html.native-app[data-active-tab="home"] .home-person .avatar,
-  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{width:42px;height:42px}
+  html.native-app[data-active-tab="home"] .home-person:not(.is-bathing) .avatar,
+  html.native-app[data-active-tab="home"] .home-person:not(.is-bathing):not(.is-seated) .sprite{width:42px;height:42px}
   html.native-app[data-active-tab="home"] .home-person-status{max-width:108px;padding:5px 7px}
   html.native-app[data-active-tab="home"] .home-person small{font-size:8px}
 
@@ -3729,8 +3736,8 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   html.native-app[data-active-tab="home"] .room-heading .room-edit-hint{color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:7px;text-shadow:0 2px 6px #000,0 1px 2px #000!important}
   html.native-app[data-active-tab="home"] .room-people{left:4px;right:4px;bottom:4px;max-height:none}
   html.native-app[data-active-tab="home"] .home-person{max-width:min(92%,160px)}
-  html.native-app[data-active-tab="home"] .home-person .avatar,
-  html.native-app[data-active-tab="home"] .home-person:not(.is-seated) .sprite{width:38px;height:38px}
+  html.native-app[data-active-tab="home"] .home-person:not(.is-bathing) .avatar,
+  html.native-app[data-active-tab="home"] .home-person:not(.is-bathing):not(.is-seated) .sprite{width:38px;height:38px}
   html.native-app[data-active-tab="home"] .home-person-visual :is(.avatar,.sprite){padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;outline:0!important}
   html.native-app[data-active-tab="home"] .home-person-visual :is(span.avatar,span.sprite){color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.6px #211710;text-shadow:0 2px 4px #0008!important}
   html.native-app[data-active-tab="home"] .home-person-status{max-width:108px;padding:5px 7px;border-radius:11px;background:#fffdf3e8!important;box-shadow:0 3px 9px #0003!important;text-align:center}
@@ -4208,7 +4215,7 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
 /* 서 있는 주민도 가구 사용 중 아이콘과 비슷한 크기로 표시한다. */
 .room-empty-image{display:none!important}
 @media(max-width:720px),(min-width:721px) and (orientation:portrait){
-  html.native-app[data-active-tab="home"] .home-person:not(.is-seated):not(.is-couple-bed-user) :is(.avatar,.sprite){
+  html.native-app[data-active-tab="home"] .home-person:not(.is-bathing):not(.is-seated):not(.is-couple-bed-user) :is(.avatar,.sprite){
     width:58px!important;
     height:58px!important;
     flex:0 0 58px!important;

@@ -1,3 +1,4 @@
+import {bathPairKind} from './bath-permissions.js';
 import {PERFORMANCE_TASKS} from './performance-tasks.js';
 import {buildingInterior} from './building-interior-model.js';
 import {COFFEE_TASKS,isCoffeeMachine} from './coffee-crafting.js';
@@ -60,7 +61,7 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
    if(!furniture)return null;
   }
   const users=Object.entries(world.characterDirectives||{}).filter(([id,d])=>id!==c.id&&id!==companionId&&d.endsAt>now&&(d.visitHomeId||d.homeId)===home.id&&d.room===target.room&&d.furniture?.id===furniture.id);
-  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&hasRomanticRelationship(world.relationships,c.id,users[0][0]);
+  const coupleBath=lifeTask==='bath'&&/욕조/.test(furniture.item)&&users.length===1&&users[0][1].lifeTask==='bath'&&bathPairKind(world,c,world.characters?.[users[0][0]]);
   const capacity=coupleBath||/소파|커플|더블|2인|double|couple/i.test(furniture.item)?2:1;
   const used=users.length;
   if(used>=(kind==='affection'?1:capacity))return null;
