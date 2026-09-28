@@ -18,7 +18,12 @@ if(!v && mode==='prepare'){
 if(!v){assert.equal(mode,'status');console.log(JSON.stringify({appId,version:expectedVersion,state:'NOT_CREATED'}));process.exit(0);}
 assert.equal(v.attributes.versionString,expectedVersion);
 const query=new URLSearchParams({'filter[app]':appId,'filter[version]':expectedBuild,'filter[buildAudienceType]':'APP_STORE_ELIGIBLE',include:'preReleaseVersion',limit:'100'});
-const builds=await appleGet('/v1/builds?'+query);const build=builds.data.find(b=>builds.included?.some(p=>p.id===b.relationships.preReleaseVersion.data.id&&p.attributes.version===expectedVersion));
+async function readBuild(){const result=await appleGet('/v1/builds?'+query);return result.data.find(b=>result.included?.some(p=>p.id===b.relationships.preReleaseVersion.data.id&&p.attributes.version===expectedVersion));}
+let build=await readBuild();
+if(mode==='prepare')for(let attempt=0;attempt<10&&(!build||build.attributes.processingState==='PROCESSING');attempt++){
+ console.log('Waiting for Apple build processing; no duplicate upload or submission.');
+ await new Promise(resolve=>setTimeout(resolve,15000));build=await readBuild();
+}
 if(mode!=='status'){
  assert(build?.attributes.processingState==='VALID','511 build must be processed and valid');
  assert(['PREPARE_FOR_SUBMISSION','READY_FOR_REVIEW'].includes(v.attributes.appStoreState),'Only editable hotfix draft may be changed');
