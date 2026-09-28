@@ -1,0 +1,21 @@
+<ko-KR>
+• 책상 위에 컴퓨터와 소품을 올려 배치할 수 있어요.
+• 목욕할 때 캐릭터가 욕조 안에 작게 들어가고 물이 보이도록 고쳤어요.
+• 서로 친밀한 스킨십을 허용한 성인 두 명 또는 어린아이와 부모가 욕조를 함께 쓸 수 있어요. 최대 두 명까지예요.
+• 해적은 재택근무할 때 지도·항해일지·보급품을 정리해요.
+• 집에서 이름과 상황표가 TV 등 가구에 가려지는 문제를 고쳤어요.
+</ko-KR>
+<en-US>
+• Place computers and small items on desks.
+• Bathing characters now sit smaller inside the tub, with visible water.
+• Two adults who mutually allow intimate contact, or a young child and parent, can share a bath. Maximum two people.
+• Pirates working at home review charts, logs and supplies.
+• Fixed home name and activity labels appearing behind TVs and other furniture.
+</en-US>
+<ja-JP>
+• 机の上にパソコンや小物を置けるようになりました。
+• 入浴中のキャラクターを小さく湯船の中に配置し、お湯が見えるようにしました。
+• 互いに親密な接触を許可した成人二人、または幼い子どもと親が一緒に入浴できます。最大二人です。
+• 在宅勤務の海賊は航海図・日誌・補給品を整理します。
+• 家の名前・行動表示がテレビなどの家具に隠れる問題を修正しました。
+</ja-JP>
