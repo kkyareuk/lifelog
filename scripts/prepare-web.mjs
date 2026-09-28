@@ -20,6 +20,7 @@ async function readSource(source,encoding=null){
 }
 
 const includedDirectories=new Set([
+  "features",
   "assets",
   "fonts",
   "icons",

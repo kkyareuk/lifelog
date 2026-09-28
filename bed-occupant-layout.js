@@ -1,3 +1,4 @@
+import {bedFaceSize} from './features/home/occupant-size.js';
 import {bedPillowPoint} from './bed-perspective.js?v=20260909dev305';
 export function positionBedOccupants(root){
   const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')],statuses=[...root.querySelectorAll('.home-bed-foreground-status[data-bed-status-for]')];
@@ -27,7 +28,7 @@ export function positionBedOccupants(root){
     person.style.setProperty('--life-x',`${lifeX}px`);
     person.style.setProperty('--life-y',`${lifeY}px`);
     const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(12,Math.min(56,paintedHeight*.36*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(10,Math.min(underCover?76:56,paintedWidth*(bed.dataset.bedSingle==='true'?.68:underCover?.38:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
-    person.style.setProperty('--bed-face-size',`${faceSize}px`);
+    person.style.setProperty('--bed-face-size',`${bedFaceSize(faceSize,root.querySelector('[data-room-icon-minimum]')?.dataset.roomIconMinimum)}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{
     if(!status.isConnected)return;

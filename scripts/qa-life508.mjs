@@ -1,0 +1,43 @@
+import {createServer} from 'node:http';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve,extname} from 'node:path';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const require=createRequire(import.meta.url),{chromium,webkit}=require('C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=process.cwd(),out=resolve('tmp/qa-life508');await mkdir(out,{recursive:true});
+const server=createServer(async(req,res)=>{try{const path=new URL(req.url,'http://localhost').pathname,file=resolve(root,'.'+(path==='/'?'/index.html':path));if(!file.startsWith(root))throw Error();let body=await readFile(path==='/auth.js'?resolve(root,'scripts/ios-preview-auth.mjs'):file);if(path==='/app.js')body=body.toString()+'\nwindow.qaRender=render;window.qaSettings=openSettingsPane;';res.setHeader('Content-Type',({'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.svg':'image/svg+xml'})[extname(file)]||'application/octet-stream');res.end(body)}catch{res.writeHead(404).end()}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;
+const wk=process.argv.includes('--webkit'),browser=await(wk?webkit.launch():chromium.launch({channel:'chrome',headless:true}));
+try{
+ const page=await browser.newPage({viewport:{width:393,height:798},serviceWorkers:'block'}),errors=[];
+ page.on('console',m=>{if(m.type()==='error')console.log('ERROR',m.text().slice(0,1000))});page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());
+ await page.addInitScript(()=>{const show=HTMLDialogElement.prototype.showModal;HTMLDialogElement.prototype.showModal=function(){if(this.classList.contains('page-guide'))return;return show.call(this)}});await page.goto(origin);await page.waitForFunction(()=>window.DrawerVillageNavigation);
+ await page.evaluate(async()=>{window.g=await import('/state.js?v=20260909dev305');window.ids=[];for(let i=0;i<3;i++){const id=g.createCharacter(20);ids.push(id);g.state.characters[id].name=['젠할린','아주 긴 이름의 주민','라파엘','소라','민','별','하루'][i];g.state.characters[id].photo='./icons/icon-192.png'}document.documentElement.classList.add('native-app');g.state.uiLanguage='ko';g.state.activeTab='settings';qaSettings('home');document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
+ await page.getByRole('button',{name:'탭하여 서랍 열기'}).click();
+ await page.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());qaSettings('home')});
+ await page.locator('[data-settings-pane="feedback"]').click();await page.waitForSelector('.feedback-card');
+ await page.evaluate(()=>qaSettings('notifications'));await page.locator('[data-open-contact-picker]').click();
+ assert.equal(await page.locator('[data-contact-picker]').evaluate(d=>d.open),true);
+ const columns=await page.locator('.notification-character-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length);assert.equal(columns,3);
+ await page.locator('[data-character-notification-character]').first().uncheck();
+ await page.screenshot({path:out+'/'+(wk?'webkit':'chrome')+'-contacts.png'});
+ await page.locator('[data-close-contact-picker]').last().click();
+ await page.evaluate(()=>qaSettings('gameplay'));await page.locator('[data-setting="roomIconMinimum"]').selectOption('40');assert.equal(await page.evaluate(()=>g.state.roomIconMinimum),'40');
+ await page.evaluate(()=>{DrawerVillageNavigation.go('character');qaRender()});
+ await page.locator('[data-toggle-character-roster]:visible').first().click();await page.locator('[data-new]:visible').first().click();await page.locator('[name="personality"][value="curious"]').check();await page.locator('[name="lifestyle"][value="late"]').check();
+ await page.screenshot({path:out+'/'+(wk?'webkit':'chrome')+'-presets.png'});
+ await page.locator('.starter-preset-dialog [value="create"]').click();
+ await page.waitForFunction(()=>g.state.order.length===4);const made=await page.evaluate(()=>g.state.characters[g.state.activeId]);assert.equal(made.wake,'10:00');assert.equal(made.planningStyle,'즉흥적');
+ await page.evaluate(()=>{DrawerVillageNavigation.go('mailbox');qaRender()});
+ await page.locator('[data-mail-folder="compose"]').click();
+ await page.locator('.mail-address-picker').last().click();
+ await page.locator('.mail-select-dialog input[type="search"]').fill('젠할린');
+ await page.locator('.mail-select-grid button').click();
+ assert.equal(await page.locator('[name="targetId"]').inputValue(),await page.evaluate(()=>ids[0]));
+ await page.locator('.mail-address-picker').first().click();
+ assert.equal(await page.locator('.mail-select-grid').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length),3);
+ await page.screenshot({path:out+'/'+(wk?'webkit':'chrome')+'-mail.png'});
+ await page.locator('.mail-select-dialog > button').click();
+ for(const lang of ['en','ja']){await page.evaluate(lang=>{g.state.uiLanguage=lang;qaSettings('home')},lang);assert(await page.locator('[data-settings-pane="feedback"]').isVisible());}
+ assert.deepEqual(errors,[]);console.log('PASS UI508 '+(wk?'WebKit':'Chrome')+': settings report route, modal 3-column contacts, persistent room sizing, new-character presets, EN/JA menus');
+}finally{await browser.close();server.closeAllConnections();server.close()}

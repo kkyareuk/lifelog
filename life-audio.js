@@ -12,18 +12,25 @@ export function lifeSound(scene={}){
 
 export const lifeSoundEpisode=scene=>String(scene?.manualDirectiveId||scene?.recoveryStartedAt||[scene?.dateKey||'',scene?.minute,scene?.baseTitle||scene?.title].join(':'));
 const playedDrinks=new Set();
-let audio=null,key='',lastState=null;
+let audio=null,key='',lastState=null,observed='',ateThisVisit=false;
 export function stopLifeSound(){if(audio){audio.pause();audio.removeAttribute('src');audio.load()}audio=null;key=''}
 export function syncLifeSound(state){
  lastState=state;
  const host=document.querySelector('[data-observed-character][data-life-sound]'),next=host?.dataset.lifeSound||'',settings=audioSettings(state);
+ const character=host?.dataset.observedCharacter||'';
+ // A visit survives ordinary renders, mute toggles and background/resume.
+ // Switching character or leaving the observation screen starts a new visit.
+ if(character!==observed){observed=character;ateThisVisit=false}
  const volume=settings.soundMuted?0:Math.max(0,Math.min(1,(Number(settings.soundEffectsVolume??45))/100));
  if(!next||document.hidden||!volume||host?.querySelector('[data-cooking-active]'))return stopLifeSound();
  const nextKey=host.dataset.observedCharacter+':'+next+':'+(host.dataset.lifeSoundEvent||'');
  if(key===nextKey&&audio){audio.volume=volume;return}
  stopLifeSound();key=nextKey;
  if(next==='drink'&&playedDrinks.has(nextKey))return;
- audio=new Audio('./assets/audio/life/'+next+'.mp3');audio.loop=next!=='drink';audio.volume=volume;
- const playingKey=nextKey;audio.play().then(()=>{if(next==='drink'){playedDrinks.add(playingKey);if(playedDrinks.size>200)playedDrinks.delete(playedDrinks.values().next().value)}}).catch(()=>{});
+ if(next==='eat'&&ateThisVisit)return;
+ audio=new Audio('./assets/audio/life/'+next+'.mp3');audio.loop=!['drink','eat'].includes(next);audio.volume=volume;
+ const playingKey=nextKey,playingCharacter=character;
+ if(next==='eat')ateThisVisit=true;
+ audio.play().then(()=>{if(next==='drink'){playedDrinks.add(playingKey);if(playedDrinks.size>200)playedDrinks.delete(playedDrinks.values().next().value)}}).catch(()=>{if(key===playingKey&&observed===playingCharacter&&next==='eat'){ateThisVisit=false;stopLifeSound()}});
 }
 if(globalThis.document){document.addEventListener('visibilitychange',()=>{if(document.hidden)stopLifeSound();else if(lastState)syncLifeSound(lastState)});globalThis.window?.addEventListener('pagehide',stopLifeSound)}
