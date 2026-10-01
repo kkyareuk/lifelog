@@ -1,0 +1,9 @@
+<ko-KR>
+주간 시간표의 일요일부터 토요일까지 한 화면에 보이도록 개선했습니다. 작은 화면에서는 일정 종류를 간결하게 표시하고, 일정을 누르거나 전체 목록에서 자세한 내용을 확인할 수 있습니다. 겹치는 일정 최대 두 칸 표시와 직접 추가한 일정 우선 적용은 유지됩니다.
+</ko-KR>
+<en-US>
+The weekly timetable now fits Sunday through Saturday on one screen. Compact labels identify event types on small screens; tap an event or use the full list for details. Overlaps remain limited to two columns, and your added plans keep priority.
+</en-US>
+<ja-JP>
+週間時間割の日曜から土曜までを一画面に表示するよう改善しました。小さな画面では予定の種類を簡潔に表示し、タップまたは一覧で詳細を確認できます。重なる予定は最大2列で表示し、追加した予定を優先します。
+</ja-JP>
