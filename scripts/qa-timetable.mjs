@@ -50,6 +50,14 @@ try{
  await p.locator('.timetable').screenshot({path:'tmp/qa-reported-life/timetable-week.png'});
  await p.evaluate(()=>{g.state.activeId=other.id;photoQA.render()});assert(await p.locator('[data-edit-routine="together"]').count()>0);
  const priority=await p.evaluate(()=>{g.state.activeId=cid;g.state.routines[cid].push({id:'manual-priority',day:4,start:'08:00',end:'14:00',type:'취미',title:'직접 추가한 긴 일정과 점심보다 먼저 시작한 약속',withIds:[]});g.touchCharacterTimelines([cid]);return sim.eventFor(c,new Date(2026,9,1,12,40)).routineId});assert.equal(priority,'manual-priority');
+ await p.setViewportSize({width:393,height:852});
+ await p.evaluate(()=>{g.state.routines[cid].push({id:'overlap-second',day:4,start:'10:00',end:'13:00',type:'친구 약속',title:'베노와 함께 수도원 정원에서 그림 그리기',withIds:[other.id]},{id:'overlap-third',day:4,start:'11:00',end:'12:00',type:'취미',title:'세 번째 일정도 아래 전체 목록에 남아요',withIds:[]});photoQA.render();document.querySelector('.timetable-scroll').scrollLeft=4*192;document.querySelector('.timetable-scroll').scrollTop=8*96});
+ const visible=await p.locator('[data-timetable-day="4"] .timetable-event').evaluateAll(es=>es.filter(e=>{const top=parseFloat(e.style.top)*14.4,end=top+parseFloat(e.style.height)*14.4;return top<720&&end>660}).map(e=>({width:e.style.width,title:e.querySelector('strong').textContent,ellipsis:getComputedStyle(e.querySelector('strong')).textOverflow})));
+ assert.equal(visible.length,2);assert(visible.every(e=>e.width==='50%'&&e.ellipsis!=='ellipsis'));
+ assert.equal(await p.locator('.timetable-agenda [data-edit-routine="overlap-third"]').count(),1);
+ await p.evaluate(()=>document.querySelector('#mini-toast')?.remove());
+ await p.screenshot({path:'tmp/qa-reported-life/timetable-overlap-mobile.png'});
+ await p.locator('.timetable-agenda details[open]').screenshot({path:'tmp/qa-reported-life/timetable-full-details.png'});
  const size=await p.evaluate(async()=>{const {sizeRoomOccupants}=await import('/room-occupant-size.js');const room=document.createElement('div');room.style.cssText='position:fixed;top:0;left:0;transform:scale(.3);transform-origin:top left';room.innerHTML='<div class="home-person" data-room-icon-minimum="32"><span class="home-person-visual"><span class="avatar" style="display:block;width:40px;height:40px"></span></span></div>';document.body.append(room);sizeRoomOccupants(room);const width=room.querySelector('.avatar').getBoundingClientRect().width;room.remove();return width});assert(size>=31.9,String(size));
  for(const [language,label] of [['en','Set daily times'],['ja','生活時間の設定']]){await p.evaluate(language=>{g.state.uiLanguage=language;photoQA.render()},language);assert.equal(await p.locator('[data-life-times]').textContent(),label)}
  assert(!errors.length,errors.join('\n'));console.log('PASS timetable, shared participant, lunch persistence and real scene, unscaled room actor floor',counts,size);

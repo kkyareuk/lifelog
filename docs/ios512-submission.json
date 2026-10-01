@@ -1,0 +1,13 @@
+{
+  "appId": "6808600866",
+  "mode": "submit",
+  "versionId": "a2c78534-fc90-4605-8e91-e90b0e3d583e",
+  "version": "1.0.460",
+  "state": "WAITING_FOR_REVIEW",
+  "releaseType": "AFTER_APPROVAL",
+  "build": {
+    "id": "c64c126b-782d-48a6-b17e-dfbcba111eff",
+    "number": "512",
+    "state": "VALID"
+  }
+}
