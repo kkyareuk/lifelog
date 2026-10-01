@@ -1,3 +1,4 @@
+import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
 import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
 import {unemployedHomeLog} from './job-log-runtime.js';
 import {toiletActivity} from './toilet-activity.js';
@@ -7,7 +8,7 @@ import {householdScene} from './household-life.js';
 import {libraryScene} from './library-life.js';
 import {peerActivities,duplicatedActivity,diverseHomePool,discretionary} from './autonomy-diversity.js';
 import {syncLocalPlayerNotes,advancePlayerNotes,playerNoteScene} from './player-notes.js';
-import {returnArrivalMinute} from './scheduled-return.js';
+import {returnArrivalMinute,returnRoute} from './scheduled-return.js';
 import {workLocation} from './work-location.js';
 import {officeEmployment,officeDuty} from './career-duties.js';
 import {careerWeeklyRoutines} from './career-work.js';
@@ -115,7 +116,7 @@ const resolveEntityParticles=text=>{
   }):result;
 };
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-const nowMin=(d=new Date())=>d.getHours()*60+d.getMinutes();
+const nowMin=(d=new Date())=>d.getHours()*60+d.getMinutes()+d.getSeconds()/60+d.getMilliseconds()/60000;
 const jitter=(c,kind,d=new Date())=>(hash(`${c.id}:${dayKey(d)}:${kind}`)%21)-10;
 const wakeAt=(c,d)=>sleepWindow(c,d).wake;
 const sleepAt=(c,d)=>sleepWindow(c,d).sleep;
@@ -262,8 +263,11 @@ const calculateScheduledForDate=(c,date)=>{
   const seen=new Set(),deleted=new Set([...(state.deletedRoutineIds||[]),...(state.deletedMonthlyRoutineIds||[])].map(String));
   const sources=state.order.flatMap(ownerId=>{
     const owner=state.characters[ownerId];if(!owner)return[];
+    const lunch=lunchRoutine(owner,date),workingAtLunch=lunch&&careerWeeklyRoutines(state,owner).some(r=>Number(r.day)===date.getDay()&&mins(r.start)<=mins(lunch.start)&&routineEndMinute(r)>mins(lunch.start));
+    if(lunch&&workingAtLunch){const location=workLocation(state,owner,employmentsFor(owner)[0]||{});if(!location.home)Object.assign(lunch,location);}
     return [
       ...(careRoutineFor(owner,date,state)?[{item:careRoutineFor(owner,date,state),ownerId,kind:"weekly"}]:[]),
+      ...(lunch?[{item:lunch,ownerId,kind:"weekly"}]:[]),
       ...(state.monthlyRoutines?.[ownerId]||[]).filter(item=>item.date===scheduleDateKey(date)).map(item=>({item,ownerId,kind:"monthly"})),
       ...[...(state.routines?.[ownerId]||[]).filter(item=>!['업무','work'].includes(item.type)),...careerWeeklyRoutines(state,owner)].filter(item=>Number(item.day)===date.getDay()).map(item=>({item,ownerId,kind:"weekly"}))
     ];
@@ -2815,7 +2819,7 @@ function buildScene(c,date){
   }
   const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
   const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%2===0;
-  const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
+  const lunchMinute=lunchWindow(c).start;
   if(eatsOutForLunch&&lunchPlace?.type==="음식점"){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
     list.push(entry(lunchMinute,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
@@ -2967,11 +2971,11 @@ function buildScene(c,date){
       if(place&&minute>=20)list.push(entry(minute-20,({ko:'직장으로 출근하는 중',en:'Commuting to work',ja:'職場へ出勤中'})[state.uiLanguage]||'직장으로 출근하는 중',({ko:'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',en:'Travelling to the workplace in time for the shift.',ja:'勤務開始に合わせて職場へ移動しています。'})[state.uiLanguage]||'근무 시작 시각에 맞춰 직장으로 이동하고 있어요.',{townId:place.townId,transit:true,destinationId:place.id}));
     }
     const awayFromOwnHome=Boolean(place||(visitHome&&visitHome.id!==currentHomeId));
-    if(awayFromOwnHome){
+    if(awayFromOwnHome&&!item.plannedLunch){
       const next=scheduled[index+1],nextMinute=next?mins(next.start):Infinity;
       const continuesOutside=Boolean((next?.placeId||next?.visitHomeId)&&nextMinute<=endMinute+30);
       if(!continuesOutside){
-        const destinationTownId=place?.townId||visitHomeTown?.id||visitHome?.townId||homeTown.id,destinationName=place?.name||visitHome?.name||"방문한 집",crossTown=destinationTownId!==homeTown.id,homeAt=endMinute+(crossTown?2:1);
+        const destinationTownId=place?.townId||visitHomeTown?.id||visitHome?.townId||homeTown.id,destinationName=place?.name||visitHome?.name||"방문한 집",crossTown=destinationTownId!==homeTown.id,homeAt=returnRoute(state,c,{transit:true,returningHome:true,minute:endMinute,destinationHomeId:currentHomeId,returnFromPlaceId:place?.id,returnFromHomeId:visitHome?.id},date.getTime())?.arrivalMinute??endMinute;
         const copy={
           ko:{travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."},
           en:{travel:`Heading home after ${item.title||"an outing"}`,travelDesc:`They finished what they were doing at ${destinationName} at the planned time and are heading home.`,home:"Back home after the schedule",homeDesc:"They returned from the outing, put away their shoes and outerwear, and are resting at home."},
@@ -2980,7 +2984,7 @@ function buildScene(c,date){
           travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
         };
         const destinationTown=state.towns.find(town=>town.id===destinationTownId),networkMode=crossTown?transportBetween(destinationTown,homeTown):"도보길",networkCopy=crossTown?transportSceneCopy(networkMode,homeTown.name,state.uiLanguage):null;
-        list.push(entry(endMinute,crossTown?networkCopy.title:copy.travel,crossTown?networkCopy.desc:copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:networkMode,destinationHomeId:currentHomeId,returnFromPlaceId:place?.id,returnFromHomeId:visitHome?.id,returnArrivalMinute:homeAt,holdMinutes:homeAt-endMinute,...routineMeta,groupInteraction:false,interactionId:undefined,mood:"이동"}));
+        list.push(entry(endMinute,crossTown?networkCopy.title:copy.travel,crossTown?networkCopy.desc:copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:networkMode,destinationHomeId:currentHomeId,returnFromPlaceId:place?.id,returnFromHomeId:visitHome?.id,returnArrivalMinute:homeAt,returnTravelSeconds:(homeAt-endMinute)*60,holdMinutes:homeAt-endMinute,...routineMeta,groupInteraction:false,interactionId:undefined,mood:"이동"}));
         list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,groupInteraction:false,interactionId:undefined,routineReturned:true,mood:"귀가"}));
       }
     }
@@ -3012,7 +3016,7 @@ function calculateSignature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.economy?.revision||0}:${state.order.length}:${state.preventInterTownMovement}:${state.towns.map(t=>[t.id,t.era,t.culture].join(':')).join('|')}`;
   const cached=signatureCache.get(c);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({workRoomId:c.workRoomId,careerSchedules:c.careerSchedules,careerEmployments:c.wallet?.employments,preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:employmentsFor(c).map(e=>[e.jobId,e.rankId,e.department,e.specialty]),economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+  const value=JSON.stringify({lunchStart:c.lunchStart,lunchEnd:c.lunchEnd,workRoomId:c.workRoomId,careerSchedules:c.careerSchedules,careerEmployments:c.wallet?.employments,preventInterTownMovement:state.preventInterTownMovement,uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,dislikedAttractionTraits:c.dislikedAttractionTraits,aggressionLevel:c.aggressionLevel,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,autonomousActivityBlocks:c.autonomousActivityBlocks,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,employment:employmentsFor(c).map(e=>[e.jobId,e.rankId,e.department,e.specialty]),economyRevision:state.economy?.revision,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.culture,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c,{character:c,revision,value});
   return value;
 }
@@ -3232,7 +3236,7 @@ function calculateNextSceneRefreshDelay(c,date=new Date()){
   if(last){
     const gap=30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31);
     const routineEnd=Number(last.routineEndMinute)||0;
-    const nextMinute=Math.min(returnArrivalMinute(last),Math.max(Number(last.minute)+gap,routineEnd));
+    const nextMinute=Math.min(returnArrivalMinute(last,state,c),Math.max(Number(last.minute)+gap,routineEnd));
     if(nextMinute>n)candidates.push(nextMinute);
   }
   const wake=wakeAt(c,date),sleep=sleepAt(c,date);
@@ -3241,7 +3245,7 @@ function calculateNextSceneRefreshDelay(c,date=new Date()){
   const directiveEnd=Number(state.characterDirectives?.[c.id]?.endsAt);
   if(directiveEnd>date.getTime())return Math.max(1000,Math.min(10*60*1000,directiveEnd-date.getTime()+250));
   const nextMinute=candidates.length?Math.min(...candidates):n+10;
-  const minuteStart=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(nextMinute/60),nextMinute%60,1,0).getTime();
+  const minuteStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime()+nextMinute*60000+50;
   return Math.max(1000,Math.min(10*60*1000,minuteStart-date.getTime()));
 }
 
@@ -3365,7 +3369,7 @@ export function forceCharactersHome(characterIds,date=new Date()){
 }
 function liveGapEvent(c,last,n,date){
   const gap=30+(hash(`${c.id}:${dayKey(date)}:${last?.minute??n}:reaction-gap`)%31);
-  const minute=last?.transit&&last.returningHome?Math.min(n,returnArrivalMinute(last)):Math.min(n,(Number(last?.minute)||n)+gap);
+  const minute=last?.transit&&last.returningHome?Math.min(n,returnArrivalMinute(last,state,c)):Math.min(n,(Number(last?.minute)||n)+gap);
   if(last?.groupInteraction&&!last?.dateGroup){
     const partner=(last.withIds||[]).map(id=>state.characters[id]).find(Boolean)||state.characters[last.withId];
     const copies={
@@ -3614,7 +3618,7 @@ function calculateBaseEvent(c,date=new Date()){
   }
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
-  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,...(['업무','work'].includes(activeRoutine.type)&&activeRoutine.careerEmploymentId?{placeId:'',visitHomeId:'',...workLocation(state,c,employmentsFor(c).find(e=>e.id===activeRoutine.careerEmploymentId)||{})}:{}),routineType:activeRoutine.type,routineTitle:activeRoutine.title,careerEmploymentId:activeRoutine.careerEmploymentId},date),c,state,date.getTime(),state.uiLanguage);
+  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,...(['업무','work'].includes(activeRoutine.type)&&activeRoutine.careerEmploymentId?{placeId:'',visitHomeId:'',...workLocation(state,c,employmentsFor(c).find(e=>e.id===activeRoutine.careerEmploymentId)||{})}:{}),plannedLunch:activeRoutine.plannedLunch,routineType:activeRoutine.type,routineTitle:activeRoutine.title,careerEmploymentId:activeRoutine.careerEmploymentId},date),c,state,date.getTime(),state.uiLanguage);
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
     const existing=[...list].reverse().find(item=>Number(item.minute)===sleepMinute&&/자는 중|잠든|수면/.test(`${item.title||""} ${item.mood||""}`));
@@ -3625,8 +3629,8 @@ function calculateBaseEvent(c,date=new Date()){
   const sources=giftSources(date);
   const past=list.filter(x=>(!x.needKey||!x.recoveryEndsAt||date.getTime()<x.recoveryEndsAt)&&!isHomeSleepScene(x)&&autonomousAllowed(c,x)&&!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
-  if(last?.transit&&last.returningHome&&n>=returnArrivalMinute(last)){
-    const arrival=returnArrivalMinute(last),arrived=liveGapEvent(c,last,arrival,date);
+  if(last?.transit&&last.returningHome&&n>=returnArrivalMinute(last,state,c)){
+    const arrival=returnArrivalMinute(last,state,c),arrived=liveGapEvent(c,last,arrival,date);
     return commitLiveEntry(c,date,withResidenceLocation(c,{...arrived,minute:arrival,routineReturned:true},date));
   }
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);

@@ -29,7 +29,7 @@ if(isNative){
   const billingText=(ko,en,ja)=>{const l=String(document.documentElement.lang||navigator.language||'ko');return l.startsWith('ja')?ja:l.startsWith('en')?en:ko};
   const pendingError=()=>new Error(billingText('이전 구매를 확인하지 못했어요. 다시 결제하지 말고 구매 내역 복원을 눌러 주세요.','An earlier purchase could not be verified. Restore purchases instead of paying again.','以前の購入を確認できません。再購入せず購入の復元をお試しください。'));
   const bounded=async(operation,ms=25000)=>{let timer;try{return await Promise.race([Promise.resolve().then(operation),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(billingText('구매 확인 시간이 초과됐어요. 연결을 확인하고 구매 내역 복원을 눌러 주세요.','Purchase checking timed out. Check your connection and restore purchases.','購入確認がタイムアウトしました。接続を確認し購入を復元してください。'))),ms)})])}finally{clearTimeout(timer)}};
-  const refreshPurchaseAccess=async()=>{try{await bounded(()=>window.ParallelCityAuth?.refreshEntitlements?.())}catch{ /* The server grant is already committed; do not report a failed payment. */ }};
+  const refreshPurchaseAccess=async()=>{try{await bounded(()=>window.ParallelCityAuth?.refreshEntitlements?.());return true}catch{return false}};
   const localizedBillingError=error=>{
     const code=String(error?.code||"");
     const messages={
@@ -165,7 +165,7 @@ if(isNative){
     try{
       const outstanding=await restoreCore();
       if(outstanding.failed)throw pendingError();
-      if(outstanding.recoveredCharge)return {restored:true};
+      if(outstanding.recoveredCharge)return {restored:true,accessPending:outstanding.accessPending};
       if(window.ParallelCityAuth?.getInfo?.().user?.uid!==startingUid)throw pendingError();
       let purchaseResult;
       try{
@@ -173,7 +173,7 @@ if(isNative){
       }catch(error){
         if(String(error?.code||"")==="7"){
           const restored=await restoreCore();
-          if(restored.restored)return {restored:true};
+          if(restored.restored)return {restored:true,accessPending:restored.accessPending};
         }
         throw localizedBillingError(error);
       }
@@ -186,8 +186,8 @@ if(isNative){
       const verification=await verifyPurchase({...purchaseResult,ownerUid:startingUid,products:[storeProductId]});
       if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
       forgetPurchase(purchaseResult.purchaseToken);
-      await refreshPurchaseAccess();
-      return purchaseResult;
+      const accessApplied=await refreshPurchaseAccess();
+      return {...purchaseResult,accessPending:!accessApplied};
     }finally{
       purchaseInFlight=false;
     }
@@ -221,9 +221,9 @@ if(isNative){
         if(consumableProducts.has(productId)||!purchaseResult.acknowledged)recoveredCharge+=1;
       }catch(error){failures.push(error)}
     }
-    if(restored)await refreshPurchaseAccess();
+    const accessPending=restored?!await refreshPurchaseAccess():false;
     if(!restored&&failures.length)throw failures[0];
-    return {purchases,restored,recoveredCharge,failed:failures.length};
+    return {purchases,restored,recoveredCharge,failed:failures.length,accessPending};
   };
 
   const restorePurchases=async()=>{

@@ -26,7 +26,7 @@
  const getState=()=>({busy,phase,lastFailure,label:(phaseText[phase]||[])[String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0]||''});
  const setPhase=value=>{phase=value;window.dispatchEvent?.(new CustomEvent('drawer-village-billing-state',{detail:getState()}))};
  const bounded=(work,ms=25000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(error('FAILED')),ms);Promise.resolve(work).then(resolve,reject).finally(()=>clearTimeout(timer))});
- const refreshAccount=()=>{void Promise.resolve().then(()=>window.ParallelCityAuth?.refreshEntitlements?.()).catch(()=>{})};
+ const refreshAccount=()=>Promise.resolve().then(()=>window.ParallelCityAuth?.refreshEntitlements?.()).then(()=>true,()=>false);
  async function token(){const value=await bounded(window.ParallelCityAuth?.getIdToken?.());if(!value)throw error('LOGIN_REQUIRED');return value}
  async function request(path,body,auth){
   const backend=String(config().backendUrl||'').replace(/\/$/,'');if(!backend)throw error('APPLE_NOT_CONFIGURED');
@@ -103,7 +103,7 @@ return exclusive(async()=>{
    setPhase('restoring');
    const outstanding=await bounded(bridge.restorePurchases({interactive:false}));
    for(const previous of outstanding.purchases||[]){try{await settle(previous,auth)}catch(e){throw e}}
-   if((outstanding.purchases||[]).length){refreshAccount();return {recovered:true}}
+   if((outstanding.purchases||[]).length){const accessApplied=await refreshAccount();return {recovered:true,accessPending:!accessApplied}}
    setPhase('product');
    const products=await bounded(bridge.getProducts({productIds:[productId]}));
    if(!(products.products||[]).some(p=>p.productId===productId))throw error('APPLE_NOT_CONFIGURED');
@@ -111,7 +111,7 @@ return exclusive(async()=>{
    const slow=setTimeout(()=>{if(!recoveredDuringPayment)setPhase('paymentDelayed')},30000);let purchase;
    try{purchase=await bridge.purchase({productId,appAccountToken:prepared.appAccountToken})}finally{clearTimeout(slow)}
    setPhase('verifying');
-   try{if(paymentRecovery)await paymentRecovery;await settle(purchase,auth)}catch(e){backgroundRestoreError=e;throw e}refreshAccount();return purchase;
+   try{if(paymentRecovery)await paymentRecovery;await settle(purchase,auth)}catch(e){backgroundRestoreError=e;throw e}const accessApplied=await refreshAccount();return {...purchase,accessPending:!accessApplied};
   })},restorePurchases
  };
  bridge?.addListener('transactionUpdated',restoreInBackground);

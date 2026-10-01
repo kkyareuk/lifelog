@@ -73,8 +73,9 @@ class DrawerBridgeViewController: CAPBridgeViewController {
     private func layoutBannerViewport() {
         guard let web = webView else { return }
         let bounds = view.bounds
-        // Keep the status-bar/notch outside the WebView even after ad removal.
-        let top = view.safeAreaInsets.top
+        // With no banner, paint the game beneath the status bar. CSS protects
+        // interactive content using safe-area-inset-top, without a blank strip.
+        let top = bannerHeight > 0 ? view.safeAreaInsets.top : 0
         let reserved = min(bounds.height, top + bannerHeight)
         let frame = CGRect(x: 0, y: reserved, width: bounds.width, height: max(0, bounds.height - reserved))
         if web.frame != frame { web.frame = frame }

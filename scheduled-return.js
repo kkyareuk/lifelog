@@ -1,8 +1,11 @@
-// Scheduled returns have a fixed destination and deadline, including old saves.
-export function returnArrivalMinute(scene){
+import {walkingGait} from './walking-gaits.js?v=20260909dev305';
+// Map coordinates are percentages. A natural gait covers 30 map units/second.
+export function mapTravelSeconds(c,from,to){return Math.hypot(to.x-from.x,to.y-from.y)/30*walkingGait(c?.walkingStyle).routeDurationFactor;}
+export function returnArrivalMinute(scene,world,c){
  if(!scene?.transit||!scene.returningHome)return Infinity;
  const start=Number(scene.minute);if(!Number.isFinite(start))return Infinity;
- return Math.min(Number(scene.returnArrivalMinute)||start+2,start+2);
+ if(world&&c)return returnRoute(world,c,scene,Date.now())?.arrivalMinute??start;
+ return Number.isFinite(scene.returnTravelSeconds)?start+scene.returnTravelSeconds/60:start;
 }
 export function returnRoute(world,c,scene,now=Date.now()){
  if(!scene?.transit||!scene.returningHome)return null;
@@ -12,5 +15,6 @@ export function returnRoute(world,c,scene,now=Date.now()){
  const point=(x,y)=>({x:Math.max(0,Math.min(100,Number.isFinite(Number(x))?Number(x):50)),y:Math.max(0,Math.min(100,Number.isFinite(Number(y))?Number(y):50))});
  const to=point(home.mapX,home.mapY),from=place?point(place.x,place.y):fromHome?point(fromHome.mapX,fromHome.mapY):point(to.x-15,to.y+10);
  const d=new Date(now),day=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
- return {surface:'town',from,to,start:day+Number(scene.minute)*60000,end:day+returnArrivalMinute(scene)*60000};
+ const seconds=mapTravelSeconds(c,from,to),arrivalMinute=Number(scene.minute)+seconds/60;
+ return {surface:'town',from,to,start:day+Number(scene.minute)*60000,end:day+arrivalMinute*60000,arrivalMinute,seconds};
 }

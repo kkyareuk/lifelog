@@ -27,8 +27,8 @@ w.towns.push(otherTown);assert(workLocation(w,{...c,workplaceId:'remote'}).home)
 otherTown.travelAllowed=true;assert.equal(workLocation(w,{...c,workplaceId:'remote'}).placeId,'remote');
 w.preventInterTownMovement=true;assert(workLocation(w,{...c,workplaceId:'remote'}).home);delete w.preventInterTownMovement;
 const trip={transit:true,returningHome:true,minute:600,returnFromPlaceId:'p',returnArrivalMinute:601};
-const route=returnRoute(w,c,trip,+date);assert.deepEqual(route.from,{x:80,y:20});assert.deepEqual(route.to,{x:20,y:80});assert.equal(route.end-route.start,60000);
-assert.equal(returnArrivalMinute({...trip,returnArrivalMinute:615}),602);assert.equal(returnArrivalMinute({home:true}),Infinity);
+const route=returnRoute(w,c,trip,+date);assert.deepEqual(route.from,{x:80,y:20});assert.deepEqual(route.to,{x:20,y:80});assert(Math.abs(route.end-route.start-Math.hypot(60,60)/30*1000)<1);
+assert.equal(returnArrivalMinute({...trip,returnArrivalMinute:615},w,c),route.arrivalMinute);assert.equal(returnArrivalMinute({home:true}),Infinity);
 for(const scale of [.25,.5,1,2])assert(bedFaceSize(10,32,76,scale)*scale>=32);
 assert.equal(bedFaceSize(10,0,76,.5),10);
 console.log('PASS custom rank duties / edits / shifts / languages, work location / room access / missing buildings, finite return route / old-save deadline, screen-space bedside minimum');

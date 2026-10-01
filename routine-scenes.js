@@ -1,5 +1,6 @@
 import {jobLogContext} from './job-log-runtime.js';
 import {officeDuty} from './career-duties.js';
+import {mealObservation} from './meal-observation.js';
 // Pure projection: schedule progress needs no extra database writes or random calls.
 const hash=s=>[...s].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
 const text=(language,ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -8,6 +9,7 @@ export function routineScene(scene,character,world,now=Date.now(),language='ko')
  const date=new Date(now),minute=date.getHours()*60+date.getMinutes()+date.getSeconds()/60,start=Number(scene.routineStartMinute),end=Number(scene.routineEndMinute);
  if(!Number.isFinite(start)||!Number.isFinite(end)||end<=start||minute<start||minute>=end)return scene;
  const progress=(minute-start)/(end-start),phase=progress<.15?0:progress<.48?1:progress<.85?2:3;
+ if(scene.plannedLunch){const day=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();return {...scene,...mealObservation(character,day+start*60000,language),actionKind:'eating',needKey:'hunger',recoveryStartedAt:day+start*60000,recoveryEndsAt:day+end*60000,economyWork:false};}
  const routine=(Array.isArray(world.routines)?world.routines:[]).find(r=>r.id===scene.routineId);
  const seed=hash(`${scene.routineId}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`),kind=scene.routineType||routine?.type||'',name=scene.routineTitle||routine?.title||scene.title||'';
  const people=(scene.participantOrder||[character.id]).map(id=>world.characters?.[id]).filter(Boolean),company=people.length>1;

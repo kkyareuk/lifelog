@@ -1,6 +1,8 @@
 import {bedFaceSize} from './features/home/occupant-size.js';
+import {sizeRoomOccupants} from './room-occupant-size.js';
 import {bedPillowPoint} from './bed-perspective.js?v=20260909dev305';
 export function positionBedOccupants(root){
+  sizeRoomOccupants(root);
   const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')],statuses=[...root.querySelectorAll('.home-bed-foreground-status[data-bed-status-for]')];
   const layout=()=>people.forEach(person=>{
     if(!person.isConnected)return;

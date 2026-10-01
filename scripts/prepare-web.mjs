@@ -48,7 +48,7 @@ const includedFiles=new Set(["character-secrets.css","storage-ui.css","court-wor
   "payment-fail.html",
   "manifest.webmanifest",
   "social-preview.png",
-  "app.css","home-social-ui.css","intro-tour.css",
+  "app.css","weekly-timetable.css","home-social-ui.css","intro-tour.css",
   "character-book.css",
   "shop.css",
   "font-preferences.css",

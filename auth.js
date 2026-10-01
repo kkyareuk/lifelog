@@ -1,3 +1,4 @@
+import {purchaseAccessRefresh} from './purchase-access-refresh.js';
 import {applyConfirmedTown} from './shared-confirmed-state.js';
 import {iosAppleAvailable,chooseSignInProvider,authenticateApple,appleCopy} from './apple-login.js';
 import {uniqueManifestImages,photoManifestForState} from './cloud-image-manifest.js';
@@ -486,6 +487,8 @@ const publishEntitlements=value=>{
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(effectiveEntitlements());
 };
+const purchaseAccess=purchaseAccessRefresh({uid:()=>user?.uid,storage:localStorage,publish:publishEntitlements,read:async account=>{let timer;try{const snapshot=await Promise.race([getDocFromServer(doc(db,"users",account)),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('entitlement-refresh-timeout')),20000)})]);return snapshot.data()?.entitlements}finally{clearTimeout(timer)}}});
+for(const event of ['online','focus','drawer-village-cloud-loaded'])window.addEventListener(event,()=>purchaseAccess.resume());
 const accessLabel=()=>[
   (entitlements.characterSlotPacks*5+entitlements.characterSingleSlots)?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5+entitlements.characterSingleSlots}`:"",
   entitlements.townSlotPacks?`마을 슬롯 +${entitlements.townSlotPacks}`:"",
@@ -1436,7 +1439,7 @@ window.ParallelCityAuth={
   deleteOwnAccount,
   login,linkApple:()=>appleLogin(true),upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
   setAppleSandboxEntitlements:(value,uid)=>{if(!uid||uid!==user?.uid||!window.Capacitor?.isNativePlatform?.()||window.Capacitor?.getPlatform?.()!=="ios")return;appleSandboxEntitlements=normalizeEntitlements(value);appleSandboxUid=uid;window.ParallelCity?.setEntitlements?.(effectiveEntitlements())},
-  refreshEntitlements:async()=>{const account=user?.uid;if(!account)return;const snapshot=await getDocFromServer(doc(db,"users",account));if(user?.uid===account)publishEntitlements(snapshot.data()?.entitlements)},
+  refreshEntitlements:()=>purchaseAccess.refresh(),
   logout:async()=>{
     try{await window.DrawerVillageGroupPush?.disable?.()}catch{}
     accountEpoch+=1;switchingAccount=true;

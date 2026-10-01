@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {timetableItems,participantSchedules,layoutDay} from '../weekly-timetable.js';
+import {mapTravelSeconds,returnRoute} from '../scheduled-return.js';
+import {purchaseAccessRefresh} from '../purchase-access-refresh.js';
+const a={id:'a',wake:'07:00',sleep:'23:00',lunchStart:'12:00',lunchEnd:'13:00'},b={id:'b'};
+const world={characters:{a,b},routines:{b:[{id:'shared',day:6,start:'23:00',end:'01:00',withIds:['a'],title:'shared'}]},monthlyRoutines:{b:[{id:'dated',date:'2026-10-02',start:'10:00',end:'12:00',withIds:['a']}]}};
+let rows=timetableItems(world,a);assert(rows.some(r=>r.id==='shared'&&r.day===0&&r.endMinute===60));assert(rows.some(r=>r.category==='sleep'&&r.startMinute===1380));assert.equal(participantSchedules(world,a,true).length,1);
+world.deletedRoutineIds=['shared'];assert(!timetableItems(world,a).some(r=>r.id==='shared'));world.routines.b[0].withIds=[];assert.equal(participantSchedules(world,a).length,0);
+const lanes=layoutDay([{startMinute:60,endMinute:180},{startMinute:90,endMinute:120},{startMinute:180,endMinute:240}]);assert.equal(lanes[0].columns,2);assert.equal(lanes[2].columns,1);
+assert.equal(mapTravelSeconds(a,{x:0,y:0},{x:30,y:0}),1);assert.equal(mapTravelSeconds(a,{x:0,y:0},{x:60,y:0}),2);assert(mapTravelSeconds({walkingStyle:'빠르고 성큼성큼'},{x:0,y:0},{x:60,y:0})<2);
+const route=returnRoute({homes:{h:{mapX:60,mapY:0}},towns:[{places:[{id:'p',x:0,y:0}]}]},{...a,homeId:'h'},{transit:true,returningHome:true,minute:600,returnFromPlaceId:'p'},new Date(2026,9,1).getTime());assert.equal(route.end-route.start,2000);
+const values=new Map(),storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)},timers=[];let uid='a',offline=true,applied=[];
+const make=()=>purchaseAccessRefresh({uid:()=>uid,storage,read:async()=>{if(offline)throw Error('offline');return {adFree:true}},publish:v=>applied.push(v),schedule:f=>{timers.push(f);return f},cancel:()=>{}});
+const refresh=make();await assert.rejects(refresh.refresh());assert(values.size===1);offline=false;timers.pop()();await new Promise(r=>setTimeout(r,0));assert.equal(applied.length,1);assert.equal(values.size,0);
+offline=true;await assert.rejects(refresh.refresh());offline=false;make().resume();await new Promise(r=>setTimeout(r,0));assert.equal(applied.length,2,'restart resumes the account entitlement read');
+let resolve;const changed=purchaseAccessRefresh({uid:()=>uid,storage,read:()=>new Promise(r=>resolve=r),publish:v=>applied.push(v)});const pending=changed.refresh();uid='b';resolve({adFree:true});await assert.rejects(pending,/account-changed/);assert.equal(applied.length,2,'never apply to another account');
+console.log('PASS shared/dated/deleted schedules, overnight split, overlap lanes, distance/gait seconds, purchase refresh retry/restart/account isolation');

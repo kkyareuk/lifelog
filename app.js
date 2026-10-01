@@ -1,3 +1,4 @@
+import {bindLifeTimes} from './life-times-ui.js';
 import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {CHARACTER_CONTACT_PHRASES} from './features/mail/contact-phrases.js';
 import {chooseStarterPresets} from './features/characters/starter-presets.js';
@@ -2853,7 +2854,7 @@ function bind(){
       const purchaseResult=await billing.purchase(productId);
       if(!purchaseResult)throw new Error(({ko:'구매 완료를 확인하지 못했어요. 구매 내역 복원을 눌러 주세요.',en:'Purchase completion could not be confirmed. Please restore purchases.',ja:'購入完了を確認できません。購入の復元をお試しください。'})[state.uiLanguage]||'Purchase not confirmed');
       if(productId==="diamonds_100")window.dispatchEvent(new CustomEvent("drawer-village-diamonds-charged",{detail:purchaseResult||{}}));
-      showToast(playText("구매가 완료되어 상품을 지급했습니다"));
+      showToast(purchaseResult.accessPending?({ko:"결제는 확인됐어요. 상품을 다시 불러오는 중이에요. 다시 구매하지 마세요.",en:"Payment confirmed. Reloading your purchase; please do not buy again.",ja:"決済を確認しました。購入を再読み込み中です。再購入しないでください。"}[state.uiLanguage]||"결제는 확인됐어요. 상품을 다시 불러오는 중이에요. 다시 구매하지 마세요."):playText("구매가 완료되어 상품을 지급했습니다"));
       render();
     }catch(error){
       console.error(error);
@@ -4500,6 +4501,7 @@ function bind(){
   $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(state.routineView==="monthly")state.routineMonth=currentMonthKey();save();render()});
   $$("[data-routine-month-step]").forEach(el=>el.onclick=()=>{const [year,month]=(state.routineMonth||currentMonthKey()).split("-").map(Number),next=new Date(year,month-1+Number(el.dataset.routineMonthStep),1);state.routineMonth=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,"0")}`;save();render()});
   $("[data-routine-month-today]")?.addEventListener("click",()=>{state.routineMonth=currentMonthKey();save();render()});
+  bindLifeTimes(render);
   $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
   $$("[data-edit-monthly-routine]").forEach(el=>el.onclick=()=>openMonthlyRoutineDialog(el.dataset.editMonthlyRoutine));
   $$("[data-edit-anniversary]").forEach(el=>el.onclick=()=>openAnniversaryDialog(el.dataset.editAnniversary));
@@ -5396,6 +5398,7 @@ function openRoutineDialog(id,draft=null,onSave=null){
   dialog.querySelectorAll('[data-routine-day-preset]').forEach(button=>button.onclick=()=>{const preset=button.dataset.routineDayPreset,values=preset==="weekdays"?[1,2,3,4,5]:preset==="weekend"?[0,6]:preset==="everyday"?[0,1,2,3,4,5,6]:[];dialog.querySelectorAll('[name="day"]').forEach(input=>input.checked=values.includes(Number(input.value)));updateDaySummary()});
   dialog.querySelectorAll('[name="day"]').forEach(input=>input.onchange=updateDaySummary);
   updateDaySummary();wireRoutineGroupShortcuts(dialog,c.id);
+  if(!isNew&&!onSave){const remove=document.createElement('button');remove.type='button';remove.textContent=({ko:'삭제',en:'Delete',ja:'削除'})[state.uiLanguage]||'삭제';remove.onclick=()=>{deleteRoutine(c.id,item.id);closeRoutineSheet(dialog,'delete',()=>render())};dialog.querySelector('.routine-sheet-actions').prepend(remove);}
   dialog.querySelector("[data-routine-cancel]").onclick=()=>closeRoutineSheet(dialog);
   dialog.querySelector("[data-routine-save]").onclick=()=>{
     const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
