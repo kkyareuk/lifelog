@@ -1,3 +1,4 @@
+import {isAutomaticSchedule,compareSchedulePriority,trimAutomaticSchedules} from './schedule-priority.js';
 import {careerWeeklyRoutines} from './career-work.js';
 import {sleepWindow} from './sleep-clock.js';
 export const minute=s=>{const m=/^(\d{2}):(\d{2})$/.exec(s||'');return m&&+m[1]<24&&+m[2]<60?+m[1]*60 + +m[2]:null};
@@ -14,7 +15,7 @@ export function participantSchedules(w,c,monthly=false){
 }
 export function timetableItems(w,c){
  const rows=participantSchedules(w,c).filter(r=>!['업무','work'].includes(r.type)||r.ownerId!==c.id);
- rows.push(...careerWeeklyRoutines(w,c).map(r=>({...r,ownerId:c.id,category:'work',automatic:true})));
+ rows.push(...careerWeeklyRoutines(w,c).map(r=>({...r,ownerId:c.id,category:'work',automatic:isAutomaticSchedule(r)})));
  const {wake,sleep,disabled}=sleepWindow(c),lunch=lunchWindow(c);
  for(let day=0;day<7;day++){
   if(!disabled)rows.push({id:'sleep:'+day,day,start:sleep,end:wake,category:'sleep',automatic:true});
@@ -29,23 +30,25 @@ export function timetableItems(w,c){
   add(Number(r.day),start,end<start?1440:end);
   if(end<start&&!r.careerEmploymentId)add((Number(r.day)+1)%7,0,end);
  }
- return segments.flatMap(r=>{
+ return trimAutomaticSchedules(segments.flatMap(r=>{
   if(r.category!=='work'||!r.automatic||c.autonomousActivityBlocks?.includes('eating'))return [r];
   if(lunch.end<=r.startMinute||lunch.start>=r.endMinute)return [r];
   return [{...r,endMinute:Math.min(r.endMinute,lunch.start)},{...r,startMinute:Math.max(r.startMinute,lunch.end)}].filter(x=>x.endMinute>x.startMinute);
- });
+ }));
 }
 export function layoutDay(items){
- const sorted=items.map(r=>({...r})).sort((a,b)=>a.startMinute-b.startMinute||b.endMinute-a.endMinute);let group=[],ends=[];
- const flush=()=>{for(const r of group)r.columns=ends.length;group=[];ends=[]};
- for(const r of sorted){if(group.length&&r.startMinute>=Math.max(...ends))flush();let lane=ends.findIndex(end=>end<=r.startMinute);if(lane<0)lane=ends.length;ends[lane]=r.endMinute;r.lane=lane;group.push(r)}flush();return sorted;
+ const sorted=items.map(r=>({...r})).sort((a,b)=>-compareSchedulePriority(a,b)||a.startMinute-b.startMinute||b.endMinute-a.endMinute),lanes=[[],[]];
+ for(const r of sorted){const lane=lanes.findIndex(list=>list.every(other=>other.endMinute<=r.startMinute||other.startMinute>=r.endMinute));r.hidden=lane<0;r.lane=Math.max(0,lane);r.columns=2;if(lane>=0)lanes[lane].push(r)}
+ for(const r of sorted)if(!r.hidden&&!lanes[1-r.lane].some(other=>other.startMinute<r.endMinute&&other.endMinute>r.startMinute)){r.lane=0;r.columns=1}
+ return sorted;
+
 }
 export function weeklyTimetable(w,c,days){
- const lang=w.uiLanguage||'ko',copy={ko:['수면','점심','업무·수업','함께하는 일정','개인 일정','생활 시간 설정','시간','일정 추가','설정한 생활 시간과 참여 일정이에요. 겹치는 일정은 나란히 표시돼요.'],en:['Sleep','Lunch','Work / class','Together','Personal','Set daily times','Time','Add schedule','Daily times and joined schedules. Overlapping events appear side by side.'],ja:['睡眠','昼食','仕事・授業','共同の予定','個人の予定','生活時間の設定','時刻','予定を追加','生活時間と参加する予定です。重なる予定は横に並びます。']}[lang]||[];
+ const lang=w.uiLanguage||'ko',copy={ko:['수면','점심','업무·수업','함께하는 일정','개인 일정','생활 시간 설정','시간','일정 추가','직접 추가한 일정이 우선해요. 가로로 밀어 요일을 보고, 전체 내용은 아래 목록에서 확인하세요. 겹치는 일정은 최대 두 칸으로 표시해요.'],en:['Sleep','Lunch','Work / class','Together','Personal','Set daily times','Time','Add schedule','Your added schedules take priority. Swipe across days; full details are listed below. At most two events appear side by side.'],ja:['睡眠','昼食','仕事・授業','共同の予定','個人の予定','生活時間の設定','時刻','予定を追加','追加した予定を優先します。横にスワイプして曜日を確認できます。全文は下の一覧に表示し、重なる予定は最大2列に並べます。']}[lang]||[];
  const labels=Object.fromEntries(['sleep','meal','work','shared','personal'].map((k,i)=>[k,copy[i]])),items=timetableItems(w,c);
  const time=n=>`${String(Math.floor(n/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
- return `<section class="timetable"><div class="timetable-tools"><div class="timetable-legend">${Object.entries(labels).map(([k,v])=>`<span class="tt-${k}">${v}</span>`).join('')}</div><button type="button" data-life-times>${copy[5]}</button></div><p class="timetable-hint">${copy[8]}</p><div class="timetable-scroll"><div class="timetable-grid"><div class="timetable-corner">${copy[6]}</div>${days.map((d,i)=>`<div class="timetable-day-head">${d}<button type="button" data-add-routine-day="${i}" aria-label="${d} ${copy[7]}">＋</button></div>`).join('')}<div class="timetable-hours">${Array.from({length:24},(_,h)=>`<span style="top:${h/24*100}%">${String(h).padStart(2,'0')}</span>`).join('')}</div>${days.map((d,day)=>`<div class="timetable-day" data-timetable-day="${day}">${layoutDay(items.filter(r=>r.day===day)).map(r=>{
+ return `<section class="timetable"><div class="timetable-tools"><div class="timetable-legend">${Object.entries(labels).map(([k,v])=>`<span class="tt-${k}">${v}</span>`).join('')}</div><button type="button" data-life-times>${copy[5]}</button></div><p class="timetable-hint">${copy[8]}</p><div class="timetable-scroll"><div class="timetable-grid"><div class="timetable-corner">${copy[6]}</div>${days.map((d,i)=>`<div class="timetable-day-head">${d}<button type="button" data-add-routine-day="${i}" aria-label="${d} ${copy[7]}">＋</button></div>`).join('')}<div class="timetable-hours">${Array.from({length:24},(_,h)=>`<span style="top:${h/24*100}%">${String(h).padStart(2,'0')}</span>`).join('')}</div>${days.map((d,day)=>`<div class="timetable-day" data-timetable-day="${day}">${layoutDay(items.filter(r=>r.day===day)).filter(r=>!r.hidden).map(r=>{
  const names=[r.ownerId,...(r.withIds||[])].filter((id,i,a)=>id&&a.indexOf(id)===i).map(id=>w.characters[id]?.name).filter(Boolean).join(' · '),title=r.title||labels[r.category],detail=[labels[r.category],title,`${time(r.startMinute)}–${time(r.endMinute)}`,names,r.notes].filter(Boolean).join('\n');
- return `<button type="button" class="timetable-event tt-${r.category}" style="top:${r.startMinute/1440*100}%;height:${(r.endMinute-r.startMinute)/1440*100}%;left:${r.lane/r.columns*100}%;width:${100/r.columns}%" data-timetable-detail="${esc(detail)}" ${!r.automatic&&r.ownerId===c.id?`data-edit-routine="${esc(r.id)}"`:''} aria-label="${esc(detail)}"><small>${esc(labels[r.category])}</small><strong>${esc(title)}</strong><time><span>${time(r.startMinute)}</span><span>${time(r.endMinute)}</span></time>${names?`<span>${esc(names)}</span>`:''}</button>`;
- }).join('')}</div>`).join('')}</div></div></section>`;
+ return `<button type="button" class="timetable-event tt-${r.category}" style="top:${r.startMinute/1440*100}%;height:${(r.endMinute-r.startMinute)/1440*100}%;left:${r.lane/r.columns*100}%;width:${100/r.columns}%" data-timetable-detail="${esc(detail)}" ${!r.automatic&&r.ownerId===c.id?`data-edit-routine="${esc(r.id)}"`:''} aria-label="${esc(detail)}"><small>${esc(labels[r.category])}</small><strong>${esc(title)}</strong><time><span>${time(r.startMinute)}</span><span>${time(r.endMinute)}</span></time></button>`;
+ }).join('')}</div>`).join('')}</div></div><div class="timetable-agenda">${days.map((day,index)=>`<details ${index===new Date().getDay()?'open':''}><summary>${day} · ${({ko:'전체 일정',en:'All schedules',ja:'すべての予定'})[lang]||'전체 일정'}</summary>${items.filter(r=>r.day===index).sort((a,b)=>a.startMinute-b.startMinute).map(r=>{const names=[r.ownerId,...(r.withIds||[])].filter((id,i,a)=>id&&a.indexOf(id)===i).map(id=>w.characters[id]?.name).filter(Boolean).join(' · '),detail=[r.title||labels[r.category],`${time(r.startMinute)}–${time(r.endMinute)}`,names,r.notes].filter(Boolean).join('\n');return `<button type="button" class="timetable-agenda-item tt-${r.category}" data-timetable-detail="${esc(detail)}" ${!r.automatic&&r.ownerId===c.id?`data-edit-routine="${esc(r.id)}"`:''}><time>${time(r.startMinute)}–${time(r.endMinute)}</time><strong>${esc(r.title||labels[r.category])}</strong><span>${esc(names)}</span>${r.notes?`<span>${esc(r.notes)}</span>`:''}</button>`}).join('')}</details>`).join('')}</div></section>`;
 }

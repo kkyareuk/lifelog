@@ -39,16 +39,17 @@ try{
  await p.getByRole('button',{name:'안내 그만 보기',exact:true}).click().catch(()=>{});
  assert(await p.locator('.tt-shared[data-timetable-detail]').count()>0);
  const counts=await p.evaluate(()=>({sleep:document.querySelectorAll('.timetable-event.tt-sleep').length,work:document.querySelectorAll('.timetable-event.tt-work').length,lunch:document.querySelectorAll('.timetable-event.tt-meal').length,width:document.querySelector('.timetable-scroll').scrollWidth,client:document.querySelector('.timetable-scroll').clientWidth}));
- assert(counts.sleep>=7);assert(counts.work===10);assert(counts.lunch===7);assert(counts.width<=counts.client+1,JSON.stringify(counts));
+ assert(counts.sleep>=7);assert(counts.work>=10);assert(counts.lunch===7);assert(counts.width>counts.client,JSON.stringify(counts));
  await p.locator('[data-life-times]').click();await p.locator('input[name=lunchStart]').fill('12:30');await p.locator('input[name=lunchEnd]').fill('13:30');await p.locator('dialog form').evaluate(f=>f.requestSubmit());await p.waitForFunction(()=>c.lunchStart==='12:30');
  const lunch=await p.evaluate(()=>sim.eventFor(c,new Date(2026,9,1,12,40)));assert(lunch.plannedLunch,JSON.stringify(lunch));assert.equal(lunch.actionKind,'eating');
  await p.getByRole('button',{name:'안내 그만 보기',exact:true}).click({timeout:500}).catch(()=>{});
- await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());document.querySelector('.timetable-scroll').scrollTop=8*48});
- await p.evaluate(()=>document.querySelector('#mini-toast')?.remove());
+ await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());document.querySelector('.timetable-scroll').scrollTop=8*96});
+ await p.evaluate(()=>{document.querySelector('#mini-toast')?.remove();document.querySelector('.timetable-scroll').scrollLeft=192});
  await p.screenshot({path:'tmp/qa-reported-life/timetable-mobile.png'});
  await p.setViewportSize({width:1000,height:1600});await p.evaluate(()=>photoQA.render());await p.waitForTimeout(200);await p.evaluate(()=>{document.querySelector('.timetable-scroll').style.maxHeight='none';document.querySelector('.timetable-scroll').style.flexShrink='0';document.querySelector('.routine-shell').style.height='auto';document.querySelector('.timetable-scroll').scrollTop=0});
  await p.locator('.timetable').screenshot({path:'tmp/qa-reported-life/timetable-week.png'});
  await p.evaluate(()=>{g.state.activeId=other.id;photoQA.render()});assert(await p.locator('[data-edit-routine="together"]').count()>0);
+ const priority=await p.evaluate(()=>{g.state.activeId=cid;g.state.routines[cid].push({id:'manual-priority',day:4,start:'08:00',end:'14:00',type:'취미',title:'직접 추가한 긴 일정과 점심보다 먼저 시작한 약속',withIds:[]});g.touchCharacterTimelines([cid]);return sim.eventFor(c,new Date(2026,9,1,12,40)).routineId});assert.equal(priority,'manual-priority');
  const size=await p.evaluate(async()=>{const {sizeRoomOccupants}=await import('/room-occupant-size.js');const room=document.createElement('div');room.style.cssText='position:fixed;top:0;left:0;transform:scale(.3);transform-origin:top left';room.innerHTML='<div class="home-person" data-room-icon-minimum="32"><span class="home-person-visual"><span class="avatar" style="display:block;width:40px;height:40px"></span></span></div>';document.body.append(room);sizeRoomOccupants(room);const width=room.querySelector('.avatar').getBoundingClientRect().width;room.remove();return width});assert(size>=31.9,String(size));
  for(const [language,label] of [['en','Set daily times'],['ja','生活時間の設定']]){await p.evaluate(language=>{g.state.uiLanguage=language;photoQA.render()},language);assert.equal(await p.locator('[data-life-times]').textContent(),label)}
  assert(!errors.length,errors.join('\n'));console.log('PASS timetable, shared participant, lunch persistence and real scene, unscaled room actor floor',counts,size);

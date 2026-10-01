@@ -1,0 +1,5 @@
+{
+  "ko": "주간 시간표에 수면·점심·근무·함께하는 일정을 표시합니다. 글자 가독성을 개선하고 겹치는 일정은 최대 두 칸으로 표시하며 직접 추가한 일정을 우선합니다. 근무 건물·방 선택과 사용자 정의 업무 반영을 개선했습니다. 거리와 걸음걸이에 따른 귀가, 작은 방 캐릭터 크기, 광고 제거 후 상단 표시, 구매 후 상품 반영 복구를 개선했습니다.",
+  "en-US": "Added a weekly timetable for sleep, lunch, work and shared plans. Improved readability, limited overlaps to two columns and prioritized your added plans. Improved custom job duties and work building/room selection. Updated travel timing by distance and walking pace, character size in small rooms, the top display after ad removal and recovery when purchased items are slow to appear.",
+  "ja": "睡眠・昼食・仕事・共同の予定を週間時間割に表示します。文字を読みやすくし、重なる予定は最大2列に表示して追加した予定を優先します。勤務する建物・部屋の選択とカスタム業務の反映を改善しました。距離と歩き方に応じた帰宅、小さな部屋のキャラクター表示、広告削除後の上部表示、購入内容の反映が遅れた際の復旧を改善しました。"
+}

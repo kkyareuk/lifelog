@@ -2,7 +2,7 @@ import {withSharedWorld} from './shared-world.js';
 import {state,active,save,touchCharacterTimelines} from './state.js?v=20260909dev305';
 import {minute} from './weekly-timetable.js';
 export function bindLifeTimes(render){
- const scroll=document.querySelector(".timetable-scroll");if(scroll)scroll.scrollTop=6*48;
+ const scroll=document.querySelector(".timetable-scroll");if(scroll)scroll.scrollTop=6*96;
  document.querySelectorAll('[data-timetable-detail]:not([data-edit-routine])').forEach(b=>b.onclick=()=>{const d=document.createElement('dialog');d.className='timetable-detail';const p=document.createElement('p');p.textContent=b.dataset.timetableDetail;const close=document.createElement('button');close.textContent='×';close.onclick=()=>d.close();d.append(p,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal()});
  const button=document.querySelector('[data-life-times]');if(!button)return;
  button.onclick=()=>{

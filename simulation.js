@@ -1,3 +1,4 @@
+import {compareSchedulePriority} from './schedule-priority.js';
 import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
 import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
 import {unemployedHomeLog} from './job-log-runtime.js';
@@ -286,7 +287,7 @@ const activeScheduledRoutine=(c,date=new Date())=>{
   return scheduledForDate(c,date).filter(item=>{
     const start=mins(item.start),end=routineEndMinute(item);
     return start<=minute&&minute<end;
-  }).at(-1)||null;
+  }).sort((a,b)=>compareSchedulePriority(a,b)||mins(a.start)-mins(b.start)).at(-1)||null;
 };
 const scheduledTown=(c,date=new Date())=>{
   if(state.preventInterTownMovement)return townFor(c,date);
@@ -3608,13 +3609,13 @@ function calculateBaseEvent(c,date=new Date()){
   const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
   const activeRoutine=activeScheduledRoutine(c,date);
   let activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
-  // A job assigned during a shift has no past start entry. Project its current
-  // work without rewriting history or waiting until the next working day.
-  if(!activeRoutineEntry&&activeRoutine&&['업무','work'].includes(activeRoutine.type)){
+  // Newly added schedules may not have a past start entry. Project the active
+  // schedule without rewriting history, including appointments added mid-day.
+  if(!activeRoutineEntry&&activeRoutine){
     const target=state.towns.find(t=>t.places?.some(p=>p.id===activeRoutine.placeId));
     const reachable=target&&canTravelBetween(townFor(c,date),target,state.preventInterTownMovement);
-    activeRoutineEntry={time:clock(n),minute:n,routineId:activeRoutine.id,routineStartMinute:mins(activeRoutine.start),routineEndMinute:routineEndMinute(activeRoutine),
-      ...(reachable?{placeId:activeRoutine.placeId,townId:target.id}:{home:true,visitHomeId:activeRoutine.visitHomeId||c.homeId,room:'study'})};
+    activeRoutineEntry={title:activeRoutine.title,desc:activeRoutine.notes||'',withIds:activeRoutine.withIds,participantOrder:activeRoutine.participantOrder,routineOwnerId:activeRoutine.routineOwnerId,time:clock(n),minute:n,routineId:activeRoutine.id,routineStartMinute:mins(activeRoutine.start),routineEndMinute:routineEndMinute(activeRoutine),
+      ...(reachable?{placeId:activeRoutine.placeId,townId:target.id}:{home:true,visitHomeId:activeRoutine.visitHomeId||c.homeId,room:activeRoutine.room||'study'})};
   }
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.

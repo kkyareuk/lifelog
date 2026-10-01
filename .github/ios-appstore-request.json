@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-29-public511-user-approved-ios",
-  "version": "1.0.459",
-  "build": 511,
+  "request": "2026-10-01-public512-user-approved-ios",
+  "version": "1.0.460",
+  "build": 512,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
