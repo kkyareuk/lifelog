@@ -2,7 +2,7 @@ import {buildingInterior} from './building-interior-model.js';
 // A meeting stores a route once. Drawing its progress never mutates game state.
 const point=(x,y)=>({x:Math.max(0,Math.min(100,Number.isFinite(Number(x))?Number(x):50)),y:Math.max(0,Math.min(100,Number.isFinite(Number(y))?Number(y):55))});
 function location(world,c,scene={},position){
- const place=world.world?.places?.find(p=>p.id===scene.placeId),interior=place?buildingInterior(place,scene.townId||c.townId,world.uiLanguage):null;
+ const town=world.towns?.find(t=>t.id===(scene.townId||c.townId)),place=(town?.places||world.world?.places||[]).find(p=>p.id===scene.placeId),interior=place?buildingInterior(place,scene.townId||c.townId,world.uiLanguage):null;
  const homeId=scene.home?(scene.visitHomeId||c.homeId):'',home=world.homes?.[homeId],rooms=home?.rooms||interior?.rooms,room=scene.room&&rooms?.[scene.room]?scene.room:interior?(scene.room||''):Object.keys(rooms||{})[0]||'living';
  const agent=home?.lifeSimulation?.agents?.[c.id];
  const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:scene.meetingLocation?.point||scene.goal?.point|| (agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60)),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};

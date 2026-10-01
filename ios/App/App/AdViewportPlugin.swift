@@ -73,7 +73,8 @@ class DrawerBridgeViewController: CAPBridgeViewController {
     private func layoutBannerViewport() {
         guard let web = webView else { return }
         let bounds = view.bounds
-        let top = bannerHeight > 0 ? view.safeAreaInsets.top : 0
+        // Keep the status-bar/notch outside the WebView even after ad removal.
+        let top = view.safeAreaInsets.top
         let reserved = min(bounds.height, top + bannerHeight)
         let frame = CGRect(x: 0, y: reserved, width: bounds.width, height: max(0, bounds.height - reserved))
         if web.frame != frame { web.frame = frame }

@@ -1,0 +1,34 @@
+import assert from 'node:assert/strict';
+import {officeDuty,officeEmployment} from '../career-duties.js';
+import {routineScene} from '../routine-scenes.js';
+import {careerWeeklyRoutines} from '../career-work.js';
+import {workLocation} from '../work-location.js';
+import {returnArrivalMinute,returnRoute} from '../scheduled-return.js';
+import {bedFaceSize} from '../features/home/occupant-size.js';
+const date=new Date(2026,9,1,10),job={id:'custom-monk',name:'수도사',ranks:[{id:'abbot',duties:[{name:'필사하기',description:'책을 필사합니다.'},{name:'기도하기',description:'기도합니다.'}]}]};
+const c={id:'c',homeId:'h',townId:'t',workplaceId:'home',workRoomId:'atelier',wallet:{employments:[{id:'e',jobId:job.id,rankId:'abbot',jobName:job.name,duties:[{name:'old',description:'old'}]}]}};
+const w={economy:{careers:[job]},homes:{h:{id:'h',townId:'t',mapX:20,mapY:80,rooms:{study:{type:'study'},atelier:{type:'study',name:'작업방'}}}},towns:[{id:'t',places:[{id:'p',name:'수도원',x:80,y:20,interior:{rooms:{office:{type:'study',name:'집무실'}}}}]}]};
+assert(officeEmployment(c,'e'));
+for(const language of ['ko','en','ja']){
+ const scene={routineId:'r',routineType:'업무',routineStartMinute:540,routineEndMinute:1080,careerEmploymentId:'e',home:true,room:'atelier'};
+ const result=routineScene(scene,c,w,+date,language);assert(['필사하기','기도하기'].includes(result.title));assert.equal(result.room,'atelier');
+}
+const titles=[0,45,90].map(m=>officeDuty(c,new Date(2026,9,1,9,m),540,1080,'ko','e',{world:w}).title);assert.equal(new Set(titles).size,2);
+job.ranks[0].duties=[{name:'새 업무',description:'수정된 업무'}];assert.equal(officeDuty(c,date,540,1080,'ko','e',{world:w}).title,'새 업무');
+assert.equal(officeDuty(c,date,540,1080,'ko','missing',{world:w}),null);
+assert.equal(officeDuty(c,new Date(2026,9,1,18),540,1080,'ko','e',{world:w}),null);
+assert.equal(workLocation(w,c,c.wallet.employments[0]).room,'atelier');
+assert(careerWeeklyRoutines(w,c).every(r=>r.home&&r.room==='atelier'&&!r.placeId));
+const onsite={...c,workplaceId:'p',workRoomId:'office'};assert.deepEqual(workLocation(w,onsite),{home:false,placeId:'p',townId:'t',room:'office'});
+w.homes.h.rooms.atelier.accessMode='selected';w.homes.h.rooms.atelier.accessCharacterIds=['other'];assert.equal(workLocation(w,c).room,'study');
+assert(workLocation(w,{...c,workplaceId:'deleted'}).home);
+const otherTown={id:'other',travelAllowed:false,places:[{id:'remote',interior:{rooms:{office:{type:'study'}}}}]};
+w.towns.push(otherTown);assert(workLocation(w,{...c,workplaceId:'remote'}).home);
+otherTown.travelAllowed=true;assert.equal(workLocation(w,{...c,workplaceId:'remote'}).placeId,'remote');
+w.preventInterTownMovement=true;assert(workLocation(w,{...c,workplaceId:'remote'}).home);delete w.preventInterTownMovement;
+const trip={transit:true,returningHome:true,minute:600,returnFromPlaceId:'p',returnArrivalMinute:601};
+const route=returnRoute(w,c,trip,+date);assert.deepEqual(route.from,{x:80,y:20});assert.deepEqual(route.to,{x:20,y:80});assert.equal(route.end-route.start,60000);
+assert.equal(returnArrivalMinute({...trip,returnArrivalMinute:615}),602);assert.equal(returnArrivalMinute({home:true}),Infinity);
+for(const scale of [.25,.5,1,2])assert(bedFaceSize(10,32,76,scale)*scale>=32);
+assert.equal(bedFaceSize(10,0,76,.5),10);
+console.log('PASS custom rank duties / edits / shifts / languages, work location / room access / missing buildings, finite return route / old-save deadline, screen-space bedside minimum');

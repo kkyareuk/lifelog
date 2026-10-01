@@ -1,3 +1,4 @@
+import {returnRoute} from './scheduled-return.js';
 import {contactPickerMarkup} from './features/settings/contact-picker.js';
 import {characterPortrait} from './features/mail/portrait.js';
 import {secretsPane,secretText} from './character-secrets-ui.js';
@@ -1906,6 +1907,7 @@ function townTravelersMarkup(homeId=""){
   return travelers.map((character,index)=>{
     const scene=eventFor(character),home=state.homes?.[scene.destinationHomeId||character.homeId];
     if(scene.meetingJourney?.surface==="town")return meetingWalker(character,scene,scene.meetingJourney);
+    const homeRoute=returnRoute(state,character,scene);if(homeRoute)return meetingWalker(character,scene,homeRoute,Date.now()>=homeRoute.end);
     if(scene.meetingLocation?.map){const point=scene.meetingLocation.map;return meetingWalker(character,scene,{start:Date.now(),end:Date.now()+1000,from:point,to:point},true)}
     const decoration=(state.world.decorations||[]).find(item=>item.id===scene.decorationId);
     const conversation=Boolean(scene.groupInteraction&&scene.interactionId),seed=nativeVisualSeed(`${conversation?scene.interactionId:character.id}:${scene.minute}:${scene.movementKind||"roaming"}`);

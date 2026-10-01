@@ -1,6 +1,6 @@
 import {restoreWardrobe,withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save} from './state.js?v=20260909dev305';
-const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','coffeeInventory','favorites','dislikes','wallet','money','balance','lastSaved','sharedScene','sharedContext','sourceCharacterId','revision']);
+const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','workRoomId','days','createdAt','timelineResetAt','inventory','coffeeInventory','favorites','dislikes','wallet','money','balance','lastSaved','sharedScene','sharedContext','sourceCharacterId','revision']);
 export async function importCodeCharacter(character,limit){
  const clean=(v,depth=0)=>{if(depth>20)throw Error('Invalid character');if(Array.isArray(v))return v.map(x=>clean(x,depth+1));if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,x])=>[k,clean(x,depth+1)]));return v};
  if(!character||typeof character.name!=='string')throw Error('Invalid character');

@@ -1,10 +1,12 @@
+import {customCareerDuty} from './custom-career-duty.js';
 import {jobLogDuty,jobLogIdentity} from './job-log-runtime.js';
 import {performanceDuty} from './performance-tasks.js';
 import {officeDuty as corporateDuty,officeEmployment as corporateEmployment} from './office-work.js';
 import {POLITICIAN_DUTIES,BARISTA_DUTIES} from './career-duty-data.js';
-export function officeEmployment(c,id){return corporateEmployment(c,id)||employment(c,id)||(jobLogIdentity(c,id)?.key!=='unemployed'?jobLogIdentity(c,id)?.employment:null)}
+export function officeEmployment(c,id){const rows=c.wallet?.employments||[c.wallet?.employment].filter(Boolean),custom=id?rows.find(e=>e.id===id):rows[0];if(custom&&!custom.jobId?.startsWith('builtin-'))return custom;return corporateEmployment(c,id)||employment(c,id)||(jobLogIdentity(c,id)?.key!=='unemployed'?jobLogIdentity(c,id)?.employment:null)}
 function employment(c,id){const all=c.wallet?.employments||[],entry=id?all.find(e=>e.id===id):all[0];if(entry)return ['builtin-politician','builtin-barista','builtin-singer','builtin-idol'].includes(entry.jobId)?entry:null;return !all.length&&['정치인','바리스타','가수','아이돌'].includes(c.job)?{jobId:({'정치인':'builtin-politician','바리스타':'builtin-barista','가수':'builtin-singer','아이돌':'builtin-idol'})[c.job]}:null}
 export function officeDuty(c,date,start,end,language='ko',id,context={}){
+ const custom=customCareerDuty(context.world,c,date,start,end,language,id);if(custom)return custom;
  const corporate=corporateDuty(c,date,start,end,language,id),base=jobLogDuty(c,date,start,end,language,id,context);
  // Keep rank-specific corporate and authored performance duties in rotation.
  const authored=Math.floor(date.getTime()/2700000)%2===0;

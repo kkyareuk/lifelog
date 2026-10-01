@@ -51,7 +51,7 @@ export function careerCaption(world,c){
 export function todayCareerDuty(world,c,date=new Date()){
  const minute=date.getHours()*60+date.getMinutes(),toMinute=s=>String(s).split(':').reduce((h,v)=>h*60+Number(v),0);
  const routine=careerWeeklyRoutines(world,c).filter(r=>Number(r.day)===date.getDay()).find(r=>{const a=toMinute(r.start),b=toMinute(r.end);return minute>=a&&minute<(b<a?b+1440:b)});
- if(routine){const a=toMinute(routine.start),b=toMinute(routine.end),duty=officeDuty(c,date,a,b<a?b+1440:b,world.uiLanguage,routine.careerEmploymentId);if(duty)return {name:duty.title,description:duty.desc};}
+ if(routine){const a=toMinute(routine.start),b=toMinute(routine.end),duty=officeDuty(c,date,a,b<a?b+1440:b,world.uiLanguage,routine.careerEmploymentId,{world,home:routine.home===true});if(duty)return {name:duty.title,description:duty.desc};}
 
  const duties=currentDuties(world,c);if(!duties.length)return null;
  const key=`${c.id}:${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}:job-scene`;

@@ -6,7 +6,7 @@ import {characterCodeDialog} from "./character-code.js?v=20260909dev305";
 import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev305';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
-const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','sharedScene']);
+const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','workRoomId','days','createdAt','timelineResetAt','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','sharedScene']);
 function clean(value,depth=0){
   if(depth>20)throw Error('Invalid file');
   if(Array.isArray(value)){if(value.length>1000)throw Error('Invalid file');return value.map(v=>clean(v,depth+1))}

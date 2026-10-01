@@ -64,7 +64,7 @@ export function jobLogDuty(c,date,start,end,language='ko',employmentId='',contex
 export function jobLogContext(world,c,scene,now){
  const people=Object.values(world.characters||{});
  const partner=scene.placeId&&people.find(p=>{const e=p.sharedScene;return p.id!==c.id&&e?.placeId===scene.placeId&&e.townId===scene.townId&&!e.transit&&!e.home&&e.jobLogStartsAt<=now&&e.jobLogEndsAt>now;});
- return {home:scene.home===true,partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
+ return {world,home:scene.home===true,partner:partner?.name||'',hobby:String(c.hobbies?.[0]||'')};
 }
 export function unemployedHomeLog(c,date,language='ko',slot=0){
  if(jobLogIdentity(c)?.key!=='unemployed')return null;
