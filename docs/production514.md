@@ -14,3 +14,13 @@
 
 Google Play publishing overview shows514 under changes in review, automatic quick checks running. Managed publishing disabled; approved changes release automatically. Exactly one production change submitted. Proof: C:/Users/Public/drawer-releases/play514-review.jpg. This confirms submission, not public availability.
 
+
+## iOS upload
+
+Actions37170112966 succeeded: signed Mac archive, Apple validation and App Store eligible upload accepted. Source90305ba31dd5625a01907c431cc8a9c136e24a74. Upload report confirms internalOnly=false and uploadAccepted=true. Prepare Actions37170555920 waits for processing before attaching514 and KO/EN/JA notes.
+
+
+## Final iOS submission
+
+Actions37170555920 attached processed VALID514 with KO/EN/JA notes. Actions37170629285 submitted successfully at 2026-10-04 11:18 KST. Final state WAITING_FOR_REVIEW, releaseType AFTER_APPROVAL. Version1.0.462, build514. Submission is complete; public availability awaits Apple approval. Proof report: C:/Users/Public/drawer-releases/ios514-submission.json.
+
