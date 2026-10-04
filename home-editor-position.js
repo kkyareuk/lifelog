@@ -19,16 +19,28 @@ export function bindEditorPosition(root,homeId,language='ko'){
  dock.append(header,visibility,toolbar,catalog);
  let mode='';const show=next=>{mode=next;dock.dataset.panel=mode;visibility.hidden=mode!=='view';catalog.hidden=mode!=='catalog';toolbar.hidden=mode!=='furniture';add.setAttribute('aria-pressed',String(mode==='catalog'));view.setAttribute('aria-pressed',String(mode==='view'));fold.hidden=!mode;if(mode==='catalog'){catalog.classList.remove('is-collapsed');catalog.querySelector('.home-drawer-content')?.removeAttribute('inert')}clamp()};
  for(const control of [visibility,toolbar,catalog])Object.assign(control.style,{position:'relative',inset:'auto',transform:'none',width:'100%',maxWidth:'none'});
- const clamp=()=>{const p=positions.get(homeId),v=window.visualViewport,x=v?.offsetLeft||0,y=v?.offsetTop||0,w=v?.width||innerWidth,h=v?.height||innerHeight;
- dock.style.maxHeight=Math.max(48,h-16)+'px';dock.style.maxWidth=Math.max(80,w-16)+'px';
- const r=dock.getBoundingClientRect();dock.style.left=Math.max(x+4,Math.min(p?.x??x+8,x+w-r.width-4))+'px';dock.style.top=Math.max(y+4,Math.min(p?.y??y+h-r.height-12,y+h-r.height-4))+'px'};
- const position=visibility.querySelector('[data-home-tools-position]');if(position){position.textContent=t('위/아래로 이동','Move up/down','上下へ移動');position.onclick=()=>{const r=dock.getBoundingClientRect();positions.set(homeId,{x:r.x,y:r.y>innerHeight/2?8:innerHeight});clamp()}}
+ const visibleBounds=()=>{
+  const v=window.visualViewport,style=getComputedStyle(dock),x=v?.offsetLeft||0,y=v?.offsetTop||0;
+  let left=x+4,top=y+(parseFloat(style.getPropertyValue('--editor-safe-top'))||0)+4,right=x+(v?.width||innerWidth)-4,bottom=y+(v?.height||innerHeight)-(parseFloat(style.getPropertyValue('--editor-safe-bottom'))||0)-4;
+  for(let n=host;n&&n!==document.body;n=n.parentElement){const cs=getComputedStyle(n),r=n.getBoundingClientRect();if(/hidden|clip|auto|scroll/.test(cs.overflowX)){left=Math.max(left,r.left+4);right=Math.min(right,r.right-4)}if(/hidden|clip|auto|scroll/.test(cs.overflowY)){top=Math.max(top,r.top+4);bottom=Math.min(bottom,r.bottom-4)}}
+  for(const n of host.querySelectorAll('.home-native-header,.home-native-header .home-native-back')){const r=n.getBoundingClientRect();if(r.width&&r.height&&r.bottom>top&&r.top<bottom)top=Math.max(top,r.bottom+4)}
+  return {left,top,right,bottom};
+ };
+ const clamp=()=>{const p=positions.get(homeId),b=visibleBounds();
+  dock.style.maxHeight=Math.max(48,b.bottom-b.top)+'px';dock.style.maxWidth=Math.max(80,b.right-b.left)+'px';
+  // Convert viewport coordinates to the fixed containing block's coordinates.
+  // The advertising wrapper can translate that block away from the viewport origin.
+  dock.style.left='0px';dock.style.top='0px';const origin=dock.getBoundingClientRect();
+  const x=Math.max(b.left,Math.min(p?.x??b.left+4,b.right-origin.width)),y=Math.max(b.top,Math.min(p?.y??b.bottom-origin.height-8,b.bottom-origin.height));
+  dock.style.left=(x-origin.left)+'px';dock.style.top=(y-origin.top)+'px';
+ };
+ const position=visibility.querySelector('[data-home-tools-position]');if(position){position.textContent=t('위/아래로 이동','Move up/down','上下へ移動');position.onclick=()=>{const r=dock.getBoundingClientRect(),b=visibleBounds();positions.set(homeId,{x:r.x,y:r.y>(b.top+b.bottom-r.height)/2?b.top:b.bottom});dock.scrollTop=0;clamp()}}
  let drag=null;handle.onpointerdown=e=>{e.preventDefault();const r=dock.getBoundingClientRect();drag={x:e.clientX-r.x,y:e.clientY-r.y};handle.setPointerCapture(e.pointerId)};handle.onpointermove=e=>{if(!drag)return;e.preventDefault();positions.set(homeId,{x:e.clientX-drag.x,y:e.clientY-drag.y});clamp()};handle.onpointerup=handle.onpointercancel=()=>drag=null;
  handle.onkeydown=e=>{if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const r=dock.getBoundingClientRect();positions.set(homeId,{x:r.x+(e.key==='ArrowRight'?20:e.key==='ArrowLeft'?-20:0),y:r.y+(e.key==='ArrowDown'?20:e.key==='ArrowUp'?-20:0)});clamp()};
  host.addEventListener('furniture-selection',()=>show('furniture'));
  const observer=new MutationObserver(()=>{if(mode==='furniture'&&toolbar.hidden)show('')});observer.observe(toolbar,{attributes:true,attributeFilter:['hidden']});
- const controller=new AbortController();window.addEventListener('resize',clamp,{signal:controller.signal});window.visualViewport?.addEventListener('resize',clamp,{signal:controller.signal});window.visualViewport?.addEventListener('scroll',clamp,{signal:controller.signal});
- const sizes=new ResizeObserver(clamp);sizes.observe(dock);
+ const controller=new AbortController();root.addEventListener('scroll',clamp,{signal:controller.signal,capture:true});window.addEventListener('resize',clamp,{signal:controller.signal});window.visualViewport?.addEventListener('resize',clamp,{signal:controller.signal});window.visualViewport?.addEventListener('scroll',clamp,{signal:controller.signal});
+ const sizes=new ResizeObserver(clamp);sizes.observe(dock);sizes.observe(host);
  // The next bind owns cleanup; detached editor nodes must not retain window listeners.
  bindEditorPosition.cleanup?.();bindEditorPosition.cleanup=()=>{observer.disconnect();sizes.disconnect();controller.abort()};show('');
 }

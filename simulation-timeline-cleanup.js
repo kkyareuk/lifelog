@@ -1,7 +1,8 @@
-const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
+import {minuteClock as clock} from './log-time.js';
+
 const entryMomentKey=item=>{
   const minute=Number(item?.minute);
-  return String(item?.time||(Number.isFinite(minute)?clock(minute):""));
+  return Number.isFinite(minute)?String(minute):String(item?.time||"");
 };
 function mergeImmutableEntries(kept,generated){
   const merged=[...kept],seen=new Set(kept.map(item=>`${entryMomentKey(item)}|${item.title}|${item.placeId||""}|${item.room||""}`));

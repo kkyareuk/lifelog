@@ -1,4 +1,4 @@
-.home-editor-dock{position:fixed;z-index:710;display:flex;flex-direction:column;width:min(340px,calc(100vw - 16px));max-height:40dvh;overflow:auto;background:#fff8e9;padding:4px;box-sizing:border-box;border:1px solid #bba27b;border-radius:12px;box-shadow:0 3px 12px #24150b33}
+.home-editor-dock{--editor-safe-top:env(safe-area-inset-top,0px);--editor-safe-bottom:env(safe-area-inset-bottom,0px);position:fixed;z-index:710;display:flex;flex-direction:column;width:min(340px,calc(100vw - 16px));max-height:40dvh;overflow:auto;background:#fff8e9;padding:4px;box-sizing:border-box;border:1px solid #bba27b;border-radius:12px;box-shadow:0 3px 12px #24150b33}
 .home-tools-header{display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;position:sticky;top:0;z-index:1;background:#fff8e9}
 .home-editor-floors{display:flex;align-items:center;justify-content:center;gap:6px;flex-basis:100%}
 .home-editor-floors button{flex:0 0 38px}

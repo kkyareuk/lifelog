@@ -1,3 +1,4 @@
+import {minuteClock as clock} from './log-time.js';
 import {compareSchedulePriority} from './schedule-priority.js';
 import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
 import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
@@ -73,7 +74,7 @@ function sceneFailure(c,date,error){
 const settingList=value=>Array.isArray(value)?value:typeof value==='string'&&value?[value]:[];
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
-const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
+
 const usableSleepRoom=value=>value==="__none__"?"":String(value||"");
 const hash=s=>{let value=2166136261;for(const char of String(s))value=(value*31+char.charCodeAt(0))>>>0;return value};
 const hasBatchim=value=>{

@@ -1,0 +1,9 @@
+<ko-KR>
+집 편집 도구창을 위로 옮겼을 때 상단이 가려지거나 버튼을 누르기 어려운 문제를 수정했습니다. 광고와 화면의 안전영역을 고려해 도구창 위치를 조정합니다. 생활 로그 시간에 긴 소수점 숫자가 붙어 제목과 겹치는 문제도 수정했습니다. 기존 기록도 시:분 형식으로 표시됩니다.
+</ko-KR>
+<en-US>
+Fixed home editing tools being obscured or difficult to tap after moving them upward. Tool positioning now accounts for ads and screen safe areas. Fixed long decimal digits in life-log times overlapping titles. Existing entries also display times in HH:MM format.
+</en-US>
+<ja-JP>
+家の編集ツールを上に移動すると上部が隠れたり、ボタンを押しにくくなったりする問題を修正しました。広告と画面の安全領域を考慮して位置を調整します。生活ログの時刻に長い小数が付き、見出しと重なる問題も修正しました。既存の記録も時:分で表示します。
+</ja-JP>

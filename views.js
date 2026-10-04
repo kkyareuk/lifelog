@@ -1,3 +1,4 @@
+import {logTime} from './log-time.js';
 import {weeklyTimetable,participantSchedules} from './weekly-timetable.js';
 import {returnRoute} from './scheduled-return.js';
 import {contactPickerMarkup} from './features/settings/contact-picker.js';
@@ -1707,7 +1708,7 @@ function uniqueDisplayedMoments(entries){
   [...entries].sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
     const minute=Number(item?.minute);
     if(!Number.isFinite(minute))return;
-    const moment=String(item?.time||`${String(Math.floor(minute/60)).padStart(2,"0")}:${String(minute%60).padStart(2,"0")}`);
+    const moment=String(minute);
     byMinute.set(moment,preferredMomentEntry(byMinute.get(moment),item));
   });
   return [...byMinute.values()].sort((a,b)=>Number(a.minute)-Number(b.minute));
@@ -1726,15 +1727,15 @@ function dailyLogItems(entries,c){
         const storyKey=[step.title,step.desc].map(value=>String(value||"").replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,"").replace(/\s+/g," ").trim()).join("|");
         if(storySeen.has(storyKey))return;
         storySeen.add(storyKey);
-        const key=String(step.time||step.minute);
+        const key=String(step.minute??step.time);
         stepMap.set(key,preferredMomentEntry(stepMap.get(key),step));
       });
       const steps=[...stepMap.values()];
       const partner=state.characters[x.withId],title=partner?`${togetherText(partner.name)} 데이트`:`데이트 일정`;
       const purpose=x.datePurpose?` · ${x.datePurpose}`:"";
-      return `<li data-log-minute="${Number(x.minute)||0}" class="date-schedule" style="--log-theme:${logTheme}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
+      return `<li data-log-minute="${Number(x.minute)||0}" class="date-schedule" style="--log-theme:${logTheme}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(logTime(steps[0]))}–${esc(logTime(steps.at(-1)))}</small></div><ol>${steps.map(step=>`<li><time>${esc(logTime(step))}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
     }
-    return `<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${logTheme}"><time>${esc(x.time)}</time><span class="log-entry-body"><span class="log-participants">${[...new Set([x.withId,...(x.withIds||[])])].filter(id=>id&&id!==c.id&&state.characters[id]).map(id=>`<span class="log-companion">${avatar(state.characters[id])}<b>${esc(state.characters[id].name)}</b></span>`).join("")}</span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
+    return `<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${logTheme}"><time>${esc(logTime(x))}</time><span class="log-entry-body"><span class="log-participants">${[...new Set([x.withId,...(x.withIds||[])])].filter(id=>id&&id!==c.id&&state.characters[id]).map(id=>`<span class="log-companion">${avatar(state.characters[id])}<b>${esc(state.characters[id].name)}</b></span>`).join("")}</span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
   }).join("");
 }
 function compactDisplayedTimeline(entries,minGap=30){
@@ -1849,7 +1850,7 @@ function homeDailyLog(chars,h){
   entries.splice(0,entries.length,...deduped);
   const face=x=>x.character?avatar(x.character,"log-face"):x.pet?(x.pet.icon||x.pet.photo?`<img class="avatar log-face" src="${imageEsc(x.pet.icon||x.pet.photo)}" alt="">`:`<span class="avatar log-face">🐾</span>`):`<span class="avatar log-face house-event-icon">${x.houseIcon||"🏠"}</span>`;
   const owner=x=>x.character?`${x.character.name} · `:x.pet?`${x.pet.name} · `:"";
-  return `<section class="panel life-log home-family-log"><div class="title"><h2>집 생활 로그</h2><small>구성원의 외출·귀가와 반려생물·청소·배송 등 집 전체의 기록</small></div>${logOrderControl(state.uiLanguage)}<ol data-log-entries>${sortLogEntries(entries).map(x=>`<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)||x.important?"important":""}" style="--log-theme:${esc(x.character?.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span class="log-person">${face(x)}<span><b>${esc(owner(x))}${esc(x.title)}</b><small>${esc(h.rooms?.[x.room]?.name||"집 안")} · ${esc(x.desc)}</small></span></span></li>`).join("")||"<li>아직 집 기록이 없어요.</li>"}</ol></section>`;
+  return `<section class="panel life-log home-family-log"><div class="title"><h2>집 생활 로그</h2><small>구성원의 외출·귀가와 반려생물·청소·배송 등 집 전체의 기록</small></div>${logOrderControl(state.uiLanguage)}<ol data-log-entries>${sortLogEntries(entries).map(x=>`<li data-log-minute="${Number(x.minute)||0}" class="${importantEntry(x)||x.important?"important":""}" style="--log-theme:${esc(x.character?.theme?.primary||"#176b60")}"><time>${esc(logTime(x))}</time><span class="log-person">${face(x)}<span><b>${esc(owner(x))}${esc(x.title)}</b><small>${esc(h.rooms?.[x.room]?.name||"집 안")} · ${esc(x.desc)}</small></span></span></li>`).join("")||"<li>아직 집 기록이 없어요.</li>"}</ol></section>`;
 }
 function townActionPresentation(entry,place=null){
   const copy=`${entry?.title||""} ${entry?.desc||""} ${place?.type||""}`;
@@ -2138,7 +2139,7 @@ function observe(shared=false){
     const desktopLocation=sceneHome?`🏠 ${esc(sceneHome.name||"집")} · ${esc(sceneHome.rooms?.[e.room]?.name||"집 안")}`:e.transit?`${sceneMovementIcon(e)} ${esc(t("inTransit","이동 중"))}`:place?`📍 ${esc(place.name)} · ${esc(townForEntry(e).name)}`:`📍 ${esc(t("outAndAbout","외출 중"))}`;
     const desktopScene=`<section class="desktop-observe-scene native-app" aria-label="${esc(c.name)}의 지금 이 순간"><div class="desktop-scene-canvas scene-tone-${presentation.tone} scene-action-${presentation.actionKind} ${movementClass}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="desktop-scene-copy"><small>${t("currentMoment","지금 이 순간")}</small><h1>${esc(c.name)} · ${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${desktopLocation}</b></div><div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale};${sceneLayoutVars(c,visualMode,e)}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div></div></section>`;
     const emptyLog="<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>";
-    const desktopLogEntries=nativeEntries.slice().reverse().map(item=>`<li style="--log-theme:${logTheme}"><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
+    const desktopLogEntries=nativeEntries.slice().reverse().map(item=>`<li style="--log-theme:${logTheme}"><time>${esc(logTime(item))}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
     const desktopLog=`<section class="desktop-observe-log"><section class="native-log-card desktop-log-expanded" style="--log-theme:${logTheme}" aria-label="오늘의 기록"><div><b>${t("todayLog","오늘의 기록")}</b><span><button type="button" data-tab="home">${t("viewHome","집 보기")}</button></span></div><ol>${desktopLogEntries||emptyLog}</ol></section></section>`;
     return `<div class="standard-observe-view" data-observed-character="${esc(c.id)}" data-life-sound="${lifeSound(e)}" data-life-sound-event="${esc(lifeSoundEpisode(e))}">${roster()}${townSwitcher}${desktopScene}<div class="web-observe-actions"><button type="button" data-character-command="${esc(c.id)}">${esc(({ko:"할 일 정하기",en:"Choose activity",ja:"行動を決める"}[state.uiLanguage]||"할 일 정하기"))}</button><div data-web-discovery-rail><button type="button" data-tab="statistics">${esc(t("statistics","통계"))}</button></div><div data-home-discovery-slot></div></div><div class="web-social-shortcuts">${socialHomeDock()}<button type="button" data-home-social="friends">${esc(gameHudLabel("friends",({ko:"친구",en:"Friends",ja:"フレンド"}[state.uiLanguage]||"친구")))}</button></div><div class="desktop-observe-lower">${desktopLog}<section class="web-village-summary"><img src="./assets/home-ui/town.png" alt=""><h2>${esc(t("town","마을"))}</h2><p>${esc(c.name)} · ${esc(careerCaption(state,c))}</p><div><button type="button" data-tab="home">${esc(t("viewHome","집 보기"))}</button><button type="button" data-tab="town">${esc(t("town","마을"))}</button><button type="button" data-tab="groups">${esc(GAME_HUD_LABELS[state.uiLanguage]?.groups||"멀티")}</button></div></section></div>${nativeFullLog}${buildingDetailDialogs()}</div>`;
   }
