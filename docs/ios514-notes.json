@@ -1,0 +1,5 @@
+{
+  "ko": "주간 시간표의 일요일부터 토요일까지 한 화면에 보이도록 개선했습니다. 집 편집 도구창을 위로 옮겼을 때 상단이 가려지는 문제와 생활 로그 시간에 긴 소수점 숫자가 표시되어 제목과 겹치는 문제를 수정했습니다. 기존 기록도 시:분 형식으로 표시됩니다.",
+  "en-US": "The weekly timetable now fits Sunday through Saturday on one screen. Fixed home editing tools being obscured after moving upward, and long decimal digits in life-log times overlapping titles. Existing entries also display times in HH:MM format.",
+  "ja": "週間時間割の日曜から土曜までを一画面に表示するよう改善しました。家の編集ツールを上に移動すると上部が隠れる問題と、生活ログの時刻に長い小数が付き見出しと重なる問題を修正しました。既存の記録も時:分で表示します。"
+}
