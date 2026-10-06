@@ -17,8 +17,8 @@
 - Artifact: C:/Users/Public/drawer-releases/drawervillage-1.0.463-515.aab.
 - SHA25644eafee7a7032b16776c0aead807477beb622161dfda72d874fdd1598e5d1d0c.
 - Prior iOS514 confirmed READY_FOR_SALE by Actions37450256214.
-- iOS515 Mac archive/sign/upload Actions37450401702 in progress.
-- Store publication/submission results to be appended after verification.
+- iOS515 Mac archive/sign/upload Actions37450401702 succeeded; uploadAccepted=true, internalOnly=false, source9ea5856a.
+- Store submission results verified below; public availability awaits review.
 
 ## Android verified submission
 
@@ -26,3 +26,10 @@
 - Same verified AAB promoted to production100%, all existing countries. Legacy467 retained for API23; replaced514 excluded. No supported-device loss. Existing mapping-file advisories only.
 - Publishing overview confirms changes in review, fast checks running; approval releases automatically. Only the515 production change was submitted. This is not a claim of public availability.
 - Proof: C:/Users/Public/drawer-releases/play515-internal.png and play515-review.png.
+
+## iOS verified submission
+
+- Apple515 processing VALID. Prepare Actions37451863937 attached515 and KO/EN/JA notes. Initial prepare locale mismatch was corrected to existing Apple locale identifiers ko/en-US/ja; no duplicate binary upload.
+- Submit Actions37451986621 succeeded2026-10-06 19:46 KST: WAITING_FOR_REVIEW, AFTER_APPROVAL, version1.0.463/build515.
+- Apple version id6e298c7a-8b9b-4615-9c7b-e13bdb2c51a6; build id6944fc3e-c1d4-4e02-ad0d-cf1aac09375d.
+- Both Android and iOS submission complete. Approval/public release is external and not claimed complete. Guest mail report remains unresolved as documented above.
