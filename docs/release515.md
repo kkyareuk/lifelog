@@ -12,4 +12,17 @@
 
 ## Deployment
 
-Pending signed builds and store submission verification.
+- Runtime source commit9ea5856a on dev.
+- Android signed release build succeeded; jarsigner verified; all634 bundled web assets byte-match www.
+- Artifact: C:/Users/Public/drawer-releases/drawervillage-1.0.463-515.aab.
+- SHA25644eafee7a7032b16776c0aead807477beb622161dfda72d874fdd1598e5d1d0c.
+- Prior iOS514 confirmed READY_FOR_SALE by Actions37450256214.
+- iOS515 Mac archive/sign/upload Actions37450401702 in progress.
+- Store publication/submission results to be appended after verification.
+
+## Android verified submission
+
+- Internal release388:515(1.0.463), available to internal testers 2026-10-06 19:35 KST.
+- Same verified AAB promoted to production100%, all existing countries. Legacy467 retained for API23; replaced514 excluded. No supported-device loss. Existing mapping-file advisories only.
+- Publishing overview confirms changes in review, fast checks running; approval releases automatically. Only the515 production change was submitted. This is not a claim of public availability.
+- Proof: C:/Users/Public/drawer-releases/play515-internal.png and play515-review.png.
