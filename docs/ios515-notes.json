@@ -1,5 +1,5 @@
 {
-  "ko-KR": "자아만들기를 누른 직후 캐릭터를 넘기면 질문창 없이 대기시간만 생기던 문제를 수정했습니다. 질문을 준비하는 동안 안내창을 표시하며, 처음 선택한 캐릭터의 질문이 유지됩니다.",
   "en-US": "Fixed self-discovery starting its cooldown without showing a question when switching characters immediately after tapping. A preparation dialog now appears while loading, and the question stays assigned to the originally selected character.",
-  "ja-JP": "自分づくりを押した直後にキャラクターを切り替えると、質問が表示されず待ち時間だけが発生する問題を修正しました。準備中は案内を表示し、最初に選んだキャラクターの質問を維持します。"
+  "ja-JP": "自分づくりを押した直後にキャラクターを切り替えると、質問が表示されず待ち時間だけが発生する問題を修正しました。準備中は案内を表示し、最初に選んだキャラクターの質問を維持します。",
+  "ko": "자아만들기를 누른 직후 캐릭터를 넘기면 질문창 없이 대기시간만 생기던 문제를 수정했습니다. 질문을 준비하는 동안 안내창을 표시하며, 처음 선택한 캐릭터의 질문이 유지됩니다."
 }
