@@ -1,3 +1,4 @@
+import './gathering-ui.js';
 import {bindLifeTimes} from './life-times-ui.js';
 import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {CHARACTER_CONTACT_PHRASES} from './features/mail/contact-phrases.js';
@@ -1443,6 +1444,7 @@ function afterScreenRender(callback){
 }
 window.addEventListener("pagehide",cleanupRenderedScreen);
 
+window.addEventListener('drawer-gathering-changed',()=>{if(!document.querySelector('.gathering-dialog[open]'))render()});
 function render(options={}){return timeOperation('render',()=>renderScreen(options))}
 function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
   if(!force&&(document.documentElement.dataset.sceneGesture==='1'||document.documentElement.dataset.roomGesture==='1'||document.querySelector('.character-money-dialog[open],.building-interior-dialog[open],.character-discovery-dialog[open],.direct-command-dialog[open],.context-action-menu[open],.selection-popup[open],.home-occupant-sheet'))){deferredCommandRender=true;return}
@@ -5388,7 +5390,7 @@ function openRoutineDialog(id,draft=null,onSave=null){
     <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div class="routine-day-pills">${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}><span>${day}</span></label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
-    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
+    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","모임","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
     <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>${routineDressCodeFields(item)}
     ${routineGroupShortcuts(c.id)}<fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
@@ -5417,7 +5419,7 @@ function openMonthlyRoutineDialog(id,draft=null,onSave=null){
     <label>날짜<input type="date" name="date" value="${item.date}"></label>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
-    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
+    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","모임","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
     <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>${routineDressCodeFields(item)}
     ${routineGroupShortcuts(c.id)}<fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}><span>${state.characters[cid].name}</span></label>`).join("")}</fieldset>
@@ -6203,3 +6205,5 @@ window.addEventListener("orientationchange",()=>{
 });
 
 document.addEventListener('focusin',e=>{const el=e.target;if(el.matches?.('textarea,input:not([type]),input[type=text]')&&(el.maxLength<0||el.maxLength>500))el.maxLength=500});
+
+window.addEventListener('drawer-plan-gathering',event=>{if(activeShared())return;const detail=event.detail||{};if(detail.ownerId&&state.characters[detail.ownerId])state.activeId=detail.ownerId;const c=active();if(!c)return;navigateToTab('routine');state.routineView=detail.monthly===false?'weekly':'monthly';render();if(detail.id){if(detail.monthly===false)openRoutineDialog(detail.id);else openMonthlyRoutineDialog(detail.id);return;}const now=new Date(),start=new Date(now.getTime()+15*60000);start.setSeconds(0,0);const end=new Date(start.getTime()+60*60000),hh=d=>String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');openMonthlyRoutineDialog(null,{id:newId(),date:localDateKey(start),start:hh(start),end:hh(end),type:'모임',title:({ko:'함께 보내는 시간',en:'Time together',ja:'一緒に過ごす時間'})[state.uiLanguage],visitHomeId:c.homeId,withIds:[],room:'living',notes:''});});

@@ -1,3 +1,4 @@
+import {isSocialRoutine,scheduledSocialScene,socialLogCopy,socialInterval} from './gathering.js';
 import {minuteClock as clock} from './log-time.js';
 import {compareSchedulePriority} from './schedule-priority.js';
 import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
@@ -2960,7 +2961,8 @@ function buildScene(c,date){
     const title=isDate?`${companions[0].name}와 데이트 · ${purpose}`:item.title;
     if(place)list.push(entry(minute,title,desc,{townId:place.townId,placeId:place.id,room:item.room,...dateMeta}));
     else if(visitHome)list.push(homeEntry(c,minute,title,desc,item.room||'living',{...dateMeta,visitHomeId:visitHome.id,townId:visitHome.townId}));
-    else list.push(homeEntry(c,minute,title,desc,item.room||(item.type==="휴식"?"living":"study"),dateMeta));
+    else list.push(homeEntry(c,minute,title,desc,item.room||(["휴식","모임","친구 약속","가족 일정"].includes(item.type)?"living":"study"),dateMeta));
+    if(isSocialRoutine(item.type)){const base=list.at(-1),dayStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();for(let at=minute;at<Math.min(endMinute,1440);at+=socialInterval(base)){const social=scheduledSocialScene({...base,minute:at},c,state,dayStart+at*60000,state.uiLanguage);if(at===minute)list[list.length-1]=social;else list.push(social);}}
     if(['업무','work'].includes(item.type)&&officeEmployment(c,item.careerEmploymentId)){
       const base=list.at(-1),dayStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
       let at=minute;
@@ -3001,7 +3003,7 @@ function buildScene(c,date){
   return list.filter(item=>autonomousAllowed(c,item)).map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260915-presence407";
+const ENGINE_VERSION="20261009-social-schedule516";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new WeakMap();
@@ -3093,7 +3095,7 @@ function cleanSelfCompanionEntries(c,entries){
 function cleanScheduledRoutineEntries(entries){
   const normalized=entries.map(item=>{
     const start=Number(item?.routineStartMinute);
-    if(!item?.routineId||!item.groupInteraction||!Number.isFinite(start))return item;
+    if(!item?.routineId||!item.groupInteraction||!Number.isFinite(start)||item.socialEvent)return item;
     return {...item,minute:start,time:clock(start)};
   });
   return cleanSameMinuteEntries(cleanExactRepeatedEntries(normalized));
@@ -3223,7 +3225,7 @@ export function visibleTimeline(c,date=new Date()){
       const located=withResidenceLocation(c,item,at);
       const here=ids.length?ids.every(id=>state.characters[id]&&sameLiveLocation(located,baseEventFor(state.characters[id],at))):coLocatedCharacterIds(c,located,at).length>0;
       return here?item:soloSceneFrom(item);
-    }).map(item=>adaptTownActivity(state,c,localizeLifeLog(item,state.uiLanguage,state,c.id)));
+    }).map(item=>adaptTownActivity(state,c,socialLogCopy(localizeLifeLog(item,state.uiLanguage,state,c.id),state,state.uiLanguage)));
 }
 
 export function nextSceneRefreshDelay(c,date=new Date()){
@@ -5046,7 +5048,7 @@ function calculateEventFor(c,date){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
     // 시작 시각을 보존한다. 같은 일정을 다시 열어도 새 시각의 로그가 생기지 않는다.
     const savedInteractionStart=Number(current.interactionStartedMinute);
-    const sharedMinute=current.routineId&&Number.isFinite(Number(current.routineStartMinute))
+    const sharedMinute=current.socialEvent?Number(current.minute):current.routineId&&Number.isFinite(Number(current.routineStartMinute))
       ?Number(current.routineStartMinute)
       :Number.isFinite(savedInteractionStart)?savedInteractionStart:nowMin(date);
     current.interactionStartedMinute=sharedMinute;
