@@ -29,7 +29,9 @@
 
 ## Distribution
 
-Play Console confirmed previous internal release 515 (1.0.463), available since October 6. Upload of 516 is in progress; availability must be verified before marking deployment complete. No public or closed-test promotion, iOS submission or player announcement is authorized by this release request.
+Play Console confirmed previous internal release 515 (1.0.463), available since October 6. Release 389, version 516 (1.0.464), is **available to internal testers**, verified on October 9 at 18:50 KST. No supported-device loss; one existing missing-deobfuscation-file advisory, no blocking error. Source commit cf9191b9 is on dev. Proof: C:/Users/Public/drawer-releases/play516-internal.jpg. No public or closed-test promotion, iOS submission or player announcement was performed.
+
+Windows native browser URL detection had stopped earlier turns. In this turn the supported Codex in-app browser exposed the Play Console URL normally and completed the authorized upload. The root cause of the separate native-window detection failure remains unconfirmed.
 
 ## Play release notes
 
