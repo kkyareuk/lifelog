@@ -30,3 +30,11 @@ Public520 authorized. Android signed build and Apple store-eligible Mac signing/
 Play production release46 promotes the verified520 bundle. Existing API23 legacy467 stays included; replaced515 is excluded. Review reports zero lost devices. Rollout100%, all existing target countries; only existing mapping-file advisories.
 
 Publishing overview now lists exactly one520 production change under changes in review, with quick automatic checks running. Managed publishing is disabled, so approved changes publish automatically. This is submission evidence, not confirmation of public availability. Proof: C:/Users/Public/drawer-releases/play520-review.jpg.
+
+## iOS public-eligible upload
+Actions38358863012 attempt2 succeeded: Mac archive/signing, Apple validation and upload accepted for1.0.468(520), internalOnly=false. Sourcecf6a5c71. Apple sign-in entitlement/profile checks passed. Bounded processing check still returned null; prepare job38360050389 waits for Apple processing before attaching the build and KO/EN/JA notes. No review submission is claimed at upload stage.
+
+## Final iOS submission
+Prepare Actions38360050389 attached Apple VALID520 and KO/EN/JA notes. Submit Actions38360328740 completed successfully; verified2026-10-13 16:04 KST as WAITING_FOR_REVIEW, releaseType AFTER_APPROVAL. Version1.0.468, build520, versionId5a91b1c7-e27b-4b2d-b50f-168f5a9ef118. Proof: C:/Users/Public/drawer-releases/ios520-submission.json.
+
+Both requested store submissions are complete. Public availability still depends on store approval. Runtime commitcf6a5c71 is on dev; game main remains unchanged under the GitHub Pages restriction. Taskboard production records and multilingual copy are on its main. No email, Discord or in-game announcement was sent.

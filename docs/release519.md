@@ -38,3 +38,6 @@ Monarchy is now included for solo towns. Choose it in Town info and set resident
 ソロの村でも王政世界を基本機能として選べます。村の情報で設定し、住民の全設定から宮廷の職業・肩書き・身分を決めましょう。宮廷の職業と肩書きは観察画面にも表示されます。予定ボタンの名前とカレンダーアイコンを元に戻しました。保存領域への再接続、保存データの保護、自動バックアップと起動時の復元機能を改善しました。
 </ja-JP>
 ```
+
+## Subsequent status confirmation (2026-10-13)
+Actions38356502268 completed successfully. Its upload.json confirms519 /1.0.467, internalOnly=true, uploadAccepted=true, submittedForReview=false. This verifies upload acceptance, not device recovery or public availability. The user subsequently authorized public520; see release520.md.
