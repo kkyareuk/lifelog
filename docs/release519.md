@@ -21,7 +21,9 @@
 
 ## Release
 
-Android519 build and iOS internal-only request prepared. Intermediate518 remains recorded separately. Public release awaits the user’s explicit approval.
+Android internal release392, 519(1.0.467), available to internal testers on2026-10-13 at15:27 KST. Same supported devices; existing mapping advisory only. Signed AAB verified and627 packaged web assets byte-match prepared source. SHA256 f3fc15682e6ed9f071606962b68066bad4c6abd99cc3c7f679b0d15bc95624cf. Proof: C:/Users/Public/drawer-releases/play519-internal.jpg.
+
+Source11230e2d on dev. iOS519 workflow38356502268 is in progress; signing/upload success or tester availability is not yet claimed. Intermediate518 Apple upload succeeded, recorded separately. Public Android/App Store release still awaits the user’s explicit approval.
 
 ## Play notes
 

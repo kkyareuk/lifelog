@@ -21,7 +21,7 @@
 
 Android internal release391, 518 (1.0.466), available to internal testers on 2026-10-13 at15:20 KST. Supported devices unchanged; existing deobfuscation-file advisory only. Signed AAB verified; all627 packaged web assets byte-match www. SHA25648b3156e4ad961aa2329e70de7124de70b498ec4327a74fe8bb9254b1c72f7a3. Proof C:/Users/Public/drawer-releases/play518-internal.jpg.
 
-iOS internal-only workflow38355964984 is in progress from source7f223a21. Public Android/App Store remain pending user approval; no review submission.
+iOS internal-only workflow38355964984 succeeded from source7f223a21. Apple accepted1.0.466(518), internalOnly=true, submittedForReview=false; build=null at bounded status check, so tester availability is not yet verified. Public Android/App Store remain pending user approval; no review submission.
 
 ## Play notes
 
