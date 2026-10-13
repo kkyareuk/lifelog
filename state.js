@@ -411,7 +411,6 @@ function normalizeHomes(x){
     mailVersion:Number(notificationSource.mailVersion)||0
   };
   if(x.characterNotificationSettings.endHour<=x.characterNotificationSettings.startHour)x.characterNotificationSettings.endHour=Math.min(21,x.characterNotificationSettings.startHour+4);
-  if(!x.characterNotificationSettings.contentKinds.length)x.characterNotificationSettings.contentKinds=["questions","checkins","comfort","lifeLogs"];
   x.preventInterTownMovement=Boolean(x.preventInterTownMovement);
   x.characterGroups=Array.isArray(x.characterGroups)?x.characterGroups.filter(group=>group&&typeof group==="object"&&!Array.isArray(group)).map(group=>({
     id:String(group.id||uid()),name:String(group.name||"새 그룹").trim().slice(0,40)||"새 그룹",

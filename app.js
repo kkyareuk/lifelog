@@ -5957,7 +5957,7 @@ function buildCharacterContactSchedule(now=new Date()){
         });
       });
     }
-    const start=Number(settings.startHour)||10,end=Math.max(start+1,Number(settings.endHour)||18),span=Math.max(60,(end-start)*60),minutes=settings.frequencyMode==="interval"?Array.from({length:Math.max(1,Math.ceil((end-start)/Math.max(2,Number(settings.intervalHours)||4)))},(_,slot)=>start*60+slot*Math.max(2,Number(settings.intervalHours)||4)*60).filter(minute=>minute<end*60):Array.from({length:Math.max(1,Math.min(6,Number(settings.timesPerDay)||1))},(_,slot,array)=>{const part=Math.floor(span/array.length);return start*60+slot*part+(daySeed+slot*137)%Math.max(30,part)});
+    const start=Number(settings.startHour)||10,end=Math.max(start+1,Number(settings.endHour)||18),span=Math.max(60,(end-start)*60),minutes=settings.frequencyMode==="interval"?Array.from({length:Math.max(1,Math.ceil((end-start)/Math.max(2,Number(settings.intervalHours)||4)))},(_,slot)=>start*60+slot*Math.max(2,Number(settings.intervalHours)||4)*60).filter(minute=>minute<end*60):Array.from({length:Math.max(1,Math.min(6,Number(settings.timesPerDay)||1))},(_,slot)=>{const part=Math.floor(span/Math.max(1,Math.min(6,Number(settings.timesPerDay)||1)));return start*60+slot*part+(daySeed+slot*137)%Math.max(30,part)});
     for(let slot=0;slot<minutes.length;slot+=1){
       const minute=minutes[slot];
       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(minute/60),minute%60,0,0);if(at.getTime()<now.getTime()+5*60*1000)continue;
@@ -5966,7 +5966,9 @@ function buildCharacterContactSchedule(now=new Date()){
       const daySerial=Math.floor(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())/86400000);
       let character=characters[(daySerial+slot)%characters.length];
       if(generated.at(-1)?.extra?.characterId===character.id&&characters.length>1)character=characters[(characters.indexOf(character)+1)%characters.length];
-      const topics=notificationTopicsFor(character),fallbackTopics=topics.length?topics:character.notificationGroupId?["checkins"]:["questions","moments"];
+      const fallbackTopics=notificationTopicsFor(character);
+      // A disabled category must never replace an unavailable selected topic.
+      if(!fallbackTopics.length)continue;
       let topic=fallbackTopics[(daySeed+slot*5)%fallbackTopics.length],seed=daySeed+dayOffset*31+slot*17,item;
       for(let attempt=0;attempt<12;attempt+=1){
         topic=fallbackTopics[(daySeed+slot*5+attempt)%fallbackTopics.length];

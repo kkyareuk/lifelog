@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-19-internal459-wallet-work-ui",
-  "version": "1.0.407",
-  "build": 459,
+  "request": "2026-10-13-internal517-reported-startup-notifications-court",
+  "version": "1.0.465",
+  "build": 517,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

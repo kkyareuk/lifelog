@@ -113,6 +113,7 @@
         const reason=document.documentElement.dataset.drawerBootError||'';
         diagnostic.textContent=`${window.DRAWER_VILLAGE_APP_VERSION||'web'} (${window.DRAWER_VILLAGE_VERSION_CODE||'-'}) · ${/snapshot|database/i.test(reason)?'SAVE_READ':reason?'START_SCRIPT':'START_TIMEOUT'}`;
         card.append(diagnostic);
+        if(/snapshot|database/i.test(reason))import('./boot-recovery.js').then(m=>m.mountStorageRecovery(card,language)).catch(console.warn);
         const report=document.createElement('a');
         report.textContent=language.startsWith('ja')?'メールで不具合を報告':language.startsWith('en')?'Report a bug by email':'이메일로 오류 제보';
         const body=['Please describe what happened:', '', diagnostic.textContent, 'Device: '+navigator.userAgent, 'Language: '+navigator.language, 'Error: '+reason].join('\n');

@@ -1280,7 +1280,17 @@ async function removeGroupMember(uid){return sharedTownRequest('removeMember',{u
 let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
-  court:(action,input={})=>{if(!["saveCourtRank","requestCourtRank","respondCourtRank","readCourt","saveCourtTheme","saveCourtProfile","saveCourtDistance"].includes(action))throw Error("invalid-action");return sharedTownRequest(action,input)},
+  court:async(action,input={})=>{
+    if(!["saveCourtRank","requestCourtRank","respondCourtRank","readCourt","saveCourtTheme","saveCourtProfile","saveCourtDistance"].includes(action))throw Error("invalid-action");
+    const gid=input.groupId||groupState.activeGroupId,owner=user?.uid;
+    const result=await sharedTownRequest(action,{...input,groupId:gid});
+    if(action==='saveCourtTheme'){
+      const confirmed=await sharedTownRequest('readCourt',{groupId:gid});
+      if(confirmed.theme!==input.theme)throw Error('court-theme-not-confirmed');
+      if(user?.uid===owner&&groupState.activeGroupId===gid){groupState={...groupState,group:{...groupState.group,courtTheme:confirmed.theme}};emitGroupState();}
+    }
+    return result;
+  },
   previewMemberProfile:async rawCode=>{
     const account=requireGroupUser(),invite=await getDoc(doc(db,'groupInvites',cleanInviteCode(rawCode)));
     if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(Error('Invite not found'),{code:'groups/code-not-found'});
