@@ -17,3 +17,16 @@
 
 ## Distribution
 Public520 authorized. Android signed build and Apple store-eligible Mac signing/upload in progress; final submission evidence will be appended after verification. Apple review submission is a separate explicit action and is not implied by upload success.
+
+## Android artifact and additional regression check
+- Signed AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.468-520.aab
+- SHA256: 95bc8db20e617ebf5273789b268b4d947303c15e27e81c6968d893b3f64bc242
+- Gradle release build passes, jarsigner verifies signatures; all627 packaged web assets byte-match prepared source.
+- WebKit recovery regression passes:90 selected-only notifications, empty selection, closed IndexedDB reconnect, independent same-account backup, corrupt byte preservation, missing record preservation and actual file-picker recovery.
+- Android internal release393 is available to internal testers (2026-10-13 15:52 KST); proof play520-internal.jpg.
+- Apple public upload Actions38358863012 first attempt stopped before signing/upload due to CocoaPods CDN connection. Retried the same build after confirming upload had not started.
+
+## Android production submission
+Play production release46 promotes the verified520 bundle. Existing API23 legacy467 stays included; replaced515 is excluded. Review reports zero lost devices. Rollout100%, all existing target countries; only existing mapping-file advisories.
+
+Publishing overview now lists exactly one520 production change under changes in review, with quick automatic checks running. Managed publishing is disabled, so approved changes publish automatically. This is submission evidence, not confirmation of public availability. Proof: C:/Users/Public/drawer-releases/play520-review.jpg.
