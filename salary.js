@@ -1,3 +1,4 @@
+import {courtWorldData} from './court-world-data.js';
 import {officeDuty} from './career-duties.js';
 import {careerWeeklyRoutines} from './career-work.js';
 import {careersFor} from './career-world.js';
@@ -42,7 +43,16 @@ export function salaryPreview(employment,now=Date.now()){
  if(!employment)return null;const copy=structuredClone(employment),at=nextSalaryPayout(copy,now),wallet={balance:0};settleSalary(wallet,copy,at,(w,n)=>{w.balance+=n});return {at,amount:wallet.balance};
 }
 
+function courtCaption(world,c){
+ const townId=c.townId||world.homes?.[c.homeId]?.townId||world.activeTownId;
+ const town=townId===world.activeTownId?world.world:world.towns?.find(t=>t.id===townId);
+ const court=world.sharedContext?.groupId||world.courtTheme?world.courtTheme==='court':town?.courtTheme==='court';
+ if(!court)return null;
+ const language=({ko:0,en:1,ja:2}[world.uiLanguage]||0);
+ return c.courtJobTitle||(courtWorldData.jobs[c.courtJob]||courtWorldData.jobs.none)[language];
+}
 export function careerCaption(world,c){
+ const court=courtCaption(world,c);if(court!==null)return court;
  if(c.jobTitle)return c.jobTitle;const entries=employmentsFor(c);if(!entries.length)return c.job||'';const language=world.uiLanguage||'ko';
  return entries.map(e=>{const job=careersFor(world).find(j=>j.id===e.jobId),rank=job?.ranks.find(r=>r.id===e.rankId),name=careerLabel(rank,language)||e.rankName;return e.department?(language==='en'?name+' · '+e.department:e.department+(language==='ja'?'の':'의 ')+name):name}).join(' / ');
 }
@@ -60,6 +70,7 @@ export function todayCareerDuty(world,c,date=new Date()){
 }
 
 export function careerHudLabel(world,c,date=new Date()){
+ const court=courtCaption(world,c);if(court!==null)return court;
  const career=careerCaption(world,c),duty=todayCareerDuty(world,c,date);
  if(!duty?.name)return career;
  return [career,duty.name].filter(Boolean).join(' · ');
