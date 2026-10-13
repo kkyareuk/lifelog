@@ -125,13 +125,13 @@
         }
       };
       window.addEventListener("error",event=>{
-        const reason=event.error?.stack||event.message||"알 수 없는 스크립트 오류";
+        const reason=[event.error?.message||event.message,event.error?.stack].filter(Boolean).join("\n")||"알 수 없는 스크립트 오류";
         document.documentElement.dataset.drawerBootError=String(reason).slice(0,1000);
         console.error("서랍마을 초기화 오류",reason);
         setTimeout(fail,0);
       });
       window.addEventListener("unhandledrejection",event=>{
-        const reason=event.reason?.stack||event.reason||"알 수 없는 비동기 오류";
+        const reason=[event.reason?.message,event.reason?.stack||String(event.reason||"")].filter(Boolean).join("\n")||"알 수 없는 비동기 오류";
         document.documentElement.dataset.drawerBootError=String(reason).slice(0,1000);
         console.error("서랍마을 초기화 거부",reason);
         setTimeout(fail,0);

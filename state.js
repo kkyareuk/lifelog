@@ -974,7 +974,10 @@ function load(){
   const read=key=>{try{return localStorage.getItem(key)}catch(error){readError=error;return null}};
   const parse=raw=>{try{return raw?replayAnswerDeltas(localStorage,migrate(JSON.parse(raw))):null}catch{return null}};
   const count=value=>Object.keys(value?.characters||{}).length;
-  const primary=parse(read(KEY)),primaryReadError=readError;
+  const primaryRaw=read(KEY),primary=parse(primaryRaw);
+  // Malformed saved bytes are not a new installation. Keep them for recovery.
+  if(primaryRaw&&!primary&&!readError)readError=Error('Saved snapshot could not be decoded');
+  const primaryReadError=readError;
   if(count(primary)>0||primary?.gameResetAt)return primary;
   // 클라우드의 빈 계정 문서가 기기 데이터를 덮었던 구버전에서 복구한다.
   // 사용자가 실제로 캐릭터를 삭제한 기록이 있으면 오래된 데이터를

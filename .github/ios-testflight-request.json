@@ -1,7 +1,7 @@
 {
-  "request": "2026-10-13-internal517-reported-startup-notifications-court",
-  "version": "1.0.465",
-  "build": 517,
+  "request": "2026-10-13-internal518-solo-court-recovery-schedule",
+  "version": "1.0.466",
+  "build": 518,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

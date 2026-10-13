@@ -44,6 +44,7 @@ export function normalizeTownProfile(value={}){
   const bg=selected?.src||"";
   return {
     ...normalizeTownSetting(value),
+    courtTheme:value.courtTheme==='court'?'court':'basic',
     backgroundMusic:townMusic(value),
     townType:safeType,
     townSubtype:subtypes.includes(value.townSubtype)?value.townSubtype:subtypes[0],
