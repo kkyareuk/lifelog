@@ -21,11 +21,18 @@
 ## OAuth advisory
 
 Official source: https://support.google.com/cloud/answer/15549257?hl=en
-Google distinguishes human-driven OAuth clients from agent clients and says to keep them separate. Code inspection found Firebase Google sign-in and Android Publisher service-account usage, with no Google Workspace MCP endpoint usage. Do not blindly change normal login clients to agentic. Console inventory verification is pending; the other named project cannot be classified from the game repository alone.
+Google distinguishes human-driven OAuth clients from agent clients and says to keep them separate. Code inspection found Firebase Google sign-in and Android Publisher service-account usage, with no Google Workspace MCP endpoint usage. Do not blindly change normal login clients to agentic. The user does not recognize bamboo-machine-509511-d9. Google Cloud OAuth clients failed to load after reload and the page retry, so client inventory and that project classification remain unresolved. No OAuth settings were changed.
 
 ## Release status
 
-Android signed AAB and iOS internal-only TestFlight build are being prepared. No public, closed-test or App Store review promotion; no emails or announcements sent.
+Android internal release390, 517 (1.0.465), verified available to internal testers on 2026-10-13 at 14:46 KST. No supported-device loss; only the existing deobfuscation-file advisory. Signed AAB verified and all627 packaged web assets byte-match the prepared source.
+
+AAB: C:/Users/Public/drawer-releases/drawervillage-1.0.465-517.aab
+SHA256: 9896a20907fcd03d237eec547d7684f9167871117fd4dc29b850d53910e77731
+Proof: C:/Users/Public/drawer-releases/play517-internal.jpg
+UI: C:/Users/Public/drawer-releases/court517-ko.png and recovery517-webkit.png
+
+Application commit48485887 is on dev. iOS macOS signing/archive/Apple validation/upload succeeded in run38352591851; uploadAccepted=true, internalOnly=true, submittedForReview=false. Apple status run38353406943 still returned build=null after upload, so processing/internal-tester availability is pending, not claimed complete. Public iOS1.0.463 remains READY_FOR_SALE. No physical iPhone test was performed. No public, closed-test or App Store review promotion; no emails or announcements sent.
 
 ## Play notes
 
