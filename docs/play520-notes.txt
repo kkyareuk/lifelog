@@ -1,0 +1,21 @@
+<ko-KR>
+일정에서 시간·장소·함께할 주민을 정하면 다양한 모임 이야기가 이어집니다.
+혼자 하는 마을에서도 왕정·신분제를 기본 기능으로 선택하고, 주민의 궁정 직업·직함·신분을 정할 수 있어요. 마을 정보에 사회 체제 선택을 추가하고 배경과 음악 설정을 구분했습니다.
+일정의 이름과 달력 아이콘을 정리했습니다.
+알림에서 선택하지 않은 주제의 메시지가 오던 문제와 멀티 왕정 설정 저장을 수정했습니다.
+저장 데이터를 불러오지 못할 때의 재시도와 백업 복구를 개선했습니다.
+</ko-KR>
+<en-US>
+Plan gatherings in your schedule: choose a time, place and residents, then watch their stories unfold.
+Solo towns now include monarchy and social ranks, with court roles and titles. Choose a social system in town information, separate from background and music.
+Restored the Schedule label and calendar icon.
+Fixed notification topics and multiplayer monarchy settings.
+Improved save loading, retries and backup recovery.
+</en-US>
+<ja-JP>
+予定で時間・場所・参加する住民を選ぶと、多彩な集まりの物語が続きます。
+ソロの村でも王政・身分制を基本機能として選び、宮廷の職業・肩書き・身分を設定できます。村の情報に社会体制を追加し、背景と音楽の設定と区別しました。
+予定の名前とカレンダーアイコンを整えました。
+選択していない話題の通知が届く問題と、マルチの王政設定の保存を修正しました。
+セーブの読み込み時の再試行とバックアップ復元を改善しました。
+</ja-JP>

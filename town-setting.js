@@ -20,8 +20,11 @@ export function adaptTownActivity(world,character,item){
  const [title,desc]=alternatives[key][{ko:0,en:1,ja:2}[world.uiLanguage]||0],kind=key==='social'?'talk':key==='reading'?'read':key;
  return {...item,title,desc,baseTitle:title,baseDesc:desc,sharedCanonicalTitle:title,sharedCanonicalDesc:desc,sharedPerspectives:undefined,sharedActionText:undefined,baseScene:undefined,localizedCopy:true,kind,actionKind:kind,activityFamily:key,lifeTaskId:'',lifeTask:'',furniture:null,furnitureKey:'',remote:false,remoteContact:false,...(!group?{groupInteraction:false,withId:null,withIds:[],participantOrder:[]}:{}),eraAdapted:true};
 }
-export function townSettingFields(town,language='ko',personal=true){
+export function townSocietyField(town,language='ko',personal=true){
+ if(!personal)return '';
  const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);
- const story=personal?`<fieldset class="town-background-field"><legend>${text('스토리 배경','Story setting','ストーリー設定')}</legend><label><b>${text('마을 이야기','Village story','村の物語')}</b><select data-world-court-theme><option value="basic" ${town.courtTheme!=='court'?'selected':''}>${text('일상','Everyday life','日常')}</option><option value="court" ${town.courtTheme==='court'?'selected':''}>${text('왕정 세계관','Monarchy','王政世界')}</option></select></label><p>${text('왕정 세계관은 기본 기능이에요. 이 마을 주민의 전체설정에서 궁정 직업·직함·신분을 정할 수 있어요. 일상으로 돌아가도 궁정 설정은 보관돼요.','Monarchy is included. Set court roles, titles and status in residents’ full settings. Court settings are kept when switching back to everyday life.','王政世界は基本機能です。この村の住民の全設定で宮廷の職業・肩書き・身分を設定できます。日常に戻しても宮廷設定は保持されます。')}</p></fieldset>`:'';
- return story+townBackgroundFields(town,language);
+ return `<label><b>${text('사회 체제','Social system','社会体制')}</b><select data-world-court-theme><option value="basic" ${town.courtTheme!=='court'?'selected':''}>${text('자유 설정','Freeform','自由設定')}</option><option value="court" ${town.courtTheme==='court'?'selected':''}>${text('왕정·신분제','Monarchy & social ranks','王政・身分制')}</option></select></label>`;
+}
+export function townSettingFields(town,language='ko'){
+ return townBackgroundFields(town,language);
 }
