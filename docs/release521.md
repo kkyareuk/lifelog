@@ -14,3 +14,10 @@ Screenshot C:/Users/Public/drawer-releases/recovery521-found-webkit.png uses syn
 
 ## Release
 521 internal testing only. Public submission needs explicit authorization for this version. Android build and Apple TestFlight status to be appended after verification.
+
+## Build verification
+- WebKit518 regression passes, including original JSON file recovery, reconnect, independent backup and corrupted-save protection.
+- Android signed Gradle bundle passes; jarsigner verifies.628 packaged web files byte-match prepared source.
+- AAB C:/Users/Public/drawer-releases/drawervillage-1.0.469-521.aab, SHA256 c5715fd8ce6f3ecbed7fb4f47af7ee44248bdd74c6e13a9c9a04a2d59679d726.
+- iOS local project/native asset preparation and internal-only request checks pass. Mac signing/upload run38689177908 in progress.
+- New UI fully KO/EN/JA; overall static coverage EN2250/2983(75.4%), JA2249/2983(75.4%).
