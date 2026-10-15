@@ -25,3 +25,8 @@ Screenshot C:/Users/Public/drawer-releases/recovery521-found-webkit.png uses syn
 ## Android availability
 Play internal release394:521(1.0.469) available to internal testers on2026-10-15 14:56 KST. No supported-device loss; existing mapping-file advisory only. Proof C:/Users/Public/drawer-releases/play521-internal.jpg.
 Additional WebKit storage-full test passes: if archiving the original fails, recovery stops and the primary reference remains unchanged; retry after restoring space succeeds. Runtime unchanged fromfa5e1e22.
+
+## iOS and final scope
+Mac run38689177908 succeeded; upload.json confirms1.0.469(521), internalOnly=true, uploadAccepted=true, submittedForReview=false, sourcefa5e1e22. Apple build-processing poll returned null; TestFlight installation availability is not yet verified. Current public520 was independently confirmed READY_FOR_SALE by status run38690032237.
+
+The new recovery feature is implemented and internally distributed on Android; iOS internal upload is accepted. This does not recover the actual reporter's phone or prove the underlying loss/access cause. Public delivery needs a newly authorized App Store eligible build (internal-only521 itself cannot be submitted as a public build). No public changes, user data collection or messages sent.
