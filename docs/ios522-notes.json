@@ -1,0 +1,5 @@
+{
+  "ko": "앱 시작 중 저장 읽기에 실패했을 때, 앱 안에 남아 있는 현재 계정의 저장본을 직접 찾아볼 수 있습니다. 저장 날짜와 캐릭터 정보를 확인한 뒤 선택하여 복구하며, 복구 전 저장 정보는 별도로 보관합니다. 읽을 수 있는 저장본이 없는 경우에는 검색 결과와 오류 종류를 표시합니다.",
+  "en-US": "When a save cannot load at startup, search for remaining saves for the current account inside the app. Review the date and characters before choosing a save to restore. Previous save references are retained. If no readable save is found, the search results distinguish missing data from read failures.",
+  "ja": "起動時にセーブを読み込めない場合、アプリ内に残る現在のアカウントの保存を探せます。日時とキャラクターを確認してから選んで復元し、復元前の保存情報は別に保持します。読める保存がない場合は検索結果とエラーの種類を表示します。"
+}
