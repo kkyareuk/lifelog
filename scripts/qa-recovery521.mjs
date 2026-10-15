@@ -31,6 +31,10 @@ try{
  assert.equal(await page.locator('[data-restore-local-save]').count(),1);assert(!(await page.locator('[data-local-save-results]').innerText()).includes('다른 계정'));
  await page.screenshot({path:'C:/Users/Public/drawer-releases/recovery521-found-'+(process.argv.includes('--webkit')?'webkit':'chrome')+'.png',fullPage:true});
  await page.locator('[data-restore-local-save]').click();assert.equal(await page.evaluate(()=>localStorage.getItem('drawer-village-game-v1')),'drawer-idb-snapshot-v1:missing521');
+ await page.evaluate(()=>{window.originalRecoverySet=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key.startsWith('drawer-village-unreadable-primary-v1:'))throw new DOMException('full','QuotaExceededError');return window.originalRecoverySet.call(this,key,value)}});
+ await page.locator('[data-confirm-local-restore]').click();await page.waitForFunction(()=>document.querySelector('[data-boot-recovery] [role=status]').textContent.includes('복구하지 못했어요'));
+ assert.equal(await page.evaluate(()=>localStorage.getItem('drawer-village-game-v1')),'drawer-idb-snapshot-v1:missing521');
+ await page.evaluate(()=>{Storage.prototype.setItem=window.originalRecoverySet});
  await page.locator('[data-confirm-local-restore]').click();await page.waitForFunction(()=>window.photoQA);
  assert(await page.evaluate(async()=>Object.values((await import('/state.js?v=20260909dev305')).state.characters).some(c=>c.name==='돌아온 별이')));
  assert(await page.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('drawer-village-unreadable-primary-v1:')&&localStorage.getItem(k)==='drawer-idb-snapshot-v1:missing521')));
