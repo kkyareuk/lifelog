@@ -29,7 +29,7 @@ try{
  await page.goto(origin+'/?native-preview=1');await page.waitForSelector('[data-boot-recovery] button');
  assert.equal(await page.evaluate(()=>localStorage.getItem('drawer-village-game-v1')),'drawer-idb-snapshot-v1:missing517');
  await page.screenshot({path:'C:/Users/Public/drawer-releases/recovery518-'+(process.argv.includes('--webkit')?'webkit':'chrome')+'.png'});
- const chooser=page.waitForEvent('filechooser');await page.locator('[data-boot-recovery] button').click();await (await chooser).setFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(result.raw)});
+ const chooser=page.waitForEvent('filechooser');await page.getByRole('button',{name:'백업 파일로 복구',exact:true}).click();await (await chooser).setFiles({name:'backup.json',mimeType:'application/json',buffer:Buffer.from(result.raw)});
  await page.waitForFunction(()=>window.photoQA);assert(await page.evaluate(async()=>Object.keys((await import('/state.js?v=20260909dev305')).state.characters).length>=2));
  assert(await page.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('drawer-village-unreadable-primary-v1:')&&localStorage.getItem(k)==='drawer-idb-snapshot-v1:missing517')));
  // Recover an unreadable primary from an independent same-account backup.

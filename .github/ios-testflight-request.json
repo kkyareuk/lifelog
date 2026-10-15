@@ -1,7 +1,7 @@
 {
-  "request": "2026-10-13-internal519-solo-court-recovery-schedule",
-  "version": "1.0.467",
-  "build": 519,
+  "request": "2026-10-15-internal521-local-save-recovery",
+  "version": "1.0.469",
+  "build": 521,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
