@@ -19,3 +19,6 @@ Main backport acefeebe contains only the applicable scroll fixes and web cache u
 CI38846246566 succeeded: signed App Store eligible1.0.471(523), internalOnly=false, uploadAccepted=true, source fb39edeb6d4d47c0a99166a8b02c3885e7e79352. Apple Sign In entitlements match. Preparation38847025616 attached VALID build58d2f244-2584-45ea-bf77-7e95f3db58db to version108344f5-aaac-448b-97a2-077103c0196c, applied KO/en-US/ja notes, AFTER_APPROVAL. Submission38847147493 is pending verification.
 
 Web main8af3d90a is committed and Pages built, but the separate public domain still serves its previous app shell for the new module URL. Public website update is not confirmed; no Cloudflare deployment was performed.
+
+## iOS submitted
+Submission38847147493 succeeded. Apple returned WAITING_FOR_REVIEW for1.0.471(523), valid build58d2f244-2584-45ea-bf77-7e95f3db58db and AFTER_APPROVAL. Submitted, not yet approved/live. Android signed artifact is ready; Play UI upload remains pending.
