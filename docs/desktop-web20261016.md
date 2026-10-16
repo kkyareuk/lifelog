@@ -9,3 +9,12 @@
 - Web packaging: node scripts/prepare-web.mjs (315 module closure). JavaScript syntax and git diff whitespace checks pass.
 - Added desktop copy: EN/JA 100%. Existing translation scanner: EN 2249/2981, JA 2248/2981 (both 75.4%; dictionary-based coverage, not every generated sentence).
 - Owner-only development Site publication is recorded separately after deployment. Public web/main and mobile store releases are not promoted.
+
+## Development publication
+
+- 2026-10-16: Sites owner-only deployment succeeded at https://drawer-village-private-dev.kkyareuk.chatgpt.site.
+- Site source commit: 7e5bae83077981cf747abfd26b7d6102487c6119, game source: e02952430f3284e4dfa79f06bd852d162b780acd.
+- Deployment: appgdep_6ad1ed36fc388191be6162062d8a7f18. Saved version: appgprj_6aa5f507f1b48191900795a34f6927b0~appgver_b1d1c68a20088191b747161c64d84014.
+- Isolated config and CSP block production connections; only device saves are available. Existing live accounts/saves are not copied into this Site.
+- Windows packaging used Git Bash on PATH and TAR_OPTIONS=--force-local so the official Sites helper treats C:/ as a local archive path. Source push and packaging completed successfully.
+- Workboard main: dbef6b0. Public drawervillage.com and app-store releases remain unchanged.
