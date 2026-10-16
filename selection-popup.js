@@ -25,12 +25,20 @@ const eligible=target=>target?.closest?.('select:not([multiple]):not([data-nativ
 let gesture=null,suppressClick=false;
 document.addEventListener('pointerdown',e=>{
  suppressClick=false;gesture=null;const select=eligible(e.target);
- if(select&&!select.disabled&&select.size<=1&&e.button===0){e.preventDefault();e.stopImmediatePropagation();gesture={select,id:e.pointerId,x:e.clientX,y:e.clientY}}
+ if(select&&!select.disabled&&select.size<=1&&e.button===0){
+  // Touch must retain the browser's pan gesture. Cancelling its first event
+  // makes a settings page full of selects swallow vertical swipes on iOS.
+  if(e.pointerType==='mouse'){e.preventDefault();e.stopImmediatePropagation()}
+  gesture={select,id:e.pointerId,x:e.clientX,y:e.clientY,moved:false};
+ }
 },true);
+document.addEventListener('pointermove',e=>{
+ if(gesture&&e.pointerId===gesture.id&&Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)>=12)gesture.moved=true;
+},{capture:true,passive:true});
 document.addEventListener('pointerup',e=>{
  if(!gesture||e.pointerId!==gesture.id)return;
  const g=gesture;gesture=null;e.preventDefault();e.stopImmediatePropagation();suppressClick=true;
- if(Math.hypot(e.clientX-g.x,e.clientY-g.y)<12)openSelectionPopup(g.select);
+ if(!g.moved&&Math.hypot(e.clientX-g.x,e.clientY-g.y)<12)openSelectionPopup(g.select);
 },true);
 document.addEventListener('pointercancel',()=>{gesture=null;suppressClick=false},true);
 document.addEventListener('click',e=>{

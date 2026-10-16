@@ -7,6 +7,7 @@ import {bindContactPicker} from './features/settings/contact-picker.js';
 import {characterPortrait,bindPortraitFallbacks} from './features/mail/portrait.js';
 import {bindSecrets} from './character-secrets-ui.js';
 import {confirmSettingsDeletion} from './settings-confirm.js';
+import {deferSettingsScrollRender} from './settings-scroll.js';
 import {careerAvailable} from './economy-access.js';
 import {showRoomEditor} from './room-editor-dialog.js';
 import {contextualGuide,stopContextualGuide} from './feature-tour.js';
@@ -1466,6 +1467,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
   // 사진 복원·로그인·초기 안내처럼 늦게 끝나는 작업이 저장 상태의 예전
   // activeTab을 되돌려도, 사용자가 마지막으로 확정한 화면 이동이 우선이다.
   if(navigationTabIntent&&state.activeTab!==navigationTabIntent)state.activeTab=navigationTabIntent;
+  if(!force&&deferSettingsScrollRender(state.activeTab,()=>render({selectionOnly,sceneDate})))return;
   if(!force&&document.documentElement.dataset.drawerRendered==="1"&&isDeferredMobileTextControl(document.activeElement)){
     deferredRenderWhileMobileText=true;
     return;
