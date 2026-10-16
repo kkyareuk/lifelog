@@ -14,3 +14,8 @@ Android candidate code523/version1.0.471 is prepared to satisfy shared version c
 User confirmed the latest Play versionCode is522. Android candidate523 is now confirmed as the next code. Gradle bundleRelease succeeded; jarsigner verified. All629 packaged assets match source byte-for-byte. Artifact: drawer-village-1.0.471-523.aab; SHA2565684d08ea99277a235957612ed2263edbce5b1b6d4243034eaffab27241f110f. Store upload pending.
 
 Main backport acefeebe contains only the applicable scroll fixes and web cache update. Its eight settings panes passed Chromium touch and WebKit programmatic checks across all three languages/sizes. Mobile character full-settings additional trusted-touch/WebKit scroll tests pass. iOS corrected upload run38846246566 is building source fb39edeb.
+
+## iOS upload and review preparation
+CI38846246566 succeeded: signed App Store eligible1.0.471(523), internalOnly=false, uploadAccepted=true, source fb39edeb6d4d47c0a99166a8b02c3885e7e79352. Apple Sign In entitlements match. Preparation38847025616 attached VALID build58d2f244-2584-45ea-bf77-7e95f3db58db to version108344f5-aaac-448b-97a2-077103c0196c, applied KO/en-US/ja notes, AFTER_APPROVAL. Submission38847147493 is pending verification.
+
+Web main8af3d90a is committed and Pages built, but the separate public domain still serves its previous app shell for the new module URL. Public website update is not confirmed; no Cloudflare deployment was performed.
