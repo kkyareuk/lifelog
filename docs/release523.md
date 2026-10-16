@@ -22,3 +22,8 @@ Web main8af3d90a is committed and Pages built, but the separate public domain st
 
 ## iOS submitted
 Submission38847147493 succeeded. Apple returned WAITING_FOR_REVIEW for1.0.471(523), valid build58d2f244-2584-45ea-bf77-7e95f3db58db and AFTER_APPROVAL. Submitted, not yet approved/live. Android signed artifact is ready; Play UI upload remains pending.
+
+## Android production submission — 2026-10-16
+Uploaded verified drawer-village-1.0.471-523.aab through the connected in-app Play Console browser. Play recognized523/1.0.471, API24+, target36. Retained legacy467/API23; replaced522. Preview confirmed zero supported-device loss across all form factors. Only existing optional mapping-file warnings for467/523; no blocking errors. KO/en-US/ja notes applied. Rollout100%, all existing target countries (178); managed publishing disabled.
+
+Saved the production release and confirmed Send changes for review. Publishing overview shows523 under changes in review, full rollout. Google automatic quick checks are still running and will forward the submission when successful. Submitted, not yet verified approved/live. Screenshot C:/Users/Public/drawer-releases/play523-review.jpg. No unrelated changes were in the submission.
