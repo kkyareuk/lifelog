@@ -8,3 +8,11 @@
 - Android versionCode remains 523. No mobile binary/store release.
 - QA: Korean/English/Japanese, widths 1024/1440/1920, resident selection, activity picker, home panels, furniture loading/add/save, 390px phone HUD. External services are blocked in disposable browser tests.
 - Build: 167-module closure and 226 WebP references validated. Added desktop copy EN/JA 100%; existing dictionary coverage measured separately.
+
+## Deployment confirmation
+
+- Public main implementation: eb041fad. Cloudflare Pages production deployment f8751553 completed on 2026-10-16.
+- drawervillage.com serves the new index, cache, desktop modules and furniture PNGs with HTTP 200 and correct content types.
+- Public URL browser QA passed the same three-language/layout/interaction suite using disposable local state, intercepted preview authentication and blocked external services; no production account writes.
+- Dictionary coverage: EN 2249/2962 (75.9%), JA 2248/2962 (75.9%). New desktop copy: both 100%.
+- Workboard main release record: 48eec11.
