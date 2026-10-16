@@ -1,0 +1,9 @@
+<ko-KR>
+설정 화면에서 스크롤이 끊기거나 맨 위로 돌아가는 문제를 수정했습니다. 선택 메뉴 위에서 손가락을 움직일 때에도 설정 내용을 스크롤할 수 있도록 개선했습니다.
+</ko-KR>
+<en-US>
+Fixed settings scrolling being interrupted or returning to the top. Improved scrolling when swiping over option menus.
+</en-US>
+<ja-JP>
+設定画面のスクロールが途切れたり、先頭に戻ったりする問題を修正しました。選択メニューの上でもスワイプして設定内容をスクロールできるよう改善しました。
+</ja-JP>

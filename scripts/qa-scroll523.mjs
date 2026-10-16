@@ -19,7 +19,7 @@ try{
  await p.evaluate(()=>window.DrawerVillageNavigation.go('settings'));
 
  const mobileWebKit=process.argv.includes('--webkit');
- for(const lang of ['ko','en','ja']){
+ for(const lang of (process.argv.includes('--character-only')?[]:['ko','en','ja'])){
   for(const size of [{width:402,height:749},{width:874,height:402},{width:820,height:1180}]){
    await p.setViewportSize(size);
    await p.evaluate(lang=>{g.state.uiLanguage=lang;window.DrawerVillageNavigation.go('settings');photoQA.render()},lang);
@@ -53,5 +53,14 @@ try{
    console.log('PASS',lang,size.width+'x'+size.height,'nine settings panes: bounds, end access, scroll preservation'+(mobileWebKit?' (WebKit programmatic)':' and real touch input'));
   }
  }
+ await p.setViewportSize({width:402,height:749});
+ await p.evaluate(()=>{window.DrawerVillageNavigation.go('character');g.state.characterSettingsView='full';g.state.characterPane='personality';g.state.characterPersonalityPane='core';photoQA.render();document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
+ const book=p.locator('.book-form-grid').first();await book.waitFor();await p.waitForTimeout(300);
+ await book.evaluate(e=>e.scrollTop=0);
+ const b=await book.evaluate(e=>({r:e.getBoundingClientRect().toJSON(),h:e.clientHeight,sh:e.scrollHeight}));
+ assert(b.sh>b.h,'character fixture must overflow');
+ if(!mobileWebKit){const cdp=await p.context().newCDPSession(p),x=Math.round(b.r.x+b.r.width/2),start=Math.round(b.r.bottom-30);await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y:start}]});for(let y=start-20;y>b.r.top+25;y-=20){await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x,y}]});await p.waitForTimeout(12)}await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();await p.waitForTimeout(300)}else await book.evaluate(e=>e.scrollTop=e.scrollHeight);
+ assert(await book.evaluate(e=>e.scrollTop)>0,'character full settings scroll');
+ console.log('PASS character full-settings scroll '+(mobileWebKit?'WebKit programmatic':'trusted touch'));
  assert.deepEqual(errors,[]);
 }finally{await browser.close();server.closeAllConnections();server.close()}
