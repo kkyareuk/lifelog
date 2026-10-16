@@ -1,3 +1,4 @@
+import {deferSettingsScrollRender} from './settings-scroll.js';
 import {notificationCharacters} from './notification-characters.js';
 import {refreshHomeGames} from './home-social-ui.js?v=20260909dev305';
 import {authoredSelf,ownerLogTemplate} from './character-language.js';
@@ -1625,6 +1626,7 @@ function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
   // 사진 복원·로그인·초기 안내처럼 늦게 끝나는 작업이 저장 상태의 예전
   // activeTab을 되돌려도, 사용자가 마지막으로 확정한 화면 이동이 우선이다.
   if(navigationTabIntent&&state.activeTab!==navigationTabIntent)state.activeTab=navigationTabIntent;
+  if(!force&&deferSettingsScrollRender(state.activeTab,()=>render({selectionOnly,sceneDate})))return;
   if(!force&&document.documentElement.dataset.drawerRendered==="1"&&isDeferredMobileTextControl(document.activeElement)){
     deferredRenderWhileMobileText=true;
     return;
