@@ -1,0 +1,53 @@
+/* Desktop play surface. The map, inspector and resident dock share the live
+   simulation and existing actions; no second world or decorative residents. */
+@media(min-width:721px){
+  .desktop-village{--village-ink:#3d5143;--village-line:#d7ddce;color:var(--village-ink)}
+  .desktop-village-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:0 0 16px}
+  .desktop-village-heading small{font-size:12px;color:#778371;letter-spacing:.06em}
+  .desktop-village-heading h1{font-size:30px;margin:4px 0 0;line-height:1.3}
+  .desktop-village-modes{display:flex;gap:5px;padding:5px;background:#e9eddf;border-radius:14px}
+  .desktop-village-modes button{border:0;border-radius:10px;background:transparent;color:#52634c;padding:10px 16px;font-size:13px;box-shadow:none}
+  .desktop-village-modes button[aria-current]{background:#fffdf5;box-shadow:0 2px 6px #34493012}
+  .desktop-village-stage{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:16px;align-items:stretch;height:clamp(440px,62dvh,820px)}
+  .desktop-village-map{position:relative;min-width:0;height:100%;overflow:hidden;border:1px solid #a4b496;border-radius:22px;background:#adc392;box-shadow:0 8px 24px #3c503315}
+  .desktop-village-map>.tablet-observe-world{position:relative;width:100%;height:100%;overflow:hidden}
+  .desktop-village-inspector{display:flex;flex-direction:column;min-width:0;border:1px solid var(--village-line);border-radius:22px;background:#fffdf7;overflow:auto;min-height:0}
+  .desktop-selected-character{flex:1;min-width:0}
+  .desktop-selected-portrait{display:grid;place-items:center;height:130px;background:radial-gradient(ellipse at bottom,#dce6ca,#f0f3e6 75%);overflow:hidden}
+  .desktop-selected-portrait :is(.avatar,.sprite,.desktop-portrait-art){width:100px;height:110px;object-fit:contain;border:0;background:transparent;box-shadow:none}
+  .desktop-selected-copy{padding:16px}
+  .desktop-selected-copy small{font-size:11px;color:#869078}
+  .desktop-selected-copy h2{font-size:23px;margin:5px 0 12px}
+  .desktop-selected-copy>b{font-size:14px;line-height:1.6}
+  .desktop-selected-copy p{font-size:12px;line-height:1.7;color:#74806c}
+  .desktop-selected-copy>span{display:block;font-size:11px;line-height:1.6;color:#73816a;padding-top:10px;border-top:1px solid var(--village-line)}
+  html:not(.native-app)[data-active-tab="home"] .home-feature-panel.open{inset:90px 5vw 50px max(210px,15vw);max-width:1100px;margin:auto}
+  .is-desktop-web .home-feature-menu{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .is-desktop-web .home-page>.title h1{font-size:26px}
+  .is-desktop-web .home-page>.title p{font-size:12px;color:#74806c}
+  .desktop-village-inspector .character-money-shortcuts{position:static;display:flex;align-items:center;gap:14px;width:auto;padding:10px 16px;border-top:1px solid var(--village-line)}
+  .desktop-village-inspector .character-money-balance{position:static;max-width:none;margin:8px 16px}
+  .desktop-village-controls{display:grid;grid-template-columns:1fr;gap:8px;padding:16px 16px 8px}
+  .desktop-village-controls button{min-height:42px;border:1px solid #ccd7c2;border-radius:11px;background:#f0f3e8;color:#41563d;font-size:14px;box-shadow:none}
+  .desktop-village-controls .primary{background:#506e4b;color:#fff;border-color:#506e4b}
+  .desktop-village-tip{font-size:12px;line-height:1.7;color:#7c8673;margin:5px 16px 16px}
+  .desktop-resident-dock{display:flex;align-items:center;gap:18px;padding:12px 16px;margin-top:14px;border:1px solid var(--village-line);border-radius:18px;background:#fffdf7}
+  .desktop-resident-dock>span{font-size:12px;flex:0 0 70px;line-height:1.6;color:#78836f}
+  .desktop-resident-dock .roster{display:flex;flex:1;min-width:0;margin:0;padding:2px;gap:8px;overflow-x:auto}
+  .desktop-resident-dock .roster-card{flex:0 0 160px;min-width:0;border:1px solid transparent;border-radius:12px;padding:8px;background:#f4f4eb;box-shadow:none}
+  .desktop-resident-dock .roster-card.on{border-color:#91a57b;background:#eaf0df}
+  .desktop-resident-dock .roster-card :is(.avatar,.sprite){width:44px;height:44px;object-fit:contain}
+  .desktop-resident-dock .roster-info{min-width:0}
+  .desktop-resident-dock .roster-info b{font-size:13px}
+  .desktop-resident-dock .roster-info small{font-size:11px;max-width:90px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .desktop-village-journal{margin-top:16px;border-top:1px solid var(--village-line);padding:14px 0}
+  .desktop-village-journal>summary{cursor:pointer;font-size:13px;color:#71806a}
+  .desktop-village-journal .desktop-observe-log{margin-top:16px}
+  .desktop-village button:focus-visible{outline:3px solid #76905f;outline-offset:3px}
+}
+@media(min-width:721px) and (max-width:1100px){
+  .desktop-village-stage{grid-template-columns:minmax(0,1fr) 230px;gap:10px}
+  .desktop-village-heading{align-items:flex-start;flex-direction:column}
+  .desktop-village-modes button{padding:8px 12px}
+  .desktop-resident-dock{gap:8px;padding:10px}
+}
