@@ -6161,7 +6161,7 @@ const startupSettingsPane=new URLSearchParams(location.hash.replace(/^#/,"")).ge
 const nativeStartup=Boolean(window.DRAWER_VILLAGE_NATIVE||window.Capacitor?.isNativePlatform?.());
 let startupSessionTab="";
 try{startupSessionTab=sessionStorage.getItem("drawer-village-active-tab")||""}catch{}
-const startupTab=nativeStartup?"observe":APP_TABS.includes(startupHashTab)?startupHashTab:APP_TABS.includes(startupSessionTab)?startupSessionTab:"observe";
+const startupTab=nativeStartup?"observe":APP_TABS.includes(startupHashTab)?startupHashTab:mobileSiteQuery?.matches&&APP_TABS.includes(startupSessionTab)?startupSessionTab:"observe";
 document.documentElement.dataset.startupTab=startupTab;
 document.documentElement.dataset.startupNative=String(nativeStartup);
 if(document.documentElement.dataset.drawerRendered!=="1")setNavigationTabIntent(startupTab);

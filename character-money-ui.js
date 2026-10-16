@@ -83,7 +83,7 @@ export function bindCharacterMoney(){
   }
  }
  if(economyAvailable()&&!c.wallet&&!snapshot){ensureWallet(c);applyWorldCurrency(world,c);bindWalletAccounts(world);save(true)}
- const hud=document.querySelector('.game-observe-hud,.standard-observe-view');
+ const hud=document.querySelector('.desktop-village-inspector')||document.querySelector('.game-observe-hud,.standard-observe-view');
  if(hud&&!hud.querySelector('.character-money-shortcuts')){
   const balance=document.createElement('button');balance.type='button';balance.dataset.characterBalance='';balance.className='character-money-balance';balance.textContent=c.wallet?displayMoney(walletBalance(c.wallet),c,world.uiLanguage):'—';balance.title=balance.textContent;balance.onclick=()=>openCharacterMoney();if(economyAvailable())hud.append(balance);
   const nav=document.createElement('nav');nav.className='character-money-shortcuts';

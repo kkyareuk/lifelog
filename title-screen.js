@@ -21,6 +21,7 @@ export function mountTitleScreen({getState,onEnter}){
   if(key===last)return;last=key;actions.replaceChildren();progress.max=total+1;progress.value=loaded+(accountReady?1:0);progress.hidden=ready;status.textContent=ready?'':`${copy[4]} ${progress.value}/${progress.max}`;
   if(failed){status.textContent=String(failed);button(copy[5],()=>location.reload());return}
   if(!ready||working)return;
+  if(returning&&!document.documentElement.classList.contains('native-app')&&window.matchMedia('(min-width:721px)').matches){finish();return}
   if(returning){actions.classList.add('returning');button(copy[3],finish);return}
   actions.classList.remove('returning');
   const login=async provider=>{working=true;update();try{await window.ParallelCityAuth?.login?.(provider)}finally{working=false;update()}};

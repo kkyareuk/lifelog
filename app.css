@@ -128,17 +128,17 @@ html #app .welcome-language button[aria-pressed="true"]{border-color:#eed7a4;bac
 .web-village-summary{padding:24px;background:#fff7e5;border:1px solid #d3b88d;border-radius:18px;text-align:center}.web-village-summary>img{width:70px;height:70px;object-fit:contain}.web-village-summary h2{font-size:22px;margin:10px}.web-village-summary p{font-size:14px}.web-village-summary>div{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}.web-village-summary button{font-size:13px;min-height:40px}.web-observe-actions .discovery-countdown{color:#513c27!important;text-shadow:none!important}
 /* Desktop website shell owns navigation and account layout; mobile retains the game HUD. */
 #app.is-desktop-web{max-width:none;margin:0;min-height:var(--game-viewport-height,100dvh);background:#f5ecd9;color:#46362a}
-.web-drawer-shell{display:grid;grid-template-columns:224px minmax(0,1fr);min-height:var(--game-viewport-height,100dvh)}
-.web-drawer-sidebar{position:sticky;top:0;height:var(--game-viewport-height,100dvh);overflow-y:auto;display:flex;flex-direction:column;padding:22px 15px;gap:18px;background:#594031 url('./assets/home-ui/wood-top.png') center/auto 210px;border-right:5px solid #39291f;color:#fff6dc;box-shadow:4px 0 12px #39291f22}
+.web-drawer-shell{display:grid;grid-template-columns:188px minmax(0,1fr);min-height:var(--game-viewport-height,100dvh)}
+.web-drawer-sidebar{position:sticky;top:0;height:var(--game-viewport-height,100dvh);overflow-y:auto;display:flex;flex-direction:column;padding:20px 12px;gap:14px;background:#f6f2e8;border-right:1px solid #ddd9c9;color:#485448;box-shadow:none}
 .web-drawer-sidebar button{font:inherit;color:inherit;box-shadow:none}
 .web-drawer-brand{display:grid;justify-items:center;gap:5px;border:0;background:transparent;padding:0 0 14px}
-.web-drawer-brand img{width:88px;height:72px;object-fit:contain}.web-drawer-brand b{font-size:26px}.web-drawer-brand small{font-size:12px;color:#ead4b5}
-.web-drawer-sidebar nav{display:grid;gap:5px}.web-nav-caption{font-size:11px;color:#e0c7a5;letter-spacing:.08em;padding:13px 12px 5px}
-.web-drawer-sidebar nav button{display:flex;align-items:center;gap:12px;min-height:43px;text-align:left;border:1px solid transparent;border-radius:10px;background:#33241844;padding:7px 12px;font-size:15px}
-.web-drawer-sidebar nav button img{width:29px;height:29px;object-fit:contain}.web-drawer-sidebar nav button:hover{background:#8f6b46}.web-drawer-sidebar nav button[aria-current=page]{background:#fff2ce;color:#573e2a;border-color:#d0ac70;box-shadow:0 3px 0 #2f201e66}
+.web-drawer-brand img{width:88px;height:72px;object-fit:contain}.web-drawer-brand b{font-size:26px}.web-drawer-brand small{font-size:12px;color:#78836f}
+.web-drawer-sidebar nav{display:grid;gap:5px}.web-nav-caption{font-size:11px;color:#78836f;letter-spacing:.08em;padding:13px 12px 5px}
+.web-drawer-sidebar nav button{display:flex;align-items:center;gap:12px;min-height:43px;text-align:left;border:1px solid transparent;border-radius:10px;background:transparent;padding:7px 12px;font-size:15px}
+.web-drawer-sidebar nav button img{width:29px;height:29px;object-fit:contain}.web-drawer-sidebar nav button:hover{background:#e8eddf}.web-drawer-sidebar nav button[aria-current=page]{background:#e1e9d8;color:#344d38;border-color:#c7d2bd;box-shadow:none}
 .web-account-card{margin-top:auto;display:flex;align-items:center;gap:10px;padding:13px 9px;border:1px solid #ae8a62;border-radius:12px;background:#30221ac9;text-align:left}.web-account-card>img,.web-account-card>span:first-child{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none}.web-account-card span:last-child{display:grid;gap:3px;min-width:0}.web-account-card b{overflow-wrap:anywhere}.web-account-card small{font-size:11px;color:#dec4a1}
 .web-drawer-content .relationship-stage{--web-rel-offset:85px}
-.web-drawer-workspace{min-width:0;background:#b18a62 url('./assets/home-design/wood.webp') center/620px auto}
+.web-drawer-workspace{min-width:0;background:#f7f6ee}
 .web-drawer-content .town-native-header{height:auto;min-height:88px;display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;border:2px solid #69492f;border-radius:18px;background:#fff6e5;box-shadow:0 5px 0 #3e291c33;margin-bottom:16px}
 .web-drawer-content .town-native-back{flex:none;width:48px;height:48px;padding:0;border:0;background:transparent;box-shadow:none}
 .web-drawer-content .town-native-back img{display:block;width:48px;height:48px;object-fit:contain}
@@ -150,8 +150,8 @@ html #app .welcome-language button[aria-pressed="true"]{border-color:#eed7a4;bac
 .web-drawer-content .town-native-menu{display:flex;gap:6px;flex-wrap:wrap}
 .web-drawer-content .town-native-menu button{font-size:14px;min-height:40px;padding:8px 14px;border:1px solid #856044;border-radius:10px;background:#6e4b34;color:#fff4d8}
 .web-drawer-content .town-map-scroll{border:5px solid #684a35;border-radius:20px;overflow:hidden}
-.web-drawer-topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 34px;border-bottom:1px solid #d7c7a9;background:#fff9eceb}.web-drawer-topbar>span{display:grid;gap:4px;font-size:12px;color:#8b7157}.web-drawer-topbar b{font-size:24px;color:#46362a}.web-drawer-topbar>div{display:flex;align-items:center;gap:15px;font-size:12px}.web-drawer-topbar button{font-size:13px;background:#f2e2bf;border:1px solid #c3a87a;border-radius:9px;padding:9px 15px;color:#513c27}
-.web-drawer-content{padding:24px 28px;max-width:1560px;margin:auto;min-width:0;min-height:76dvh}.web-drawer-content>.panel{border:1px solid #d6c5a6;border-radius:19px;background:#fffaf0;box-shadow:0 5px 18px #6145250b}.web-drawer-content .desktop-observe-scene{border:5px solid #735138;border-radius:22px;overflow:hidden;box-shadow:0 8px 0 #4c34212b}.web-drawer-content .desktop-scene-canvas{min-height:420px}.web-drawer-content .desktop-observe-lower .viewport{height:440px;min-height:0}.web-drawer-content .desktop-observe-log .native-log-card ol:has(>li:only-child){grid-template-columns:1fr}.web-drawer-content .desktop-observe-log .native-log-card li{grid-template-columns:1fr}.web-drawer-content .desktop-observe-lower{grid-template-columns:minmax(0,1fr) minmax(270px,.7fr)}
+.web-drawer-topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 26px;border-bottom:1px solid #d7c7a9;background:#fff9eceb}.web-drawer-topbar>span{display:grid;gap:4px;font-size:12px;color:#8b7157}.web-drawer-topbar b{font-size:24px;color:#46362a}.web-drawer-topbar>div{display:flex;align-items:center;gap:15px;font-size:12px}.web-drawer-topbar button{font-size:13px;background:#f2e2bf;border:1px solid #c3a87a;border-radius:9px;padding:9px 15px;color:#513c27}
+.web-drawer-content{padding:20px 26px;max-width:1920px;margin:auto;min-width:0;min-height:76dvh}.web-drawer-content>.panel{border:1px solid #d6c5a6;border-radius:19px;background:#fffaf0;box-shadow:0 5px 18px #6145250b}.web-drawer-content .desktop-observe-scene{border:5px solid #735138;border-radius:22px;overflow:hidden;box-shadow:0 8px 0 #4c34212b}.web-drawer-content .desktop-scene-canvas{min-height:420px}.web-drawer-content .desktop-observe-lower .viewport{height:440px;min-height:0}.web-drawer-content .desktop-observe-log .native-log-card ol:has(>li:only-child){grid-template-columns:1fr}.web-drawer-content .desktop-observe-log .native-log-card li{grid-template-columns:1fr}.web-drawer-content .desktop-observe-lower{grid-template-columns:minmax(0,1fr) minmax(270px,.7fr)}
 .web-drawer-footer{background:#fff9eceb;display:flex;justify-content:space-between;gap:20px;padding:20px 34px;border-top:1px solid #deceb1;font-size:12px;color:#8b7157}.web-drawer-footer a{color:inherit}.web-drawer-content .multiplayer-directory{min-height:0}.web-drawer-content .village-welcome{min-height:70dvh}
 @media(min-width:721px) and (max-width:1100px){.web-drawer-shell{grid-template-columns:182px minmax(0,1fr)}.web-drawer-content{padding:20px}.web-drawer-topbar{padding:18px 20px}.web-account-status{max-width:150px;overflow-wrap:anywhere}.web-drawer-content .desktop-observe-lower{grid-template-columns:1fr}.web-drawer-brand b{font-size:22px}}
 
@@ -3273,16 +3273,17 @@ html[data-active-tab="town"] .town-illustration-dialog{z-index:1200;width:min(92
    크기 가중치로 계산된 percentage layout을 그대로 써서 빈칸 없이
    자동 분할하고, 사용자가 올린 방 사진은 각 칸을 꽉 채운다. */
 @media(min-width:721px){
-  html:not(.native-app)[data-active-tab="home"] .home-grid{width:100%;max-width:920px}
+  html:not(.native-app)[data-active-tab="home"] .home-grid{width:100%;max-width:none}
   html:not(.native-app)[data-active-tab="home"] .home{padding:24px}
   html:not(.native-app)[data-active-tab="home"] .home-canvas-viewport,
   html:not(.native-app)[data-active-tab="home"] .home-canvas-viewport.has-extra{
     position:relative;
     display:block;
-    width:min(100%,720px);
+    width:100%;
+    height:clamp(560px,72dvh,980px);
     min-width:0;
-    min-height:900px;
-    aspect-ratio:4/5;
+    min-height:0;
+    aspect-ratio:auto;
     margin:18px auto 0;
     padding:5px;
     overflow:auto;
@@ -3493,8 +3494,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   }
 }
 /* Panel visibility is navigation state, not a phone-only layout preference. */
-  html.native-app[data-active-tab="home"] .home-feature-panel{display:none!important}
-  html.native-app[data-active-tab="home"] .home-feature-panel.open{
+  html[data-active-tab="home"] .home-feature-panel{display:none!important}
+  html[data-active-tab="home"] .home-feature-panel.open{
     position:fixed;
     inset:calc(env(safe-area-inset-top) + 66px) 7px calc(env(safe-area-inset-bottom) + 66px);
     z-index:700;
@@ -3510,8 +3511,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     backdrop-filter:blur(12px);
     overscroll-behavior:contain;
   }
-  html.native-app[data-active-tab="home"] .home-feature-panel.open>.panel{padding:0;border:0;background:transparent;box-shadow:none}
-  html.native-app[data-active-tab="home"] .home-feature-close{
+  html[data-active-tab="home"] .home-feature-panel.open>.panel{padding:0;border:0;background:transparent;box-shadow:none}
+  html[data-active-tab="home"] .home-feature-close{
     position:sticky;
     top:0;
     z-index:8;
