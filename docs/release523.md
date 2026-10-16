@@ -8,4 +8,4 @@ Validation: Chromium trusted touch input across nine settings panes, three sizes
 
 No new UI strings. Release notes KO/en-US/ja complete. Overall translation EN2250/2983 and JA2249/2983 (75.4% each).
 
-Android code remains522 pending confirmation of the highest registered Play versionCode. iOS523 upload/submission pending. Main web backport is separate because its source differs from the mobile public baseline.
+Android candidate code523/version1.0.471 is prepared to satisfy shared version checks; Play upload awaits confirmation of the highest registered versionCode. Initial iOS CI38845972250 stopped before signing/upload because the shared versionName check caught Android522/1.0.470. Corrected both targets without bypassing validation. iOS523 upload/submission pending. Main web backport is separate because its source differs from the mobile public baseline.
