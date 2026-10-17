@@ -805,7 +805,12 @@ async function download({automatic=false,accountTransition=false,detailed=false,
     const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
     const localIds=characterIds(localState),remoteIds=characterIds(remote);
     const differentCharacters=localIds.size>0&&remoteIds.size>0&&(localIds.size!==remoteIds.size||[...localIds].some(id=>!remoteIds.has(id)));
-    if(automatic&&!differentCharacters&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
+    // A newer local timestamp does not prove that all villages were restored.
+    // Merge cloud-only villages before retaining the newer local character data.
+    const liveTownIds=value=>new Set((value?.towns||[]).map(t=>String(t.id)).filter(id=>id&&!(localState.deletedTownIds||[]).includes(id)&&!(remote.deletedTownIds||[]).includes(id)));
+    const localTowns=liveTownIds(localState),remoteTowns=liveTownIds(remote);
+    const differentTowns=localTowns.size!==remoteTowns.size||[...remoteTowns].some(id=>!localTowns.has(id));
+    if(automatic&&!differentCharacters&&!differentTowns&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
       status(`${accountName()} · 더 최신인 기기 데이터 유지`);
       toast("기기의 최신 변경사항을 유지했습니다");
       return detailed?"kept-local":false;
@@ -815,7 +820,7 @@ async function download({automatic=false,accountTransition=false,detailed=false,
       if(raw)localStorage.setItem("drawer-village-recovery-before-cloud",raw);
     }catch(error){console.warn("클라우드 불러오기 전 복구본을 만들지 못했습니다",error)}
     const imported=automatic
-      ?differentCharacters?mergeDeviceAndCloudState(localState,remote):applyLocalTombstones(remote,localState)
+      ?(differentCharacters||differentTowns)?mergeDeviceAndCloudState(localState,remote):applyLocalTombstones(remote,localState)
       :mergeCloudRestoreState(localState,remote);
     applyCharacterTransfers(imported,accountMailbox.uid===session.uid?accountMailbox.data.characterTransfers||[]:[]);
     window.ParallelCity.replaceState(imported);

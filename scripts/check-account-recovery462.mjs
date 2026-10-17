@@ -1,3 +1,4 @@
+import {purchaseAccessRefresh} from '../purchase-access-refresh.js';
 // Older public-web main does not import the newer cloud media helpers.
 const optional=async path=>fs.existsSync(new URL(path,import.meta.url))?import(path):{};
 const {uniqueManifestImages,photoManifestForState}=await optional('../cloud-image-manifest.js');
@@ -32,7 +33,7 @@ const pathOf=parts=>parts.filter(part=>typeof part==='string').join('/');
 const snapshot=(path)=>({exists:()=>cloud.has(path.split('/')[1]),data:()=>cloud.get(path.split('/')[1])});
 const fakeWindow={Capacitor:{isNativePlatform:()=>true},addEventListener(){},PARALLEL_CITY_FIREBASE:{apiKey:'test',projectId:'test',authDomain:'test'},dispatchEvent(){},ParallelCity:{getState:game.cloneState,switchAccount:game.switchAccountState,replaceState:game.replaceState,setAccountStatus(){},setEntitlements(){},toast(){}}};
 class FakeGoogleAuthProvider{setCustomParameters(){}}
-const context={iosAppleAvailable:()=>false,uniqueManifestImages,photoManifestForState,imageSourceHash,reusableImage,retainImage,needsCompressedCloudState,cloudDocumentLimitError,accountIdentity,bootstrapAuth,indexedDBLocalPersistence:{},initializeAuth:(_,deps)=>{assert(!deps.popupRedirectResolver);return {}},mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,["login-presence","image-epoch"].includes(label)?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
+const context={purchaseAccessRefresh,iosAppleAvailable:()=>false,uniqueManifestImages,photoManifestForState,imageSourceHash,reusableImage,retainImage,needsCompressedCloudState,cloudDocumentLimitError,accountIdentity,bootstrapAuth,indexedDBLocalPersistence:{},initializeAuth:(_,deps)=>{assert(!deps.popupRedirectResolver);return {}},mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,["login-presence","image-epoch"].includes(label)?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
  initializeApp:()=>({}),getAuth:()=>({}),getFirestore:()=>({}),initializeFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{},browserLocalPersistence:{},getRedirectResult:async()=>{redirectCalls++},onAuthStateChanged:(_,fn)=>{callback=fn},
  doc:(...parts)=>pathOf(parts),collection:(...parts)=>pathOf(parts),getDoc:async path=>{if(stallImage&&path.startsWith("imageDeletionState/"))return new Promise(()=>{});if(hold&&path==='users/A')await hold.promise;return snapshot(path)},getDocFromServer:async path=>snapshot(path),getDocs:async()=>({docs:[]}),getDocsFromServer:async()=>({docs:[]}),
  setDoc:async(path,data)=>{if(hangPresence&&data.lastLoginOrigin)return new Promise(()=>{});writes.push({path,data});if(path.split('/').length===2)cloud.set(path.split('/')[1],{...cloud.get(path.split('/')[1]),...data})},deleteDoc:async()=>{},deleteField:()=>undefined,serverTimestamp:()=>0,arrayUnion:(...x)=>x,signOut:async()=>callback(null),
@@ -112,6 +113,18 @@ assert(game.state.characters[guestNext],'Explicit sign-in also retains guest dat
 assert(game.state.characters[accountOnly],'Existing account character must survive guest adoption');
 console.log('PASS explicit populated-account sign-in preserves both saves; automatic sign-in stays isolated');
 
+// Reproduce a nonempty newer device save hiding villages still present in cloud.
+const local524=game.cloneState(),town524={...local524.towns[0],id:'cloud-only-town524',name:'Recovery fixture',places:[]};
+const remote524=structuredClone(local524);remote524.lastSaved=1;remote524.towns.push(town524);
+cloud.set('C',{syncFormat:1,gameState:remote524});
+const before524=game.state.characters[game.state.order[0]].name;
+assert.equal(await auth.download({automatic:true}),true);
+assert(game.state.towns.some(t=>t.id===town524.id),'Automatic restore must retain cloud-only villages even when local timestamp is newer');
+assert.equal(game.state.characters[game.state.order[0]].name,before524,'Newer local characters must survive village recovery');
+game.deleteTown(town524.id);
+await auth.download({automatic:true});
+assert(!game.state.towns.some(t=>t.id===town524.id),'Explicitly deleted villages must not return');
+console.log('PASS524 newer nonempty local save recovers cloud-only village; local characters and deliberate deletion preserved');
 const preserved=JSON.stringify(game.cloneState());stallImage=true;await callback({uid:"C",email:"c@test"});assert.equal(auth.getInfo().startupError,"sync/request-timeout:image-epoch");assert.equal(game.state.characters[guestFirst]?.name,"첫 로그인 전 캐릭터");assert(memory.has("drawer-account:C:drawer-village-game-v1"));console.log("PASS stalled account read exits into recoverable error without deleting account records");
 
 
