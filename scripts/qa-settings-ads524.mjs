@@ -48,7 +48,7 @@ try{
     const visibleEnd=await scroller.evaluate(e=>{const a=e.lastElementChild.getBoundingClientRect(),b=e.getBoundingClientRect();return a.bottom<=b.bottom+2});
      if(!visibleEnd)console.log('end',await scroller.evaluate(e=>({top:e.scrollTop,h:e.clientHeight,sh:e.scrollHeight,box:e.getBoundingClientRect().toJSON(),last:e.lastElementChild.getBoundingClientRect().toJSON(),tag:e.lastElementChild.outerHTML.slice(0,100)})));assert(visibleEnd,lang+pane+' final settings reachable');
     }
-    if(lang==='ko'&&size.width===402&&pane==='notifications')await p.screenshot({path:'C:/Users/Public/drawer-releases/settings523-'+(mobileWebKit?'webkit':'chrome')+'.png'});
+    if(lang==='ko'&&size.width===402&&pane==='notifications')await p.screenshot({path:'C:/Users/Public/drawer-releases/settings524-'+(mobileWebKit?'webkit':'chrome')+'.png'});
     if(pane!=='home')await p.locator('.settings-pane-heading button').click();
    }
    console.log('PASS',lang,size.width+'x'+size.height,'nine settings panes: bounds, end access, scroll preservation'+(mobileWebKit?' (WebKit programmatic)':' and real touch input'));
