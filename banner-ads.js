@@ -45,7 +45,7 @@ export function bindBannerAds(){
   void ad().addListener('bannerAdFailedToLoad',error=>{if(visible)failed(Object.assign(Error(error?.message||'ads-load'),{code:error?.code,adStage:'banner'}));});
  }
  if(document.documentElement.dataset.activeTab==='settings'&&!document.querySelector('[data-game-ad-privacy]')){
-  const button=document.createElement('button');button.dataset.gameAdPrivacy='';button.textContent=t('광고 개인정보 설정','Ad privacy settings','広告のプライバシー設定');button.onclick=()=>void adPrivacyOptions().catch(()=>{});document.querySelector('#app main')?.append(button);
+  const button=document.createElement('button');button.type='button';button.dataset.gameAdPrivacy='';button.textContent=t('광고 개인정보 설정','Ad privacy settings','広告のプライバシー設定');button.onclick=()=>void adPrivacyOptions().catch(()=>{});document.querySelector('[data-settings-scroll]')?.append(button);
  }
  update();
 }

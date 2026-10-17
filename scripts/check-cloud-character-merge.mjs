@@ -49,5 +49,5 @@ console.log("PASS 수동 불러오기도 현재 기기의 삭제표를 보존해
 console.log("PASS 삭제한 캐릭터에 연결된 원격 상호작용도 함께 제거합니다");
 const authSource=fs.readFileSync(new URL("../auth.js",import.meta.url),"utf8");
 assert.match(authSource,/const tombstoneSafeState=previousGameState\s*\?mergeDeviceAndCloudState\(localState,previousGameState\)/);
-assert.match(authSource,/const imported=automatic\s*\?differentCharacters\?mergeDeviceAndCloudState\(localState,remote\):applyLocalTombstones\(remote,localState\)\s*:mergeCloudRestoreState\(localState,remote\)/);
+assert.match(authSource,/const imported=automatic\s*\?\(differentCharacters\|\|differentTowns\)\?mergeDeviceAndCloudState\(localState,remote\):applyLocalTombstones\(remote,localState\)\s*:mergeCloudRestoreState\(localState,remote\)/);
 console.log("PASS 업로드·자동 불러오기와 명시적 복구의 병합 정책을 분리합니다");
