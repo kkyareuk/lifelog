@@ -1,0 +1,5 @@
+{
+  "ko": "광고가 표시되는 기기에서 설정 메뉴가 가려지던 문제를 수정했어요. 기기 저장 시각이 더 최신이어도 클라우드에 남아 있는 마을이 자동 불러오기에서 누락되지 않도록 개선했어요. 최신 캐릭터 정보와 직접 삭제한 마을 기록은 유지돼요.",
+  "en-US": "Fixed an issue where ad privacy controls could hide the settings menu. Automatic sync now retains villages still present in the cloud even when the device save is newer, while preserving newer character data and intentional village deletions.",
+  "ja": "広告が表示される端末で設定メニューが隠れる問題を修正しました。端末の保存日時が新しい場合も、クラウドに残っている村を自動読み込みで保持するよう改善しました。新しいキャラクター情報と、意図的に削除した村の記録は維持されます。"
+}

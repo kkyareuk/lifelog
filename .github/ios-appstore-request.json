@@ -1,7 +1,7 @@
 {
-  "request": "2026-10-16-public523-settings-scroll-hotfix-version-sync",
-  "version": "1.0.471",
-  "build": 523,
+  "request": "2026-10-17-public524-settings-ad-town-recovery",
+  "version": "1.0.472",
+  "build": 524,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
