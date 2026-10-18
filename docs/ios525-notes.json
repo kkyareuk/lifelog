@@ -1,0 +1,5 @@
+{
+  "ko": "이전 동기화 기록 때문에 일부 마을을 자동으로 불러오지 못하던 문제를 수정했습니다. 기기의 최근 진행 내용을 보존하면서 서버에 남아 있는 마을을 다시 확인합니다.",
+  "en-US": "Fixed an issue where older sync records could prevent some villages from loading automatically. Saved villages are checked again while preserving newer progress on your device.",
+  "ja": "過去の同期記録により、一部の村が自動で読み込まれない問題を修正しました。端末の新しい進行状況を保持しながら、サーバーに保存された村を再確認します。"
+}
