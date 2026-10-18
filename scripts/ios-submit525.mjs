@@ -22,7 +22,7 @@ if(!v && mode==='prepare'){
    const subs=(await appleGet(`/v1/apps/${appId}/reviewSubmissions?limit=100`)).data;
    let found=false;
    for(const sub of subs.filter(x=>['WAITING_FOR_REVIEW','IN_REVIEW'].includes(x.attributes.state))){
-    const items=(await appleGet(`/v1/reviewSubmissions/${sub.id}/items?limit=100`)).data;
+    const items=(await appleGet(`/v1/reviewSubmissions/${sub.id}/items?include=appStoreVersion&limit=100`)).data;
     if(!items.some(i=>i.relationships?.appStoreVersion?.data?.id===prior.id))continue;
     assert.equal(items.length,1,'Never cancel unrelated review items');
     await write('/v1/reviewSubmissions/'+sub.id,'PATCH',{type:'reviewSubmissions',id:sub.id,attributes:{canceled:true}});found=true;break;
