@@ -1,7 +1,7 @@
 {
-  "request": "2026-10-17-public524-settings-ad-town-recovery",
-  "version": "1.0.472",
-  "build": 524,
+  "request": "2026-10-18-public525-revalidate-town-recovery",
+  "version": "1.0.473",
+  "build": 525,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
