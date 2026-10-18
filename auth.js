@@ -243,7 +243,9 @@ const cloudCharacterDoc=(id,uid=user?.uid)=>doc(db,"users",uid,"characters",safe
 const cloudDays=(id,uid=user?.uid)=>collection(db,"users",uid,"characters",safeDocumentId(id),"days");
 const cloudDayDoc=(id,dateKey,uid=user?.uid)=>doc(db,"users",uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
 const SYNC_MANIFEST_VERSION=1;
-const syncRevisionKey=uid=>`drawer-village-sync-revision:${uid}`;
+// Revisions recorded before village recovery could describe an incomplete device.
+// Revalidate once with a full merge before either download-skip or delta upload.
+const syncRevisionKey=uid=>`drawer-village-sync-revision-v2:${uid}`;
 const validSyncManifest=value=>Number(value?.version)===SYNC_MANIFEST_VERSION&&value.characters&&typeof value.characters==="object"&&typeof value.coreHash==="string";
 const digestState=async value=>digestBlob(new Blob([JSON.stringify(encodeFirestoreState(value))],{type:"application/json"}));
 async function createSyncManifest(gameState){

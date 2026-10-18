@@ -116,11 +116,21 @@ console.log('PASS explicit populated-account sign-in preserves both saves; autom
 // Reproduce a nonempty newer device save hiding villages still present in cloud.
 const local524=game.cloneState(),town524={...local524.towns[0],id:'cloud-only-town524',name:'Recovery fixture',places:[]};
 const remote524=structuredClone(local524);remote524.lastSaved=1;remote524.towns.push(town524);
-cloud.set('C',{syncFormat:1,gameState:remote524});
+cloud.set('C',{syncFormat:1,gameState:remote524,syncRevision:'legacy-recovery525',syncManifest:{version:1,coreHash:'fixture',characters:{}}});
+accountStorage.setItem('drawer-village-sync-revision:C','legacy-recovery525');
 const before524=game.state.characters[game.state.order[0]].name;
 assert.equal(await auth.download({automatic:true}),true);
 assert(game.state.towns.some(t=>t.id===town524.id),'Automatic restore must retain cloud-only villages even when local timestamp is newer');
 assert.equal(game.state.characters[game.state.order[0]].name,before524,'Newer local characters must survive village recovery');
+assert.equal(await auth.download({automatic:true}),false,'Verified new revision retains the fast path');
+// An old upload marker must also re-read cloud-only villages before writing.
+accountStorage.removeItem('drawer-village-sync-revision-v2:C');
+const uploadLocal=game.cloneState();uploadLocal.towns=uploadLocal.towns.filter(t=>t.id!==town524.id);uploadLocal.lastSaved=Date.now()+10000;game.replaceState(uploadLocal);
+const uploadStart=writes.length;
+assert.equal(await auth.upload({silent:true}),true);
+const writtenCore=writes.slice(uploadStart).find(w=>w.path==='users/C/sync/core');
+assert(JSON.stringify(writtenCore?.data).includes(town524.id),'Legacy delta upload must merge missing cloud villages instead of removing them');
+console.log('PASS525 legacy revision download and upload revalidate; verified revision fast path preserved');
 game.deleteTown(town524.id);
 await auth.download({automatic:true});
 assert(!game.state.towns.some(t=>t.id===town524.id),'Explicitly deleted villages must not return');
