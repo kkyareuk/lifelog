@@ -11,6 +11,34 @@ async function write(path,method,data){
 }
 const versions=(await appleGet(`/v1/apps/${appId}/appStoreVersions?limit=20`)).data;
 let v=versions.find(v=>v.attributes.versionString===expectedVersion);
+// Replace only the previous recovery submission, after the new binary is valid.
+if(!v && mode==='prepare'){
+ const prior=versions.find(x=>x.id==='adb48276-e243-4e00-b9be-516bd6ca563b'&&x.attributes.versionString==='1.0.472');
+ if(prior&&['WAITING_FOR_REVIEW','IN_REVIEW','DEVELOPER_REJECTED','PREPARE_FOR_SUBMISSION'].includes(prior.attributes.appStoreState)){
+  const q=new URLSearchParams({'filter[app]':appId,'filter[version]':'525','filter[buildAudienceType]':'APP_STORE_ELIGIBLE',include:'preReleaseVersion',limit:'100'});
+  const bs=await appleGet('/v1/builds?'+q);
+  assert(bs.data.some(b=>b.attributes.processingState==='VALID'&&bs.included?.some(p=>p.id===b.relationships.preReleaseVersion.data.id&&p.attributes.version===expectedVersion)),'525 must be VALID before replacing524');
+  if(['WAITING_FOR_REVIEW','IN_REVIEW'].includes(prior.attributes.appStoreState)){
+   const subs=(await appleGet(`/v1/apps/${appId}/reviewSubmissions?limit=100`)).data;
+   let found=false;
+   for(const sub of subs.filter(x=>['WAITING_FOR_REVIEW','IN_REVIEW'].includes(x.attributes.state))){
+    const items=(await appleGet(`/v1/reviewSubmissions/${sub.id}/items?limit=100`)).data;
+    if(!items.some(i=>i.relationships?.appStoreVersion?.data?.id===prior.id))continue;
+    assert.equal(items.length,1,'Never cancel unrelated review items');
+    await write('/v1/reviewSubmissions/'+sub.id,'PATCH',{type:'reviewSubmissions',id:sub.id,attributes:{canceled:true}});found=true;break;
+   }
+   assert(found,'Expected524-only submission not found');
+  }
+  let editable;
+  for(let n=0;n<12;n++){
+   editable=(await appleGet('/v1/appStoreVersions/'+prior.id)).data;
+   if(['DEVELOPER_REJECTED','PREPARE_FOR_SUBMISSION'].includes(editable.attributes.appStoreState))break;
+   await new Promise(r=>setTimeout(r,5000));
+  }
+  assert(['DEVELOPER_REJECTED','PREPARE_FOR_SUBMISSION'].includes(editable.attributes.appStoreState),'524 review cancellation is still processing');
+  v=(await write('/v1/appStoreVersions/'+prior.id,'PATCH',{type:'appStoreVersions',id:prior.id,attributes:{versionString:expectedVersion}})).data;
+ }
+}
 if(!v && mode==='prepare'){
  assert(!versions.some(x=>x.attributes.platform==='IOS'&&['PREPARE_FOR_SUBMISSION','READY_FOR_REVIEW','WAITING_FOR_REVIEW','IN_REVIEW','PENDING_DEVELOPER_RELEASE','PENDING_APPLE_RELEASE'].includes(x.attributes.appStoreState)),'An existing iOS draft or review must be checked first');
  v=(await write('/v1/appStoreVersions','POST',{type:'appStoreVersions',attributes:{platform:'IOS',versionString:expectedVersion,releaseType:'AFTER_APPROVAL'},relationships:{app:{data:{type:'apps',id:appId}}}})).data;
@@ -26,7 +54,7 @@ if(mode==='prepare')for(let attempt=0;attempt<10&&(!build||build.attributes.proc
 }
 if(mode!=='status'){
  assert(build?.attributes.processingState==='VALID','525 build must be processed and valid');
- assert(['PREPARE_FOR_SUBMISSION','READY_FOR_REVIEW'].includes(v.attributes.appStoreState),'Only editable hotfix draft may be changed');
+ assert(['PREPARE_FOR_SUBMISSION','READY_FOR_REVIEW','DEVELOPER_REJECTED'].includes(v.attributes.appStoreState),'Only editable hotfix draft may be changed');
  if(mode==='prepare'){
   await write('/v1/appStoreVersions/'+v.id,'PATCH',{type:'appStoreVersions',id:v.id,attributes:{versionString:expectedVersion,releaseType:'AFTER_APPROVAL'},relationships:{build:{data:{type:'builds',id:build.id}}}});
   const notes=JSON.parse((await import('node:fs')).readFileSync(new URL('../docs/ios525-notes.json',import.meta.url),'utf8'));
