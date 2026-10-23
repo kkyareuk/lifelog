@@ -34,5 +34,5 @@ Select Court story in town settings and jump to a resident's court settings.
 
 ## Delivery
 
-Android signed bundle verified: all633 prepared assets match. SHA256 AF8A85D928FEC414B615DAC1CFC57B5CBFED6505C3903EE50CC38A6AF53FEAB6. Play internal release396 upload in progress. Build526 remains unreleased;527 also corrects the empty-town shortcut notice.
+Android signed bundle verified: all633 prepared assets match. SHA256 AF8A85D928FEC414B615DAC1CFC57B5CBFED6505C3903EE50CC38A6AF53FEAB6. Play internal release396 verified available to internal testers on2026-10-23 14:55KST, one bundle527 only. No supported-device loss; optional deobfuscation mapping warning only. Runtime commit f447f34c pushed to dev. Build526 remains unreleased;527 also corrects the empty-town shortcut notice.
 iOS1.0.475(527): project/assets prepared and project checks passed. CocoaPods/Xcode compilation, signing and real-device checks require Mac; no IPA or App Store submission.
