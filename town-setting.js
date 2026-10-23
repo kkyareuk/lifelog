@@ -23,7 +23,8 @@ export function adaptTownActivity(world,character,item){
 export function townSocietyField(town,language='ko',personal=true){
  if(!personal)return '';
  const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);
- return `<label><b>${text('사회 체제','Social system','社会体制')}</b><select data-world-court-theme><option value="basic" ${town.courtTheme!=='court'?'selected':''}>${text('자유 설정','Freeform','自由設定')}</option><option value="court" ${town.courtTheme==='court'?'selected':''}>${text('왕정·신분제','Monarchy & social ranks','王政・身分制')}</option></select></label>`;
+ return `<label><b>${text('마을 이야기','Town story','村の物語')}</b><select data-world-court-theme><option value="basic" ${town.courtTheme!=='court'?'selected':''}>${text('자유 설정','Freeform','自由設定')}</option><option value="court" ${town.courtTheme==='court'?'selected':''}>${text('궁정 이야기 · 왕정·신분제','Court story · monarchy and ranks','宮廷物語・王政と身分制')}</option></select></label><p>${text('궁정 이야기를 선택하면 주민의 전체설정에서 궁정 신분·직업·정치 성향을 정할 수 있어요. 설정한 신분에 맞는 일상 로그가 생겨요. 다른 이야기로 바꿔도 주민 설정은 남아요.','Choose Court story to set each resident’s rank, occupation and allegiance in their full settings. Daily reflections follow their assigned rank. Switching stories keeps resident settings.','宮廷物語を選ぶと、住人の全設定で身分・職業・政治的立場を設定できます。身分に合う日常の記録が生まれます。物語を変えても住人の設定は残ります。')}</p>${town.courtTheme==='court'?'<button type="button" data-open-town-court>'+text('이 마을 주민의 궁정 설정','Court settings for this town’s residents','この村の住人の宮廷設定')+'</button>':''}`;
+
 }
 export function townSettingFields(town,language='ko'){
  return townBackgroundFields(town,language);

@@ -9,7 +9,7 @@ const particle=(name,pair)=>{const code=String(name).charCodeAt(String(name).len
 export function normalizeSecrets(value){
  if(!Array.isArray(value))return [];
  const seen=new Set();return value.filter(s=>s&&typeof s==='object'&&typeof s.id==='string'&&s.id&&!seen.has(s.id)&&seen.add(s.id)).slice(0,100).map(s=>({
-  id:s.id.slice(0,100),kind:pick(SECRET_TYPES,s.kind),text:text(s.text),event:choice(TRAUMA_EVENTS,s.event),triggers:[...new Set((Array.isArray(s.triggers)?s.triggers:[]).filter(id=>find(SECRET_TRIGGERS,id)))],intensity:['mild','moderate','strong'].includes(s.intensity)?s.intensity:'moderate',
+  id:s.id.slice(0,100),dailyInfluence:s.dailyInfluence==='off'?'off':'on',afterglow:['brief','normal','lasting'].includes(s.afterglow)?s.afterglow:'normal',kind:pick(SECRET_TYPES,s.kind),text:text(s.text),event:choice(TRAUMA_EVENTS,s.event),triggers:[...new Set((Array.isArray(s.triggers)?s.triggers:[]).filter(id=>find(SECRET_TRIGGERS,id)))],intensity:['mild','moderate','strong'].includes(s.intensity)?s.intensity:'moderate',
   frame:'past',target:custom(s.target)?s.target.slice(0,2007):text(s.target),relation:choice(SECRET_RELATIONS,s.relation),role:choice(SECRET_ROLES,s.role),goal:choice(SECRET_GOALS,s.goal),taste:text(s.taste),tasteLabel:text(s.tasteLabel),preference:s.preference==='dislike'?'dislike':'like',
   disclosure:['never','trusted','easy'].includes(s.disclosure)?s.disclosure:'trusted',knowledgeVersion:Number.isSafeInteger(s.knowledgeVersion)?Math.max(0,s.knowledgeVersion):0,knownBy:[...new Set((Array.isArray(s.knownBy)?s.knownBy:[]).filter(x=>typeof x==='string'))].slice(0,300)
  }));

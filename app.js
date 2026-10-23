@@ -4240,7 +4240,13 @@ function bind(){
   $$("[data-place-dress-code]").forEach(el=>el.onclick=()=>{const place=placeDressCode(el.dataset.placeDressCode);if(!place)return;const field=el.dataset.dressField,value=el.dataset.value,current=Array.isArray(place.dressCode[field])?place.dressCode[field]:[],next=current.includes(value)?current.filter(entry=>entry!==value):[...current,value];place.dressCode[field]=next;updatePlace(place.id,{dressCode:place.dressCode},false);save();el.classList.toggle("on",next.includes(value))});
   $("[data-world-name]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.name=e.target.value;document.querySelector("[data-town-information-title]")?.replaceChildren(document.createTextNode(e.target.value||"마을"));save()});
   const saveTownProfile=()=>{const changedAt=Date.now();state.order.forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=changedAt});save(true)};
-  $('[data-world-court-theme]')?.addEventListener('change',e=>{if(activeShared()||currentTownMode()!=='town'||!['basic','court'].includes(e.target.value))return;state.world.courtTheme=e.target.value;saveTownProfile();renderPreservingPageScroll(e.target)});
+  document.querySelectorAll('[data-open-town-court]').forEach(button=>button.addEventListener('click',()=>{
+    if(activeShared()||(currentTownMode()&&currentTownMode()!=='town'))return;
+    const resident=Object.values(state.characters).find(c=>c.id===state.activeId&&c.townId===state.activeTownId)||Object.values(state.characters).find(c=>c.townId===state.activeTownId);
+    if(!resident){showToast(({ko:'먼저 이 마을에 주민을 추가해 주세요.',en:'Add a resident to this town first.',ja:'まずこの村に住人を追加してください。'})[state.uiLanguage]||'먼저 이 마을에 주민을 추가해 주세요.');return;}
+    state.activeId=resident.id;navigateToTab('character');state.characterSettingsView='full';state.characterProfileBook=false;state.characterPane='profile';state.characterOverviewPane='court';save(true);render({force:true});
+  }));
+  $('[data-world-court-theme]')?.addEventListener('change',e=>{if(activeShared()||(currentTownMode()&&currentTownMode()!=='town')||!['basic','court'].includes(e.target.value))return;state.world.courtTheme=e.target.value;saveTownProfile();renderPreservingPageScroll(e.target)});
   $("[data-world-town-type]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.townType=e.target.value;state.world.townSubtype=TOWN_TYPE_SUBTYPES[e.target.value]?.[0]||"";saveTownProfile();renderPreservingPageScroll(e.target)});
   $("[data-world-town-subtype]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.townSubtype=e.target.value;saveTownProfile()});
   $("[data-world-density]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.density=e.target.value;save(true)});
