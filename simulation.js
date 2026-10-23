@@ -2,6 +2,7 @@ import {isSocialRoutine,scheduledSocialScene,socialLogCopy,socialInterval} from 
 import {minuteClock as clock} from './log-time.js';
 import {compareSchedulePriority} from './schedule-priority.js';
 import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
+import {characterLifeScene} from './character-life.js';
 import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
 import {unemployedHomeLog} from './job-log-runtime.js';
 import {toiletActivity} from './toilet-activity.js';
@@ -3202,7 +3203,7 @@ function calculateTimeline(c,date=new Date()){
       const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>Number(item.minute)<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
-    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
+    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries,reflections:old?.reflections||[]};
     if(sceneBatch)sceneBatch.revision++;
     save(false,false);
   }
@@ -3225,7 +3226,9 @@ export function visibleTimeline(c,date=new Date()){
       const located=withResidenceLocation(c,item,at);
       const here=ids.length?ids.every(id=>state.characters[id]&&sameLiveLocation(located,baseEventFor(state.characters[id],at))):coLocatedCharacterIds(c,located,at).length>0;
       return here?item:soloSceneFrom(item);
-    }).map(item=>adaptTownActivity(state,c,socialLogCopy(localizeLifeLog(item,state.uiLanguage,state,c.id),state,state.uiLanguage)));
+    }).map(item=>adaptTownActivity(state,c,socialLogCopy(localizeLifeLog(item,state.uiLanguage,state,c.id),state,state.uiLanguage)))
+    .concat((c.days?.[dayKey(date)]?.reflections||[]).filter(item=>Number(item.minute)<=nowMin(date)))
+    .sort((a,b)=>Number(a.minute)-Number(b.minute));
 }
 
 export function nextSceneRefreshDelay(c,date=new Date()){
@@ -3270,6 +3273,11 @@ function commitLiveEntry(c,date,item){
     if(changed){day.entries=nextEntries;if(sceneBatch)sceneBatch.revision++;save(false,false)}
     return changed;
   };
+  if(item.storyReflection){
+    const reflections=Array.isArray(day.reflections)?day.reflections:[];
+    if(!reflections.some(e=>e.interactionId===item.interactionId)){day.reflections=[...reflections,item];save(false,false);}
+    return item;
+  }
   // A log entry is a historical snapshot, not a view model. Once the same
   // interaction was written for this character, reopening the app must not
   // replace its wording or participant list with a newly evaluated variant.
@@ -4911,6 +4919,11 @@ export function eventFor(c,date=new Date()){
       }
       const before=c.secretLife;current=traumaScene(c,current,now,state.uiLanguage);if(before!==c.secretLife)save(false,false);
       if(current.traumaReaction)current=commitLiveEntry(c,date,current);
+    }
+    if(Math.abs(Date.now()-date.getTime())<60000){
+      const story=characterLifeScene(state,c,current,date.getTime());current=story.scene;
+      if(story.record)commitLiveEntry(c,date,story.record);
+      if(story.changed)save(false,false);
     }
     current=adaptTownActivity(state,c,current);
     if(Math.abs(Date.now()-date.getTime())<60000){const previous=c.toiletEpisode;current=toiletActivity(c,current,date.getTime(),state.uiLanguage);if(previous!==c.toiletEpisode)save(false,false);}
