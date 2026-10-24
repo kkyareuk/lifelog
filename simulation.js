@@ -2,6 +2,7 @@ import {isSocialRoutine,scheduledSocialScene,socialLogCopy,socialInterval} from 
 import {minuteClock as clock} from './log-time.js';
 import {compareSchedulePriority} from './schedule-priority.js';
 import {lunchWindow,lunchRoutine} from './weekly-timetable.js';
+import {courtEncounter} from './court-encounters.js';
 import {characterLifeScene} from './character-life.js';
 import {nextSecret,followupSecret,traumaScene} from './character-secrets.js';
 import {unemployedHomeLog} from './job-log-runtime.js';
@@ -4921,6 +4922,9 @@ export function eventFor(c,date=new Date()){
       if(current.traumaReaction)current=commitLiveEntry(c,date,current);
     }
     if(Math.abs(Date.now()-date.getTime())<60000){
+      const partner=state.characters[current.withId],encounter=courtEncounter(state,c,current,partner&&baseEventFor(partner,date),date.getTime());
+      current=encounter.scene;for(const row of encounter.records)commitLiveEntry(state.characters[row.characterId],date,row.item);
+      if(encounter.changed)save(false,false);
       const story=characterLifeScene(state,c,current,date.getTime());current=story.scene;
       if(story.record)commitLiveEntry(c,date,story.record);
       if(story.changed)save(false,false);
