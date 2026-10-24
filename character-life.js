@@ -8,7 +8,7 @@ export const storyTitles={ko:'마음에 남은 생각',en:'A lingering thought',
 const copy=(row,lang,name='')=>row[({ko:0,en:1,ja:2}[lang]??0)].replaceAll('{name}',name);
 const townFor=(world,c)=>{const id=c.townId||world.homes?.[c.homeId]?.townId||world.activeTownId;return id===world.activeTownId?world.world:world.towns?.find(t=>t.id===id)};
 const safeSecret=(c,e)=>knownSecrets(c).find(s=>s.id===e.secretId&&s.knowledgeVersion===e.secretVersion&&s.dailyInfluence!=='off');
-const eligible=scene=>scene&&!scene.sleeping&&scene.mood!=='수면'&&!scene.transit&&!scene.manualDirective&&!scene.routineId&&!scene.secretSharing&&!scene.traumaReaction&&!scene.remote&&!scene.remoteContact;
+const eligible=scene=>scene&&!scene.courtEncounter&&!scene.sleeping&&scene.mood!=='수면'&&!scene.transit&&!scene.manualDirective&&!scene.routineId&&!scene.secretSharing&&!scene.traumaReaction&&!scene.remote&&!scene.remoteContact;
 export function characterLifeScene(world,c,scene,now,lang=world.uiLanguage||'ko'){
  if(scene?.lifeStory)scene={...scene,desc:scene.lifeStoryBaseDesc,lifeStory:false};
  if(world.sharedContext?.groupId||!eligible(scene)||!Number.isFinite(now))return {scene,changed:false,record:null};
