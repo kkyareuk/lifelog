@@ -1,0 +1,15 @@
+<ko-KR>
+신분·친밀도·정치적 성향에 따른 주민 간 대화와 양쪽 관점의 기록을 추가했어요.
+감정·비밀·신분별 일상 로그 100종과 비밀의 여운 지속 시간 설정을 추가했어요.
+마을 설정에서 궁정 이야기를 고르고 주민의 궁정 설정으로 이동할 수 있어요.
+</ko-KR>
+<en-US>
+Added conversations shaped by rank, closeness and allegiance, recorded from both residents’ viewpoints.
+Added 100 daily reflections about feelings, secrets and ranks, with adjustable secret after-effects.
+Choose Court story and open resident court settings from town settings.
+</en-US>
+<ja-JP>
+身分・親密さ・政治的立場に応じた会話と、双方の視点の記録を追加しました。
+感情・秘密・身分別の日常記録100種類と、秘密の余韻の持続時間設定を追加しました。
+村の設定から宮廷物語と住人の宮廷設定を選べます。
+</ja-JP>
