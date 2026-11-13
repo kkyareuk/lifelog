@@ -17,3 +17,6 @@ Set SD and LD character images for emotions and interactions. Empty slots use yo
 <ja-JP>
 感情や交流に合わせたSD・LD画像を設定できます。未登録の状態では基本のキャラクター画像を表示します。1.5MB以下のGIFをアニメーションのまま使えます。
 </ja-JP>
+
+## 실제 배포 결과
+2026-11-13: Play 내부 테스트 출시397, 529(1.0.477) 내부 테스터에게 제공됨 확인. 지원 기기 감소 0. iOS는 프로젝트 준비 검사 통과, 서명 및 스토어 업로드 없음. 공개 버전 유지.
