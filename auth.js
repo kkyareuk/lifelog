@@ -527,6 +527,7 @@ async function imageBitmapForCloud(blob){
 }
 async function optimizeCloudImage(original){
   if(original.size<=MAX_IMAGE_BYTES)return original;
+  if(original.type==="image/gif")throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
   const image=await imageBitmapForCloud(original);
   const sourceWidth=Number(image.width)||1,sourceHeight=Number(image.height)||1;
   let scale=Math.min(1,2200/sourceWidth,2200/sourceHeight),quality=.9;

@@ -109,7 +109,8 @@ import {bindHomeEditorUI,homeEditorCopy,filteredFurniture} from "./home-editor-u
 import {toggleDislike} from "./state.js?v=20260909dev305";
 import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulationBatch} from "./simulation.js?v=20260909dev305";
 import {setCharacterSceneImage} from "./state.js?v=20260909dev305";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev305";
+import {characterGifData} from "./animated-character-image.js";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants,sceneImageCopy} from "./character-scene-image.js?v=20260909dev305";
 import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260909dev305";
 import {currentSceneFor,currentTimelineFor,nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev305";
 import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev305";
@@ -5000,7 +5001,7 @@ function openCharacterSceneImages(){
   const thumb=(src,fallback)=>src?`<img src="${esc(src)}" alt="">`:`<span>${fallback}</span>`;
   const dialog=document.createElement("dialog");
   dialog.className="character-scene-images-dialog";
-  dialog.innerHTML=`<form method="dialog"><header><span><small>${translateText("상태별 아이콘·LD")}</small><b>${character.name}</b></span><button value="close" aria-label="${translateText("닫기")}">×</button></header><p>${translateText("수면·아침 준비·욕실·근무·외출 상황에 맞는 그림을 사용할 수 있어요. 비워 둔 칸은 옷장 또는 기본 이미지로 자동 대체됩니다.")}</p><div class="character-scene-image-list">${SCENE_IMAGE_VARIANTS.map(item=>{
+  dialog.innerHTML=`<form method="dialog"><header><span><small>${sceneImageCopy(lang,"title")}</small><b>${character.name}</b></span><button value="close" aria-label="${translateText("닫기")}">×</button></header><p>${sceneImageCopy(lang,"help")}</p><div class="character-scene-image-list">${SCENE_IMAGE_VARIANTS.map(item=>{
     const value=variants[item.id];
     return `<section><h3>${label(item)}</h3><div><button type="button" data-scene-image="icon" data-scene-key="${item.id}">${thumb(value.icon,"SD")}<b>${translateText("아이콘")}</b></button><button type="button" data-scene-image="ldImage" data-scene-key="${item.id}">${thumb(value.ldImage,"LD")}<b>LD</b></button></div><footer><button type="button" data-clear-scene-image="icon" data-scene-key="${item.id}" ${value.icon?"":"disabled"}>${translateText("아이콘 비우기")}</button><button type="button" data-clear-scene-image="ldImage" data-scene-key="${item.id}" ${value.ldImage?"":"disabled"}>${translateText("LD 비우기")}</button></footer></section>`;
   }).join("")}</div><button class="primary" value="close">${translateText("완료")}</button></form>`;
@@ -5154,14 +5155,14 @@ async function handleImageSelection(event,task){
   const input=event.currentTarget,file=input.files?.[0];
   if(!file){finishImageSelection(input,task);return}
   try{
-    const data=await cropImage(file,task.type);
+    const data=await characterGifData(file,task.type)||await cropImage(file,task.type);
     if(!data)return;
     await applyImage(task.type,task.id,task.room,data,task.world);
     if(task.type==="catalogImage")replaceCatalogCard(task.room,task.id,{open:true});
     else render();
   }catch(err){
     console.error(err);
-    alert(translateText("사진을 저장하지 못했어요. 다른 사진으로 다시 시도해 주세요."));
+    alert(err.code==="gif-too-large"?sceneImageCopy(state.uiLanguage,"tooLarge"):translateText("사진을 저장하지 못했어요. 다른 사진으로 다시 시도해 주세요."));
   }finally{
     finishImageSelection(input,task);
   }

@@ -1,3 +1,4 @@
+import {sceneImageFor,sceneImageCopy} from "./character-scene-image.js?v=20260909dev305";
 import {logTime} from './log-time.js';
 import {weeklyTimetable,participantSchedules} from './weekly-timetable.js';
 import {returnRoute} from './scheduled-return.js';
@@ -902,6 +903,8 @@ const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 
 function avatar(c,cls=""){
   const fallback=esc((c.name||"새").slice(0,1));
+  const sceneIcon=selectedSceneArt(c,null,"icon");
+  if(sceneIcon&&sceneIcon!==c.photo&&sceneIcon!==c.icon)return `<img class="sprite ${cls}" src="${imageEsc(sceneIcon)}" alt="">`;
   if(c.icon)return `<img class="sprite ${cls}" src="${imageEsc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${imageEsc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   return `<img class="sprite ${cls}" src="./assets/home-ui/profile-placeholder.png" alt="${esc(c.name||'')}">`;
@@ -928,10 +931,11 @@ function wardrobeSceneItem(c,entry,field){
   return [...items].sort((a,b)=>score(b)-score(a)||String(a.id).localeCompare(String(b.id)))[0]||null;
 }
 const wardrobeSceneArt=(c,entry,field)=>wardrobeSceneItem(c,entry,field)?.[field]||"";
-const ldArtSource=(c,entry)=>wardrobeSceneArt(c,entry,"ldImage")||String(c?.ldImage||"");
+const selectedSceneArt=(c,entry,field)=>{if(!c?.sceneImageVariants)return "";const scene=entry||eventFor(c);const selected=sceneImageFor(c,scene,field,characterMood(c,scene,state));return selected.src};
+const ldArtSource=(c,entry)=>selectedSceneArt(c,entry,"ldImage")||String(c?.ldImage||c?.photo||c?.icon||"");
 const hasLdArt=(c,entry)=>Boolean(ldArtSource(c,entry));
-const sdArtSource=(c,entry)=>wardrobeSceneArt(c,entry,"iconImage")||String(c?.icon||c?.photo||"");
-const usesProfilePhoto=(c,entry)=>Boolean(c?.photo&&!c?.icon&&!wardrobeSceneArt(c,entry,"iconImage"));
+const sdArtSource=(c,entry)=>selectedSceneArt(c,entry,"icon")||String(c?.icon||c?.photo||"");
+const usesProfilePhoto=(c,entry)=>Boolean(c?.photo&&!c?.icon&&!selectedSceneArt(c,entry,"icon")&&!wardrobeSceneArt(c,entry,"iconImage"));
 const hasSdArt=(c,entry)=>Boolean(sdArtSource(c,entry));
 const homeSceneLayoutFor=(c,mode)=>{
   const source=c?.homeSceneLayout?.[mode]||{};
@@ -3051,7 +3055,7 @@ function characterFullOverview(c){
     <button type="button" class="character-full-theme-chooser" data-character-theme="drawer-default" aria-label="${esc(t("테마 고르기","테마 고르기"))}"><img src="./icons/drawer-village-logo.png" alt=""><span>${t("테마 고르기","테마 고르기")}<small>${t("기본 테마 · 서랍마을","기본 테마 · 서랍마을")}</small></span></button>
     <button type="button" class="character-full-advanced-ld" data-open-advanced-ld>${t("고급 LD 사진 추가하기","고급 LD 사진 추가하기")}</button>
     <nav class="character-book-cover-controls" aria-label="${esc(t("표지에서 개요로 이동","표지에서 개요로 이동"))}"><button type="button" disabled aria-label="${esc(t("이전 페이지 없음","이전 페이지 없음"))}">◀</button><b>1</b><button type="button" data-character-pane="profile" aria-label="${esc(t("개요 첫 페이지","개요 첫 페이지"))}">▶</button></nav></div>
-  </section>`;
+  <button type="button" data-character-scene-images>${sceneImageCopy(state.uiLanguage,"title")}</button></section>`;
 }
 Object.assign(UI_TEXT.en,{"비밀 설정":"Secrets","비밀 설정하기":"Set up secrets"});
 Object.assign(UI_TEXT.ja,{"비밀 설정":"秘密の設定","비밀 설정하기":"秘密を設定"});
