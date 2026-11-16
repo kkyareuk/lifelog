@@ -6,7 +6,7 @@ New help copy: Korean, English and Japanese complete (EN/JA 100% of this change;
 
 Validation: Chrome and WebKit mobile 393×873, all three languages, panel bounds, close/Escape/focus restoration/outside click, unchanged clothing data; JS syntax and diff whitespace checks. Android module closure/assets passed. iOS source/version/assets configuration passed on Windows; no Mac signing, IPA, TestFlight or device claim.
 
-Android signed AAB and Play internal availability: pending. Production remains 528; app changes target dev only.
+Signed Android AAB built; bundled modules/styles match prepared assets. Play release 398 confirmed available to internal testers on 2026-11-16 17:06 KST. AAB SHA256: E94545D4328C6B4C370762EA46D31CDAF303219A6C53F8077C91F8C310BEE9D3. Production remains 528; app changes target dev only.
 
 ## Play release notes
 <ko-KR>
@@ -18,3 +18,5 @@ Added small help buttons to clothing settings. Learn what mood and situation tag
 <ja-JP>
 服の設定に小さなヘルプボタンを追加しました。気分・状況タグの意味とキャラクター画像の表示方法を、その場で確認できます。
 </ja-JP>
+
+Web packaging check is blocked by the pre-existing sw.js cache name drawer-village-life527-20261023, which prepare-web.mjs rejects (it expects web/public/internal). The unchanged baseline has the same mismatch. Local browser UI passed; web deployment is not claimed.
