@@ -1,4 +1,5 @@
 @import url("./weekly-timetable.css");
+@import url("./clothing-help.css");
 .home-native-pill:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(1)}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--on-p:#fff;--on-s:#fff;--on-grad:#fff}
 

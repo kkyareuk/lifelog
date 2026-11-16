@@ -1,0 +1,11 @@
+.clothing-help-heading{display:flex;align-items:center;gap:4px;position:relative}
+.clothing-help{font-weight:normal;font-size:14px;line-height:1.65}
+.clothing-help-trigger,.clothing-help-close{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:0;border:0;background:transparent;color:var(--muted);box-shadow:none;cursor:pointer}
+.clothing-help-trigger{font-size:20px}
+.clothing-help-trigger[aria-expanded="true"]{color:var(--p)}
+.clothing-help-trigger:focus-visible,.clothing-help-close:focus-visible{outline:2px solid var(--p);outline-offset:1px;border-radius:12px}
+.clothing-help-panel{position:absolute;z-index:8;inset-inline:0;top:100%;display:block;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);box-shadow:0 8px 24px #38271920;max-height:55dvh;overflow:auto;text-align:start;box-sizing:border-box}
+.clothing-help-panel[hidden]{display:none}
+.clothing-help-panel>b{display:block;padding-inline-end:28px;font-size:15px}
+.clothing-help-close{position:absolute;top:4px;inset-inline-end:4px;font-size:22px}
+.clothing-help-paragraph{display:block;margin-top:10px;white-space:normal;overflow-wrap:anywhere}
