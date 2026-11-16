@@ -1,4 +1,5 @@
 import './gathering-ui.js';
+import {clothingHelpMarkup,bindClothingHelp} from './clothing-help.js';
 import {bindLifeTimes} from './life-times-ui.js';
 import {furnitureDisplayGrid} from './furniture-display-grid.js';
 import {CHARACTER_CONTACT_PHRASES} from './features/mail/contact-phrases.js';
@@ -488,7 +489,7 @@ function openClothingEditor(itemId=""){
   const layout=item.sceneLayout||{},placementDraft={sd:clampClothingLayout(layout.sd,"sd"),ld:clampClothingLayout(layout.ld,"ld")};
   const placementEditor=(mode,label,image)=>`<fieldset class="clothing-placement-editor" data-clothing-placement-editor="${mode}"><legend>${label} 직접 배치</legend><p>그림을 끌어 옮기고, 두 손가락으로 크기와 각도를 조절해요.</p><div class="clothing-placement-stage ${mode}" data-clothing-placement-stage="${mode}"><div class="clothing-placement-art" data-clothing-placement-art="${mode}">${image?`<img src="${esc(image)}" alt="">`:`<span>${mode.toUpperCase()}</span>`}</div></div><div class="clothing-placement-actions"><button type="button" data-clothing-placement-zoom="out" data-mode="${mode}" aria-label="축소">−</button><button type="button" data-clothing-placement-reset="${mode}">배치 초기화</button><button type="button" data-clothing-placement-zoom="in" data-mode="${mode}" aria-label="확대">＋</button></div></fieldset>`;
   dialog.innerHTML=`<form method="dialog">
-    <div class="title"><div><h2>옷 등록·편집</h2><small>여기에 등록한 SD·LD는 옷만 겹치는 레이어가 아니라, 해당 상황에서 캐릭터 그림 전체를 통째로 바꿉니다.</small></div><button value="cancel">×</button></div>
+    <div class="title"><div class="clothing-help-heading"><h2>옷 등록·편집</h2>${clothingHelpMarkup('image',state.uiLanguage)}</div><button value="cancel">×</button></div>
     <div class="clothing-editor-grid"><section class="clothing-preview"><div class="clothing-art-pair">${imageField("iconImage","아이콘",item.iconImage||item.image)}${imageField("ldImage","LD",item.ldImage)}</div></section><section class="clothing-fields">
       <label>이름<input name="name" value="${esc(item.name||"")}"></label>
       <label>평범한 정도${select("ordinary",ORDINARY_LEVELS,item.ordinary||"무난함")}</label>
@@ -496,11 +497,12 @@ function openClothingEditor(itemId=""){
       <label>격식 정도${select("formality",CLOTHING_FORMALITY,item.formality||"캐주얼")}</label>
       <label>편안함${select("comfort",CLOTHING_COMFORT,item.comfort||"편안함")}</label>
       <label class="book-check-field"><span>유니폼으로 등록</span><input type="checkbox" name="requiredUniform" ${item.requiredUniform?"checked":""}></label><small class="clothing-uniform-help">건물이나 일정에서 ‘유니폼 착용 필수’를 켰을 때 선택 후보가 되는 옷이에요.</small>
-      <h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>기분 태그 · 중복 선택</h3>${chips("moodTags",CLOTHING_MOODS)}
+      <div class="clothing-help-heading"><h3>입는 상황 · 중복 선택</h3>${clothingHelpMarkup('occasion',state.uiLanguage)}</div>${chips("occasionTags",OCCASION_TAGS)}<div class="clothing-help-heading"><h3>기분 태그 · 중복 선택</h3>${clothingHelpMarkup('mood',state.uiLanguage)}</div>${chips("moodTags",CLOTHING_MOODS)}
       <div class="clothing-multi-grid">${pickerLabel("colors","색 선택하기")}${pickerLabel("materials","재질 선택하기")}${pickerLabel("flairs","분위기 중복 선택하기")}</div>
       <div class="clothing-layout-grid">${placementEditor("sd","SD 아이콘",item.iconImage||item.image)}${placementEditor("ld","LD 사진",item.ldImage)}</div>
     </section></div><div class="crop-actions"><button type="button" class="danger" data-delete-clothing>옷 삭제</button><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
   </form>`;
+  bindClothingHelp(dialog);
   dialog.querySelectorAll("[data-clothing-chip]").forEach(button=>button.onclick=()=>{const field=button.dataset.clothingChip,value=button.dataset.value,list=item[field]||[];item[field]=list.includes(value)?list.filter(entry=>entry!==value):[...list,value];button.classList.toggle("on",item[field].includes(value))});
   const applyClothingPlacement=mode=>{
     const art=dialog.querySelector(`[data-clothing-placement-art="${mode}"]`),value=placementDraft[mode];
