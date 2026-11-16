@@ -1,0 +1,5 @@
+{
+  "ko": "감정과 상호작용에 맞춰 캐릭터 사진을 설정할 수 있어요. 해당 사진이 없으면 등록한 기본 사진을 보여줘요. 움직이는 GIF 등록을 지원하고, 옷 설정에 기분·상황 태그와 사진 표시 방식을 알려주는 작은 도움말 버튼을 추가했어요.",
+  "en-US": "Set character images for emotions and interactions. Empty slots use your default character image. Animated GIF uploads are supported. Clothing settings now include small help buttons explaining mood and situation tags and how images are displayed.",
+  "ja": "感情や交流に合わせたキャラクター画像を設定できます。未設定の場合は登録した基本画像を表示します。アニメーションGIFの登録に対応し、服の設定に気分・状況タグと画像表示を説明する小さなヘルプボタンを追加しました。"
+}
