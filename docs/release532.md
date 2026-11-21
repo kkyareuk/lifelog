@@ -9,3 +9,9 @@ Validation: regression checks cover absent/null/partial slots, both image fields
 Runtime fix: 89e9ad21; dev equivalent: c21747f3. Legacy main already uses a safe optional slot lookup, so it needs no new feature code. Release/submission status will be recorded separately after upload.
 
 No new runtime text. KO/EN/JA release notes complete; overall application translation coverage not measured.
+## Submission progress — 2026-11-22
+
+- Android signed AAB SHA256: CEFC53ED86F24F57E1E400D1F1FC41E0329D3D3399A04E9EE0115F587058CF50. All 636 prepared Android assets match the bundle byte-for-byte.
+- Play accepted 532 / 1.0.480. Production review requested with 100% rollout after approval; fast prechecks still running. Existing API23 fallback467 retained, supported-device count unchanged. Not yet live.
+- iOS upload44943707676: archive/signing/Apple validation succeeded; Apple accepted upload. Subsequent status fetch failed, so no duplicate upload. Follow-up prepare44944351267 queries processing and attaches the validated build.
+- iOS follow-up44944351267 and44944648771 stopped at the valid-build guard after bounded waits. Read-only status44944664193 returned PREPARE_FOR_SUBMISSION, versionId ae2bc419-dd00-4d47-ad04-7467ec8c7684, build=null. Review NOT submitted; await Apple's build availability and resume prepare/submit, do not reupload532. Apple delivery email confirms successful delivery with a future SDK warning only.
