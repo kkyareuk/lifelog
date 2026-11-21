@@ -47,7 +47,7 @@ export function sceneImageFor(character,entry,mode="ldImage",mood={}){
   const field=mode==="icon"?"icon":"ldImage";
   const variants=character?.sceneImageVariants||{};
   const key=sceneImageCandidates(entry||{},mood)[0]||"";
-  const variant=key?variants[key][field]:"";
+  const variant=key?variants[key]?.[field]:"";
   const fallback=field==="icon"?String(character?.icon||character?.photo||""):String(character?.ldImage||character?.photo||character?.icon||"");
   return{src:String(variant||fallback),key,isVariant:Boolean(variant)};
 }
