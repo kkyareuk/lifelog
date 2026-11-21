@@ -9,7 +9,7 @@ on:
         description: Read status or perform the explicitly authorized iOS 507 hotfix action
         type: choice
         default: status
-        options: [status, hotfix507-status, hotfix507-prepare, hotfix507-submit, production511-status, production511-prepare, production511-submit, production512-status, production512-prepare, production512-submit, production514-status, production514-prepare, production514-submit, production515-status, production515-prepare, production515-submit, production520-status, production520-prepare, production520-submit, production522-status, production522-prepare, production522-submit, production523-status, production523-prepare, production523-submit, production524-status, production524-prepare, production524-submit, production525-status, production525-prepare, production525-submit, production528-status, production528-prepare, production528-submit, production531-status, production531-prepare, production531-submit]
+        options: [status, hotfix507-status, hotfix507-prepare, hotfix507-submit, production511-status, production511-prepare, production511-submit, production512-status, production512-prepare, production512-submit, production514-status, production514-prepare, production514-submit, production515-status, production515-prepare, production515-submit, production520-status, production520-prepare, production520-submit, production522-status, production522-prepare, production522-submit, production523-status, production523-prepare, production523-submit, production524-status, production524-prepare, production524-submit, production525-status, production525-prepare, production525-submit, production528-status, production528-prepare, production528-submit, production531-status, production531-prepare, production531-submit, production532-status, production532-prepare, production532-submit]
 permissions:
   contents: read
 jobs:
@@ -69,6 +69,9 @@ jobs:
             production531-status) node scripts/ios-submit531.mjs status ;;
             production531-prepare) node scripts/ios-submit531.mjs prepare ;;
             production531-submit) node scripts/ios-submit531.mjs submit ;;
+            production532-status) node scripts/ios-submit532.mjs status ;;
+            production532-prepare) node scripts/ios-submit532.mjs prepare ;;
+            production532-submit) node scripts/ios-submit532.mjs submit ;;
             *) exit 1 ;;
           esac
       - uses: actions/upload-artifact@v4
