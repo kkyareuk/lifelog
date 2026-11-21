@@ -15,3 +15,7 @@ No new runtime text. KO/EN/JA release notes complete; overall application transl
 - Play accepted 532 / 1.0.480. Production review requested with 100% rollout after approval; fast prechecks still running. Existing API23 fallback467 retained, supported-device count unchanged. Not yet live.
 - iOS upload44943707676: archive/signing/Apple validation succeeded; Apple accepted upload. Subsequent status fetch failed, so no duplicate upload. Follow-up prepare44944351267 queries processing and attaches the validated build.
 - iOS follow-up44944351267 and44944648771 stopped at the valid-build guard after bounded waits. Read-only status44944664193 returned PREPARE_FOR_SUBMISSION, versionId ae2bc419-dd00-4d47-ad04-7467ec8c7684, build=null. Review NOT submitted; await Apple's build availability and resume prepare/submit, do not reupload532. Apple delivery email confirms successful delivery with a future SDK warning only.
+
+## iOS review submitted — 2026-11-22
+
+Apple processing completed. Prepare44945253424 attached VALID build532 (8443434d-12dd-4206-9d2d-57b9c86dcc58). Submit44945497459 succeeded: 1.0.480 WAITING_FOR_REVIEW, AFTER_APPROVAL. This is review submission, not availability to users. No duplicate upload or application source change.
