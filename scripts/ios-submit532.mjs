@@ -20,6 +20,10 @@ assert.equal(v.attributes.versionString,expectedVersion);
 const query=new URLSearchParams({'filter[app]':appId,'filter[version]':expectedBuild,'filter[buildAudienceType]':'APP_STORE_ELIGIBLE',include:'preReleaseVersion',limit:'100'});
 async function readBuild(){const result=await appleGet('/v1/builds?'+query);return result.data.find(b=>result.included?.some(p=>p.id===b.relationships.preReleaseVersion.data.id&&p.attributes.version===expectedVersion));}
 let build=await readBuild();
+if(mode==='status'&&!build){
+ const diagnostic=await appleGet('/v1/builds?'+new URLSearchParams({'filter[app]':appId,'filter[version]':expectedBuild,include:'preReleaseVersion',limit:'100'}));
+ console.log(JSON.stringify({buildDiagnostic:diagnostic.data.map(b=>({id:b.id,attributes:b.attributes,preReleaseVersion:b.relationships?.preReleaseVersion})),included:diagnostic.included?.map(p=>({id:p.id,type:p.type,attributes:p.attributes}))}));
+}
 if(mode==='prepare')for(let attempt=0;attempt<10&&(!build||build.attributes.processingState==='PROCESSING');attempt++){
  console.log('Waiting for Apple build processing; no duplicate upload or submission.');
  await new Promise(resolve=>setTimeout(resolve,15000));build=await readBuild();
