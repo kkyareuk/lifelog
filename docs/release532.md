@@ -19,3 +19,6 @@ No new runtime text. KO/EN/JA release notes complete; overall application transl
 ## iOS review submitted — 2026-11-22
 
 Apple processing completed. Prepare44945253424 attached VALID build532 (8443434d-12dd-4206-9d2d-57b9c86dcc58). Submit44945497459 succeeded: 1.0.480 WAITING_FOR_REVIEW, AFTER_APPROVAL. This is review submission, not availability to users. No duplicate upload or application source change.
+
+## Release follow-up — 2026-11-22 17:36 KST
+Apple status45003622675 confirms READY_FOR_SALE / VALID for 1.0.480(532). No reupload required. Android current state could not be rechecked because Chrome requires Google account selection; prior confirmed state remains review requested. Read-only announcement check found latest notice528 (notice-35c8c763-7388-4527-bd7e-4ff49f17848a), no531/532 notice. Cumulative KO/EN/JA draft prepared; authenticated notice-admin publication remains pending. New weekly question feedback contains no concrete malfunction or requested change. No app code/save mutations.
