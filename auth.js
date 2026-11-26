@@ -1333,11 +1333,16 @@ window.DrawerVillageGroups={
 };
 
 if(ready){
+  let initialAuthWatch;
   try{
     const app=initializeApp(cfg);auth=bootstrapAuth(app,Boolean(window.Capacitor?.isNativePlatform?.()),{initializeAuth,getAuth,indexedDBLocalPersistence,browserLocalPersistence});db=(/Android/i.test(navigator.userAgent)||window.Capacitor?.isNativePlatform?.())?initializeFirestore(app,{experimentalForceLongPolling:true}):getFirestore(app);storage=getStorage(app);
     await requestDeadline(setPersistence(auth,browserLocalPersistence),"auth-persistence");
     if(!window.Capacitor?.isNativePlatform?.()){try{await requestDeadline(getRedirectResult(auth),"auth-redirect")}catch(error){console.warn(error)}}
+    // Module loading can finish before Firebase delivers its first auth state.
+    // Keep the account gate closed, but never leave that wait without a retry.
+    initialAuthWatch=setTimeout(()=>{startupError="auth-state-timeout";window.dispatchEvent(new Event("drawer-village-auth-busy"))},20000);
     onAuthStateChanged(auth,async next=>{
+      clearTimeout(initialAuthWatch);
       const epoch=++accountEpoch;startupError="";switchingAccount=true;profileSetupComplete=false;user=next;
       const startupWatch=setTimeout(()=>{if(epoch===accountEpoch){startupError="account-timeout";window.dispatchEvent(new Event("drawer-village-auth-busy"))}},20000);
       mailboxSignalStop?.();mailboxSignalStop=null;clearTimeout(mailboxSignalTimer);
@@ -1379,8 +1384,8 @@ if(ready){
         void refreshGroups().catch(error=>console.warn("Group refresh failed",error));
       }catch(error){if(epoch!==accountEpoch)return;startupError=[error?.code||"account-startup",error?.phase].filter(Boolean).join(":");console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
       finally{clearTimeout(startupWatch);if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
-    });
-  }catch(error){startupError=[error?.code||"auth-init",error?.phase].filter(Boolean).join(":");authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+    },error=>{clearTimeout(initialAuthWatch);startupError=String(error?.code||"auth-state-error");window.dispatchEvent(new Event("drawer-village-auth-busy"))});
+  }catch(error){clearTimeout(initialAuthWatch);startupError=[error?.code||"auth-init",error?.phase].filter(Boolean).join(":");authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
