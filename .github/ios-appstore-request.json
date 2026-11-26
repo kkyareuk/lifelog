@@ -1,7 +1,7 @@
 {
-  "request": "2026-11-22-public532-missing-scene-image-hotfix",
-  "version": "1.0.480",
-  "build": 532,
+  "request": "2026-11-26-public533-account-startup-hotfix",
+  "version": "1.0.481",
+  "build": 533,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

@@ -1,0 +1,5 @@
+{
+  "en-US": "Improved startup handling when account verification is delayed. You can check your connection and retry instead of remaining on the loading screen.",
+  "ja": "アカウント確認の応答が遅れた際に読み込み画面が続く問題を改善しました。接続を確認して再試行できるよう案内します。",
+  "ko": "계정 확인 응답이 지연될 때 로딩 화면이 계속 남는 문제를 개선했어요. 연결 상태를 확인하고 다시 시도할 수 있도록 안내해요."
+}
