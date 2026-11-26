@@ -16,11 +16,14 @@ await context.route('**/auth.js?*',route=>route.fulfill({contentType:'text/javas
 const page=await context.newPage();await page.goto(origin+'/index.html');
 await page.waitForFunction(()=>window.fixtureAuth&&document.querySelector('.village-account-loading'));
 await page.evaluate(async lang=>{const {state}=await import('/state.js?v=20260909dev305');state.uiLanguage=lang;window.fixtureAuth.startupError='auth-state-timeout';window.dispatchEvent(new Event('drawer-village-auth-busy'));},lang);
-await page.locator('.village-account-loading[role=alert]').waitFor();
-assert.equal(await page.locator('[data-auth-retry]').innerText(),{ko:'다시 시도',en:'Retry',ja:'再試行'}[lang]);
-assert((await page.locator('.village-account-loading').innerText()).includes('auth-state-timeout'));
-await page.evaluate(()=>document.querySelector('.drawer-title')?.remove());
+await page.locator('.village-account-loading[role=alert]').waitFor({state:'attached'});
+await page.locator('.drawer-title-actions button').waitFor();
+assert.equal(await page.locator('.drawer-title-status').innerText(),'auth-state-timeout');
+assert.equal(await page.locator('[data-auth-retry]').textContent(),{ko:'다시 시도',en:'Retry',ja:'再試行'}[lang]);
+assert((await page.locator('.village-account-loading').textContent()).includes('auth-state-timeout'));
+await page.evaluate(()=>{document.querySelector('.drawer-title')?.remove();document.documentElement.classList.remove('title-visible');});
 await page.locator('[data-auth-retry]').click();await page.waitForFunction(()=>window.fixtureAuth?.startupError==='');
 console.log(`PASS ${engine} ${lang}: pending account gate, error code, localized retry, reload`);await context.close();
 }}finally{await browser.close();}
 }}finally{server.close();}
+
