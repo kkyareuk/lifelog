@@ -26,13 +26,14 @@ const game=await import('../state.js?v=20260909dev305');
 const {accountStorage}=await import('../account-storage.js?v=20260909dev305');
 const character=(id)=>({id,name:id,days:{}});
 const cloud=new Map([['A',{syncFormat:1,gameState:{schema:31,characters:{a:character('a')},order:['a'],lastSaved:100}}],['B',{}]]);
-let callback,hold=null,hangPresence=true,stallImage=false,redirectCalls=0;const writes=[];
+let callback,observerError,hold=null,hangPresence=true,stallImage=false,redirectCalls=0;const writes=[];
 const pathOf=parts=>parts.filter(part=>typeof part==='string').join('/');
 const snapshot=(path)=>({exists:()=>cloud.has(path.split('/')[1]),data:()=>cloud.get(path.split('/')[1])});
 const fakeWindow={Capacitor:{isNativePlatform:()=>true},addEventListener(){},PARALLEL_CITY_FIREBASE:{apiKey:'test',projectId:'test',authDomain:'test'},dispatchEvent(){},ParallelCity:{getState:game.cloneState,switchAccount:game.switchAccountState,replaceState:game.replaceState,setAccountStatus(){},setEntitlements(){},toast(){}}};
 class FakeGoogleAuthProvider{setCustomParameters(){}}
-const context={iosAppleAvailable:()=>false,uniqueManifestImages,photoManifestForState,imageSourceHash,reusableImage,retainImage,needsCompressedCloudState,cloudDocumentLimitError,purchaseAccessRefresh,accountIdentity,bootstrapAuth,indexedDBLocalPersistence:{},initializeAuth:(_,deps)=>{assert(!deps.popupRedirectResolver);return {}},mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,["login-presence","image-epoch"].includes(label)?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
- initializeApp:()=>({}),getAuth:()=>({}),getFirestore:()=>({}),initializeFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{},browserLocalPersistence:{},getRedirectResult:async()=>{redirectCalls++},onAuthStateChanged:(_,fn)=>{callback=fn},
+let firstAuthResponse=false;const initialTimers=new Map();let timerId=-1;
+const context={iosAppleAvailable:()=>false,uniqueManifestImages,photoManifestForState,imageSourceHash,reusableImage,retainImage,needsCompressedCloudState,cloudDocumentLimitError,purchaseAccessRefresh,accountIdentity,bootstrapAuth,indexedDBLocalPersistence:{},initializeAuth:(_,deps)=>{assert(!deps.popupRedirectResolver);return {}},mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,["login-presence","image-epoch"].includes(label)?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout:(fn,ms)=>{if(!firstAuthResponse&&ms===20000){initialTimers.set(--timerId,fn);return timerId}return setTimeout(fn,ms)},clearTimeout:id=>{initialTimers.delete(id);clearTimeout(id)},setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
+ initializeApp:()=>({}),getAuth:()=>({}),getFirestore:()=>({}),initializeFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{},browserLocalPersistence:{},getRedirectResult:async()=>{redirectCalls++},onAuthStateChanged:(_,fn,error)=>{callback=fn;observerError=error},
  doc:(...parts)=>pathOf(parts),collection:(...parts)=>pathOf(parts),getDoc:async path=>{if(stallImage&&path.startsWith("imageDeletionState/"))return new Promise(()=>{});if(hold&&path==='users/A')await hold.promise;return snapshot(path)},getDocFromServer:async path=>snapshot(path),getDocs:async()=>({docs:[]}),getDocsFromServer:async()=>({docs:[]}),
  setDoc:async(path,data)=>{if(hangPresence&&data.lastLoginOrigin)return new Promise(()=>{});writes.push({path,data});if(path.split('/').length===2)cloud.set(path.split('/')[1],{...cloud.get(path.split('/')[1]),...data})},deleteDoc:async()=>{},deleteField:()=>undefined,serverTimestamp:()=>0,arrayUnion:(...x)=>x,signOut:async()=>callback(null),
  GoogleAuthProvider:FakeGoogleAuthProvider,signInWithPopup:async()=>callback({uid:'C',email:'c@test'}),signInWithRedirect:async()=>{},signInWithCredential:async()=>{}
@@ -40,7 +41,17 @@ const context={iosAppleAvailable:()=>false,uniqueManifestImages,photoManifestFor
 const source=fs.readFileSync(new URL('../auth.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'');
 await vm.runInNewContext(`(async()=>{${source}\n})()`,context);
 const auth=fakeWindow.ParallelCityAuth;
+const savesBeforeFirstAuth=JSON.stringify([...memory]),writesBeforeFirstAuth=writes.length;
+for(const fn of initialTimers.values())fn();
+assert.equal(auth.getInfo().startupError,"auth-state-timeout","A missing initial auth callback must not leave an endless account loading screen");
+assert.equal(auth.getInfo().ready,false,"Timeout must not expose another account or guest save");
+assert.equal(JSON.stringify([...memory]),savesBeforeFirstAuth);assert.equal(writes.length,writesBeforeFirstAuth);
+assert.equal(typeof observerError,"function");observerError({code:"auth/network-request-failed"});
+assert.equal(auth.getInfo().startupError,"auth/network-request-failed");
+firstAuthResponse=true;
 await callback({uid:'A',email:'a@test'});
+assert.equal(initialTimers.size,0,"Late first response cancels the initial watchdog");
+console.log("PASS initial auth timeout/error preserves saves; late callback recovers and clears timer");
 assert.equal(redirectCalls,0,'Native startup must skip web redirect restoration');assert.equal(auth.getInfo().busy,false,'Unacknowledged presence write must not block account startup');assert.equal(auth.getInfo().startupError,'');hangPresence=false;
 assert.deepEqual(game.state.order,['a']);
 await auth.logout();
