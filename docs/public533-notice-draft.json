@@ -1,0 +1,23 @@
+{
+  "version": "1.0.481",
+  "build": 533,
+  "previousAnnouncementBuild": 528,
+  "releaseSha": "0faf553ce33051f44f202d89bcae8dbe6a8b655e",
+  "status": "both_stores_live_pending_authenticated_notice_admin",
+  "push": false,
+  "locales": {
+    "ko": {
+      "title": "서랍마을 업데이트 안내",
+      "body": "Android와 iOS 1.0.481 업데이트를 이용할 수 있어요.\n\n감정과 상호작용에 맞춰 캐릭터 사진을 설정할 수 있어요. 해당 사진이 없으면 등록한 기본 사진을 보여줘요. 움직이는 GIF 등록을 지원하고, 옷 설정에 기분·상황 태그와 사진 표시 방식을 알려주는 작은 도움말 버튼을 추가했어요.\n\n감정 사진을 설정하지 않은 기존 캐릭터 때문에 집·관찰·마을 화면이 열리지 않는 문제를 수정했어요. 앱을 시작할 때 계정 확인 응답이 지연되면 계속 기다리는 대신 오류와 재시도 안내를 보여주도록 개선했어요."
+    },
+    "en": {
+      "title": "Drawer Village update",
+      "body": "Version 1.0.481 is available on Android and iOS.\n\nSet character images for emotions and interactions. Empty slots use your default character image. Animated GIF uploads are supported. Clothing settings include small help buttons explaining mood and situation tags and how images are displayed.\n\nFixed home, observation and town screens failing to open for existing characters without emotion images. When the initial account check takes too long, the app now shows an error and a retry option instead of waiting indefinitely."
+    },
+    "ja": {
+      "title": "引き出しの村 アップデート",
+      "body": "AndroidとiOSでバージョン1.0.481をご利用いただけます。\n\n感情や交流に合わせたキャラクター画像を設定できます。未設定の場合は登録した基本画像を表示します。アニメーションGIFの登録に対応し、服の設定に気分・状況タグと画像表示を説明する小さなヘルプボタンを追加しました。\n\n感情画像を設定していない既存のキャラクターがいる場合に、家・観察・村の画面を開けない問題を修正しました。起動時のアカウント確認が長引く場合は、待ち続ける代わりにエラーと再試行の案内を表示するよう改善しました。"
+    }
+  },
+  "publicationRule": "Before publishing, verify actual public availability and state which platforms are live. Do not publish during review. Check existing notice ID for this build first."
+}
