@@ -8,6 +8,6 @@ Validation: Chrome and WebKit at 412×917, 360×640 and 1280×800, KO/EN/JA, tas
 
 Known baseline: check-character-editor-ui-stability.mjs has the same settings-version source-string failure at untouched ed646d32. No unrelated fix included.
 
-Play Console before upload: production 533 (1.0.481), internal 530 (1.0.478), highest bundle 533, checked 2026-11-28. Internal 534 upload verification pending. Production and game main are unchanged.
+Play Console before upload: production 533 (1.0.481), internal 530 (1.0.478), highest bundle 533, checked 2026-11-28. Internal 534 (release 399) confirmed available to internal testers on 2026-11-28 at 23:19 KST. Production and game main are unchanged.
 
 New/changed growth UI translations: English 100%, Japanese 100%. Whole-app coverage not remeasured.
