@@ -1,5 +1,6 @@
-const CACHE_VERSION="drawer-village-life527-20261023";
+const CACHE_VERSION="drawer-village-internal534-20261128";
 const CORE=[
+  "./character-growth.js", "./character-growth-ui.js",
   "./relationship-roles.js?v=20260909dev305","./relationship-roles-editor.js?v=20260909dev305","./relationship-housing.js?v=20260909dev305",
   "./personality-observation.js?v=20260909dev305", "./shared-create-resident.js?v=20260909dev305",
   "./diamond-shop.css?v=20260910dev305","./diamond-shop.js?v=20260909dev305",

@@ -1,0 +1,16 @@
+<ko-KR>
+홈 직업란에는 직업 이름만 표시해요.
+로그 위에서 지금 할 과제와 성장 진행도를 확인할 수 있어요.
+캐릭터 사진 우측 하단에 레벨 배지를 추가했어요.
+첫 행동·일정 저장·질문 답변을 통해 성장하고, 질문에 답하며 캐릭터 설정을 조금씩 채워 가요. 기존 답변도 성장에 반영돼요.
+</ko-KR>
+<en-US>
+The home occupation field now shows only the job title.
+See your next task and growth progress above the log, with a level badge on your portrait.
+Grow through your first activity, saving a schedule, and answering questions. Build character details one answer at a time. Existing answers count toward growth.
+</en-US>
+<ja-JP>
+ホームの職業欄には職業名だけを表示します。
+ログの上で次の課題と成長の進み具合を確認でき、キャラクター画像の右下にレベルを表示します。
+最初の行動・予定の保存・質問への回答で成長し、設定を少しずつ作れます。これまでの回答も成長に反映されます。
+</ja-JP>

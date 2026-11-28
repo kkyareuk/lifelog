@@ -71,7 +71,5 @@ export function todayCareerDuty(world,c,date=new Date()){
 
 export function careerHudLabel(world,c,date=new Date()){
  const court=courtCaption(world,c);if(court!==null)return court;
- const career=careerCaption(world,c),duty=todayCareerDuty(world,c,date);
- if(!duty?.name)return career;
- return [career,duty.name].filter(Boolean).join(' · ');
+ return careerCaption(world,c);
 }
